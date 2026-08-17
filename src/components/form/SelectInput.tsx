@@ -11,17 +11,15 @@ export type Option = {
 const SelectInput = ({
   disabled,
   name,
-  title,
-  value,
-  setValue,
+  data,
+  setData,
   options,
   placeholder,
 }: {
   disabled?: boolean;
   name: string;
-  title: string;
-  value: string;
-  setValue: (v: string) => void;
+  data: string;
+  setData: (v: string) => void;
   options: Option[];
   placeholder?: string;
 }) => {
@@ -40,21 +38,16 @@ const SelectInput = ({
 
   return (
     <div className="w-100 mb-3">
-      <label htmlFor={name} className="form-label fw-semibold">
-        {title}
-      </label>
-
       <input
         disabled={disabled}
         name={name}
-        id={name}
-        value={value || placeholder || ""}
+        value={data || placeholder || ""}
         readOnly
         onClick={(e) => {
           (e.target as HTMLInputElement).blur();
           openSelect();
         }}
-        className={`form-control ${value === "" ? "text-secondary" : ""}`}
+        className={`form-control ${data === "" ? "text-secondary" : ""}`}
       />
 
       <div
@@ -86,7 +79,7 @@ const SelectInput = ({
         }}
       >
         <div className="w-100 d-flex align-items-center justify-content-between border-bottom px-3">
-          <h2 className="m-0 fs-6 fw-bold">{title}</h2>
+          <h2 className="m-0 fs-6 fw-bold">선택</h2>
 
           <button
             type="button"
@@ -112,7 +105,7 @@ const SelectInput = ({
           >
             <div style={{ paddingBottom: 100 }}>
               {options.map((opt) => {
-                const isSelected = opt.value === value;
+                const isSelected = opt.value === data;
 
                 return (
                   <button
@@ -122,7 +115,7 @@ const SelectInput = ({
                     onClick={() => {
                       if (opt.disabled) return;
 
-                      setValue(opt.value);
+                      setData(opt.value);
                       closeSelect();
                     }}
                     className={`w-100 text-start px-3 py-3 border-0 bg-white ${

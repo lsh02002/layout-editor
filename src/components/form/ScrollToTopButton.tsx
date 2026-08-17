@@ -32,7 +32,7 @@ const ScrollToTopButton = ({
   return (
     <button
       type="button"
-      className="btn btn-secondary rounded-circle position-fixed d-flex align-items-center justify-content-center p-0"
+      className="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center"
       disabled={disabled}
       onClick={handleClick}
       style={{

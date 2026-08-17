@@ -3,6 +3,7 @@ import QuillEditBox from "./components/layout/QuillEditBox";
 import ImageEditBox from "./components/layout/ImageBox";
 import ButtonBox from "./components/layout/ButtonBox";
 import TextAreaBox from "./components/layout/TextAreaBox";
+import ScrollToTopButtonBox from "./components/layout/ScrollToTopButtonBox";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <QuillEditBox />
         <ImageEditBox />
         <ButtonBox />
+        <ScrollToTopButtonBox />
       </DivBox>
     </>
   );

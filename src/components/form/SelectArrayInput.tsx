@@ -7,9 +7,8 @@ type Option = { label: string; value: string; disabled?: boolean };
 type SelectArrayProps = {
   disabled?: boolean;
   name: string;
-  title: string;
-  values: string[];
-  setValues: (v: string[]) => void;
+  data: string[];
+  setData: (v: string[]) => void;
   options: Option[];
   placeholder?: string;
 };
@@ -17,9 +16,8 @@ type SelectArrayProps = {
 const SelectArrayInput = ({
   disabled,
   name,
-  title,
-  values,
-  setValues,
+  data,
+  setData,
   options,
   placeholder,
 }: SelectArrayProps) => {
@@ -32,7 +30,7 @@ const SelectArrayInput = ({
     [options],
   );
 
-  const selectedLabels = values
+  const selectedLabels = data
     .map((v) => mapByValue.get(v)?.label || v)
     .filter(Boolean);
 
@@ -40,22 +38,16 @@ const SelectArrayInput = ({
     const opt = mapByValue.get(v);
     if (opt?.disabled) return;
 
-    setValues(
-      values.includes(v) ? values.filter((x) => x !== v) : [...values, v],
-    );
+    setData(data.includes(v) ? data.filter((x) => x !== v) : [...data, v]);
   };
 
   const displayValue =
     selectedLabels.length > 0
       ? selectedLabels.join(", ")
-      : placeholder || `${title}을(를) 선택하세요`;
+      : placeholder || `내용을(를) 선택하세요`;
 
   return (
     <div className="w-100 mb-3">
-      <label htmlFor={name} className="form-label fw-semibold">
-        {title}
-      </label>
-
       <button
         id={name}
         name={name}
@@ -66,7 +58,7 @@ const SelectArrayInput = ({
           openModal(name);
         }}
         className={`form-control text-start d-flex align-items-center justify-content-between ${
-          values.length === 0 ? "text-secondary" : ""
+          data.length === 0 ? "text-secondary" : ""
         }`}
       >
         <span>{displayValue}</span>
@@ -102,7 +94,7 @@ const SelectArrayInput = ({
         }}
       >
         <div className="w-100 d-flex align-items-center justify-content-between border-bottom px-3 py-2">
-          <h2 className="m-0 fs-6 fw-bold">{title}</h2>
+          <h2 className="m-0 fs-6 fw-bold">선택</h2>
           <button
             type="button"
             className="btn border-0 bg-transparent fs-3 text-secondary px-1 py-0"
@@ -132,12 +124,12 @@ const SelectArrayInput = ({
             <div style={{ paddingBottom: 100 }}>
               {options.length === 0 && (
                 <div className="px-3 py-3 text-secondary">
-                  해당 {title}이 없습니다.
+                  해당 내용이 없습니다.
                 </div>
               )}
 
               {options.map((opt) => {
-                const checked = values.includes(opt.value);
+                const checked = data.includes(opt.value);
 
                 return (
                   <button
