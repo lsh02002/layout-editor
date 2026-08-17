@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useState,
   type HTMLAttributes,
   type MouseEventHandler,
@@ -34,14 +35,29 @@ function DivBox({
     setOver(false);
   };
 
-  const handleClick = (
-      e: React.MouseEvent<HTMLButtonElement>,
-      callback?: () => void,
-    ) => {
-      // HoverBox나 부모 컴포넌트의 클릭 이벤트 방지
+  const handleEdit = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
-      callback?.();
-    };
+      onEdit?.();
+    },
+    [onEdit],
+  );
+
+  const handleCopy = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      onCopy?.();
+    },
+    [onCopy],
+  );
+
+  const handleDelete = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      onDelete?.();
+    },
+    [onDelete],
+  );
 
   return (
     <div
@@ -64,9 +80,9 @@ function DivBox({
           }}
         >
           <EditMenuBox
-            onEdit={(e) => handleClick(e, onEdit)}
-            onCopy={(e) => handleClick(e, onCopy)}
-            onDelete={(e) => handleClick(e, onDelete)}
+            onEdit={handleEdit}
+            onCopy={handleCopy}
+            onDelete={handleDelete}
           />
         </div>
       )}

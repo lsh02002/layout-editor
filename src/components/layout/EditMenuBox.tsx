@@ -1,5 +1,5 @@
 import type { MouseEventHandler } from "react";
-
+import { memo } from "react";
 interface EditMenuBoxProps {
   onEdit?: MouseEventHandler<HTMLButtonElement>;
   onCopy?: MouseEventHandler<HTMLButtonElement>;
@@ -39,4 +39,4 @@ function EditMenuBox({ onEdit, onCopy, onDelete }: EditMenuBoxProps) {
   );
 }
 
-export default EditMenuBox;
+export default memo(EditMenuBox);
