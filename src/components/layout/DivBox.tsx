@@ -1,18 +1,20 @@
 import {
   useCallback,
   useState,
-  type CSSProperties,
   type HTMLAttributes,
   type MouseEventHandler,
   type ReactNode,
 } from "react";
+
 import EditMenuBox from "./EditMenuBox";
 import type { ComponentLayout } from "../../types/types";
 
 interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   layout?: ComponentLayout;
-  onLayoutChange?: (newLayout: Partial<ComponentLayout>) => void;
+
+  onLayoutChange?: (layout: Partial<ComponentLayout>) => void;
+
   onEdit?: () => void;
   onCopy?: () => void;
   onDelete?: () => void;
@@ -30,67 +32,66 @@ function DivBox({
 }: DivBoxProps) {
   const [over, setOver] = useState(false);
 
-  const handleMouseEnter: MouseEventHandler<HTMLDivElement> = (event) => {
-    event.stopPropagation();
-    setOver(true);
+  const handleMouseMove: MouseEventHandler<HTMLDivElement> = (event) => {
+    const target = event.target as HTMLElement;
+
+    // 현재 마우스 위치에서 가장 가까운 DivBox
+    const closestDivBox = target.closest("[data-layout-box]");
+
+    // 가장 가까운 DivBox가 자기 자신일 때만 메뉴 표시
+    setOver(closestDivBox === event.currentTarget);
   };
 
-  const handleMouseLeave: MouseEventHandler<HTMLDivElement> = (event) => {
-    event.stopPropagation();
+  const handleMouseLeave: MouseEventHandler<HTMLDivElement> = () => {
     setOver(false);
   };
 
   const handleEdit = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.stopPropagation();
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
       onEdit?.();
     },
     [onEdit],
   );
 
   const handleCopy = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.stopPropagation();
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
       onCopy?.();
     },
     [onCopy],
   );
 
   const handleDelete = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.stopPropagation();
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
       onDelete?.();
     },
     [onDelete],
   );
 
-  const layoutStyle: CSSProperties = {
-    width: layout?.width,
-    height: layout?.height,
-
-    ...(layout?.x !== undefined || layout?.y !== undefined
-      ? {
-          position: "absolute",
-          left: layout?.x,
-          top: layout?.y,
-        }
-      : {
-          position: "relative",
-        }),
-  };
-
   return (
     <div
       {...props}
+      data-layout-box
       className={`d-inline-block ${className} bg-white`}
       style={{
-        ...layoutStyle,
+        position:
+          layout?.x !== undefined || layout?.y !== undefined
+            ? "absolute"
+            : "relative",
+
+        left: layout?.x,
+        top: layout?.y,
+
+        width: layout?.width,
+        height: layout?.height,
 
         outline: over ? "1px solid var(--bs-primary)" : "1px solid transparent",
 
         ...style,
       }}
-      onMouseEnter={handleMouseEnter}
+      onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
       {over && (
@@ -99,7 +100,7 @@ function DivBox({
           style={{
             background: "var(--bs-primary)",
             padding: "2px 8px",
-            zIndex: 10,
+            zIndex: 100,
           }}
         >
           <EditMenuBox
