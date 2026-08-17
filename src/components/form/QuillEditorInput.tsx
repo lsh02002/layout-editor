@@ -6,15 +6,13 @@ import { useModalManager } from "../../usehooks/usehooks";
 
 const QuillEditorInput = ({
   disabled,
-  name,
-  title,
+  name,  
   data,
   setData,
   rows = 8,
 }: {
   disabled?: boolean;
-  name: string;
-  title: string;
+  name: string;  
   data: string;
   setData: (v: string) => void;
   rows?: number;
@@ -86,7 +84,7 @@ const QuillEditorInput = ({
             }}
           />
         ) : (
-          `${title}을(를) 입력하세요`
+          `내용을(를) 입력하세요`
         )}
       </div>
 
@@ -119,7 +117,7 @@ const QuillEditorInput = ({
         }}
       >
         <div className="w-100 d-flex align-items-center justify-content-between border-bottom px-3">
-          <h2 className="m-0 fs-6 fw-bold">{title}</h2>
+          <h2 className="m-0 fs-6 fw-bold">내용</h2>
           <button
             className="btn border-0 bg-transparent fs-3 text-secondary px-1 py-0"
             onClick={() => closeModal(name)}
@@ -161,7 +159,7 @@ const QuillEditorInput = ({
                 setIsEmpty(isReallyEmpty);
               }}
               readOnly={disabled}
-              placeholder={isEmpty ? `${title}을(를) 입력하세요` : ""}
+              placeholder={isEmpty ? `내용을(를) 입력하세요` : ""}
               modules={{
                 toolbar: disabled
                   ? false

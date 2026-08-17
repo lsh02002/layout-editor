@@ -22,8 +22,7 @@ const QuillEditBox = () => {
   return (
     <DivBox onEdit={onEdit} onCopy={onCopy} onDelete={onDelete}>
       <QuillEditorInput
-        name="quilleditbox"
-        title="내용"
+        name="quilleditbox"        
         data={data}
         setData={setData}
       />

@@ -1,14 +1,18 @@
 import {
   useCallback,
   useState,
+  type CSSProperties,
   type HTMLAttributes,
   type MouseEventHandler,
   type ReactNode,
 } from "react";
 import EditMenuBox from "./EditMenuBox";
+import type { ComponentLayout } from "../../types/types";
 
 interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
+  layout?: ComponentLayout;
+  onLayoutChange?: (newLayout: Partial<ComponentLayout>) => void;
   onEdit?: () => void;
   onCopy?: () => void;
   onDelete?: () => void;
@@ -16,6 +20,7 @@ interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
 
 function DivBox({
   children,
+  layout,
   onEdit,
   onCopy,
   onDelete,
@@ -25,12 +30,12 @@ function DivBox({
 }: DivBoxProps) {
   const [over, setOver] = useState(false);
 
-  const handleMouseOver: MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleMouseEnter: MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
     setOver(true);
   };
 
-  const handleMouseOut: MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleMouseLeave: MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
     setOver(false);
   };
@@ -59,16 +64,34 @@ function DivBox({
     [onDelete],
   );
 
+  const layoutStyle: CSSProperties = {
+    width: layout?.width,
+    height: layout?.height,
+
+    ...(layout?.x !== undefined || layout?.y !== undefined
+      ? {
+          position: "absolute",
+          left: layout?.x,
+          top: layout?.y,
+        }
+      : {
+          position: "relative",
+        }),
+  };
+
   return (
     <div
       {...props}
-      className={`d-inline-block position-relative ${className} bg-white`}
+      className={`d-inline-block ${className} bg-white`}
       style={{
+        ...layoutStyle,
+
         outline: over ? "1px solid var(--bs-primary)" : "1px solid transparent",
+
         ...style,
       }}
-      onMouseOver={handleMouseOver}
-      onMouseOut={handleMouseOut}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {over && (
         <div
