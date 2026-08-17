@@ -45,4 +45,20 @@ export const data: LayoutComponent[] = [
       width: "50%",
     },
   },
+  {
+    id: "image-001",
+    type: "image",
+    order: 3,
+    props: {
+      urls: [
+        "https://picsum.photos/id/237/600/400",
+        "https://picsum.photos/id/1025/600/400",
+      ],
+      maxCount: 5,
+      disabled: false,
+    },
+    style: {
+      width: "100%",
+    },
+  },
 ];

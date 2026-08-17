@@ -6,15 +6,17 @@ import { useModalManager } from "../../usehooks/usehooks";
 
 const QuillEditorInput = ({
   disabled,
-  name,  
+  name,
   data,
   setData,
+  placeholder,
   rows = 8,
 }: {
   disabled?: boolean;
-  name: string;  
+  name: string;
   data: string;
   setData: (v: string) => void;
+  placeholder?: string;
   rows?: number;
 }) => {
   const quillRef = useRef<ReactQuill | null>(null);
@@ -67,7 +69,7 @@ const QuillEditorInput = ({
         className={`form-control ${isDataEmpty ? "text-secondary" : ""}`}
         style={{
           paddingTop: 32,
-          minHeight: 3 * 24 + 32,          
+          minHeight: 3 * 24 + 32,
           cursor: disabled ? "not-allowed" : "pointer",
           overflow: "hidden",
         }}
@@ -159,7 +161,7 @@ const QuillEditorInput = ({
                 setIsEmpty(isReallyEmpty);
               }}
               readOnly={disabled}
-              placeholder={isEmpty ? `내용을(를) 입력하세요` : ""}
+              placeholder={isEmpty ? placeholder || "내용을 입력하세요" : ""}
               modules={{
                 toolbar: disabled
                   ? false

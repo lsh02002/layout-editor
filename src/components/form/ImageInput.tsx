@@ -14,18 +14,20 @@ interface ImageInputProps {
   setData: (files: File[]) => void;
   previewUrls: string[];
   setPreviewUrls: Dispatch<SetStateAction<string[]>>;
+  maxCount?: number;
 }
 
 const ImageInput = ({
   disabled,
   name,
+  data,
   setData,
   previewUrls,
   setPreviewUrls,
+  maxCount = 4,
 }: ImageInputProps) => {
   const [filePreviewUrls, setFilePreviewUrls] = useState<string[]>([]);
 
-  // 현재 생성한 object URL들을 보관
   const objectUrlsRef = useRef<string[]>([]);
 
   const clearObjectUrls = () => {
@@ -37,15 +39,18 @@ const ImageInput = ({
   };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+    const files = Array.from(e.target.files ?? []);
 
-    const selected = Array.from(files).slice(0, 4);
+    if (files.length === 0) {
+      return;
+    }
 
-    // 기존 object URL 제거
+    const remainCount = maxCount - previewUrls.length;
+
+    const selected = files.slice(0, Math.max(0, remainCount));
+
     clearObjectUrls();
 
-    // 새 preview URL 생성
     const urls = selected.map((file) => URL.createObjectURL(file));
 
     objectUrlsRef.current = urls;
@@ -53,18 +58,42 @@ const ImageInput = ({
     setData(selected);
     setFilePreviewUrls(urls);
 
-    // 기존 서버 이미지 preview 제거
-    setPreviewUrls([]);
+    e.target.value = "";
   };
 
-  // 컴포넌트가 사라질 때 URL 정리
+  const removeOldImage = (index: number) => {
+    if (disabled) return;
+
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewImage = (index: number) => {
+    if (disabled) return;
+
+    const targetUrl = filePreviewUrls[index];
+
+    if (targetUrl) {
+      URL.revokeObjectURL(targetUrl);
+
+      objectUrlsRef.current = objectUrlsRef.current.filter(
+        (url) => url !== targetUrl,
+      );
+    }
+
+    setFilePreviewUrls((prev) => prev.filter((_, i) => i !== index));
+
+    setData(data.filter((_, i) => i !== index));
+  };
+
   useEffect(() => {
     return () => {
-      objectUrlsRef.current.forEach((url) => {
-        URL.revokeObjectURL(url);
-      });
+      clearObjectUrls();
     };
   }, []);
+
+  const totalCount = previewUrls.length + filePreviewUrls.length;
+
+  const canAdd = !disabled && totalCount < maxCount;
 
   return (
     <div className="w-100 mb-3">
@@ -74,34 +103,17 @@ const ImageInput = ({
         name={name}
         accept="image/*"
         multiple
-        disabled={disabled}
+        disabled={!canAdd}
         onChange={handleChange}
         className="d-none"
       />
 
-      <label
-        htmlFor={name}
-        className={`
-      d-flex justify-content-center align-items-center
-      border rounded position-relative
-      ${disabled ? "opacity-50" : ""}
-    `}
-        style={{
-          width: "120px",
-          height: "120px",
-          cursor: disabled ? "default" : "pointer",
-          fontSize: "32px",
-        }}
-      >
-        <div className="position-absolute top-50 start-50 translate-middle text-dark">
-          +
-        </div>
-        <div className="d-flex flex-wrap justify-content-center gap-2 mt-3">
-          {previewUrls.map((url, i) => (
+      <div className="d-flex flex-wrap gap-2">
+        {previewUrls.map((url, index) => (
+          <div key={`old-${url}-${index}`} className="position-relative">
             <img
-              key={`old-${i}`}
               src={url}
-              alt={`기존 이미지 ${i + 1}`}
+              alt={`기존 이미지 ${index + 1}`}
               className="rounded border"
               style={{
                 width: 120,
@@ -109,13 +121,30 @@ const ImageInput = ({
                 objectFit: "cover",
               }}
             />
-          ))}
 
-          {filePreviewUrls.map((url, i) => (
+            {!disabled && (
+              <button
+                type="button"
+                className="btn btn-danger btn-sm position-absolute top-0 end-0"
+                onClick={() => removeOldImage(index)}
+                style={{
+                  width: 24,
+                  height: 24,
+                  padding: 0,
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+        ))}
+
+        {filePreviewUrls.map((url, index) => (
+          <div key={`new-${url}-${index}`} className="position-relative">
             <img
-              key={`new-${i}`}
               src={url}
-              alt={`새 이미지 ${i + 1}`}
+              alt={`새 이미지 ${index + 1}`}
               className="rounded border"
               style={{
                 width: 120,
@@ -123,9 +152,50 @@ const ImageInput = ({
                 objectFit: "cover",
               }}
             />
-          ))}
-        </div>
-      </label>
+
+            {!disabled && (
+              <button
+                type="button"
+                className="btn btn-danger btn-sm position-absolute top-0 end-0"
+                onClick={() => removeNewImage(index)}
+                style={{
+                  width: 24,
+                  height: 24,
+                  padding: 0,
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+        ))}
+
+        {canAdd && (
+          <label
+            htmlFor={name}
+            className="
+              d-flex
+              justify-content-center
+              align-items-center
+              border
+              rounded
+            "
+            style={{
+              width: 120,
+              height: 120,
+              cursor: "pointer",
+              fontSize: 32,
+            }}
+          >
+            +
+          </label>
+        )}
+      </div>
+
+      <div className="form-text">
+        {totalCount} / {maxCount}
+      </div>
     </div>
   );
 };

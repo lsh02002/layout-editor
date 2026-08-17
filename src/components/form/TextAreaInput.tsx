@@ -6,6 +6,7 @@ interface TextAreaInputProps {
   name: string;
   data: string;
   setData: (v: string) => void;
+  placeholder?: string;
   rows?: number;
 }
 
@@ -15,6 +16,7 @@ const TextAreaInput = ({
   data,
   setData,
   rows = 6,
+  placeholder,
 }: TextAreaInputProps) => {
   const { openModal, closeModal, isOpen } = useModalManager();
 
@@ -90,7 +92,7 @@ const TextAreaInput = ({
               rows={rows}
               autoFocus
               className="form-control"
-              placeholder="내용을 입력하세요"
+              placeholder={placeholder || "내용을 입력하세요"}
               onChange={(e) => setTempData(e.target.value)}
             />
 
