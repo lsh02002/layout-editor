@@ -205,86 +205,109 @@ function App() {
     });
   };
 
-  const cloneComponent = (component: LayoutComponent): LayoutComponent => {
+  const cloneComponent = (
+    component: LayoutComponent,
+    copiedImageFiles: Record<string, File[]>,
+  ): LayoutComponent => {
+    const newId = crypto.randomUUID();
+
+    // 이미지라면 File[]도 새 id로 복사
+    if (component.type === "image") {
+      const files = imageFiles[component.id];
+
+      if (files) {
+        copiedImageFiles[newId] = [...files];
+      }
+
+      return {
+        ...component,
+        id: newId,
+
+        props: {
+          ...component.props,
+
+          // 배열도 별도 복사
+          urls: [...component.props.urls],
+        },
+
+        style: component.style ? { ...component.style } : undefined,
+
+        layout: component.layout ? { ...component.layout } : undefined,
+      };
+    }
+
+    // container는 children까지 재귀 복사
     if (component.type === "container") {
       return {
         ...component,
-        id: crypto.randomUUID(),
+        id: newId,
 
         props: {
           ...component.props,
         },
 
-        style: component.style
-          ? {
-              ...component.style,
-            }
-          : undefined,
+        style: component.style ? { ...component.style } : undefined,
 
-        layout: component.layout
-          ? {
-              ...component.layout,
-            }
-          : undefined,
+        layout: component.layout ? { ...component.layout } : undefined,
 
-        children: component.children.map(cloneComponent),
+        children: component.children.map((child) =>
+          cloneComponent(child, copiedImageFiles),
+        ),
       };
     }
 
     return {
       ...component,
-      id: crypto.randomUUID(),
+      id: newId,
 
       props: {
         ...component.props,
       },
 
-      style: component.style
-        ? {
-            ...component.style,
-          }
-        : undefined,
+      style: component.style ? { ...component.style } : undefined,
 
-      layout: component.layout
-        ? {
-            ...component.layout,
-          }
-        : undefined,
+      layout: component.layout ? { ...component.layout } : undefined,
     } as LayoutComponent;
   };
 
-  const copyRecursive = (
-    items: LayoutComponent[],
-    id: string,
-  ): LayoutComponent[] => {
-    const result: LayoutComponent[] = [];
-
-    for (const item of items) {
-      if (item.id === id) {
-        result.push(item);
-        result.push(cloneComponent(item));
-
-        continue;
-      }
-
-      if (item.type === "container") {
-        result.push({
-          ...item,
-
-          children: copyRecursive(item.children, id),
-        });
-
-        continue;
-      }
-
-      result.push(item);
-    }
-
-    return normalizeOrder(result);
-  };
-
   const copyComponent = (id: string) => {
-    setComponents((prev) => copyRecursive(prev, id));
+    const copiedImageFiles: Record<string, File[]> = {};
+
+    setComponents((prev) => {
+      const copyRecursive = (items: LayoutComponent[]): LayoutComponent[] => {
+        const result: LayoutComponent[] = [];
+
+        for (const item of items) {
+          if (item.id === id) {
+            result.push(item);
+
+            result.push(cloneComponent(item, copiedImageFiles));
+
+            continue;
+          }
+
+          if (item.type === "container") {
+            result.push({
+              ...item,
+              children: copyRecursive(item.children),
+            });
+
+            continue;
+          }
+
+          result.push(item);
+        }
+
+        return normalizeOrder(result);
+      };
+
+      return copyRecursive(prev);
+    });
+
+    setImageFiles((prev) => ({
+      ...prev,
+      ...copiedImageFiles,
+    }));
   };
 
   const openCreateModal = (parentId: string | null, index: number) => {

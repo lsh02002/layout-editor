@@ -1,7 +1,6 @@
 import {
+  useMemo,
   useEffect,
-  useRef,
-  useState,
   type ChangeEvent,
   type Dispatch,
   type SetStateAction,
@@ -26,17 +25,18 @@ const ImageInput = ({
   setPreviewUrls,
   maxCount = 4,
 }: ImageInputProps) => {
-  const [filePreviewUrls, setFilePreviewUrls] = useState<string[]>([]);
+  const filePreviewUrls = useMemo(
+    () => data.map((file) => URL.createObjectURL(file)),
+    [data],
+  );
 
-  const objectUrlsRef = useRef<string[]>([]);
-
-  const clearObjectUrls = () => {
-    objectUrlsRef.current.forEach((url) => {
-      URL.revokeObjectURL(url);
-    });
-
-    objectUrlsRef.current = [];
-  };
+  useEffect(() => {
+    return () => {
+      filePreviewUrls.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, [filePreviewUrls]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -45,53 +45,36 @@ const ImageInput = ({
       return;
     }
 
-    const remainCount = maxCount - previewUrls.length;
+    const remain = maxCount - previewUrls.length - data.length;
 
-    const selected = files.slice(0, Math.max(0, remainCount));
+    if (remain <= 0) {
+      return;
+    }
 
-    clearObjectUrls();
+    const selected = files.slice(0, remain);
 
-    const urls = selected.map((file) => URL.createObjectURL(file));
-
-    objectUrlsRef.current = urls;
-
-    setData(selected);
-    setFilePreviewUrls(urls);
+    setData([...data, ...selected]);
 
     e.target.value = "";
   };
 
   const removeOldImage = (index: number) => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
 
     setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const removeNewImage = (index: number) => {
-    if (disabled) return;
-
-    const targetUrl = filePreviewUrls[index];
-
-    if (targetUrl) {
-      URL.revokeObjectURL(targetUrl);
-
-      objectUrlsRef.current = objectUrlsRef.current.filter(
-        (url) => url !== targetUrl,
-      );
+    if (disabled) {
+      return;
     }
-
-    setFilePreviewUrls((prev) => prev.filter((_, i) => i !== index));
 
     setData(data.filter((_, i) => i !== index));
   };
 
-  useEffect(() => {
-    return () => {
-      clearObjectUrls();
-    };
-  }, []);
-
-  const totalCount = previewUrls.length + filePreviewUrls.length;
+  const totalCount = previewUrls.length + data.length;
 
   const canAdd = !disabled && totalCount < maxCount;
 
@@ -127,12 +110,6 @@ const ImageInput = ({
                 type="button"
                 className="btn btn-danger btn-sm position-absolute top-0 end-0"
                 onClick={() => removeOldImage(index)}
-                style={{
-                  width: 24,
-                  height: 24,
-                  padding: 0,
-                  lineHeight: 1,
-                }}
               >
                 ×
               </button>
@@ -158,12 +135,6 @@ const ImageInput = ({
                 type="button"
                 className="btn btn-danger btn-sm position-absolute top-0 end-0"
                 onClick={() => removeNewImage(index)}
-                style={{
-                  width: 24,
-                  height: 24,
-                  padding: 0,
-                  lineHeight: 1,
-                }}
               >
                 ×
               </button>
