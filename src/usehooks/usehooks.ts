@@ -21,7 +21,7 @@ export function useModalManager() {
   const context = useContext(ModalManagerContext);
 
   if (!context) {
-    throw new Error("useModalManager must be used inside ModalManager");
+    throw new Error("useModalManager must be used inside <ModalProvider>");
   }
 
   return context;
