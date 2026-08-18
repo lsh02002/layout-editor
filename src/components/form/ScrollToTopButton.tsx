@@ -35,13 +35,7 @@ const ScrollToTopButton = ({
       className="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center"
       disabled={disabled}
       onClick={handleClick}
-      style={{
-        width: "50px",
-        height: "50px",
-        right: "10px",
-        bottom: "80px",
-        zIndex: zIndex,
-      }}
+      style={{ zIndex: zIndex }}
     >
       {title}
     </button>
