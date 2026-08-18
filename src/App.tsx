@@ -6,7 +6,12 @@ import TextAreaInput from "./components/form/TextAreaInput";
 import QuillEditorInput from "./components/form/QuillEditorInput";
 import ImageInput from "./components/form/ImageInput";
 
-import type { ComponentLayout, LayoutComponent, ComponentType, ContainerDirection } from "./types/types";
+import type {
+  ComponentLayout,
+  LayoutComponent,
+  ComponentType,
+  ContainerDirection,
+} from "./types/types";
 
 import { data } from "./data/data";
 import ScrollToTopButton from "./components/form/ScrollToTopButton";
@@ -890,7 +895,10 @@ function App() {
                  * column일 때는
                  * 자식 아래에 +
                  */}
-                {!isRow && renderAddButton(component.id, index + 1, direction)}
+                {/* 특수한 경우임!!! */}
+                {child.type !== "scrollToTopButton" &&
+                  !isRow &&
+                  renderAddButton(component.id, index + 1, direction)}
               </div>
             ))}
 
@@ -1345,7 +1353,9 @@ function App() {
           <div key={component.id}>
             {renderLayoutComponent(component)}
 
-            {renderAddButton(null, index + 1, "column")}
+            {/* 특수한 경우임!!! */}
+            {component.type !== "scrollToTopButton" &&
+              renderAddButton(null, index + 1, "column")}
           </div>
         ))}
       </div>
