@@ -24,6 +24,7 @@ function App() {
   const [newType, setNewType] = useState<ComponentType>("textarea");
 
   const [newTitle, setNewTitle] = useState("");
+  const [newValue, setNewValue] = useState("");
   const [newPlaceholder, setNewPlaceholder] = useState("");
 
   const [newDirection, setNewDirection] =
@@ -37,6 +38,8 @@ function App() {
   const [editType, setEditType] = useState<ComponentType>("textarea");
 
   const [editTitle, setEditTitle] = useState("");
+  const [editValue, setEditValue] = useState("");
+
   const [editPlaceholder, setEditPlaceholder] = useState("");
 
   const [editDirection, setEditDirection] = useState<"row" | "column">(
@@ -159,36 +162,42 @@ function App() {
     switch (component.type) {
       case "button":
         setEditTitle(component.props.title);
+        setEditValue("");
         setEditPlaceholder("");
         setEditDirection("column");
         break;
 
       case "textarea":
         setEditTitle("");
+        setEditValue(component.props.value);
         setEditPlaceholder(component.props.placeholder ?? "");
         setEditDirection("column");
         break;
 
       case "quill":
         setEditTitle("");
+        setEditValue(component.props.value);
         setEditPlaceholder(component.props.placeholder ?? "");
         setEditDirection("column");
         break;
 
       case "container":
         setEditTitle("");
+        setEditValue("");
         setEditPlaceholder("");
         setEditDirection(component.props.direction ?? "column");
         break;
 
       case "image":
         setEditTitle("");
+        setEditValue("");
         setEditPlaceholder("");
         setEditDirection("column");
         break;
 
       case "scrollToTopButton":
         setEditTitle("");
+        setEditValue("");
         setEditPlaceholder("");
         setEditDirection("column");
         break;
@@ -222,6 +231,7 @@ function App() {
                   ...component,
                   props: {
                     ...component.props,
+                    value: editValue,
                     placeholder: editPlaceholder,
                     disabled: editDisabled,
                   },
@@ -232,6 +242,7 @@ function App() {
                   ...component,
                   props: {
                     ...component.props,
+                    value: editValue,
                     placeholder: editPlaceholder,
                     disabled: editDisabled,
                   },
@@ -428,6 +439,7 @@ function App() {
 
     setNewType("textarea");
     setNewTitle("");
+    setNewValue("");
     setNewPlaceholder("");
     setNewDirection("column");
 
@@ -505,7 +517,7 @@ function App() {
           order: 0,
 
           props: {
-            value: "",
+            value: newValue,
             rows: 3,
 
             placeholder: newPlaceholder.trim() || "내용을 입력하세요.",
@@ -525,7 +537,7 @@ function App() {
           order: 0,
 
           props: {
-            value: "",
+            value: newValue,
 
             placeholder: newPlaceholder.trim() || "본문을 입력하세요.",
 
@@ -972,18 +984,60 @@ function App() {
                 )}
 
                 {/* PLACEHOLDER */}
-                {(newType === "textarea" || newType === "quill") && (
-                  <div className="mb-3">
-                    <label className="form-label">Placeholder</label>
+                {newType === "textarea" && (
+                  <>
+                    <div className="mb-3">
+                      <label className="form-label">Edit</label>
 
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={newPlaceholder}
-                      onChange={(e) => setNewPlaceholder(e.target.value)}
-                      placeholder="내용을 입력하세요."
-                    />
-                  </div>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newValue}
+                        onChange={(e) => setNewValue(e.target.value)}
+                        disabled={false}
+                        placeholder="내용을 입력하세요."
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Placeholder</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newPlaceholder}
+                        onChange={(e) => setNewPlaceholder(e.target.value)}
+                        placeholder="내용을 입력하세요."
+                      />
+                    </div>
+                  </>
+                )}
+
+                {newType === "quill" && (
+                  <>
+                    <div className="mb-3">
+                      <label className="form-label">Edit</label>
+
+                      <QuillEditorInput
+                        name="new-quill"
+                        data={newValue}
+                        placeholder={newPlaceholder || "본문을 입력하세요."}
+                        setData={setNewValue}
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Placeholder</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newPlaceholder}
+                        onChange={(e) => setNewPlaceholder(e.target.value)}
+                        placeholder="내용을 입력하세요."
+                      />
+                    </div>
+                  </>
                 )}
 
                 {/* CONTAINER */}
@@ -1125,18 +1179,57 @@ function App() {
 
                 {/* PLACEHOLDER */}
 
-                {(editType === "textarea" || editType === "quill") && (
-                  <div className="mb-3">
-                    <label className="form-label">Placeholder</label>
+                {editType === "textarea" && (
+                  <>
+                    <div className="mb-3">
+                      <label className="form-label">Edit</label>
 
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={editPlaceholder}
-                      onChange={(e) => setEditPlaceholder(e.target.value)}
-                      placeholder="내용을 입력하세요."
-                    />
-                  </div>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        placeholder="내용을 입력하세요."
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Placeholder</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={editPlaceholder}
+                        onChange={(e) => setEditPlaceholder(e.target.value)}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {editType === "quill" && (
+                  <>
+                    <div className="mb-3">
+                      <label className="form-label">내용</label>
+
+                      <QuillEditorInput
+                        name="edit-quill"
+                        data={editValue}
+                        placeholder={editPlaceholder}
+                        setData={setEditValue}
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Placeholder</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={editPlaceholder}
+                        onChange={(e) => setEditPlaceholder(e.target.value)}
+                      />
+                    </div>
+                  </>
                 )}
 
                 {/* CONTAINER */}
