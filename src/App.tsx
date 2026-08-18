@@ -10,6 +10,7 @@ import type { ComponentLayout, LayoutComponent } from "./types/types";
 
 import { data } from "./data/data";
 import ScrollToTopButton from "./components/form/ScrollToTopButton";
+import QuillEditorSimpleInput from "./components/form/QuillEditorSimpleInput";
 
 type ComponentType = LayoutComponent["type"];
 type ContainerDirection = "row" | "column";
@@ -1018,8 +1019,7 @@ function App() {
                     <div className="mb-3">
                       <label className="form-label">Edit</label>
 
-                      <QuillEditorInput
-                        name="new-quill"
+                      <QuillEditorSimpleInput
                         data={newValue}
                         placeholder={newPlaceholder || "본문을 입력하세요."}
                         setData={setNewValue}
@@ -1211,8 +1211,7 @@ function App() {
                     <div className="mb-3">
                       <label className="form-label">내용</label>
 
-                      <QuillEditorInput
-                        name="edit-quill"
+                      <QuillEditorSimpleInput
                         data={editValue}
                         placeholder={editPlaceholder}
                         setData={setEditValue}
