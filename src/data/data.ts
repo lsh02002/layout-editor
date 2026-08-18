@@ -17,42 +17,6 @@ export const data: LayoutComponent[] = [
       border: "1px solid #ddd",
     },
 
-    children: [
-      {
-        id: "text-001",
-        type: "textarea",
-        order: 0,
-
-        style: {
-          width: "50%",
-        },
-
-        props: {
-          value: "",
-          rows: 5,
-          placeholder: "내용을 입력하세요",
-          disabled: false,
-        },
-      },
-
-      {
-        id: "btn-001",
-        type: "button",
-        order: 1,
-
-        style: {
-          width: "50%",
-        },
-
-        props: {
-          title: "저장하기",
-          disabled: false,
-          action: {
-            type: "submit",
-            payload: null,
-          },
-        },
-      },
-    ],
+    children: [],
   },
 ];
