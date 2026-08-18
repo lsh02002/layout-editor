@@ -675,6 +675,7 @@ function App() {
               width: "100%",
 
               alignItems: isRow ? "stretch" : undefined,
+              justifyContent: isRow ? "space-between" : undefined,
             }}
           >
             {/*
