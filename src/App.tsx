@@ -9,6 +9,7 @@ import ImageInput from "./components/form/ImageInput";
 import type { ComponentLayout, LayoutComponent } from "./types/types";
 
 import { data } from "./data/data";
+import ScrollToTopButton from "./components/form/ScrollToTopButton";
 
 type ComponentType = LayoutComponent["type"];
 type ContainerDirection = "row" | "column";
@@ -331,6 +332,34 @@ function App() {
           },
         };
 
+      case "scrollToTopButton":
+        return {
+          id,
+          type: "scrollToTopButton",
+          order: 0,
+
+          props: {
+            title: newTitle.trim() || "↑",
+
+            disabled: false,
+
+            zIndex: 100,
+
+            action: {
+              type: "scrollToTop",
+              payload: null,
+            },
+          },
+
+          style: {
+            position: "fixed",
+            width: "50px",
+            height: "50px",
+            right: "10px",
+            bottom: "10px",
+          },
+        };
+
       case "textarea":
         return {
           id,
@@ -522,6 +551,15 @@ function App() {
             title={component.props.title}
             disabled={component.props.disabled}
             onClick={() => console.log("Button clicked!", component.id)}
+          />
+        );
+
+      case "scrollToTopButton":
+        return (
+          <ScrollToTopButton
+            title={component.props.title}
+            disabled={component.props.disabled}
+            zIndex={component.props.zIndex}
           />
         );
 
@@ -732,6 +770,164 @@ function App() {
     );
   };
 
+  const renderCreateModal = () => {
+    if (!showCreateModal) return null;
+
+    return (
+      <>
+        <div
+          className="modal fade show"
+          style={{
+            display: "block",
+            zIndex: 1055,
+          }}
+          tabIndex={-1}
+        >
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">컴포넌트 추가</h5>
+
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={closeCreateModal}
+                />
+              </div>
+
+              <div className="modal-body">
+                {/* TYPE */}
+                <div className="mb-3">
+                  <label className="form-label">타입</label>
+
+                  <select
+                    className="form-select"
+                    value={newType}
+                    onChange={(e) =>
+                      setNewType(e.target.value as ComponentType)
+                    }
+                  >
+                    <option value="container">Container</option>
+                    <option value="textarea">TextArea</option>
+                    <option value="quill">Quill Editor</option>
+                    <option value="button">Button</option>
+                    <option value="scrollToTopButton">
+                      Scroll To Top Button
+                    </option>
+                    <option value="image">Image</option>
+                  </select>
+                </div>
+
+                {/* BUTTON */}
+                {newType === "button" && (
+                  <div className="mb-3">
+                    <label className="form-label">버튼 제목</label>
+
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newTitle}
+                      onChange={(e) => setNewTitle(e.target.value)}
+                      placeholder="버튼"
+                    />
+                  </div>
+                )}
+
+                {/* PLACEHOLDER */}
+                {(newType === "textarea" || newType === "quill") && (
+                  <div className="mb-3">
+                    <label className="form-label">Placeholder</label>
+
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newPlaceholder}
+                      onChange={(e) => setNewPlaceholder(e.target.value)}
+                      placeholder="내용을 입력하세요."
+                    />
+                  </div>
+                )}
+
+                {/* CONTAINER */}
+                {newType === "container" && (
+                  <div className="mb-3">
+                    <label className="form-label">배치 방향</label>
+
+                    <div className="d-flex gap-3">
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="containerDirection"
+                          id="directionColumn"
+                          value="column"
+                          checked={newDirection === "column"}
+                          onChange={() => setNewDirection("column")}
+                        />
+
+                        <label
+                          className="form-check-label"
+                          htmlFor="directionColumn"
+                        >
+                          세로
+                        </label>
+                      </div>
+
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="containerDirection"
+                          id="directionRow"
+                          value="row"
+                          checked={newDirection === "row"}
+                          onChange={() => setNewDirection("row")}
+                        />
+
+                        <label
+                          className="form-check-label"
+                          htmlFor="directionRow"
+                        >
+                          가로
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={closeCreateModal}
+                >
+                  취소
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={createComponent}
+                >
+                  새로 만들기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="modal-backdrop fade show"
+          style={{
+            zIndex: 1050,
+          }}
+          onClick={closeCreateModal}
+        />
+      </>
+    );
+  };
+
   const sortedComponents = [...components].sort((a, b) => a.order - b.order);
 
   return (
@@ -754,165 +950,7 @@ function App() {
           </div>
         ))}
       </div>
-
-      {showCreateModal && (
-        <>
-          <div
-            className="modal fade show"
-            style={{
-              display: "block",
-              zIndex: 1055,
-            }}
-            tabIndex={-1}
-          >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">컴포넌트 추가</h5>
-
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={closeCreateModal}
-                  />
-                </div>
-
-                <div className="modal-body">
-                  {/* TYPE */}
-
-                  <div className="mb-3">
-                    <label className="form-label">타입</label>
-
-                    <select
-                      className="form-select"
-                      value={newType}
-                      onChange={(e) =>
-                        setNewType(e.target.value as ComponentType)
-                      }
-                    >
-                      <option value="container">Container</option>
-
-                      <option value="textarea">TextArea</option>
-
-                      <option value="quill">Quill Editor</option>
-
-                      <option value="button">Button</option>
-
-                      <option value="image">Image</option>
-                    </select>
-                  </div>
-
-                  {/* BUTTON */}
-
-                  {newType === "button" && (
-                    <div className="mb-3">
-                      <label className="form-label">버튼 제목</label>
-
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={newTitle}
-                        onChange={(e) => setNewTitle(e.target.value)}
-                        placeholder="버튼"
-                      />
-                    </div>
-                  )}
-
-                  {/* PLACEHOLDER */}
-
-                  {(newType === "textarea" || newType === "quill") && (
-                    <div className="mb-3">
-                      <label className="form-label">Placeholder</label>
-
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={newPlaceholder}
-                        onChange={(e) => setNewPlaceholder(e.target.value)}
-                        placeholder="내용을 입력하세요."
-                      />
-                    </div>
-                  )}
-
-                  {/* CONTAINER */}
-
-                  {newType === "container" && (
-                    <div className="mb-3">
-                      <label className="form-label">배치 방향</label>
-
-                      <div className="d-flex gap-3">
-                        <div className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="radio"
-                            name="containerDirection"
-                            id="directionColumn"
-                            value="column"
-                            checked={newDirection === "column"}
-                            onChange={() => setNewDirection("column")}
-                          />
-
-                          <label
-                            className="form-check-label"
-                            htmlFor="directionColumn"
-                          >
-                            세로
-                          </label>
-                        </div>
-
-                        <div className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="radio"
-                            name="containerDirection"
-                            id="directionRow"
-                            value="row"
-                            checked={newDirection === "row"}
-                            onChange={() => setNewDirection("row")}
-                          />
-
-                          <label
-                            className="form-check-label"
-                            htmlFor="directionRow"
-                          >
-                            가로
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={closeCreateModal}
-                  >
-                    취소
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={createComponent}
-                  >
-                    새로 만들기
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="modal-backdrop fade show"
-            style={{
-              zIndex: 1050,
-            }}
-            onClick={closeCreateModal}
-          />
-        </>
-      )}
+      {renderCreateModal()}
     </>
   );
 }

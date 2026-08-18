@@ -1,5 +1,7 @@
 import type { CSSProperties } from "react";
 
+export type ContainerDirection = "row" | "column";
+
 export interface ComponentLayout {
   width?: number | string;
   height?: number | string;
@@ -22,7 +24,7 @@ interface ButtonComponent extends BaseComponent {
     disabled?: boolean;
 
     action: {
-      type: "submit" | "reset" | "navigate" | "none";
+      type: "submit" | "reset" | "navigate" | "none" | "scrollToTop";
       payload?: string | null;
     };
   };
@@ -36,6 +38,20 @@ interface TextAreaComponent extends BaseComponent {
     rows?: number;
     placeholder?: string;
     disabled?: boolean;
+  };
+}
+
+interface ScrollToTopButtonComponent extends BaseComponent {
+  type: "scrollToTopButton";
+
+  props: {
+    title: string;
+    disabled?: boolean;
+    zIndex?: number;
+    action: {
+      type: "scrollToTop";
+      payload?: string | null;
+    };
   };
 }
 
@@ -72,6 +88,7 @@ interface ContainerComponent extends BaseComponent {
 
 export type LayoutComponent =
   | ButtonComponent
+  | ScrollToTopButtonComponent
   | TextAreaComponent
   | QuillComponent
   | ImageComponent
