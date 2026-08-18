@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { layout } from "../../theme/theme";
 import { useModalManager } from "../../usehooks/usehooks";
 
 type Option = { label: string; value: string; disabled?: boolean };
@@ -118,7 +117,6 @@ const SelectArrayInput = ({
               marginBottom: 80,
               width: "100%",
               scrollbarWidth: "thin",
-              maxWidth: layout.maxWidth,
             }}
           >
             <div style={{ paddingBottom: 100 }}>

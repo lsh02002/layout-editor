@@ -1,3 +1,1 @@
-export const layout = {
-    maxWidth: 360,
-}
+export const layout = {};

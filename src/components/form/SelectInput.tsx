@@ -1,4 +1,3 @@
-import { layout } from "../../theme/theme";
 import { useModalManager } from "../../usehooks/usehooks";
 // 경로는 프로젝트에 맞게 수정
 
@@ -100,7 +99,6 @@ const SelectInput = ({
               marginBottom: 80,
               width: "100%",
               scrollbarWidth: "thin",
-              maxWidth: layout.maxWidth,
             }}
           >
             <div style={{ paddingBottom: 100 }}>
