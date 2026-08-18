@@ -98,7 +98,8 @@ const ImageInput = ({
   return (
     <div className="w-100 mb-3">
       <input
-        type="file"        
+        type="file"
+        id={name}
         name={name}
         accept="image/*"
         multiple
