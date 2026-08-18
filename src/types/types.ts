@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 
+export type ComponentType = LayoutComponent["type"];
 export type ContainerDirection = "row" | "column";
 
 export interface ComponentLayout {

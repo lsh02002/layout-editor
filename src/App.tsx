@@ -6,14 +6,11 @@ import TextAreaInput from "./components/form/TextAreaInput";
 import QuillEditorInput from "./components/form/QuillEditorInput";
 import ImageInput from "./components/form/ImageInput";
 
-import type { ComponentLayout, LayoutComponent } from "./types/types";
+import type { ComponentLayout, LayoutComponent, ComponentType, ContainerDirection } from "./types/types";
 
 import { data } from "./data/data";
 import ScrollToTopButton from "./components/form/ScrollToTopButton";
 import QuillEditorSimpleInput from "./components/form/QuillEditorSimpleInput";
-
-type ComponentType = LayoutComponent["type"];
-type ContainerDirection = "row" | "column";
 
 function App() {
   const [components, setComponents] = useState<LayoutComponent[]>(() => data);
