@@ -7,12 +7,14 @@ const QuillEditorSimpleInput = ({
   data,
   setData,
   placeholder,
+  style,
   rows = 2,
 }: {
   disabled?: boolean;
   data: string;
   setData: (v: string) => void;
   placeholder?: string;
+  style?: React.CSSProperties;
   rows?: number;
 }) => {
   const quillRef = useRef<ReactQuill | null>(null);
@@ -36,7 +38,19 @@ const QuillEditorSimpleInput = ({
         style={
           {
             ["--quill-min-height"]: `${Math.max(rows, 1) * 24 + 24}px`,
+
             ["--quill-min-height-mobile"]: `${Math.max(rows, 1) * 24 + 32}px`,
+
+            ["--quill-color"]: style?.color ?? "var(--bs-body-color, #212529)",
+
+            ["--quill-font-size"]: style?.fontSize ?? "0.95rem",
+
+            ["--quill-text-align"]: style?.textAlign ?? "left",
+
+            ["--quill-font-weight"]: style?.fontWeight ?? "normal",
+
+            ["--quill-line-height"]: style?.lineHeight ?? "1.5",
+
             position: "relative",
             width: "100%",
           } as React.CSSProperties
@@ -113,9 +127,7 @@ const quillStyles = `
   border: 1px solid var(--bs-border-color, #dee2e6);
   border-radius: 0 0 0.375rem 0.375rem;
   background: #ffffff;
-  color: var(--bs-body-color, #212529);
-  line-height: 1.5;
-  font-size: 0.95rem;
+  line-height: var(--quill-line-height);
 }
 
 .quill-editor-bootstrap.is-disabled .ql-container {
@@ -125,9 +137,17 @@ const quillStyles = `
 
 .quill-editor-bootstrap .ql-editor {
   min-height: var(--quill-min-height, 216px);
+
   padding: 12px 14px;
+
   word-break: break-word;
   overflow-wrap: anywhere;
+
+  color: var(--quill-color);
+  font-size: var(--quill-font-size);
+  text-align: var(--quill-text-align);
+  font-weight: var(--quill-font-weight);
+  line-height: var(--quill-line-height);
 }
 
 .quill-editor-bootstrap .ql-editor.ql-blank::before {
@@ -141,11 +161,12 @@ const quillStyles = `
 }
 
 .quill-editor-bootstrap .ql-container:focus-within {
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  box-shadow:
+    0 0 0 0.25rem
+    rgba(13, 110, 253, 0.25);
 }
 
 .quill-editor-bootstrap .ql-disabled .ql-editor {
-  color: var(--bs-secondary-color, #6c757d);
   cursor: not-allowed;
 }
 
@@ -161,8 +182,9 @@ const quillStyles = `
   }
 
   .quill-editor-bootstrap .ql-editor {
-    font-size: 16px;
-    min-height: var(--quill-min-height-mobile, 224px);
+    font-size: var(--quill-font-size);
+    min-height:
+      var(--quill-min-height-mobile, 224px);
   }
 }
 `;

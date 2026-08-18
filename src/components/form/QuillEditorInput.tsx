@@ -10,6 +10,7 @@ const QuillEditorInput = ({
   data,
   setData,
   placeholder,
+  style,
   rows = 8,
 }: {
   disabled?: boolean;
@@ -17,6 +18,7 @@ const QuillEditorInput = ({
   data: string;
   setData: (v: string) => void;
   placeholder?: string;
+  style?: React.CSSProperties;
   rows?: number;
 }) => {
   const quillRef = useRef<ReactQuill | null>(null);
@@ -78,6 +80,7 @@ const QuillEditorInput = ({
           <div
             dangerouslySetInnerHTML={{ __html: data }}
             style={{
+              ...style,
               overflow: "hidden",
               display: "-webkit-box",
               WebkitLineClamp: 2, // 원하는 줄 수
@@ -140,8 +143,15 @@ const QuillEditorInput = ({
                 ["--quill-min-height-mobile"]: `${
                   Math.max(rows, 1) * 24 + 32
                 }px`,
+
+                ["--quill-color"]:
+                  style?.color ?? "var(--bs-body-color, #212529)",
+
+                ["--quill-font-size"]: style?.fontSize ?? "0.95rem",
+
+                ["--quill-text-align"]: style?.textAlign ?? "left",
+
                 position: "relative",
-                maxWidth: layout.maxWidth,
                 paddingBottom: 100,
               } as React.CSSProperties
             }
@@ -218,9 +228,7 @@ const quillStyles = `
   border: 1px solid var(--bs-border-color, #dee2e6);
   border-radius: 0 0 0.375rem 0.375rem;
   background: #ffffff;
-  color: var(--bs-body-color, #212529);
   line-height: 1.5;
-  font-size: 0.95rem;
 }
 
 .quill-editor-bootstrap.is-disabled .ql-container {
@@ -229,10 +237,14 @@ const quillStyles = `
 }
 
 .quill-editor-bootstrap .ql-editor {
-  min-height: var(--quill-min-height, 216px);
+  min-height: var(--quill-min-height-mobile, 224px);
   padding: 12px 14px;
   word-break: break-word;
   overflow-wrap: anywhere;
+
+  color: var(--quill-color);
+  font-size: var(--quill-font-size);
+  text-align: var(--quill-text-align);
 }
 
 .quill-editor-bootstrap .ql-editor.ql-blank::before {

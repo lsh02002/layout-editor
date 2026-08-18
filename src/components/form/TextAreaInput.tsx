@@ -7,6 +7,7 @@ interface TextAreaInputProps {
   data: string;
   setData: (v: string) => void;
   placeholder?: string;
+  style?: React.CSSProperties;
   rows?: number;
 }
 
@@ -17,7 +18,9 @@ const TextAreaInput = ({
   setData,
   rows = 6,
   placeholder,
+  style,
 }: TextAreaInputProps) => {
+  console.log("TextAreaInput style", style);
   const { openModal, closeModal, isOpen } = useModalManager();
 
   const [tempData, setTempData] = useState(data);
@@ -46,6 +49,7 @@ const TextAreaInput = ({
         className="form-control w-100 mb-3"
         onClick={openEditor}
         style={{
+          ...style,
           cursor: disabled ? "default" : "pointer",
           overflow: "hidden",
           display: "-webkit-box",
@@ -92,6 +96,7 @@ const TextAreaInput = ({
               rows={rows}
               autoFocus
               className="form-control"
+              style={style}
               placeholder={placeholder || "내용을 입력하세요"}
               onChange={(e) => setTempData(e.target.value)}
             />

@@ -1,4 +1,4 @@
-import { useState, type SetStateAction } from "react";
+import { useState, type CSSProperties, type SetStateAction } from "react";
 
 import DivBox from "./components/layout/DivBox";
 import ConfirmButton from "./components/form/ConfirmButton";
@@ -50,6 +50,11 @@ function App() {
   );
 
   const [editDisabled, setEditDisabled] = useState(false);
+
+  const [editStyle, setEditStyle] = useState<CSSProperties>({});
+  const [editContentStyle, setEditContentStyle] = useState<CSSProperties>({});
+
+  const [editTab, setEditTab] = useState<"basic" | "style">("basic");
 
   const [insertTarget, setInsertTarget] = useState<{
     parentId: string | null;
@@ -156,6 +161,9 @@ function App() {
 
     setEditingComponentId(component.id);
     setEditType(component.type);
+    setEditStyle(component.style ?? {});
+    setEditContentStyle(component.contentStyle ?? {});
+    setEditTab("basic");
     setEditDisabled(
       "disabled" in component.props
         ? (component.props.disabled ?? false)
@@ -222,6 +230,12 @@ function App() {
               case "button":
                 return {
                   ...component,
+                  style: {
+                    ...editStyle,
+                  },
+                  contentStyle: {
+                    ...editContentStyle,
+                  },
                   props: {
                     ...component.props,
                     title: editTitle.trim() || "버튼",
@@ -232,6 +246,12 @@ function App() {
               case "textarea":
                 return {
                   ...component,
+                  style: {
+                    ...editStyle,
+                  },
+                  contentStyle: {
+                    ...editContentStyle,
+                  },
                   props: {
                     ...component.props,
                     value: editValue,
@@ -243,6 +263,12 @@ function App() {
               case "quill":
                 return {
                   ...component,
+                  style: {
+                    ...editStyle,
+                  },
+                  contentStyle: {
+                    ...editContentStyle,
+                  },
                   props: {
                     ...component.props,
                     value: editValue,
@@ -254,6 +280,12 @@ function App() {
               case "container":
                 return {
                   ...component,
+                  style: {
+                    ...editStyle,
+                  },
+                  contentStyle: {
+                    ...editContentStyle,
+                  },
                   props: {
                     ...component.props,
                     direction: editDirection,
@@ -263,6 +295,12 @@ function App() {
               case "image":
                 return {
                   ...component,
+                  style: {
+                    ...editStyle,
+                  },
+                  contentStyle: {
+                    ...editContentStyle,
+                  },
                   props: {
                     ...component.props,
                     disabled: editDisabled,
@@ -272,9 +310,19 @@ function App() {
               case "scrollToTopButton":
                 return {
                   ...component,
+                  style: {
+                    ...editStyle,
+                  },
+                  contentStyle: {
+                    ...editContentStyle,
+                  },
                   props: {
                     ...component.props,
                     disabled: editDisabled,
+                    action: {
+                      type: "scrollToTop",
+                      payload: component.props.action.payload ?? null,
+                    },
                   },
                 };
             }
@@ -703,6 +751,7 @@ function App() {
           <ConfirmButton
             title={component.props.title}
             disabled={component.props.disabled}
+            style={component.contentStyle}
             onClick={() => console.log("Button clicked!", component.id)}
           />
         );
@@ -724,6 +773,7 @@ function App() {
             rows={component.props.rows}
             placeholder={component.props.placeholder}
             disabled={component.props.disabled}
+            style={component.contentStyle}
             setData={(value) =>
               updateComponent(component.id, {
                 value,
@@ -733,18 +783,19 @@ function App() {
         );
 
       case "quill":
-        return (
-          <QuillEditorInput
-            name={component.id}
-            data={component.props.value}
-            placeholder={component.props.placeholder}
-            disabled={component.props.disabled}
-            setData={(value) =>
-              updateComponent(component.id, {
-                value,
-              })
-            }
-          />
+        return (          
+            <QuillEditorInput
+              name={component.id}
+              data={component.props.value}
+              placeholder={component.props.placeholder}
+              disabled={component.props.disabled}
+              style={component.contentStyle}
+              setData={(value) =>
+                updateComponent(component.id, {
+                  value,
+                })
+              }
+            />          
         );
 
       case "image":
@@ -1140,8 +1191,9 @@ function App() {
           }}
           tabIndex={-1}
         >
-          <div className="modal-dialog">
+          <div className="modal-dialog modal-lg">
             <div className="modal-content">
+              {/* HEADER */}
               <div className="modal-header">
                 <h5 className="modal-title">컴포넌트 수정</h5>
 
@@ -1152,157 +1204,418 @@ function App() {
                 />
               </div>
 
+              {/* TAB */}
+              <div className="px-3 pt-3">
+                <ul className="nav nav-tabs">
+                  <li className="nav-item">
+                    <button
+                      type="button"
+                      className={`nav-link ${
+                        editTab === "basic" ? "active" : ""
+                      }`}
+                      onClick={() => setEditTab("basic")}
+                    >
+                      기본 설정
+                    </button>
+                  </li>
+
+                  <li className="nav-item">
+                    <button
+                      type="button"
+                      className={`nav-link ${
+                        editTab === "style" ? "active" : ""
+                      }`}
+                      onClick={() => setEditTab("style")}
+                    >
+                      스타일
+                    </button>
+                  </li>
+                </ul>
+              </div>
+
+              {/* BODY */}
               <div className="modal-body">
-                {/* TYPE */}
+                {/* ======================== */}
+                {/* 기본 설정 */}
+                {/* ======================== */}
 
-                <div className="mb-3">
-                  <label className="form-label">타입</label>
-
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={editType}
-                    disabled
-                  />
-                </div>
-
-                {/* BUTTON */}
-
-                {editType === "button" && (
-                  <div className="mb-3">
-                    <label className="form-label">버튼 제목</label>
-
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      placeholder="버튼"
-                    />
-                  </div>
-                )}
-
-                {/* PLACEHOLDER */}
-
-                {editType === "textarea" && (
+                {editTab === "basic" && (
                   <>
+                    {/* TYPE */}
                     <div className="mb-3">
-                      <label className="form-label">Edit</label>
+                      <label className="form-label">타입</label>
 
                       <input
                         type="text"
                         className="form-control"
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        placeholder="내용을 입력하세요."
+                        value={editType}
+                        disabled
                       />
                     </div>
 
-                    <div className="mb-3">
-                      <label className="form-label">Placeholder</label>
+                    {/* BUTTON */}
+                    {editType === "button" && (
+                      <div className="mb-3">
+                        <label className="form-label">버튼 제목</label>
 
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={editPlaceholder}
-                        onChange={(e) => setEditPlaceholder(e.target.value)}
-                      />
-                    </div>
-                  </>
-                )}
-
-                {editType === "quill" && (
-                  <>
-                    <div className="mb-3">
-                      <label className="form-label">내용</label>
-
-                      <QuillEditorSimpleInput
-                        data={editValue}
-                        placeholder={editPlaceholder}
-                        setData={setEditValue}
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Placeholder</label>
-
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={editPlaceholder}
-                        onChange={(e) => setEditPlaceholder(e.target.value)}
-                      />
-                    </div>
-                  </>
-                )}
-
-                {/* CONTAINER */}
-
-                {editType === "container" && (
-                  <div className="mb-3">
-                    <label className="form-label">배치 방향</label>
-
-                    <div className="d-flex gap-3">
-                      <div className="form-check">
                         <input
+                          type="text"
+                          className="form-control"
+                          value={editTitle}
+                          onChange={(e) => setEditTitle(e.target.value)}
+                          placeholder="버튼"
+                        />
+                      </div>
+                    )}
+
+                    {/* TEXTAREA */}
+                    {editType === "textarea" && (
+                      <>
+                        <div className="mb-3">
+                          <label className="form-label">내용</label>
+
+                          <textarea
+                            className="form-control"
+                            rows={5}
+                            value={editValue}
+                            style={editContentStyle}
+                            onChange={(e) => setEditValue(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="mb-3">
+                          <label className="form-label">Placeholder</label>
+
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={editPlaceholder}
+                            onChange={(e) => setEditPlaceholder(e.target.value)}
+                            placeholder="내용을 입력하세요."
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {/* QUILL */}
+                    {editType === "quill" && (
+                      <>
+                        <div className="mb-3">
+                          <label className="form-label">내용</label>
+
+                          <QuillEditorSimpleInput                            
+                            data={editValue}
+                            placeholder={
+                              editPlaceholder || "본문을 입력하세요."
+                            }
+                            disabled={false}
+                            style={editContentStyle}
+                            setData={setEditValue}
+                          />
+                        </div>
+
+                        <div className="mb-3">
+                          <label className="form-label">Placeholder</label>
+
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={editPlaceholder}
+                            onChange={(e) => setEditPlaceholder(e.target.value)}
+                            placeholder="본문을 입력하세요."
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {/* CONTAINER */}
+                    {editType === "container" && (
+                      <div className="mb-3">
+                        <label className="form-label">배치 방향</label>
+
+                        <div className="d-flex gap-3">
+                          <div className="form-check">
+                            <input
+                              className="form-check-input"
+                              type="radio"
+                              name="editContainerDirection"
+                              id="editDirectionColumn"
+                              checked={editDirection === "column"}
+                              onChange={() => setEditDirection("column")}
+                            />
+
+                            <label
+                              className="form-check-label"
+                              htmlFor="editDirectionColumn"
+                            >
+                              세로
+                            </label>
+                          </div>
+
+                          <div className="form-check">
+                            <input
+                              className="form-check-input"
+                              type="radio"
+                              name="editContainerDirection"
+                              id="editDirectionRow"
+                              checked={editDirection === "row"}
+                              onChange={() => setEditDirection("row")}
+                            />
+
+                            <label
+                              className="form-check-label"
+                              htmlFor="editDirectionRow"
+                            >
+                              가로
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* DISABLED */}
+                    {editType !== "container" && (
+                      <div className="form-check mb-3">
+                        <input
+                          type="checkbox"
                           className="form-check-input"
-                          type="radio"
-                          name="editContainerDirection"
-                          id="editDirectionColumn"
-                          value="column"
-                          checked={editDirection === "column"}
-                          onChange={() => setEditDirection("column")}
+                          id="editDisabled"
+                          checked={editDisabled}
+                          onChange={(e) => setEditDisabled(e.target.checked)}
                         />
 
                         <label
                           className="form-check-label"
-                          htmlFor="editDirectionColumn"
+                          htmlFor="editDisabled"
                         >
-                          세로
+                          Disabled
                         </label>
                       </div>
-
-                      <div className="form-check">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="editContainerDirection"
-                          id="editDirectionRow"
-                          value="row"
-                          checked={editDirection === "row"}
-                          onChange={() => setEditDirection("row")}
-                        />
-
-                        <label
-                          className="form-check-label"
-                          htmlFor="editDirectionRow"
-                        >
-                          가로
-                        </label>
-                      </div>
-                    </div>
-                  </div>
+                    )}
+                  </>
                 )}
 
-                {/* DISABLED */}
+                {/* ======================== */}
+                {/* 스타일 */}
+                {/* ======================== */}
 
-                {editType !== "container" && (
-                  <div className="form-check mb-3">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id="editDisabled"
-                      checked={editDisabled}
-                      onChange={(e) => setEditDisabled(e.target.checked)}
-                    />
+                {editTab === "style" && (
+                  <div className="row g-3">
+                    {/* WIDTH */}
+                    <div className="col-md-6">
+                      <label className="form-label">Width</label>
 
-                    <label className="form-check-label" htmlFor="editDisabled">
-                      Disabled
-                    </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="100%, 500px, auto"
+                        value={String(editStyle.width ?? "")}
+                        onChange={(e) =>
+                          setEditStyle((prev) => ({
+                            ...prev,
+                            width: e.target.value || undefined,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    {/* HEIGHT */}
+                    <div className="col-md-6">
+                      <label className="form-label">Height</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="200px, auto"
+                        value={String(editStyle.height ?? "")}
+                        onChange={(e) =>
+                          setEditStyle((prev) => ({
+                            ...prev,
+                            height: e.target.value || undefined,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    {/* MARGIN */}
+                    <div className="col-md-6">
+                      <label className="form-label">Margin</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="16px"
+                        value={String(editStyle.margin ?? "")}
+                        onChange={(e) =>
+                          setEditStyle((prev) => ({
+                            ...prev,
+                            margin: e.target.value || undefined,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    {/* PADDING */}
+                    <div className="col-md-6">
+                      <label className="form-label">Padding</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="16px"
+                        value={String(editStyle.padding ?? "")}
+                        onChange={(e) =>
+                          setEditStyle((prev) => ({
+                            ...prev,
+                            padding: e.target.value || undefined,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    {/* BACKGROUND */}
+                    <div className="col-md-6">
+                      <label className="form-label">배경색</label>
+
+                      <input
+                        type="color"
+                        className="form-control form-control-color"
+                        value={
+                          typeof editStyle.backgroundColor === "string"
+                            ? editStyle.backgroundColor
+                            : "#ffffff"
+                        }
+                        onChange={(e) =>
+                          setEditStyle((prev) => ({
+                            ...prev,
+                            backgroundColor: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    {/* COLOR */}
+                    <div className="col-md-6">
+                      <label className="form-label">글자색</label>
+
+                      <input
+                        type="color"
+                        className="form-control form-control-color"
+                        value={
+                          typeof editContentStyle.color === "string"
+                            ? editContentStyle.color
+                            : "#000000"
+                        }
+                        onChange={(e) =>
+                          setEditContentStyle((prev) => ({
+                            ...prev,
+                            color: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    {/* BORDER */}
+                    <div className="col-md-6">
+                      <label className="form-label">Border</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="1px solid #ddd"
+                        value={String(editStyle.border ?? "")}
+                        onChange={(e) =>
+                          setEditStyle((prev) => ({
+                            ...prev,
+                            border: e.target.value || undefined,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    {/* BORDER RADIUS */}
+                    <div className="col-md-6">
+                      <label className="form-label">Border Radius</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="8px"
+                        value={String(editStyle.borderRadius ?? "")}
+                        onChange={(e) =>
+                          setEditStyle((prev) => ({
+                            ...prev,
+                            borderRadius: e.target.value || undefined,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    {/* FONT SIZE */}
+                    <div className="col-md-6">
+                      <label className="form-label">Font Size</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="16px"
+                        value={String(editContentStyle.fontSize ?? "")}
+                        onChange={(e) =>
+                          setEditContentStyle((prev) => ({
+                            ...prev,
+                            fontSize: e.target.value || undefined,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    {/* TEXT ALIGN */}
+                    <div className="col-md-6">
+                      <label className="form-label">Text Align</label>
+
+                      <select
+                        className="form-select"
+                        value={String(editContentStyle.textAlign ?? "")}
+                        onChange={(e) =>
+                          setEditContentStyle((prev) => ({
+                            ...prev,
+
+                            textAlign:
+                              e.target.value === ""
+                                ? undefined
+                                : (e.target
+                                    .value as CSSProperties["textAlign"]),
+                          }))
+                        }
+                      >
+                        <option value="">기본</option>
+
+                        <option value="left">Left</option>
+
+                        <option value="center">Center</option>
+
+                        <option value="right">Right</option>
+                      </select>
+                    </div>
+
+                    {/* RESET */}
+                    <div className="col-12">
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary btn-sm"
+                        onClick={() => {
+                          setEditStyle({});
+                          setEditContentStyle({});
+                        }}
+                      >
+                        스타일 초기화
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
 
+              {/* FOOTER */}
               <div className="modal-footer">
                 <button
                   type="button"

@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 
+
 export type ComponentType = LayoutComponent["type"];
 export type ContainerDirection = "row" | "column";
 
@@ -15,6 +16,7 @@ interface BaseComponent {
   order: number;
   layout?: ComponentLayout;
   style?: CSSProperties;
+  contentStyle?: CSSProperties;
 }
 
 interface ButtonComponent extends BaseComponent {
