@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type SetStateAction } from "react";
+import { useState, type SetStateAction } from "react";
 
 import DivBox from "./components/layout/DivBox";
 import ConfirmButton from "./components/form/ConfirmButton";
@@ -28,6 +28,22 @@ function App() {
 
   const [newDirection, setNewDirection] =
     useState<ContainerDirection>("column");
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingComponentId, setEditingComponentId] = useState<string | null>(
+    null,
+  );
+
+  const [editType, setEditType] = useState<ComponentType>("textarea");
+
+  const [editTitle, setEditTitle] = useState("");
+  const [editPlaceholder, setEditPlaceholder] = useState("");
+
+  const [editDirection, setEditDirection] = useState<"row" | "column">(
+    "column",
+  );
+
+  const [editDisabled, setEditDisabled] = useState(false);
 
   const [insertTarget, setInsertTarget] = useState<{
     parentId: string | null;
@@ -96,37 +112,6 @@ function App() {
     setComponents((prev) => updateComponentRecursive(prev, id, newProps));
   };
 
-  const updateStyleRecursive = (
-    items: LayoutComponent[],
-    id: string,
-    newStyle: CSSProperties,
-  ): LayoutComponent[] => {
-    return items.map((item) => {
-      if (item.id === id) {
-        return {
-          ...item,
-          style: {
-            ...item.style,
-            ...newStyle,
-          },
-        };
-      }
-
-      if (item.type === "container") {
-        return {
-          ...item,
-          children: updateStyleRecursive(item.children, id, newStyle),
-        };
-      }
-
-      return item;
-    });
-  };
-
-  const updateStyle = (id: string, newStyle: CSSProperties) => {
-    setComponents((prev) => updateStyleRecursive(prev, id, newStyle));
-  };
-
   const updateLayoutRecursive = (
     items: LayoutComponent[],
     id: string,
@@ -161,16 +146,141 @@ function App() {
   const editComponent = (id: string) => {
     const component = findComponentRecursive(components, id);
 
-    if (!component) {
+    if (!component) return;
+
+    setEditingComponentId(component.id);
+    setEditType(component.type);
+    setEditDisabled(
+      "disabled" in component.props
+        ? (component.props.disabled ?? false)
+        : false,
+    );
+
+    switch (component.type) {
+      case "button":
+        setEditTitle(component.props.title);
+        setEditPlaceholder("");
+        setEditDirection("column");
+        break;
+
+      case "textarea":
+        setEditTitle("");
+        setEditPlaceholder(component.props.placeholder ?? "");
+        setEditDirection("column");
+        break;
+
+      case "quill":
+        setEditTitle("");
+        setEditPlaceholder(component.props.placeholder ?? "");
+        setEditDirection("column");
+        break;
+
+      case "container":
+        setEditTitle("");
+        setEditPlaceholder("");
+        setEditDirection(component.props.direction ?? "column");
+        break;
+
+      case "image":
+        setEditTitle("");
+        setEditPlaceholder("");
+        setEditDirection("column");
+        break;
+
+      case "scrollToTopButton":
+        setEditTitle("");
+        setEditPlaceholder("");
+        setEditDirection("column");
+        break;
+    }
+
+    setShowEditModal(true);
+  };
+
+  const saveEditedComponent = () => {
+    if (!editingComponentId) {
       return;
     }
 
-    console.log("edit", component);
+    setComponents((prev) => {
+      const recursiveUpdate = (items: LayoutComponent[]): LayoutComponent[] => {
+        return items.map((component) => {
+          if (component.id === editingComponentId) {
+            switch (component.type) {
+              case "button":
+                return {
+                  ...component,
+                  props: {
+                    ...component.props,
+                    title: editTitle.trim() || "버튼",
+                    disabled: editDisabled,
+                  },
+                };
 
-    // 테스트용
-    updateStyle(id, {
-      backgroundColor: "#f8f9fa",
+              case "textarea":
+                return {
+                  ...component,
+                  props: {
+                    ...component.props,
+                    placeholder: editPlaceholder,
+                    disabled: editDisabled,
+                  },
+                };
+
+              case "quill":
+                return {
+                  ...component,
+                  props: {
+                    ...component.props,
+                    placeholder: editPlaceholder,
+                    disabled: editDisabled,
+                  },
+                };
+
+              case "container":
+                return {
+                  ...component,
+                  props: {
+                    ...component.props,
+                    direction: editDirection,
+                  },
+                };
+
+              case "image":
+                return {
+                  ...component,
+                  props: {
+                    ...component.props,
+                    disabled: editDisabled,
+                  },
+                };
+
+              case "scrollToTopButton":
+                return {
+                  ...component,
+                  props: {
+                    ...component.props,
+                    disabled: editDisabled,
+                  },
+                };
+            }
+          }
+
+          if (component.type === "container") {
+            return {
+              ...component,
+              children: recursiveUpdate(component.children),
+            };
+          }
+
+          return component;
+        });
+      };
+
+      return recursiveUpdate(prev);
     });
+
+    closeEditModal();
   };
 
   const deleteRecursive = (
@@ -327,6 +437,11 @@ function App() {
   const closeCreateModal = () => {
     setShowCreateModal(false);
     setInsertTarget(null);
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setEditingComponentId(null);
   };
 
   const makeNewComponent = (): LayoutComponent => {
@@ -951,6 +1066,178 @@ function App() {
     );
   };
 
+  const renderEditModal = () => {
+    if (!showEditModal) {
+      return null;
+    }
+
+    return (
+      <>
+        <div
+          className="modal fade show"
+          style={{
+            display: "block",
+            zIndex: 1055,
+          }}
+          tabIndex={-1}
+        >
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">컴포넌트 수정</h5>
+
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={closeEditModal}
+                />
+              </div>
+
+              <div className="modal-body">
+                {/* TYPE */}
+
+                <div className="mb-3">
+                  <label className="form-label">타입</label>
+
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editType}
+                    disabled
+                  />
+                </div>
+
+                {/* BUTTON */}
+
+                {editType === "button" && (
+                  <div className="mb-3">
+                    <label className="form-label">버튼 제목</label>
+
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      placeholder="버튼"
+                    />
+                  </div>
+                )}
+
+                {/* PLACEHOLDER */}
+
+                {(editType === "textarea" || editType === "quill") && (
+                  <div className="mb-3">
+                    <label className="form-label">Placeholder</label>
+
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={editPlaceholder}
+                      onChange={(e) => setEditPlaceholder(e.target.value)}
+                      placeholder="내용을 입력하세요."
+                    />
+                  </div>
+                )}
+
+                {/* CONTAINER */}
+
+                {editType === "container" && (
+                  <div className="mb-3">
+                    <label className="form-label">배치 방향</label>
+
+                    <div className="d-flex gap-3">
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="editContainerDirection"
+                          id="editDirectionColumn"
+                          value="column"
+                          checked={editDirection === "column"}
+                          onChange={() => setEditDirection("column")}
+                        />
+
+                        <label
+                          className="form-check-label"
+                          htmlFor="editDirectionColumn"
+                        >
+                          세로
+                        </label>
+                      </div>
+
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="editContainerDirection"
+                          id="editDirectionRow"
+                          value="row"
+                          checked={editDirection === "row"}
+                          onChange={() => setEditDirection("row")}
+                        />
+
+                        <label
+                          className="form-check-label"
+                          htmlFor="editDirectionRow"
+                        >
+                          가로
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* DISABLED */}
+
+                {editType !== "container" && (
+                  <div className="form-check mb-3">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      id="editDisabled"
+                      checked={editDisabled}
+                      onChange={(e) => setEditDisabled(e.target.checked)}
+                    />
+
+                    <label className="form-check-label" htmlFor="editDisabled">
+                      Disabled
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={closeEditModal}
+                >
+                  취소
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={saveEditedComponent}
+                >
+                  저장
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="modal-backdrop fade show"
+          style={{
+            zIndex: 1050,
+          }}
+          onClick={closeEditModal}
+        />
+      </>
+    );
+  };
+
   const sortedComponents = [...components].sort((a, b) => a.order - b.order);
 
   return (
@@ -974,6 +1261,7 @@ function App() {
         ))}
       </div>
       {renderCreateModal()}
+      {renderEditModal()}
     </>
   );
 }
