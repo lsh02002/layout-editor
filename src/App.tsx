@@ -1188,31 +1188,120 @@ ${bodyHtml}
     URL.revokeObjectURL(url);
   };
 
-  const saveProjectFile = () => {
+  const blobUrlToDataUrl = async (blobUrl: string): Promise<string> => {
+    // 이미 base64라면 그대로
+    if (blobUrl.startsWith("data:")) {
+      return blobUrl;
+    }
+
+    // 일반 http 이미지라면 그대로
+    if (!blobUrl.startsWith("blob:")) {
+      return blobUrl;
+    }
+
+    const response = await fetch(blobUrl);
+    const blob = await response.blob();
+
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        resolve(String(reader.result));
+      };
+
+      reader.onerror = () => {
+        reject(reader.error);
+      };
+
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const convertComponentsForSave = async (
+    items: LayoutComponent[],
+  ): Promise<LayoutComponent[]> => {
+    return Promise.all(
+      items.map(async (component) => {
+        // 이미지
+        if (component.type === "image") {
+          const imageUrl = component.props.urls?.[0] ?? "";
+
+          let savedUrl = "";
+
+          if (imageUrl) {
+            try {
+              savedUrl = await blobUrlToDataUrl(imageUrl);
+            } catch (error) {
+              console.error("이미지 변환 실패:", error);
+
+              savedUrl = "";
+            }
+          }
+
+          return {
+            ...component,
+
+            props: {
+              ...component.props,
+
+              // 컴포넌트당 1개만 유지
+              urls: savedUrl ? [savedUrl] : [],
+
+              maxCount: 1,
+            },
+          };
+        }
+
+        // 컨테이너 내부도 재귀 처리
+        if (component.type === "container") {
+          return {
+            ...component,
+
+            children: await convertComponentsForSave(component.children),
+          };
+        }
+
+        return component;
+      }),
+    );
+  };
+
+  const saveProjectFile = async () => {
     try {
+      const savedComponents = await convertComponentsForSave(history.present);
+
       const projectData = {
         version: 1,
-        components: history.present,
+
+        components: savedComponents,
+
         savedAt: new Date().toISOString(),
       };
 
-      const blob = new Blob([JSON.stringify(projectData, null, 2)], {
+      const json = JSON.stringify(projectData, null, 2);
+
+      const blob = new Blob([json], {
         type: "application/json;charset=utf-8",
       });
 
       const url = URL.createObjectURL(blob);
 
       const anchor = document.createElement("a");
+
       anchor.href = url;
+
       anchor.download = "page-builder-project.json";
 
       document.body.appendChild(anchor);
+
       anchor.click();
+
       anchor.remove();
 
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("프로젝트 저장 실패:", error);
+
       alert("프로젝트 저장 중 오류가 발생했습니다.");
     }
   };
@@ -1230,7 +1319,9 @@ ${bodyHtml}
 
         const parsed = JSON.parse(text) as {
           version?: number;
+
           components?: LayoutComponent[];
+
           savedAt?: string;
         };
 
@@ -1240,7 +1331,9 @@ ${bodyHtml}
 
         setHistory({
           past: [],
+
           present: parsed.components,
+
           future: [],
         });
       } catch (error) {
@@ -1248,7 +1341,6 @@ ${bodyHtml}
 
         alert("프로젝트 파일을 불러올 수 없습니다.");
       } finally {
-        // 같은 파일을 다시 선택할 수 있도록 초기화
         event.target.value = "";
       }
     };
