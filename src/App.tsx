@@ -76,6 +76,10 @@ function App() {
 
   const [showLayerPanel, setShowLayerPanel] = useState(true);
 
+  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
+    null,
+  );
+
   const components = history.present;
 
   const commitHistory = (
@@ -604,6 +608,9 @@ function App() {
 
   const deleteComponent = (id: string) => {
     commitHistory((prev) => deleteRecursive(prev, id));
+    if (selectedComponentId === id) {
+      setSelectedComponentId(null);
+    }
   };
 
   const cloneComponent = (component: LayoutComponent): LayoutComponent => {
@@ -1640,7 +1647,17 @@ ${bodyHtml}
           <DivBox
             key={component.id}
             layout={component.layout}
-            style={component.style}
+            style={{
+              ...component.style,
+              outline:
+                selectedComponentId === component.id
+                  ? "2px solid #0d6efd"
+                  : component.style?.outline,
+              outlineOffset:
+                selectedComponentId === component.id
+                  ? "2px"
+                  : component.style?.outlineOffset,
+            }}
             onLayoutChange={(layout) => updateLayout(component.id, layout)}
             onEdit={() => editComponent(component.id)}
             onCopy={() => copyComponent(component.id)}
@@ -1699,7 +1716,17 @@ ${bodyHtml}
         <DivBox
           key={component.id}
           layout={component.layout}
-          style={component.style}
+          style={{
+            ...component.style,
+            outline:
+              selectedComponentId === component.id
+                ? "2px solid #0d6efd"
+                : component.style?.outline,
+            outlineOffset:
+              selectedComponentId === component.id
+                ? "2px"
+                : component.style?.outlineOffset,
+          }}
           onLayoutChange={(layout) => updateLayout(component.id, layout)}
           onEdit={() => editComponent(component.id)}
           onCopy={() => copyComponent(component.id)}
@@ -1717,6 +1744,8 @@ ${bodyHtml}
     return sorted.map((component) => {
       const isContainer = component.type === "container";
 
+      const isSelected = selectedComponentId === component.id;
+
       const getLabel = () => {
         switch (component.type) {
           case "button":
@@ -1726,11 +1755,9 @@ ${bodyHtml}
             return component.props.value?.slice(0, 20) || "TextArea";
 
           case "quill": {
-            const plainText = component.props.value
-              ?.replace(/<[^>]*>/g, "")
-              .trim();
+            const text = component.props.value?.replace(/<[^>]*>/g, "").trim();
 
-            return plainText?.slice(0, 20) || "Quill";
+            return text?.slice(0, 20) || "Quill";
           }
 
           case "image":
@@ -1750,32 +1777,44 @@ ${bodyHtml}
       return (
         <React.Fragment key={component.id}>
           <div
-            role="button"
-            tabIndex={0}
-            onClick={() => editComponent(component.id)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                editComponent(component.id);
-              }
+            onClick={() => {
+              setSelectedComponentId(component.id);
+            }}
+            onDoubleClick={() => {
+              editComponent(component.id);
             }}
             style={{
               marginLeft: depth * 14,
-              padding: "6px 8px",
+
+              padding: "7px 8px",
+
               borderRadius: 6,
+
               cursor: "pointer",
+
               display: "flex",
               alignItems: "center",
+
               gap: 6,
+
               fontSize: 13,
+
               userSelect: "none",
+
+              background: isSelected
+                ? "rgba(13, 110, 253, 0.12)"
+                : "transparent",
+
+              border: isSelected
+                ? "1px solid rgba(13, 110, 253, 0.35)"
+                : "1px solid transparent",
             }}
-            className="layer-tree-item"
           >
             <span
               style={{
                 width: 18,
-                textAlign: "center",
                 flexShrink: 0,
+                textAlign: "center",
               }}
             >
               {isContainer ? "▾" : "•"}
@@ -1783,12 +1822,14 @@ ${bodyHtml}
 
             <span
               style={{
-                fontWeight: isContainer ? 600 : 400,
+                flex: 1,
                 minWidth: 0,
+
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
-                flex: 1,
+
+                fontWeight: isContainer ? 600 : 400,
               }}
             >
               {getLabel()}
@@ -1797,12 +1838,26 @@ ${bodyHtml}
             <small
               className="text-secondary"
               style={{
-                fontSize: 10,
                 flexShrink: 0,
+                fontSize: 10,
               }}
             >
               {component.type}
             </small>
+
+            {isSelected && (
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-primary py-0 px-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  editComponent(component.id);
+                }}
+              >
+                편집
+              </button>
+            )}
           </div>
 
           {isContainer &&
@@ -2572,15 +2627,23 @@ ${bodyHtml}
         <aside
           style={{
             position: "fixed",
+
             top: 0,
             left: 0,
             bottom: 0,
+
             width: 280,
-            background: "#fff",
+
+            background: "#ffffff",
+
             borderRight: "1px solid #dee2e6",
-            zIndex: 1000,
+
+            zIndex: 1100,
+
             display: "flex",
             flexDirection: "column",
+
+            boxShadow: "2px 0 8px rgba(0,0,0,0.05)",
           }}
         >
           <div
@@ -2615,7 +2678,10 @@ ${bodyHtml}
               renderLayerTree(components)
             ) : (
               <div
-                className="text-secondary text-center"
+                className="
+            text-secondary
+            text-center
+          "
                 style={{
                   padding: 20,
                   fontSize: 13,
@@ -2625,18 +2691,44 @@ ${bodyHtml}
               </div>
             )}
           </div>
+
+          {selectedComponentId && (
+            <div
+              className="
+          border-top
+          p-2
+        "
+            >
+              <button
+                type="button"
+                className="
+            btn
+            btn-primary
+            btn-sm
+            w-100
+          "
+                onClick={() => {
+                  editComponent(selectedComponentId);
+                }}
+              >
+                선택한 컴포넌트 편집
+              </button>
+            </div>
+          )}
         </aside>
       )}
       {!showLayerPanel && (
         <button
           type="button"
-          className="btn btn-dark"
+          className="btn btn-dark btn-sm"
           onClick={() => setShowLayerPanel(true)}
           style={{
             position: "fixed",
-            top: 16,
+
             left: 16,
-            zIndex: 1000,
+            top: 16,
+
+            zIndex: 1100,
           }}
         >
           레이어
