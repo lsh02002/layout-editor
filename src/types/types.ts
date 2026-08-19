@@ -1,6 +1,5 @@
 import type { CSSProperties } from "react";
 
-
 export type ComponentType = LayoutComponent["type"];
 export type ContainerDirection = "row" | "column";
 
@@ -96,3 +95,13 @@ export type LayoutComponent =
   | QuillComponent
   | ImageComponent
   | ContainerComponent;
+
+export interface HistoryState {
+  past: LayoutComponent[][];
+  present: LayoutComponent[];
+  future: LayoutComponent[][];
+}
+
+export type ComponentsUpdater =
+  | LayoutComponent[]
+  | ((prev: LayoutComponent[]) => LayoutComponent[]);

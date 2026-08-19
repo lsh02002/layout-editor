@@ -11,6 +11,8 @@ import type {
   LayoutComponent,
   ComponentType,
   ContainerDirection,
+  HistoryState,
+  ComponentsUpdater,
 } from "./types/types";
 
 import { data } from "./data/data";
@@ -18,7 +20,11 @@ import ScrollToTopButton from "./components/form/ScrollToTopButton";
 import QuillEditorSimpleInput from "./components/form/QuillEditorSimpleInput";
 
 function App() {
-  const [components, setComponents] = useState<LayoutComponent[]>(() => data);
+  const [history, setHistory] = useState<HistoryState>(() => ({
+    past: [],
+    present: data,
+    future: [],
+  }));
 
   const [imageFiles, setImageFiles] = useState<Record<string, File[]>>({});
 
@@ -60,6 +66,32 @@ function App() {
     parentId: string | null;
     index: number;
   } | null>(null);
+
+  const components = history.present;
+
+  const setComponents = (updater: ComponentsUpdater, recordHistory = true) => {
+    setHistory((prev) => {
+      const next =
+        typeof updater === "function" ? updater(prev.present) : updater;
+
+      if (next === prev.present) {
+        return prev;
+      }
+
+      if (!recordHistory) {
+        return {
+          ...prev,
+          present: next,
+        };
+      }
+
+      return {
+        past: [...prev.past, prev.present],
+        present: next,
+        future: [],
+      };
+    });
+  };
 
   const normalizeOrder = (items: LayoutComponent[]): LayoutComponent[] => {
     return items.map((item, index) => ({
@@ -119,8 +151,12 @@ function App() {
   const updateComponent = (
     id: string,
     newProps: Partial<LayoutComponent["props"]>,
+    recordHistory = false,
   ) => {
-    setComponents((prev) => updateComponentRecursive(prev, id, newProps));
+    setComponents(
+      (prev) => updateComponentRecursive(prev, id, newProps),
+      recordHistory,
+    );
   };
 
   const updateLayoutRecursive = (
@@ -744,6 +780,41 @@ function App() {
     });
   };
 
+  const undo = () => {
+    setHistory((prev) => {
+      if (prev.past.length === 0) {
+        return prev;
+      }
+
+      const previous = prev.past[prev.past.length - 1];
+
+      return {
+        past: prev.past.slice(0, -1),
+        present: previous,
+        future: [prev.present, ...prev.future],
+      };
+    });
+  };
+
+  const redo = () => {
+    setHistory((prev) => {
+      if (prev.future.length === 0) {
+        return prev;
+      }
+
+      const next = prev.future[0];
+
+      return {
+        past: [...prev.past, prev.present],
+        present: next,
+        future: prev.future.slice(1),
+      };
+    });
+  };
+
+  const canUndo = history.past.length > 0;
+  const canRedo = history.future.length > 0;
+
   const renderComponent = (component: LayoutComponent) => {
     switch (component.type) {
       case "button":
@@ -783,19 +854,19 @@ function App() {
         );
 
       case "quill":
-        return (          
-            <QuillEditorInput
-              name={component.id}
-              data={component.props.value}
-              placeholder={component.props.placeholder}
-              disabled={component.props.disabled}
-              style={component.contentStyle}
-              setData={(value) =>
-                updateComponent(component.id, {
-                  value,
-                })
-              }
-            />          
+        return (
+          <QuillEditorInput
+            name={component.id}
+            data={component.props.value}
+            placeholder={component.props.placeholder}
+            disabled={component.props.disabled}
+            style={component.contentStyle}
+            setData={(value) =>
+              updateComponent(component.id, {
+                value,
+              })
+            }
+          />
         );
 
       case "image":
@@ -1303,7 +1374,7 @@ function App() {
                         <div className="mb-3">
                           <label className="form-label">내용</label>
 
-                          <QuillEditorSimpleInput                            
+                          <QuillEditorSimpleInput
                             data={editValue}
                             placeholder={
                               editPlaceholder || "본문을 입력하세요."
@@ -1659,6 +1730,25 @@ function App() {
           padding: 16,
         }}
       >
+        <div className="d-flex gap-2 mb-3">
+          <button
+            type="button"
+            className="btn btn-outline-secondary"
+            disabled={!canUndo}
+            onClick={undo}
+          >
+            ↶ Undo
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-outline-secondary"
+            disabled={!canRedo}
+            onClick={redo}
+          >
+            ↷ Redo
+          </button>
+        </div>
         {/* 최상위 맨 앞 + */}
         {renderAddButton(null, 0, "column")}
 
