@@ -1188,6 +1188,80 @@ ${bodyHtml}
     URL.revokeObjectURL(url);
   };
 
+  const saveProjectFile = () => {
+    try {
+      const projectData = {
+        version: 1,
+        components: history.present,
+        savedAt: new Date().toISOString(),
+      };
+
+      const blob = new Blob([JSON.stringify(projectData, null, 2)], {
+        type: "application/json;charset=utf-8",
+      });
+
+      const url = URL.createObjectURL(blob);
+
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "page-builder-project.json";
+
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("프로젝트 저장 실패:", error);
+      alert("프로젝트 저장 중 오류가 발생했습니다.");
+    }
+  };
+
+  const loadProjectFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      try {
+        const text = String(reader.result ?? "");
+
+        const parsed = JSON.parse(text) as {
+          version?: number;
+          components?: LayoutComponent[];
+          savedAt?: string;
+        };
+
+        if (!Array.isArray(parsed.components)) {
+          throw new Error("올바른 프로젝트 파일이 아닙니다.");
+        }
+
+        setHistory({
+          past: [],
+          present: parsed.components,
+          future: [],
+        });
+      } catch (error) {
+        console.error("프로젝트 불러오기 실패:", error);
+
+        alert("프로젝트 파일을 불러올 수 없습니다.");
+      } finally {
+        // 같은 파일을 다시 선택할 수 있도록 초기화
+        event.target.value = "";
+      }
+    };
+
+    reader.onerror = () => {
+      alert("파일을 읽는 중 오류가 발생했습니다.");
+
+      event.target.value = "";
+    };
+
+    reader.readAsText(file);
+  };
+
   const renderComponent = (component: LayoutComponent) => {
     switch (component.type) {
       case "button":
@@ -2318,6 +2392,31 @@ ${bodyHtml}
           >
             ↷ Redo
           </button>
+
+          <button
+            type="button"
+            className="btn btn-success"
+            onClick={saveProjectFile}
+          >
+            프로젝트 저장
+          </button>
+
+          <label
+            className="btn btn-outline-success mb-0"
+            style={{
+              cursor: "pointer",
+            }}
+          >
+            프로젝트 불러오기
+            <input
+              type="file"
+              accept=".json,application/json"
+              onChange={loadProjectFile}
+              style={{
+                display: "none",
+              }}
+            />
+          </label>
 
           <button
             type="button"
