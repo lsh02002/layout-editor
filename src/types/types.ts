@@ -96,10 +96,15 @@ export type LayoutComponent =
   | ImageComponent
   | ContainerComponent;
 
+export interface EditorSnapshot {
+  components: LayoutComponent[];
+  imageFiles: Record<string, File[]>;
+}
+
 export interface HistoryState {
-  past: LayoutComponent[][];
-  present: LayoutComponent[];
-  future: LayoutComponent[][];
+  past: EditorSnapshot[];
+  present: EditorSnapshot;
+  future: EditorSnapshot[];
 }
 
 export type ComponentsUpdater =

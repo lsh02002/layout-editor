@@ -13,6 +13,7 @@ import type {
   ContainerDirection,
   HistoryState,
   ComponentsUpdater,
+  EditorSnapshot,
 } from "./types/types";
 
 import { data } from "./data/data";
@@ -22,11 +23,14 @@ import QuillEditorSimpleInput from "./components/form/QuillEditorSimpleInput";
 function App() {
   const [history, setHistory] = useState<HistoryState>(() => ({
     past: [],
-    present: data,
+    present: {
+      components: data,
+      imageFiles: {},
+    },
     future: [],
   }));
 
-  const [imageFiles, setImageFiles] = useState<Record<string, File[]>>({});
+  // const [imageFiles, setImageFiles] = useState<Record<string, File[]>>({});
 
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -67,27 +71,43 @@ function App() {
     index: number;
   } | null>(null);
 
-  const components = history.present;
+  const components = history.present.components;
+  const imageFiles = history.present.imageFiles;
+
+  const commitHistory = (updater: (prev: EditorSnapshot) => EditorSnapshot) => {
+    setHistory((prev) => {
+      const next = updater(prev.present);
+
+      return {
+        past: [...prev.past, prev.present],
+        present: next,
+        future: [],
+      };
+    });
+  };
 
   const setComponents = (updater: ComponentsUpdater, recordHistory = true) => {
     setHistory((prev) => {
-      const next =
-        typeof updater === "function" ? updater(prev.present) : updater;
+      const nextComponents =
+        typeof updater === "function"
+          ? updater(prev.present.components)
+          : updater;
 
-      if (next === prev.present) {
-        return prev;
-      }
+      const nextSnapshot: EditorSnapshot = {
+        ...prev.present,
+        components: nextComponents,
+      };
 
       if (!recordHistory) {
         return {
           ...prev,
-          present: next,
+          present: nextSnapshot,
         };
       }
 
       return {
         past: [...prev.past, prev.present],
-        present: next,
+        present: nextSnapshot,
         future: [],
       };
     });
@@ -402,26 +422,30 @@ function App() {
   };
 
   const deleteComponent = (id: string) => {
-    setComponents((prev) => deleteRecursive(prev, id));
+    commitHistory((prev) => {
+      const nextImageFiles = {
+        ...prev.imageFiles,
+      };
 
-    setImageFiles((prev) => {
-      const next = { ...prev };
+      delete nextImageFiles[id];
 
-      delete next[id];
+      return {
+        components: deleteRecursive(prev.components, id),
 
-      return next;
+        imageFiles: nextImageFiles,
+      };
     });
   };
 
   const cloneComponent = (
     component: LayoutComponent,
     copiedImageFiles: Record<string, File[]>,
+    currentImageFiles: Record<string, File[]>,
   ): LayoutComponent => {
     const newId = crypto.randomUUID();
 
-    // 이미지라면 File[]도 새 id로 복사
     if (component.type === "image") {
-      const files = imageFiles[component.id];
+      const files = currentImageFiles[component.id];
 
       if (files) {
         copiedImageFiles[newId] = [...files];
@@ -433,18 +457,29 @@ function App() {
 
         props: {
           ...component.props,
-
-          // 배열도 별도 복사
           urls: [...component.props.urls],
         },
 
-        style: component.style ? { ...component.style } : undefined,
+        style: component.style
+          ? {
+              ...component.style,
+            }
+          : undefined,
 
-        layout: component.layout ? { ...component.layout } : undefined,
+        contentStyle: component.contentStyle
+          ? {
+              ...component.contentStyle,
+            }
+          : undefined,
+
+        layout: component.layout
+          ? {
+              ...component.layout,
+            }
+          : undefined,
       };
     }
 
-    // container는 children까지 재귀 복사
     if (component.type === "container") {
       return {
         ...component,
@@ -454,12 +489,26 @@ function App() {
           ...component.props,
         },
 
-        style: component.style ? { ...component.style } : undefined,
+        style: component.style
+          ? {
+              ...component.style,
+            }
+          : undefined,
 
-        layout: component.layout ? { ...component.layout } : undefined,
+        contentStyle: component.contentStyle
+          ? {
+              ...component.contentStyle,
+            }
+          : undefined,
+
+        layout: component.layout
+          ? {
+              ...component.layout,
+            }
+          : undefined,
 
         children: component.children.map((child) =>
-          cloneComponent(child, copiedImageFiles),
+          cloneComponent(child, copiedImageFiles, currentImageFiles),
         ),
       };
     }
@@ -472,16 +521,30 @@ function App() {
         ...component.props,
       },
 
-      style: component.style ? { ...component.style } : undefined,
+      style: component.style
+        ? {
+            ...component.style,
+          }
+        : undefined,
 
-      layout: component.layout ? { ...component.layout } : undefined,
+      contentStyle: component.contentStyle
+        ? {
+            ...component.contentStyle,
+          }
+        : undefined,
+
+      layout: component.layout
+        ? {
+            ...component.layout,
+          }
+        : undefined,
     } as LayoutComponent;
   };
 
   const copyComponent = (id: string) => {
-    const copiedImageFiles: Record<string, File[]> = {};
+    commitHistory((prev) => {
+      const copiedImageFiles: Record<string, File[]> = {};
 
-    setComponents((prev) => {
       const copyRecursive = (items: LayoutComponent[]): LayoutComponent[] => {
         const result: LayoutComponent[] = [];
 
@@ -489,7 +552,9 @@ function App() {
           if (item.id === id) {
             result.push(item);
 
-            result.push(cloneComponent(item, copiedImageFiles));
+            result.push(
+              cloneComponent(item, copiedImageFiles, prev.imageFiles),
+            );
 
             continue;
           }
@@ -509,13 +574,17 @@ function App() {
         return normalizeOrder(result);
       };
 
-      return copyRecursive(prev);
-    });
+      const nextComponents = copyRecursive(prev.components);
 
-    setImageFiles((prev) => ({
-      ...prev,
-      ...copiedImageFiles,
-    }));
+      return {
+        components: nextComponents,
+
+        imageFiles: {
+          ...prev.imageFiles,
+          ...copiedImageFiles,
+        },
+      };
+    });
   };
 
   const openCreateModal = (parentId: string | null, index: number) => {
@@ -713,29 +782,32 @@ function App() {
   };
 
   const createComponent = () => {
-    if (!insertTarget) {
-      return;
-    }
+    if (!insertTarget) return;
 
     const newComponent = makeNewComponent();
 
-    setComponents((prev) => {
-      // 최상위 삽입
+    commitHistory((prev) => {
+      let nextComponents: LayoutComponent[];
+
       if (insertTarget.parentId === null) {
-        const next = [...prev];
+        nextComponents = [...prev.components];
 
-        next.splice(insertTarget.index, 0, newComponent);
+        nextComponents.splice(insertTarget.index, 0, newComponent);
 
-        return normalizeOrder(next);
+        nextComponents = normalizeOrder(nextComponents);
+      } else {
+        nextComponents = insertIntoRecursive(
+          prev.components,
+          insertTarget.parentId,
+          insertTarget.index,
+          newComponent,
+        );
       }
 
-      // container 내부 삽입
-      return insertIntoRecursive(
-        prev,
-        insertTarget.parentId,
-        insertTarget.index,
-        newComponent,
-      );
+      return {
+        ...prev,
+        components: nextComponents,
+      };
     });
 
     closeCreateModal();
@@ -876,13 +948,16 @@ function App() {
             disabled={component.props.disabled}
             maxCount={component.props.maxCount}
             data={imageFiles[component.id] ?? []}
-            setData={(files) =>
-              setImageFiles((prev) => ({
+            setData={(files) => {
+              commitHistory((prev) => ({
                 ...prev,
 
-                [component.id]: files,
-              }))
-            }
+                imageFiles: {
+                  ...prev.imageFiles,
+                  [component.id]: files,
+                },
+              }));
+            }}
             previewUrls={component.props.urls}
             setPreviewUrls={(updater) =>
               updateImagePreviewUrls(component.id, updater)
