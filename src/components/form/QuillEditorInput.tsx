@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { useModalManager } from "../../usehooks/usehooks";
@@ -11,6 +11,7 @@ const QuillEditorInput = ({
   placeholder,
   style,
   rows = 8,
+  onClose,
 }: {
   disabled?: boolean;
   name: string;
@@ -19,6 +20,7 @@ const QuillEditorInput = ({
   placeholder?: string;
   style?: React.CSSProperties;
   rows?: number;
+  onClose?: () => void;
 }) => {
   const quillRef = useRef<ReactQuill | null>(null);
   const [isEmpty, setIsEmpty] = useState(true);
@@ -47,7 +49,32 @@ const QuillEditorInput = ({
       root.removeEventListener("compositionstart", handleCompositionStart);
       root.removeEventListener("compositionend", handleCompositionEnd);
     };
-  }, [isEditorOpen]);
+  }, []);
+
+  const handleClose = () => {
+    closeModal(name);
+    onClose?.();
+  };
+
+  const modules = useMemo(
+    () => ({
+      toolbar: disabled
+        ? false
+        : [
+            ["bold", "italic", "underline", "strike"],
+            [{ color: [] }, { background: [] }],
+            [{ list: "ordered" }, { list: "bullet" }],
+            ["blockquote", "link"],
+            ["clean"],
+          ],
+      history: {
+        delay: 500,
+        maxStack: 100,
+        userOnly: true,
+      },
+    }),
+    [disabled],
+  );
 
   const isDataEmpty =
     !data ||
@@ -95,7 +122,7 @@ const QuillEditorInput = ({
       <div
         role="presentation"
         className="position-fixed start-0 w-100 h-100"
-        onClick={() => closeModal(name)}
+        onClick={handleClose}
         aria-hidden={!isEditorOpen}
         style={{
           top: 0,
@@ -124,7 +151,7 @@ const QuillEditorInput = ({
           <h2 className="m-0 fs-6 fw-bold">내용</h2>
           <button
             className="btn border-0 bg-transparent fs-3 text-secondary px-1 py-0"
-            onClick={() => closeModal(name)}
+            onClick={handleClose}
             aria-label="닫기"
           >
             ×
@@ -136,6 +163,14 @@ const QuillEditorInput = ({
             className={`w-100 quill-editor-bootstrap ${
               disabled ? "is-disabled" : ""
             }`}
+            onMouseDownCapture={(e) => {
+              const target = e.target as HTMLElement;
+
+              // Quill toolbar를 클릭해도 editor focus를 유지
+              if (target.closest(".ql-toolbar")) {
+                e.preventDefault();
+              }
+            }}
             style={
               {
                 ["--quill-min-height"]: `${Math.max(rows, 1) * 24 + 24}px`,
@@ -171,17 +206,7 @@ const QuillEditorInput = ({
               }}
               readOnly={disabled}
               placeholder={isEmpty ? placeholder || "내용을 입력하세요" : ""}
-              modules={{
-                toolbar: disabled
-                  ? false
-                  : [
-                      ["bold", "italic", "underline", "strike"],
-                      [{ color: [] }, { background: [] }],
-                      [{ list: "ordered" }, { list: "bullet" }],
-                      ["blockquote", "link"],
-                      ["clean"],
-                    ],
-              }}
+              modules={modules}
             />
           </div>
         </div>

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useMemo } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 
@@ -18,6 +18,9 @@ const QuillEditorSimpleInput = ({
   rows?: number;
 }) => {
   const quillRef = useRef<ReactQuill | null>(null);
+  const lastSelectionRef = useRef<{ index: number; length: number } | null>(
+    null,
+  );
 
   const isDataEmpty =
     !data ||
@@ -27,6 +30,26 @@ const QuillEditorSimpleInput = ({
 
   const [isEmpty, setIsEmpty] = useState(isDataEmpty);
 
+  const modules = useMemo(
+    () => ({
+      toolbar: disabled
+        ? false
+        : [
+            ["bold", "italic", "underline", "strike"],
+            [{ color: [] }, { background: [] }],
+            [{ list: "ordered" }, { list: "bullet" }],
+            ["blockquote", "link"],
+            ["clean"],
+          ],
+      history: {
+        delay: 500,
+        maxStack: 100,
+        userOnly: true,
+      },
+    }),
+    [disabled],
+  );
+
   return (
     <div className="w-100 mb-3">
       <style>{quillStyles}</style>
@@ -35,6 +58,14 @@ const QuillEditorSimpleInput = ({
         className={`w-100 quill-editor-bootstrap ${
           disabled ? "is-disabled" : ""
         }`}
+        onMouseDownCapture={(e) => {
+          const target = e.target as HTMLElement;
+
+          // Quill toolbar를 클릭해도 editor focus를 유지
+          if (target.closest(".ql-toolbar")) {
+            e.preventDefault();
+          }
+        }}
         style={
           {
             ["--quill-min-height"]: `${Math.max(rows, 1) * 24 + 24}px`,
@@ -60,6 +91,11 @@ const QuillEditorSimpleInput = ({
           ref={quillRef}
           theme="snow"
           value={data}
+          onChangeSelection={(range) => {
+            if (range && range.length > 0) {
+              lastSelectionRef.current = range;
+            }
+          }}
           onChange={(value, _delta, _source, editor) => {
             const text = editor.getText().trim();
 
@@ -73,17 +109,7 @@ const QuillEditorSimpleInput = ({
           }}
           readOnly={disabled}
           placeholder={isEmpty ? placeholder || "내용을 입력하세요" : ""}
-          modules={{
-            toolbar: disabled
-              ? false
-              : [
-                  ["bold", "italic", "underline", "strike"],
-                  [{ color: [] }, { background: [] }],
-                  [{ list: "ordered" }, { list: "bullet" }],
-                  ["blockquote", "link"],
-                  ["clean"],
-                ],
-          }}
+          modules={modules}
         />
       </div>
     </div>

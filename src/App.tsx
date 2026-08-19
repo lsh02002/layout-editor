@@ -1,4 +1,9 @@
-import { useState, type CSSProperties, type SetStateAction } from "react";
+import {
+  useRef,
+  useState,
+  type CSSProperties,
+  type SetStateAction,
+} from "react";
 
 import DivBox from "./components/layout/DivBox";
 import ConfirmButton from "./components/form/ConfirmButton";
@@ -70,6 +75,8 @@ function App() {
     parentId: string | null;
     index: number;
   } | null>(null);
+
+  const quillEditingRef = useRef<Record<string, boolean>>({});
 
   const components = history.present.components;
   const imageFiles = history.present.imageFiles;
@@ -177,6 +184,39 @@ function App() {
       (prev) => updateComponentRecursive(prev, id, newProps),
       recordHistory,
     );
+  };
+
+  const updateQuillComponent = (id: string, value: string) => {
+    setHistory((prev) => {
+      const nextComponents = updateComponentRecursive(
+        prev.present.components,
+        id,
+        { value },
+      );
+
+      const nextSnapshot: EditorSnapshot = {
+        ...prev.present,
+        components: nextComponents,
+      };
+
+      // 이번 Quill 편집 세션에서 최초 변경
+      if (!quillEditingRef.current[id]) {
+        quillEditingRef.current[id] = true;
+
+        return {
+          past: [...prev.past, prev.present],
+          present: nextSnapshot,
+          future: [],
+        };
+      }
+
+      // 이후 타이핑은 history에 계속 추가하지 않음
+      return {
+        ...prev,
+        present: nextSnapshot,
+        future: [],
+      };
+    });
   };
 
   const updateLayoutRecursive = (
@@ -933,11 +973,10 @@ function App() {
             placeholder={component.props.placeholder}
             disabled={component.props.disabled}
             style={component.contentStyle}
-            setData={(value) =>
-              updateComponent(component.id, {
-                value,
-              })
-            }
+            setData={(value) => updateQuillComponent(component.id, value)}
+            onClose={() => {
+              quillEditingRef.current[component.id] = false;
+            }}
           />
         );
 
