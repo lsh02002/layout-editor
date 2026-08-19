@@ -8,7 +8,6 @@ import type {
   ContainerDirection,
   HistoryState,
   ComponentsUpdater,
-  EditorSnapshot,
 } from "./types/types";
 
 import { data } from "./data/data";
@@ -17,14 +16,9 @@ import QuillEditorSimpleInput from "./components/form/QuillEditorSimpleInput";
 function App() {
   const [history, setHistory] = useState<HistoryState>(() => ({
     past: [],
-    present: {
-      components: data,
-      imageFiles: {},
-    },
+    present: data,
     future: [],
   }));
-
-  // const [imageFiles, setImageFiles] = useState<Record<string, File[]>>({});
 
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -37,9 +31,6 @@ function App() {
   const [newDirection, setNewDirection] =
     useState<ContainerDirection>("column");
 
-  const [newImageUrl, setNewImageUrl] = useState("");
-
-  const [newImageFile, setNewImageFile] = useState<File | null>(null);
   const [newImagePreviewUrl, setNewImagePreviewUrl] = useState("");
 
   const [showEditModal, setShowEditModal] = useState(false);
@@ -67,7 +58,6 @@ function App() {
 
   const [editImageUrl, setEditImageUrl] = useState("");
 
-  const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editImagePreviewUrl, setEditImagePreviewUrl] = useState("");
 
   const [insertTarget, setInsertTarget] = useState<{
@@ -75,10 +65,17 @@ function App() {
     index: number;
   } | null>(null);
 
-  const components = history.present.components;
-  const imageFiles = history.present.imageFiles;
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOverTarget, setDragOverTarget] = useState<{
+    parentId: string | null;
+    index: number;
+  } | null>(null);
 
-  const commitHistory = (updater: (prev: EditorSnapshot) => EditorSnapshot) => {
+  const components = history.present;
+
+  const commitHistory = (
+    updater: (prev: LayoutComponent[]) => LayoutComponent[],
+  ) => {
     setHistory((prev) => {
       const next = updater(prev.present);
 
@@ -93,14 +90,9 @@ function App() {
   const setComponents = (updater: ComponentsUpdater, recordHistory = true) => {
     setHistory((prev) => {
       const nextComponents =
-        typeof updater === "function"
-          ? updater(prev.present.components)
-          : updater;
+        typeof updater === "function" ? updater(prev.present) : updater;
 
-      const nextSnapshot: EditorSnapshot = {
-        ...prev.present,
-        components: nextComponents,
-      };
+      const nextSnapshot: LayoutComponent[] = nextComponents;
 
       if (!recordHistory) {
         return {
@@ -143,6 +135,191 @@ function App() {
     }
 
     return undefined;
+  };
+
+  const findComponentLocation = (
+    items: LayoutComponent[],
+    id: string,
+    parentId: string | null = null,
+  ): { parentId: string | null; index: number } | null => {
+    for (let index = 0; index < items.length; index += 1) {
+      const item = items[index];
+
+      if (item.id === id) {
+        return { parentId, index };
+      }
+
+      if (item.type === "container") {
+        const found = findComponentLocation(item.children, id, item.id);
+
+        if (found) {
+          return found;
+        }
+      }
+    }
+
+    return null;
+  };
+
+  const containsComponent = (
+    component: LayoutComponent,
+    targetId: string,
+  ): boolean => {
+    if (component.id === targetId) {
+      return true;
+    }
+
+    if (component.type !== "container") {
+      return false;
+    }
+
+    return component.children.some((child) =>
+      containsComponent(child, targetId),
+    );
+  };
+
+  const removeComponentRecursive = (
+    items: LayoutComponent[],
+    id: string,
+  ): { items: LayoutComponent[]; removed: LayoutComponent | null } => {
+    const directIndex = items.findIndex((item) => item.id === id);
+
+    if (directIndex >= 0) {
+      const next = [...items];
+      const [removed] = next.splice(directIndex, 1);
+
+      return {
+        items: normalizeOrder(next),
+        removed,
+      };
+    }
+
+    for (let index = 0; index < items.length; index += 1) {
+      const item = items[index];
+
+      if (item.type !== "container") {
+        continue;
+      }
+
+      const result = removeComponentRecursive(item.children, id);
+
+      if (result.removed) {
+        const next = [...items];
+
+        next[index] = {
+          ...item,
+          children: result.items,
+        };
+
+        return {
+          items: normalizeOrder(next),
+          removed: result.removed,
+        };
+      }
+    }
+
+    return {
+      items,
+      removed: null,
+    };
+  };
+
+  const insertComponentRecursive = (
+    items: LayoutComponent[],
+    parentId: string | null,
+    index: number,
+    component: LayoutComponent,
+  ): LayoutComponent[] => {
+    if (parentId === null) {
+      const next = [...items];
+      const safeIndex = Math.max(0, Math.min(index, next.length));
+
+      next.splice(safeIndex, 0, component);
+
+      return normalizeOrder(next);
+    }
+
+    return items.map((item) => {
+      if (item.type === "container" && item.id === parentId) {
+        const children = [...item.children];
+        const safeIndex = Math.max(0, Math.min(index, children.length));
+
+        children.splice(safeIndex, 0, component);
+
+        return {
+          ...item,
+          children: normalizeOrder(children),
+        };
+      }
+
+      if (item.type === "container") {
+        return {
+          ...item,
+          children: insertComponentRecursive(
+            item.children,
+            parentId,
+            index,
+            component,
+          ),
+        };
+      }
+
+      return item;
+    });
+  };
+
+  const moveComponent = (
+    componentId: string,
+    targetParentId: string | null,
+    targetIndex: number,
+  ) => {
+    const sourceLocation = findComponentLocation(components, componentId);
+    const draggedComponent = findComponentRecursive(components, componentId);
+
+    if (!sourceLocation || !draggedComponent) {
+      return;
+    }
+
+    // 컨테이너를 자기 자신 또는 자기 하위 컨테이너 안으로 넣는 순환 구조 방지
+    if (
+      targetParentId !== null &&
+      containsComponent(draggedComponent, targetParentId)
+    ) {
+      return;
+    }
+
+    let adjustedTargetIndex = targetIndex;
+
+    // 같은 부모 안에서 아래쪽으로 이동할 때는 먼저 제거되므로 인덱스 보정
+    if (
+      sourceLocation.parentId === targetParentId &&
+      sourceLocation.index < targetIndex
+    ) {
+      adjustedTargetIndex -= 1;
+    }
+
+    // 실질적으로 같은 위치면 history를 만들지 않음
+    if (
+      sourceLocation.parentId === targetParentId &&
+      sourceLocation.index === adjustedTargetIndex
+    ) {
+      return;
+    }
+
+    commitHistory((prev) => {
+      const removedResult = removeComponentRecursive(prev, componentId);
+
+      if (!removedResult.removed) {
+        return prev;
+      }
+
+      return insertComponentRecursive(
+        removedResult.items,
+        targetParentId,
+        adjustedTargetIndex,
+        removedResult.removed,
+      );
+    });
   };
 
   const updateLayoutRecursive = (
@@ -228,10 +405,8 @@ function App() {
         setEditPlaceholder("");
         setEditDirection("column");
 
-        const existingFile = imageFiles[component.id]?.[0] ?? null;
         const existingUrl = component.props.urls?.[0] ?? "";
 
-        setEditImageFile(existingFile);
         setEditImageUrl(existingUrl);
         setEditImagePreviewUrl(existingUrl);
         break;
@@ -381,19 +556,6 @@ function App() {
       return recursiveUpdate(prev);
     });
 
-    if (editType === "image") {
-      setHistory((prev) => ({
-        ...prev,
-        present: {
-          ...prev.present,
-          imageFiles: {
-            ...prev.present.imageFiles,
-            [editingComponentId]: editImageFile ? [editImageFile] : [],
-          },
-        },
-      }));
-    }
-
     closeEditModal();
   };
 
@@ -418,35 +580,13 @@ function App() {
   };
 
   const deleteComponent = (id: string) => {
-    commitHistory((prev) => {
-      const nextImageFiles = {
-        ...prev.imageFiles,
-      };
-
-      delete nextImageFiles[id];
-
-      return {
-        components: deleteRecursive(prev.components, id),
-
-        imageFiles: nextImageFiles,
-      };
-    });
+    commitHistory((prev) => deleteRecursive(prev, id));
   };
 
-  const cloneComponent = (
-    component: LayoutComponent,
-    copiedImageFiles: Record<string, File[]>,
-    currentImageFiles: Record<string, File[]>,
-  ): LayoutComponent => {
+  const cloneComponent = (component: LayoutComponent): LayoutComponent => {
     const newId = crypto.randomUUID();
 
     if (component.type === "image") {
-      const files = currentImageFiles[component.id];
-
-      if (files) {
-        copiedImageFiles[newId] = [...files];
-      }
-
       return {
         ...component,
         id: newId,
@@ -503,9 +643,7 @@ function App() {
             }
           : undefined,
 
-        children: component.children.map((child) =>
-          cloneComponent(child, copiedImageFiles, currentImageFiles),
-        ),
+        children: component.children.map((child) => cloneComponent(child)),
       };
     }
 
@@ -539,19 +677,13 @@ function App() {
 
   const copyComponent = (id: string) => {
     commitHistory((prev) => {
-      const copiedImageFiles: Record<string, File[]> = {};
-
       const copyRecursive = (items: LayoutComponent[]): LayoutComponent[] => {
         const result: LayoutComponent[] = [];
 
         for (const item of items) {
           if (item.id === id) {
             result.push(item);
-
-            result.push(
-              cloneComponent(item, copiedImageFiles, prev.imageFiles),
-            );
-
+            result.push(cloneComponent(item));
             continue;
           }
 
@@ -560,7 +692,6 @@ function App() {
               ...item,
               children: copyRecursive(item.children),
             });
-
             continue;
           }
 
@@ -570,16 +701,7 @@ function App() {
         return normalizeOrder(result);
       };
 
-      const nextComponents = copyRecursive(prev.components);
-
-      return {
-        components: nextComponents,
-
-        imageFiles: {
-          ...prev.imageFiles,
-          ...copiedImageFiles,
-        },
-      };
+      return copyRecursive(prev);
     });
   };
 
@@ -595,8 +717,6 @@ function App() {
     setNewPlaceholder("");
     setNewDirection("column");
 
-    setNewImageUrl("");
-    setNewImageFile(null);
     setNewImagePreviewUrl("");
 
     setShowCreateModal(true);
@@ -712,7 +832,7 @@ function App() {
           order: 0,
 
           props: {
-            urls: newImageUrl.trim() ? [newImageUrl.trim()] : [],
+            urls: newImagePreviewUrl ? [newImagePreviewUrl] : [],
             maxCount: 1,
             disabled: false,
           },
@@ -790,33 +910,21 @@ function App() {
       let nextComponents: LayoutComponent[];
 
       if (insertTarget.parentId === null) {
-        nextComponents = [...prev.components];
+        nextComponents = [...prev];
 
         nextComponents.splice(insertTarget.index, 0, newComponent);
 
         nextComponents = normalizeOrder(nextComponents);
       } else {
         nextComponents = insertIntoRecursive(
-          prev.components,
+          prev,
           insertTarget.parentId,
           insertTarget.index,
           newComponent,
         );
       }
 
-      const nextImageFiles = {
-        ...prev.imageFiles,
-      };
-
-      if (newComponent.type === "image" && newImageFile) {
-        nextImageFiles[newComponent.id] = [newImageFile];
-      }
-
-      return {
-        ...prev,
-        components: nextComponents,
-        imageFiles: nextImageFiles,
-      };
+      return nextComponents;
     });
 
     closeCreateModal();
@@ -939,6 +1047,8 @@ function App() {
     direction: ContainerDirection = "column",
   ) => {
     const isRow = direction === "row";
+    const isDragOver =
+      dragOverTarget?.parentId === parentId && dragOverTarget.index === index;
 
     return (
       <div
@@ -947,20 +1057,58 @@ function App() {
             ? "d-flex align-items-center"
             : "d-flex align-items-center gap-2 my-2"
         }
-        style={
-          isRow
+        onDragOver={(e) => {
+          if (!draggingId) return;
+
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          setDragOverTarget({ parentId, index });
+        }}
+        onDragLeave={(e) => {
+          const nextTarget = e.relatedTarget as Node | null;
+
+          if (!nextTarget || !e.currentTarget.contains(nextTarget)) {
+            setDragOverTarget((prev) =>
+              prev?.parentId === parentId && prev.index === index ? null : prev,
+            );
+          }
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const componentId =
+            draggingId || e.dataTransfer.getData("text/plain");
+
+          if (componentId) {
+            moveComponent(componentId, parentId, index);
+          }
+
+          setDraggingId(null);
+          setDragOverTarget(null);
+        }}
+        style={{
+          ...(isRow
             ? {
                 alignSelf: "stretch",
+                minWidth: draggingId ? 34 : undefined,
               }
-            : undefined
-        }
+            : undefined),
+
+          minHeight: draggingId ? (isRow ? 48 : 34) : undefined,
+          padding: draggingId ? (isRow ? "0 4px" : "4px 0") : undefined,
+          borderRadius: 8,
+          background: isDragOver ? "rgba(13, 110, 253, 0.12)" : undefined,
+          outline: isDragOver ? "2px dashed #0d6efd" : undefined,
+          transition: "background 120ms ease, outline 120ms ease",
+        }}
       >
         {!isRow && (
           <div
             style={{
               flex: 1,
-              height: 1,
-              backgroundColor: "#dee2e6",
+              height: isDragOver ? 2 : 1,
+              backgroundColor: isDragOver ? "#0d6efd" : "#dee2e6",
             }}
           />
         )}
@@ -987,8 +1135,8 @@ function App() {
           <div
             style={{
               flex: 1,
-              height: 1,
-              backgroundColor: "#dee2e6",
+              height: isDragOver ? 2 : 1,
+              backgroundColor: isDragOver ? "#0d6efd" : "#dee2e6",
             }}
           />
         )}
@@ -996,17 +1144,120 @@ function App() {
     );
   };
 
+  const renderDragHandle = (component: LayoutComponent) => (
+    <div
+      draggable
+      onDragStart={(e) => {
+        e.stopPropagation();
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", component.id);
+        setDraggingId(component.id);
+        setDragOverTarget(null);
+      }}
+      onDragEnd={() => {
+        setDraggingId(null);
+        setDragOverTarget(null);
+      }}
+      title="드래그해서 이동"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+        marginBottom: 6,
+        padding: "3px 8px",
+        border: "1px solid #dee2e6",
+        borderRadius: 6,
+        background: "#fff",
+        color: "#6c757d",
+        cursor: draggingId === component.id ? "grabbing" : "grab",
+        userSelect: "none",
+        fontSize: 12,
+      }}
+    >
+      <span aria-hidden="true">⋮⋮</span>
+      <span>이동</span>
+    </div>
+  );
+
   const renderLayoutComponent = (component: LayoutComponent) => {
+    const isDragging = draggingId === component.id;
+
     if (component.type === "container") {
       const children = [...component.children].sort(
         (a, b) => a.order - b.order,
       );
 
       const direction = component.props.direction ?? "column";
-
       const isRow = direction === "row";
 
       return (
+        <div
+          style={{
+            opacity: isDragging ? 0.45 : 1,
+            transition: "opacity 120ms ease",
+          }}
+        >
+          {renderDragHandle(component)}
+
+          <DivBox
+            key={component.id}
+            layout={component.layout}
+            style={component.style}
+            onLayoutChange={(layout) => updateLayout(component.id, layout)}
+            onEdit={() => editComponent(component.id)}
+            onCopy={() => copyComponent(component.id)}
+            onDelete={() => deleteComponent(component.id)}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: direction,
+                gap: component.props.gap ?? 8,
+                width: "100%",
+                alignItems: isRow ? "stretch" : undefined,
+                justifyContent: isRow ? "space-between" : undefined,
+              }}
+            >
+              {renderAddButton(component.id, 0, direction)}
+
+              {children.map((child, index) => (
+                <div
+                  key={child.id}
+                  style={{
+                    flex: isRow
+                      ? child.layout?.width
+                        ? undefined
+                        : 1
+                      : undefined,
+                    width: isRow ? child.layout?.width : "100%",
+                    minWidth: 0,
+                  }}
+                >
+                  {renderLayoutComponent(child)}
+
+                  {child.type !== "scrollToTopButton" &&
+                    !isRow &&
+                    renderAddButton(component.id, index + 1, direction)}
+                </div>
+              ))}
+
+              {isRow &&
+                renderAddButton(component.id, children.length, direction)}
+            </div>
+          </DivBox>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        style={{
+          opacity: isDragging ? 0.45 : 1,
+          transition: "opacity 120ms ease",
+        }}
+      >
+        {renderDragHandle(component)}
+
         <DivBox
           key={component.id}
           layout={component.layout}
@@ -1016,73 +1267,9 @@ function App() {
           onCopy={() => copyComponent(component.id)}
           onDelete={() => deleteComponent(component.id)}
         >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: direction,
-
-              gap: component.props.gap ?? 8,
-
-              width: "100%",
-
-              alignItems: isRow ? "stretch" : undefined,
-              justifyContent: isRow ? "space-between" : undefined,
-            }}
-          >
-            {/*
-             * 맨 앞 +
-             */}
-            {renderAddButton(component.id, 0, direction)}
-
-            {children.map((child, index) => (
-              <div
-                key={child.id}
-                style={{
-                  flex: isRow
-                    ? child.layout?.width
-                      ? undefined
-                      : 1
-                    : undefined,
-
-                  width: isRow ? child.layout?.width : "100%",
-
-                  minWidth: 0,
-                }}
-              >
-                {renderLayoutComponent(child)}
-
-                {/*
-                 * column일 때는
-                 * 자식 아래에 +
-                 */}
-                {/* 특수한 경우임!!! */}
-                {child.type !== "scrollToTopButton" &&
-                  !isRow &&
-                  renderAddButton(component.id, index + 1, direction)}
-              </div>
-            ))}
-
-            {/*
-             * row일 때는 마지막 오른쪽에 +
-             */}
-            {isRow && renderAddButton(component.id, children.length, direction)}
-          </div>
+          {renderComponent(component)}
         </DivBox>
-      );
-    }
-
-    return (
-      <DivBox
-        key={component.id}
-        layout={component.layout}
-        style={component.style}
-        onLayoutChange={(layout) => updateLayout(component.id, layout)}
-        onEdit={() => editComponent(component.id)}
-        onCopy={() => copyComponent(component.id)}
-        onDelete={() => deleteComponent(component.id)}
-      >
-        {renderComponent(component)}
-      </DivBox>
+      </div>
     );
   };
 
@@ -1217,17 +1404,12 @@ function App() {
                       onChange={(e) => {
                         const file = e.target.files?.[0] ?? null;
 
-                        setNewImageFile(file);
-
                         if (!file) {
-                          setNewImageUrl("");
                           setNewImagePreviewUrl("");
                           return;
                         }
 
                         const imageUrl = URL.createObjectURL(file);
-
-                        setNewImageUrl(imageUrl);
                         setNewImagePreviewUrl(imageUrl);
                       }}
                     />
@@ -1489,8 +1671,6 @@ function App() {
                           accept="image/*"
                           onChange={(e) => {
                             const file = e.target.files?.[0] ?? null;
-
-                            setEditImageFile(file);
 
                             if (!file) {
                               setEditImageUrl("");
