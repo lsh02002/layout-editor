@@ -1069,7 +1069,6 @@ function App() {
     direction: ContainerDirection = "column",
   ) => {
     const isRow = direction === "row";
-
     const isActive =
       activeDropTarget?.parentId === parentId &&
       activeDropTarget.index === index;
