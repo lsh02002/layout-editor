@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties } from "react";
+import React, { useRef, useState, type CSSProperties } from "react";
 
 import DivBox from "./components/layout/DivBox";
 import type {
@@ -73,6 +73,8 @@ function App() {
     parentId: string | null;
     index: number;
   } | null>(null);
+
+  const [showLayerPanel, setShowLayerPanel] = useState(true);
 
   const components = history.present;
 
@@ -1709,6 +1711,108 @@ ${bodyHtml}
     );
   };
 
+  const renderLayerTree = (items: LayoutComponent[], depth = 0) => {
+    const sorted = [...items].sort((a, b) => a.order - b.order);
+
+    return sorted.map((component) => {
+      const isContainer = component.type === "container";
+
+      const getLabel = () => {
+        switch (component.type) {
+          case "button":
+            return component.props.title || "Button";
+
+          case "textarea":
+            return component.props.value?.slice(0, 20) || "TextArea";
+
+          case "quill": {
+            const plainText = component.props.value
+              ?.replace(/<[^>]*>/g, "")
+              .trim();
+
+            return plainText?.slice(0, 20) || "Quill";
+          }
+
+          case "image":
+            return "Image";
+
+          case "scrollToTopButton":
+            return "Scroll To Top";
+
+          case "container":
+            return "Container";
+
+          default:
+            return "Component";
+        }
+      };
+
+      return (
+        <React.Fragment key={component.id}>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => editComponent(component.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                editComponent(component.id);
+              }
+            }}
+            style={{
+              marginLeft: depth * 14,
+              padding: "6px 8px",
+              borderRadius: 6,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 13,
+              userSelect: "none",
+            }}
+            className="layer-tree-item"
+          >
+            <span
+              style={{
+                width: 18,
+                textAlign: "center",
+                flexShrink: 0,
+              }}
+            >
+              {isContainer ? "▾" : "•"}
+            </span>
+
+            <span
+              style={{
+                fontWeight: isContainer ? 600 : 400,
+                minWidth: 0,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                flex: 1,
+              }}
+            >
+              {getLabel()}
+            </span>
+
+            <small
+              className="text-secondary"
+              style={{
+                fontSize: 10,
+                flexShrink: 0,
+              }}
+            >
+              {component.type}
+            </small>
+          </div>
+
+          {isContainer &&
+            component.children.length > 0 &&
+            renderLayerTree(component.children, depth + 1)}
+        </React.Fragment>
+      );
+    });
+  };
+
   const renderCreateModal = () => {
     if (!showCreateModal) return null;
 
@@ -2459,11 +2563,94 @@ ${bodyHtml}
 
   return (
     <>
+      <style>{`
+  .layer-tree-item:hover {
+    background: #f1f3f5;
+  }
+    `}</style>
+      {showLayerPanel && (
+        <aside
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            bottom: 0,
+            width: 280,
+            background: "#fff",
+            borderRight: "1px solid #dee2e6",
+            zIndex: 1000,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            className="
+        d-flex
+        align-items-center
+        justify-content-between
+        border-bottom
+        px-3
+        py-2
+      "
+          >
+            <strong>레이어</strong>
+
+            <button
+              type="button"
+              className="btn btn-sm border-0"
+              onClick={() => setShowLayerPanel(false)}
+            >
+              ×
+            </button>
+          </div>
+
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: 8,
+            }}
+          >
+            {components.length > 0 ? (
+              renderLayerTree(components)
+            ) : (
+              <div
+                className="text-secondary text-center"
+                style={{
+                  padding: 20,
+                  fontSize: 13,
+                }}
+              >
+                컴포넌트가 없습니다.
+              </div>
+            )}
+          </div>
+        </aside>
+      )}
+      {!showLayerPanel && (
+        <button
+          type="button"
+          className="btn btn-dark"
+          onClick={() => setShowLayerPanel(true)}
+          style={{
+            position: "fixed",
+            top: 16,
+            left: 16,
+            zIndex: 1000,
+          }}
+        >
+          레이어
+        </button>
+      )}
       <div
         className="position-relative"
         style={{
           minHeight: "100vh",
           padding: 16,
+
+          marginLeft: showLayerPanel ? 280 : 0,
+
+          transition: "margin-left 160ms ease",
         }}
       >
         <div className="d-flex gap-2 mb-3">
