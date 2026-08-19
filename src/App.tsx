@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 
 import DivBox from "./components/layout/DivBox";
 import type {
@@ -65,8 +65,11 @@ function App() {
     index: number;
   } | null>(null);
 
+  // Drag & Drop 상태
   const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [dragOverTarget, setDragOverTarget] = useState<{
+  const draggingIdRef = useRef<string | null>(null);
+
+  const [activeDropTarget, setActiveDropTarget] = useState<{
     parentId: string | null;
     index: number;
   } | null>(null);
@@ -280,7 +283,7 @@ function App() {
       return;
     }
 
-    // 컨테이너를 자기 자신 또는 자기 하위 컨테이너 안으로 넣는 순환 구조 방지
+    // 자기 자신 또는 자신의 하위 컨테이너 안으로 이동하는 순환 구조 방지
     if (
       targetParentId !== null &&
       containsComponent(draggedComponent, targetParentId)
@@ -290,7 +293,7 @@ function App() {
 
     let adjustedTargetIndex = targetIndex;
 
-    // 같은 부모 안에서 아래쪽으로 이동할 때는 먼저 제거되므로 인덱스 보정
+    // 같은 부모에서 아래쪽으로 이동하면 원본 제거 후 index가 하나 줄어듦
     if (
       sourceLocation.parentId === targetParentId &&
       sourceLocation.index < targetIndex
@@ -320,6 +323,24 @@ function App() {
         removedResult.removed,
       );
     });
+  };
+
+  const handleDragStart = (
+    event: React.DragEvent<HTMLElement>,
+    componentId: string,
+  ) => {
+    draggingIdRef.current = componentId;
+    setDraggingId(componentId);
+    setActiveDropTarget(null);
+
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", componentId);
+  };
+
+  const handleDragEnd = () => {
+    draggingIdRef.current = null;
+    setDraggingId(null);
+    setActiveDropTarget(null);
   };
 
   const updateLayoutRecursive = (
@@ -1023,6 +1044,7 @@ function App() {
               <img
                 src={imageUrl}
                 alt=""
+                draggable={false}
                 style={{
                   width: "100%",
                   height: "auto",
@@ -1047,68 +1069,112 @@ function App() {
     direction: ContainerDirection = "column",
   ) => {
     const isRow = direction === "row";
-    const isDragOver =
-      dragOverTarget?.parentId === parentId && dragOverTarget.index === index;
+
+    const isActive =
+      activeDropTarget?.parentId === parentId &&
+      activeDropTarget.index === index;
 
     return (
       <div
         className={
           isRow
-            ? "d-flex align-items-center"
+            ? "d-flex align-items-center justify-content-center"
             : "d-flex align-items-center gap-2 my-2"
         }
-        onDragOver={(e) => {
-          if (!draggingId) return;
+        onDragEnter={(event) => {
+          if (!draggingIdRef.current) return;
 
-          e.preventDefault();
-          e.dataTransfer.dropEffect = "move";
-          setDragOverTarget({ parentId, index });
+          event.preventDefault();
+          event.stopPropagation();
+
+          setActiveDropTarget({
+            parentId,
+            index,
+          });
         }}
-        onDragLeave={(e) => {
-          const nextTarget = e.relatedTarget as Node | null;
+        onDragOver={(event) => {
+          if (!draggingIdRef.current) return;
 
-          if (!nextTarget || !e.currentTarget.contains(nextTarget)) {
-            setDragOverTarget((prev) =>
-              prev?.parentId === parentId && prev.index === index ? null : prev,
-            );
+          event.preventDefault();
+          event.stopPropagation();
+          event.dataTransfer.dropEffect = "move";
+
+          if (
+            activeDropTarget?.parentId !== parentId ||
+            activeDropTarget.index !== index
+          ) {
+            setActiveDropTarget({
+              parentId,
+              index,
+            });
           }
         }}
-        onDrop={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
+        onDragLeave={(event) => {
+          const relatedTarget = event.relatedTarget as Node | null;
+
+          // drop zone 내부 자식 요소로 이동한 것은 leave로 처리하지 않음
+          if (relatedTarget && event.currentTarget.contains(relatedTarget)) {
+            return;
+          }
+
+          setActiveDropTarget((prev) => {
+            if (prev?.parentId === parentId && prev.index === index) {
+              return null;
+            }
+
+            return prev;
+          });
+        }}
+        onDrop={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
 
           const componentId =
-            draggingId || e.dataTransfer.getData("text/plain");
+            event.dataTransfer.getData("text/plain") || draggingIdRef.current;
 
           if (componentId) {
             moveComponent(componentId, parentId, index);
           }
 
+          draggingIdRef.current = null;
           setDraggingId(null);
-          setDragOverTarget(null);
+          setActiveDropTarget(null);
         }}
         style={{
           ...(isRow
             ? {
                 alignSelf: "stretch",
-                minWidth: draggingId ? 34 : undefined,
+                minWidth: 44,
+                minHeight: 44,
+                padding: "0 6px",
               }
-            : undefined),
+            : {
+                width: "100%",
+                minHeight: 44,
+                padding: "5px 0",
+              }),
 
-          minHeight: draggingId ? (isRow ? 48 : 34) : undefined,
-          padding: draggingId ? (isRow ? "0 4px" : "4px 0") : undefined,
+          flexShrink: 0,
           borderRadius: 8,
-          background: isDragOver ? "rgba(13, 110, 253, 0.12)" : undefined,
-          outline: isDragOver ? "2px dashed #0d6efd" : undefined,
-          transition: "background 120ms ease, outline 120ms ease",
+          background:
+            isActive && draggingId !== null
+              ? "rgba(13, 110, 253, 0.12)"
+              : "transparent",
+          outline:
+            isActive && draggingId !== null
+              ? "2px dashed #0d6efd"
+              : "2px dashed transparent",
+          outlineOffset: -2,
+          transition: "background 100ms ease, outline 100ms ease",
         }}
       >
         {!isRow && (
           <div
             style={{
               flex: 1,
-              height: isDragOver ? 2 : 1,
-              backgroundColor: isDragOver ? "#0d6efd" : "#dee2e6",
+              height: isActive ? 2 : 1,
+              backgroundColor: isActive ? "#0d6efd" : "#dee2e6",
+              pointerEvents: "none",
             }}
           />
         )}
@@ -1121,10 +1187,10 @@ function App() {
             height: 30,
             minWidth: 30,
             padding: 0,
+            pointerEvents: draggingId !== null ? "none" : "auto",
           }}
-          onClick={(e) => {
-            e.stopPropagation();
-
+          onClick={(event) => {
+            event.stopPropagation();
             openCreateModal(parentId, index);
           }}
         >
@@ -1135,8 +1201,9 @@ function App() {
           <div
             style={{
               flex: 1,
-              height: isDragOver ? 2 : 1,
-              backgroundColor: isDragOver ? "#0d6efd" : "#dee2e6",
+              height: isActive ? 2 : 1,
+              backgroundColor: isActive ? "#0d6efd" : "#dee2e6",
+              pointerEvents: "none",
             }}
           />
         )}
@@ -1144,40 +1211,41 @@ function App() {
     );
   };
 
-  const renderDragHandle = (component: LayoutComponent) => (
-    <div
-      draggable
-      onDragStart={(e) => {
-        e.stopPropagation();
-        e.dataTransfer.effectAllowed = "move";
-        e.dataTransfer.setData("text/plain", component.id);
-        setDraggingId(component.id);
-        setDragOverTarget(null);
-      }}
-      onDragEnd={() => {
-        setDraggingId(null);
-        setDragOverTarget(null);
-      }}
-      title="드래그해서 이동"
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 4,
-        marginBottom: 6,
-        padding: "3px 8px",
-        border: "1px solid #dee2e6",
-        borderRadius: 6,
-        background: "#fff",
-        color: "#6c757d",
-        cursor: draggingId === component.id ? "grabbing" : "grab",
-        userSelect: "none",
-        fontSize: 12,
-      }}
-    >
-      <span aria-hidden="true">⋮⋮</span>
-      <span>이동</span>
-    </div>
-  );
+  const renderDragHandle = (component: LayoutComponent) => {
+    const isDragging = draggingId === component.id;
+
+    return (
+      <div
+        draggable
+        onDragStart={(event) => handleDragStart(event, component.id)}
+        onDragEnd={handleDragEnd}
+        onClick={(event) => event.stopPropagation()}
+        title="드래그해서 이동"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 5,
+          marginBottom: 6,
+          padding: "5px 10px",
+          border: "1px solid #dee2e6",
+          borderRadius: 6,
+          background: "#fff",
+          color: "#6c757d",
+          cursor: isDragging ? "grabbing" : "grab",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          touchAction: "none",
+          fontSize: 12,
+          lineHeight: 1.2,
+        }}
+      >
+        <span aria-hidden="true" style={{ pointerEvents: "none" }}>
+          ⋮⋮
+        </span>
+        <span style={{ pointerEvents: "none" }}>이동</span>
+      </div>
+    );
+  };
 
   const renderLayoutComponent = (component: LayoutComponent) => {
     const isDragging = draggingId === component.id;
@@ -1194,7 +1262,7 @@ function App() {
         <div
           style={{
             opacity: isDragging ? 0.45 : 1,
-            transition: "opacity 120ms ease",
+            transition: "opacity 100ms ease",
           }}
         >
           {renderDragHandle(component)}
@@ -1253,7 +1321,7 @@ function App() {
       <div
         style={{
           opacity: isDragging ? 0.45 : 1,
-          transition: "opacity 120ms ease",
+          transition: "opacity 100ms ease",
         }}
       >
         {renderDragHandle(component)}
