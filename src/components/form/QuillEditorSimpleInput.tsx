@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo, useEffect } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 
@@ -17,18 +17,35 @@ const QuillEditorSimpleInput = ({
   style?: React.CSSProperties;
   rows?: number;
 }) => {
+  const [isEmpty, setIsEmpty] = useState(true);
+  
   const quillRef = useRef<ReactQuill | null>(null);
   const lastSelectionRef = useRef<{ index: number; length: number } | null>(
     null,
   );
 
-  const isDataEmpty =
-    !data ||
-    data === "<p><br></p>" ||
-    data === "<p></p>" ||
-    data.replace(/<(.|\n)*?>/g, "").trim().length === 0;
+  useEffect(() => {
+    const editor = quillRef.current?.getEditor();
+    const root = editor?.root;
+    if (!root) return;
 
-  const [isEmpty, setIsEmpty] = useState(isDataEmpty);
+    const handleCompositionStart = () => {
+      setIsEmpty(false);
+    };
+
+    const handleCompositionEnd = () => {
+      const text = editor.getText().trim();
+      setIsEmpty(text.length === 0);
+    };
+
+    root.addEventListener("compositionstart", handleCompositionStart);
+    root.addEventListener("compositionend", handleCompositionEnd);
+
+    return () => {
+      root.removeEventListener("compositionstart", handleCompositionStart);
+      root.removeEventListener("compositionend", handleCompositionEnd);
+    };
+  }, []);
 
   const modules = useMemo(
     () => ({

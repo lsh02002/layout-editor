@@ -1,16 +1,6 @@
-import {
-  useRef,
-  useState,
-  type CSSProperties,
-  type SetStateAction,
-} from "react";
+import { useState, type CSSProperties } from "react";
 
 import DivBox from "./components/layout/DivBox";
-import ConfirmButton from "./components/form/ConfirmButton";
-import TextAreaInput from "./components/form/TextAreaInput";
-import QuillEditorInput from "./components/form/QuillEditorInput";
-import ImageInput from "./components/form/ImageInput";
-
 import type {
   ComponentLayout,
   LayoutComponent,
@@ -22,7 +12,6 @@ import type {
 } from "./types/types";
 
 import { data } from "./data/data";
-import ScrollToTopButton from "./components/form/ScrollToTopButton";
 import QuillEditorSimpleInput from "./components/form/QuillEditorSimpleInput";
 
 function App() {
@@ -48,6 +37,11 @@ function App() {
   const [newDirection, setNewDirection] =
     useState<ContainerDirection>("column");
 
+  const [newImageUrl, setNewImageUrl] = useState("");
+
+  const [newImageFile, setNewImageFile] = useState<File | null>(null);
+  const [newImagePreviewUrl, setNewImagePreviewUrl] = useState("");
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingComponentId, setEditingComponentId] = useState<string | null>(
     null,
@@ -71,12 +65,15 @@ function App() {
 
   const [editTab, setEditTab] = useState<"basic" | "style">("basic");
 
+  const [editImageUrl, setEditImageUrl] = useState("");
+
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editImagePreviewUrl, setEditImagePreviewUrl] = useState("");
+
   const [insertTarget, setInsertTarget] = useState<{
     parentId: string | null;
     index: number;
   } | null>(null);
-
-  const quillEditingRef = useRef<Record<string, boolean>>({});
 
   const components = history.present.components;
   const imageFiles = history.present.imageFiles;
@@ -148,77 +145,6 @@ function App() {
     return undefined;
   };
 
-  const updateComponentRecursive = (
-    items: LayoutComponent[],
-    id: string,
-    newProps: Partial<LayoutComponent["props"]>,
-  ): LayoutComponent[] => {
-    return items.map((item) => {
-      if (item.id === id) {
-        return {
-          ...item,
-          props: {
-            ...item.props,
-            ...newProps,
-          },
-        } as LayoutComponent;
-      }
-
-      if (item.type === "container") {
-        return {
-          ...item,
-          children: updateComponentRecursive(item.children, id, newProps),
-        };
-      }
-
-      return item;
-    });
-  };
-
-  const updateComponent = (
-    id: string,
-    newProps: Partial<LayoutComponent["props"]>,
-    recordHistory = false,
-  ) => {
-    setComponents(
-      (prev) => updateComponentRecursive(prev, id, newProps),
-      recordHistory,
-    );
-  };
-
-  const updateQuillComponent = (id: string, value: string) => {
-    setHistory((prev) => {
-      const nextComponents = updateComponentRecursive(
-        prev.present.components,
-        id,
-        { value },
-      );
-
-      const nextSnapshot: EditorSnapshot = {
-        ...prev.present,
-        components: nextComponents,
-      };
-
-      // 이번 Quill 편집 세션에서 최초 변경
-      if (!quillEditingRef.current[id]) {
-        quillEditingRef.current[id] = true;
-
-        return {
-          past: [...prev.past, prev.present],
-          present: nextSnapshot,
-          future: [],
-        };
-      }
-
-      // 이후 타이핑은 history에 계속 추가하지 않음
-      return {
-        ...prev,
-        present: nextSnapshot,
-        future: [],
-      };
-    });
-  };
-
   const updateLayoutRecursive = (
     items: LayoutComponent[],
     id: string,
@@ -265,6 +191,7 @@ function App() {
         ? (component.props.disabled ?? false)
         : false,
     );
+    setEditImageUrl("");
 
     switch (component.type) {
       case "button":
@@ -295,12 +222,20 @@ function App() {
         setEditDirection(component.props.direction ?? "column");
         break;
 
-      case "image":
+      case "image": {
         setEditTitle("");
         setEditValue("");
         setEditPlaceholder("");
         setEditDirection("column");
+
+        const existingFile = imageFiles[component.id]?.[0] ?? null;
+        const existingUrl = component.props.urls?.[0] ?? "";
+
+        setEditImageFile(existingFile);
+        setEditImageUrl(existingUrl);
+        setEditImagePreviewUrl(existingUrl);
         break;
+      }
 
       case "scrollToTopButton":
         setEditTitle("");
@@ -391,14 +326,22 @@ function App() {
               case "image":
                 return {
                   ...component,
+
                   style: {
                     ...editStyle,
                   },
+
                   contentStyle: {
                     ...editContentStyle,
                   },
+
                   props: {
                     ...component.props,
+
+                    urls: editImageUrl.trim() ? [editImageUrl.trim()] : [],
+
+                    maxCount: 1,
+
                     disabled: editDisabled,
                   },
                 };
@@ -437,6 +380,19 @@ function App() {
 
       return recursiveUpdate(prev);
     });
+
+    if (editType === "image") {
+      setHistory((prev) => ({
+        ...prev,
+        present: {
+          ...prev.present,
+          imageFiles: {
+            ...prev.present.imageFiles,
+            [editingComponentId]: editImageFile ? [editImageFile] : [],
+          },
+        },
+      }));
+    }
 
     closeEditModal();
   };
@@ -639,6 +595,10 @@ function App() {
     setNewPlaceholder("");
     setNewDirection("column");
 
+    setNewImageUrl("");
+    setNewImageFile(null);
+    setNewImagePreviewUrl("");
+
     setShowCreateModal(true);
   };
 
@@ -752,8 +712,8 @@ function App() {
           order: 0,
 
           props: {
-            urls: [],
-            maxCount: 4,
+            urls: newImageUrl.trim() ? [newImageUrl.trim()] : [],
+            maxCount: 1,
             disabled: false,
           },
 
@@ -844,52 +804,22 @@ function App() {
         );
       }
 
+      const nextImageFiles = {
+        ...prev.imageFiles,
+      };
+
+      if (newComponent.type === "image" && newImageFile) {
+        nextImageFiles[newComponent.id] = [newImageFile];
+      }
+
       return {
         ...prev,
         components: nextComponents,
+        imageFiles: nextImageFiles,
       };
     });
 
     closeCreateModal();
-  };
-
-  const updateImagePreviewUrls = (
-    id: string,
-    updater: SetStateAction<string[]>,
-  ) => {
-    setComponents((prev) => {
-      const recursive = (items: LayoutComponent[]): LayoutComponent[] => {
-        return items.map((item) => {
-          if (item.id === id && item.type === "image") {
-            const nextUrls =
-              typeof updater === "function"
-                ? updater(item.props.urls)
-                : updater;
-
-            return {
-              ...item,
-
-              props: {
-                ...item.props,
-                urls: nextUrls,
-              },
-            };
-          }
-
-          if (item.type === "container") {
-            return {
-              ...item,
-
-              children: recursive(item.children),
-            };
-          }
-
-          return item;
-        });
-      };
-
-      return recursive(prev);
-    });
   };
 
   const undo = () => {
@@ -931,78 +861,72 @@ function App() {
     switch (component.type) {
       case "button":
         return (
-          <ConfirmButton
-            title={component.props.title}
-            disabled={component.props.disabled}
-            style={component.contentStyle}
-            onClick={() => console.log("Button clicked!", component.id)}
-          />
+          <div style={component.contentStyle}>{component.props.title}</div>
         );
 
       case "scrollToTopButton":
         return (
-          <ScrollToTopButton
-            title={component.props.title}
-            disabled={component.props.disabled}
-            zIndex={component.props.zIndex}
-          />
+          <div style={component.contentStyle}>{component.props.title}</div>
         );
 
       case "textarea":
         return (
-          <TextAreaInput
-            name={component.id}
-            data={component.props.value}
-            rows={component.props.rows}
-            placeholder={component.props.placeholder}
-            disabled={component.props.disabled}
-            style={component.contentStyle}
-            setData={(value) =>
-              updateComponent(component.id, {
-                value,
-              })
-            }
-          />
+          <div
+            style={{
+              ...component.contentStyle,
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+            }}
+          >
+            {component.props.value ||
+              component.props.placeholder ||
+              "내용을 입력하세요."}
+          </div>
         );
 
       case "quill":
         return (
-          <QuillEditorInput
-            name={component.id}
-            data={component.props.value}
-            placeholder={component.props.placeholder}
-            disabled={component.props.disabled}
-            style={component.contentStyle}
-            setData={(value) => updateQuillComponent(component.id, value)}
-            onClose={() => {
-              quillEditingRef.current[component.id] = false;
+          <div
+            style={{
+              ...component.contentStyle,
+              wordBreak: "break-word",
+            }}
+            dangerouslySetInnerHTML={{
+              __html:
+                component.props.value ||
+                `<span style="color:#6c757d">${
+                  component.props.placeholder || "본문을 입력하세요."
+                }</span>`,
             }}
           />
         );
 
-      case "image":
+      case "image": {
+        const imageUrl = component.props.urls?.[0];
+
         return (
-          <ImageInput
-            name={component.id}
-            disabled={component.props.disabled}
-            maxCount={component.props.maxCount}
-            data={imageFiles[component.id] ?? []}
-            setData={(files) => {
-              commitHistory((prev) => ({
-                ...prev,
-
-                imageFiles: {
-                  ...prev.imageFiles,
-                  [component.id]: files,
-                },
-              }));
+          <div
+            style={{
+              ...component.contentStyle,
+              width: "100%",
             }}
-            previewUrls={component.props.urls}
-            setPreviewUrls={(updater) =>
-              updateImagePreviewUrls(component.id, updater)
-            }
-          />
+          >
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt=""
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  display: "block",
+                }}
+              />
+            ) : (
+              <div className="text-secondary">이미지 없음</div>
+            )}
+          </div>
         );
+      }
 
       case "container":
         return null;
@@ -1281,6 +1205,51 @@ function App() {
                   </>
                 )}
 
+                {/* IMAGE */}
+                {newType === "image" && (
+                  <div className="mb-3">
+                    <label className="form-label">이미지</label>
+
+                    <input
+                      type="file"
+                      className="form-control"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] ?? null;
+
+                        setNewImageFile(file);
+
+                        if (!file) {
+                          setNewImageUrl("");
+                          setNewImagePreviewUrl("");
+                          return;
+                        }
+
+                        const imageUrl = URL.createObjectURL(file);
+
+                        setNewImageUrl(imageUrl);
+                        setNewImagePreviewUrl(imageUrl);
+                      }}
+                    />
+
+                    {newImagePreviewUrl && (
+                      <div className="mt-3">
+                        <img
+                          src={newImagePreviewUrl}
+                          alt="미리보기"
+                          style={{
+                            display: "block",
+                            maxWidth: "100%",
+                            maxHeight: 300,
+                            objectFit: "contain",
+                            borderRadius: 8,
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* CONTAINER */}
                 {newType === "container" && (
                   <div className="mb-3">
@@ -1507,6 +1476,51 @@ function App() {
                           />
                         </div>
                       </>
+                    )}
+
+                    {/* IMAGE */}
+                    {editType === "image" && (
+                      <div className="mb-3">
+                        <label className="form-label">이미지</label>
+
+                        <input
+                          type="file"
+                          className="form-control"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] ?? null;
+
+                            setEditImageFile(file);
+
+                            if (!file) {
+                              setEditImageUrl("");
+                              setEditImagePreviewUrl("");
+                              return;
+                            }
+
+                            const imageUrl = URL.createObjectURL(file);
+
+                            setEditImageUrl(imageUrl);
+                            setEditImagePreviewUrl(imageUrl);
+                          }}
+                        />
+
+                        {editImagePreviewUrl && (
+                          <div className="mt-3">
+                            <img
+                              src={editImagePreviewUrl}
+                              alt="미리보기"
+                              style={{
+                                display: "block",
+                                maxWidth: "100%",
+                                maxHeight: 300,
+                                objectFit: "contain",
+                                borderRadius: 8,
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
                     )}
 
                     {/* CONTAINER */}
