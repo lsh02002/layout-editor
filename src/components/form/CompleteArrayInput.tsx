@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { layout } from "../../theme/theme";
 import { useModalManager } from "../../usehooks/usehooks";
 type Option = { id: string; name: string };
 
@@ -235,8 +234,7 @@ export const CompleteArrayInput: React.FC<CompleteArrayInputPropsType> = ({
               minHeight: 0,
               marginBottom: 80,
               width: "100%",
-              scrollbarWidth: "thin",
-              maxWidth: layout.maxWidth,
+              scrollbarWidth: "thin",              
             }}
           >
             <div className="p-2">
