@@ -986,6 +986,208 @@ function App() {
   const canUndo = history.past.length > 0;
   const canRedo = history.future.length > 0;
 
+  const escapeHtml = (value: string) =>
+    value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  const escapeAttribute = (value: string) => escapeHtml(value);
+
+  const styleToCss = (style?: CSSProperties) => {
+    if (!style) return "";
+
+    const unitlessProperties = new Set([
+      "animationIterationCount",
+      "borderImageOutset",
+      "borderImageSlice",
+      "borderImageWidth",
+      "boxFlex",
+      "boxFlexGroup",
+      "boxOrdinalGroup",
+      "columnCount",
+      "columns",
+      "flex",
+      "flexGrow",
+      "flexPositive",
+      "flexShrink",
+      "flexNegative",
+      "flexOrder",
+      "gridArea",
+      "gridColumn",
+      "gridColumnEnd",
+      "gridColumnSpan",
+      "gridColumnStart",
+      "gridRow",
+      "gridRowEnd",
+      "gridRowSpan",
+      "gridRowStart",
+      "fontWeight",
+      "lineClamp",
+      "lineHeight",
+      "opacity",
+      "order",
+      "orphans",
+      "tabSize",
+      "widows",
+      "zIndex",
+      "zoom",
+    ]);
+
+    return Object.entries(style)
+      .filter(
+        ([, value]) => value !== undefined && value !== null && value !== "",
+      )
+      .map(([key, value]) => {
+        const cssKey = key
+          .replace(/^ms-/, "-ms-")
+          .replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+
+        const cssValue =
+          typeof value === "number" &&
+          value !== 0 &&
+          !unitlessProperties.has(key)
+            ? `${value}px`
+            : String(value);
+
+        return `${cssKey}:${cssValue}`;
+      })
+      .join(";");
+  };
+
+  const imageUrlToDataUrl = async (url: string) => {
+    if (!url) return "";
+    if (url.startsWith("data:")) return url;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return url;
+
+      const blob = await response.blob();
+
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => resolve(String(reader.result ?? url));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      // 외부 URL이 CORS 등으로 읽히지 않으면 기존 URL을 그대로 유지한다.
+      return url;
+    }
+  };
+
+  const componentToHtml = async (
+    component: LayoutComponent,
+  ): Promise<string> => {
+    const wrapperStyle = styleToCss(component.style);
+    const contentStyle = styleToCss(component.contentStyle);
+
+    switch (component.type) {
+      case "button":
+        return `<div style="${escapeAttribute(wrapperStyle)}"><button type="button" style="${escapeAttribute(contentStyle)}">${escapeHtml(component.props.title)}</button></div>`;
+
+      case "scrollToTopButton":
+        return `<button type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="${escapeAttribute(`${wrapperStyle};${contentStyle}`)}">${escapeHtml(component.props.title)}</button>`;
+
+      case "textarea": {
+        const text =
+          component.props.value ||
+          component.props.placeholder ||
+          "내용을 입력하세요.";
+
+        return `<div style="${escapeAttribute(wrapperStyle)}"><div style="${escapeAttribute(`white-space:pre-wrap;word-break:break-word;${contentStyle}`)}">${escapeHtml(text)}</div></div>`;
+      }
+
+      case "quill": {
+        const html =
+          component.props.value ||
+          `<span style="color:#6c757d">${escapeHtml(component.props.placeholder || "본문을 입력하세요.")}</span>`;
+
+        return `<div style="${escapeAttribute(wrapperStyle)}"><div style="${escapeAttribute(`word-break:break-word;${contentStyle}`)}">${html}</div></div>`;
+      }
+
+      case "image": {
+        const imageUrl = component.props.urls?.[0] ?? "";
+
+        if (!imageUrl) {
+          return `<div style="${escapeAttribute(wrapperStyle)}"></div>`;
+        }
+
+        const embeddedUrl = await imageUrlToDataUrl(imageUrl);
+
+        return `<div style="${escapeAttribute(wrapperStyle)}"><img src="${escapeAttribute(embeddedUrl)}" alt="" style="${escapeAttribute(`display:block;width:100%;height:auto;${contentStyle}`)}" /></div>`;
+      }
+
+      case "container": {
+        const direction = component.props.direction ?? "column";
+        const gap = component.props.gap ?? 8;
+        const children = [...component.children].sort(
+          (a, b) => a.order - b.order,
+        );
+        const childHtml = (
+          await Promise.all(children.map(componentToHtml))
+        ).join("\n");
+
+        return `<div style="${escapeAttribute(`display:flex;flex-direction:${direction};gap:${gap}px;${wrapperStyle}`)}">${childHtml}</div>`;
+      }
+
+      default:
+        return "";
+    }
+  };
+
+  const buildHtmlDocument = async () => {
+    const sorted = [...components].sort((a, b) => a.order - b.order);
+    const bodyHtml = (await Promise.all(sorted.map(componentToHtml))).join(
+      "\n",
+    );
+
+    return `<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exported Page</title>
+  <style>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #212529;
+      background: #fff;
+    }
+    img { max-width: 100%; }
+    button { font: inherit; }
+  </style>
+</head>
+<body>
+${bodyHtml}
+</body>
+</html>`;
+  };
+
+  const downloadHtml = async () => {
+    const html = await buildHtmlDocument();
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = "page.html";
+
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    URL.revokeObjectURL(url);
+  };
+
   const renderComponent = (component: LayoutComponent) => {
     switch (component.type) {
       case "button":
@@ -1069,6 +1271,7 @@ function App() {
     direction: ContainerDirection = "column",
   ) => {
     const isRow = direction === "row";
+
     const isActive =
       activeDropTarget?.parentId === parentId &&
       activeDropTarget.index === index;
@@ -2114,6 +2317,16 @@ function App() {
             onClick={redo}
           >
             ↷ Redo
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => {
+              void downloadHtml();
+            }}
+          >
+            HTML 다운로드
           </button>
         </div>
         {/* 최상위 맨 앞 + */}
