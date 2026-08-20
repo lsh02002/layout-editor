@@ -72,6 +72,7 @@ function App() {
   const [activeDropTarget, setActiveDropTarget] = useState<{
     parentId: string | null;
     index: number;
+    area: "canvas" | "layer";
   } | null>(null);
 
   const [showLayerPanel, setShowLayerPanel] = useState(true);
@@ -332,21 +333,74 @@ function App() {
   };
 
   const handleDragStart = (
-    event: React.DragEvent<HTMLElement>,
+    e: React.DragEvent<HTMLElement>,
     componentId: string,
   ) => {
     draggingIdRef.current = componentId;
-    setDraggingId(componentId);
-    setActiveDropTarget(null);
 
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", componentId);
+    setDraggingId(componentId);
+
+    e.dataTransfer.effectAllowed = "move";
+
+    e.dataTransfer.setData("text/plain", componentId);
   };
 
   const handleDragEnd = () => {
     draggingIdRef.current = null;
+
     setDraggingId(null);
     setActiveDropTarget(null);
+  };
+
+  const handleDrop = (
+    e: React.DragEvent<HTMLElement>,
+    parentId: string | null,
+    index: number,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const draggedId =
+      e.dataTransfer.getData("text/plain") || draggingIdRef.current;
+
+    if (!draggedId) {
+      return;
+    }
+
+    moveComponent(draggedId, parentId, index);
+
+    draggingIdRef.current = null;
+
+    setDraggingId(null);
+    setActiveDropTarget(null);
+  };
+
+  const handleDragOver = (
+    e: React.DragEvent<HTMLElement>,
+    parentId: string | null,
+    index: number,
+    area: "canvas" | "layer",
+  ) => {
+    if (!draggingIdRef.current) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    e.dataTransfer.dropEffect = "move";
+
+    if (
+      activeDropTarget?.parentId !== parentId ||
+      activeDropTarget?.index !== index ||
+      activeDropTarget?.area !== area
+    ) {
+      setActiveDropTarget({
+        parentId,
+        index,
+        area,
+      });
+    }
   };
 
   const updateLayoutRecursive = (
@@ -1448,110 +1502,50 @@ ${bodyHtml}
     const isRow = direction === "row";
 
     const isActive =
+      activeDropTarget?.area === "canvas" &&
       activeDropTarget?.parentId === parentId &&
-      activeDropTarget.index === index;
+      activeDropTarget?.index === index;
 
     return (
       <div
-        className={
-          isRow
-            ? "d-flex align-items-center justify-content-center"
-            : "d-flex align-items-center gap-2 my-2"
-        }
-        onDragEnter={(event) => {
-          if (!draggingIdRef.current) return;
-
-          event.preventDefault();
-          event.stopPropagation();
-
-          setActiveDropTarget({
-            parentId,
-            index,
-          });
+        onDragEnter={(e) => {
+          handleDragOver(e, parentId, index, "canvas");
         }}
-        onDragOver={(event) => {
-          if (!draggingIdRef.current) return;
-
-          event.preventDefault();
-          event.stopPropagation();
-          event.dataTransfer.dropEffect = "move";
-
-          if (
-            activeDropTarget?.parentId !== parentId ||
-            activeDropTarget.index !== index
-          ) {
-            setActiveDropTarget({
-              parentId,
-              index,
-            });
-          }
+        onDragOver={(e) => {
+          handleDragOver(e, parentId, index, "canvas");
         }}
-        onDragLeave={(event) => {
-          const relatedTarget = event.relatedTarget as Node | null;
-
-          // drop zone 내부 자식 요소로 이동한 것은 leave로 처리하지 않음
-          if (relatedTarget && event.currentTarget.contains(relatedTarget)) {
-            return;
-          }
-
-          setActiveDropTarget((prev) => {
-            if (prev?.parentId === parentId && prev.index === index) {
-              return null;
-            }
-
-            return prev;
-          });
-        }}
-        onDrop={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-
-          const componentId =
-            event.dataTransfer.getData("text/plain") || draggingIdRef.current;
-
-          if (componentId) {
-            moveComponent(componentId, parentId, index);
-          }
-
-          draggingIdRef.current = null;
-          setDraggingId(null);
-          setActiveDropTarget(null);
+        onDrop={(e) => {
+          handleDrop(e, parentId, index);
         }}
         style={{
-          ...(isRow
-            ? {
-                alignSelf: "stretch",
-                minWidth: 44,
-                minHeight: 44,
-                padding: "0 6px",
-              }
-            : {
-                width: "100%",
-                minHeight: 44,
-                padding: "5px 0",
-              }),
+          display: "flex",
+
+          flexDirection: isRow ? "column" : "row",
+
+          alignItems: "center",
+          justifyContent: "center",
+
+          gap: 8,
+
+          minHeight: isRow ? undefined : 40,
+
+          minWidth: isRow ? 40 : undefined,
 
           flexShrink: 0,
+
           borderRadius: 8,
-          background:
-            isActive && draggingId !== null
-              ? "rgba(13, 110, 253, 0.12)"
-              : "transparent",
-          outline:
-            isActive && draggingId !== null
-              ? "2px dashed #0d6efd"
-              : "2px dashed transparent",
-          outlineOffset: -2,
-          transition: "background 100ms ease, outline 100ms ease",
+
+          background: isActive ? "rgba(13, 110, 253, 0.12)" : "transparent",
+
+          outline: isActive ? "2px dashed #0d6efd" : "2px dashed transparent",
         }}
       >
         {!isRow && (
           <div
             style={{
               flex: 1,
-              height: isActive ? 2 : 1,
-              backgroundColor: isActive ? "#0d6efd" : "#dee2e6",
-              pointerEvents: "none",
+              height: 1,
+              backgroundColor: "#dee2e6",
             }}
           />
         )}
@@ -1564,10 +1558,12 @@ ${bodyHtml}
             height: 30,
             minWidth: 30,
             padding: 0,
-            pointerEvents: draggingId !== null ? "none" : "auto",
+
+            pointerEvents: draggingId ? "none" : "auto",
           }}
-          onClick={(event) => {
-            event.stopPropagation();
+          onClick={(e) => {
+            e.stopPropagation();
+
             openCreateModal(parentId, index);
           }}
         >
@@ -1578,9 +1574,8 @@ ${bodyHtml}
           <div
             style={{
               flex: 1,
-              height: isActive ? 2 : 1,
-              backgroundColor: isActive ? "#0d6efd" : "#dee2e6",
-              pointerEvents: "none",
+              height: 1,
+              backgroundColor: "#dee2e6",
             }}
           />
         )}
@@ -1588,38 +1583,76 @@ ${bodyHtml}
     );
   };
 
-  const renderDragHandle = (component: LayoutComponent) => {
-    const isDragging = draggingId === component.id;
+  const renderLayerDropZone = (
+    parentId: string | null,
+    index: number,
+    depth: number,
+  ) => {
+    const isActive =
+      activeDropTarget?.area === "layer" &&
+      activeDropTarget?.parentId === parentId &&
+      activeDropTarget?.index === index;
 
     return (
       <div
-        draggable
-        onDragStart={(event) => handleDragStart(event, component.id)}
-        onDragEnd={handleDragEnd}
-        onClick={(event) => event.stopPropagation()}
-        title="드래그해서 이동"
+        onDragEnter={(e) => {
+          handleDragOver(e, parentId, index, "layer");
+        }}
+        onDragOver={(e) => {
+          handleDragOver(e, parentId, index, "layer");
+        }}
+        onDrop={(e) => {
+          handleDrop(e, parentId, index);
+        }}
         style={{
+          marginLeft: depth * 14,
+
+          height: isActive ? 16 : 8,
+
+          marginTop: 1,
+          marginBottom: 1,
+
+          borderRadius: 4,
+
+          background: isActive ? "rgba(13, 110, 253, 0.18)" : "transparent",
+
+          borderTop: isActive ? "2px solid #0d6efd" : "2px solid transparent",
+
+          transition: "height 80ms ease, background 80ms ease",
+        }}
+      />
+    );
+  };
+
+  const renderDragHandle = (component: LayoutComponent) => {
+    return (
+      <div
+        draggable
+        onDragStart={(e) => handleDragStart(e, component.id)}
+        onDragEnd={handleDragEnd}
+        onClick={(e) => {
+          e.stopPropagation();
+
+          setSelectedComponentId(component.id);
+        }}
+        style={{
+          cursor: draggingId === component.id ? "grabbing" : "grab",
+
+          userSelect: "none",
+
           display: "inline-flex",
           alignItems: "center",
-          gap: 5,
-          marginBottom: 6,
-          padding: "5px 10px",
-          border: "1px solid #dee2e6",
+
+          padding: "4px 8px",
+
+          fontSize: 13,
+
           borderRadius: 6,
-          background: "#fff",
-          color: "#6c757d",
-          cursor: isDragging ? "grabbing" : "grab",
-          userSelect: "none",
-          WebkitUserSelect: "none",
-          touchAction: "none",
-          fontSize: 12,
-          lineHeight: 1.2,
+
+          opacity: draggingId === component.id ? 0.45 : 1,
         }}
       >
-        <span aria-hidden="true" style={{ pointerEvents: "none" }}>
-          ⋮⋮
-        </span>
-        <span style={{ pointerEvents: "none" }}>이동</span>
+        ⋮⋮ 이동
       </div>
     );
   };
@@ -1738,134 +1771,175 @@ ${bodyHtml}
     );
   };
 
-  const renderLayerTree = (items: LayoutComponent[], depth = 0) => {
+  const renderLayerTree = (
+    items: LayoutComponent[],
+    parentId: string | null = null,
+    depth = 0,
+  ) => {
     const sorted = [...items].sort((a, b) => a.order - b.order);
 
-    return sorted.map((component) => {
-      const isContainer = component.type === "container";
+    return (
+      <>
+        {/* 맨 앞 drop */}
+        {renderLayerDropZone(parentId, 0, depth)}
 
-      const isSelected = selectedComponentId === component.id;
+        {sorted.map((component, index) => {
+          const isContainer = component.type === "container";
 
-      const getLabel = () => {
-        switch (component.type) {
-          case "button":
-            return component.props.title || "Button";
+          const isSelected = selectedComponentId === component.id;
 
-          case "textarea":
-            return component.props.value?.slice(0, 20) || "TextArea";
+          const isDragging = draggingId === component.id;
 
-          case "quill": {
-            const text = component.props.value?.replace(/<[^>]*>/g, "").trim();
+          const getLabel = () => {
+            switch (component.type) {
+              case "button":
+                return component.props.title || "Button";
 
-            return text?.slice(0, 20) || "Quill";
-          }
+              case "textarea":
+                return component.props.value?.slice(0, 20) || "TextArea";
 
-          case "image":
-            return "Image";
+              case "quill": {
+                const text = component.props.value
+                  ?.replace(/<[^>]*>/g, "")
+                  .trim();
 
-          case "scrollToTopButton":
-            return "Scroll To Top";
+                return text?.slice(0, 20) || "Quill";
+              }
 
-          case "container":
-            return "Container";
+              case "image":
+                return "Image";
 
-          default:
-            return "Component";
-        }
-      };
+              case "scrollToTopButton":
+                return "Scroll To Top";
 
-      return (
-        <React.Fragment key={component.id}>
-          <div
-            onClick={() => {
-              setSelectedComponentId(component.id);
-            }}
-            onDoubleClick={() => {
-              editComponent(component.id);
-            }}
-            style={{
-              marginLeft: depth * 14,
+              case "container":
+                return "Container";
+            }
+          };
 
-              padding: "7px 8px",
-
-              borderRadius: 6,
-
-              cursor: "pointer",
-
-              display: "flex",
-              alignItems: "center",
-
-              gap: 6,
-
-              fontSize: 13,
-
-              userSelect: "none",
-
-              background: isSelected
-                ? "rgba(13, 110, 253, 0.12)"
-                : "transparent",
-
-              border: isSelected
-                ? "1px solid rgba(13, 110, 253, 0.35)"
-                : "1px solid transparent",
-            }}
-          >
-            <span
-              style={{
-                width: 18,
-                flexShrink: 0,
-                textAlign: "center",
-              }}
-            >
-              {isContainer ? "▾" : "•"}
-            </span>
-
-            <span
-              style={{
-                flex: 1,
-                minWidth: 0,
-
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-
-                fontWeight: isContainer ? 600 : 400,
-              }}
-            >
-              {getLabel()}
-            </span>
-
-            <small
-              className="text-secondary"
-              style={{
-                flexShrink: 0,
-                fontSize: 10,
-              }}
-            >
-              {component.type}
-            </small>
-
-            {isSelected && (
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-primary py-0 px-1"
-                onClick={(e) => {
-                  e.stopPropagation();
-
+          return (
+            <React.Fragment key={component.id}>
+              <div
+                onClick={() => {
+                  setSelectedComponentId(component.id);
+                }}
+                onDoubleClick={() => {
                   editComponent(component.id);
                 }}
-              >
-                편집
-              </button>
-            )}
-          </div>
+                style={{
+                  marginLeft: depth * 14,
 
-          {isContainer &&
-            component.children.length > 0 &&
-            renderLayerTree(component.children, depth + 1)}
-        </React.Fragment>
-      );
-    });
+                  padding: "6px 8px",
+
+                  borderRadius: 6,
+
+                  display: "flex",
+                  alignItems: "center",
+
+                  gap: 6,
+
+                  cursor: "pointer",
+
+                  userSelect: "none",
+
+                  opacity: isDragging ? 0.4 : 1,
+
+                  background: isSelected
+                    ? "rgba(13, 110, 253, 0.12)"
+                    : "transparent",
+
+                  border: isSelected
+                    ? "1px solid rgba(13, 110, 253, 0.35)"
+                    : "1px solid transparent",
+                }}
+              >
+                {/* 레이어 drag handle */}
+                <span
+                  draggable
+                  onDragStart={(e) => {
+                    e.stopPropagation();
+
+                    handleDragStart(e, component.id);
+                  }}
+                  onDragEnd={handleDragEnd}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                  style={{
+                    cursor: isDragging ? "grabbing" : "grab",
+
+                    userSelect: "none",
+
+                    width: 18,
+
+                    textAlign: "center",
+
+                    flexShrink: 0,
+
+                    fontWeight: 700,
+                  }}
+                  title="드래그하여 이동"
+                >
+                  ⋮⋮
+                </span>
+
+                <span
+                  style={{
+                    width: 14,
+                    textAlign: "center",
+
+                    flexShrink: 0,
+                  }}
+                >
+                  {isContainer ? "▾" : "•"}
+                </span>
+
+                <span
+                  style={{
+                    flex: 1,
+
+                    minWidth: 0,
+
+                    whiteSpace: "nowrap",
+
+                    overflow: "hidden",
+
+                    textOverflow: "ellipsis",
+
+                    fontSize: 13,
+
+                    fontWeight: isContainer ? 600 : 400,
+                  }}
+                >
+                  {getLabel()}
+                </span>
+
+                <small
+                  className="text-secondary"
+                  style={{
+                    fontSize: 9,
+
+                    flexShrink: 0,
+                  }}
+                >
+                  {component.type}
+                </small>
+              </div>
+
+              {/* Container 내부 */}
+              {isContainer && (
+                <div>
+                  {renderLayerTree(component.children, component.id, depth + 1)}
+                </div>
+              )}
+
+              {/* 현재 컴포넌트 뒤 drop */}
+              {renderLayerDropZone(parentId, index + 1, depth)}
+            </React.Fragment>
+          );
+        })}
+      </>
+    );
   };
 
   const renderCreateModal = () => {
@@ -2625,6 +2699,16 @@ ${bodyHtml}
     `}</style>
       {showLayerPanel && (
         <aside
+          onDragOver={(e) => {
+            if (draggingIdRef.current) {
+              e.preventDefault();
+            }
+          }}
+          onDrop={(e) => {
+            // 실제 drop은
+            // 내부 drop zone에서만 처리
+            e.preventDefault();
+          }}
           style={{
             position: "fixed",
 
