@@ -81,7 +81,120 @@ function App() {
     null,
   );
 
+  const [layerSearch, setLayerSearch] = useState("");
+
   const components = history.present;
+
+  const getComponentSearchText = (component: LayoutComponent) => {
+    const type = component.type.toLowerCase();
+
+    let name = "";
+
+    switch (component.type) {
+      case "button":
+        name = component.props.title ?? "";
+        break;
+
+      case "textarea":
+        name = [component.props.value, component.props.placeholder]
+          .filter(Boolean)
+          .join(" ");
+        break;
+
+      case "quill":
+        name = [
+          component.props.value
+            ?.replace(/<[^>]*>/g, " ")
+            .replace(/\s+/g, " ")
+            .trim(),
+
+          component.props.placeholder,
+        ]
+          .filter(Boolean)
+          .join(" ");
+        break;
+
+      case "image":
+        name = "image 이미지";
+        break;
+
+      case "container":
+        name = "container 컨테이너";
+        break;
+
+      case "scrollToTopButton":
+        name = [component.props.title, "scrollToTop", "scroll top", "맨위로"]
+          .filter(Boolean)
+          .join(" ");
+        break;
+    }
+
+    return `${type} ${name}`.toLowerCase();
+  };
+
+  const filterLayerComponents = (
+    items: LayoutComponent[],
+    search: string,
+  ): LayoutComponent[] => {
+    const keyword = search.trim().toLowerCase();
+
+    if (!keyword) {
+      return items;
+    }
+
+    const filterRecursive = (
+      component: LayoutComponent,
+    ): LayoutComponent | null => {
+      const selfMatched = getComponentSearchText(component).includes(keyword);
+
+      /*
+       * 일반 컴포넌트
+       */
+      if (component.type !== "container") {
+        return selfMatched ? component : null;
+      }
+
+      /*
+       * Container
+       *
+       * 자식도 재귀적으로 검색
+       */
+      const filteredChildren = component.children
+        .map(filterRecursive)
+        .filter((child): child is LayoutComponent => child !== null);
+
+      /*
+       * Container 자신이 검색되거나
+       * 자식 중 검색된 것이 있으면
+       * Container 유지
+       */
+      if (selfMatched || filteredChildren.length > 0) {
+        return {
+          ...component,
+
+          /*
+           * 부모 자체가 검색된 경우에는
+           * 모든 자식을 보여주는 게 편함.
+           *
+           * 자식만 검색된 경우에는
+           * 검색된 자식만 보여줌.
+           */
+          children: selfMatched ? component.children : filteredChildren,
+        };
+      }
+
+      return null;
+    };
+
+    return items
+      .map(filterRecursive)
+      .filter((component): component is LayoutComponent => component !== null);
+  };
+
+  const filteredLayerComponents = filterLayerComponents(
+    components,
+    layerSearch,
+  );
 
   const commitHistory = (
     updater: (prev: LayoutComponent[]) => LayoutComponent[],
@@ -1709,34 +1822,31 @@ ${body}
 
   const renderDragHandle = (component: LayoutComponent) => {
     return (
-      <div
-        draggable
-        onDragStart={(e) => handleDragStart(e, component.id)}
-        onDragEnd={handleDragEnd}
-        onClick={(e) => {
-          e.stopPropagation();
+      <span
+        draggable={!layerSearch}
+        onDragStart={(e) => {
+          if (layerSearch) {
+            e.preventDefault();
+            return;
+          }
 
-          setSelectedComponentId(component.id);
+          handleDragStart(e, component.id);
         }}
+        onDragEnd={handleDragEnd}
         style={{
-          cursor: draggingId === component.id ? "grabbing" : "grab",
+          cursor: layerSearch
+            ? "not-allowed"
+            : draggingId === component.id
+              ? "grabbing"
+              : "grab",
+
+          opacity: layerSearch ? 0.35 : 1,
 
           userSelect: "none",
-
-          display: "inline-flex",
-          alignItems: "center",
-
-          padding: "4px 8px",
-
-          fontSize: 13,
-
-          borderRadius: 6,
-
-          opacity: draggingId === component.id ? 0.45 : 1,
         }}
       >
-        ⋮⋮ 이동
-      </div>
+        ⋮⋮
+      </span>
     );
   };
 
@@ -1854,6 +1964,42 @@ ${body}
     );
   };
 
+  const highlightSearchText = (text: string, keyword: string) => {
+    const search = keyword.trim();
+
+    if (!search) {
+      return text;
+    }
+
+    const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    const regex = new RegExp(`(${escaped})`, "gi");
+
+    const parts = text.split(regex);
+
+    return parts.map((part, index) => {
+      const isMatch = part.toLowerCase() === search.toLowerCase();
+
+      if (!isMatch) {
+        return <React.Fragment key={index}>{part}</React.Fragment>;
+      }
+
+      return (
+        <mark
+          key={index}
+          style={{
+            padding: "0 2px",
+            borderRadius: 3,
+            background: "#fff3cd",
+            color: "inherit",
+          }}
+        >
+          {part}
+        </mark>
+      );
+    });
+  };
+
   const renderLayerTree = (
     items: LayoutComponent[],
     parentId: string | null = null,
@@ -1883,10 +2029,11 @@ ${body}
 
               case "quill": {
                 const text = component.props.value
-                  ?.replace(/<[^>]*>/g, "")
+                  ?.replace(/<[^>]*>/g, " ")
+                  .replace(/\s+/g, " ")
                   .trim();
 
-                return text?.slice(0, 20) || "Quill";
+                return text?.slice(0, 30) || "Quill";
               }
 
               case "image":
@@ -1994,18 +2141,29 @@ ${body}
                     fontWeight: isContainer ? 600 : 400,
                   }}
                 >
-                  {getLabel()}
+                  <span
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      fontSize: 13,
+                      fontWeight: isContainer ? 600 : 400,
+                    }}
+                  >
+                    {highlightSearchText(getLabel(), layerSearch)}
+                  </span>
                 </span>
 
                 <small
                   className="text-secondary"
                   style={{
                     fontSize: 9,
-
                     flexShrink: 0,
                   }}
                 >
-                  {component.type}
+                  {highlightSearchText(component.type, layerSearch)}
                 </small>
               </div>
 
@@ -2820,6 +2978,32 @@ ${body}
           </button>
         </div>
 
+        <div className="p-2 border-bottom">
+          <div className="input-group input-group-sm">
+            <span className="input-group-text">🔍</span>
+
+            <input
+              type="text"
+              className="form-control"
+              value={layerSearch}
+              onChange={(e) => setLayerSearch(e.target.value)}
+              placeholder="이름 또는 타입 검색"
+            />
+
+            {layerSearch && (
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => setLayerSearch("")}
+                aria-label="검색 초기화"
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* TREE */}
         <div
           style={{
             flex: 1,
@@ -2827,8 +3011,8 @@ ${body}
             padding: 8,
           }}
         >
-          {components.length > 0 ? (
-            renderLayerTree(components)
+          {filteredLayerComponents.length > 0 ? (
+            renderLayerTree(filteredLayerComponents, null, 0)
           ) : (
             <div
               className="text-secondary text-center"
@@ -2837,7 +3021,9 @@ ${body}
                 fontSize: 13,
               }}
             >
-              컴포넌트가 없습니다.
+              {layerSearch
+                ? `"${layerSearch}" 검색 결과가 없습니다.`
+                : "컴포넌트가 없습니다."}
             </div>
           )}
         </div>
