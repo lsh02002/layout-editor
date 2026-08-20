@@ -1131,7 +1131,7 @@ function App() {
         return `<div style="${escapeAttribute(wrapperStyle)}"><button type="button" style="${escapeAttribute(contentStyle)}">${escapeHtml(component.props.title)}</button></div>`;
 
       case "scrollToTopButton":
-        return `<button type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="${escapeAttribute(`${wrapperStyle};${contentStyle}`)}">${escapeHtml(component.props.title)}</button>`;
+        return `<button type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="${escapeAttribute(`${wrapperStyle};${contentStyle};display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;background-color:#6c757d;border:1px solid #6c757d;padding:0.375rem 0.75rem;font-size:1rem;line-height:1.5;text-align:center;cursor:pointer;user-select:none;`)}">${escapeHtml(component.props.title)}</button>`;
 
       case "textarea": {
         const text =
@@ -1488,7 +1488,28 @@ ${body}
 
       case "scrollToTopButton":
         return (
-          <div style={component.contentStyle}>{component.props.title}</div>
+          <button
+            type="button"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            style={{
+              ...component.contentStyle,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "50%",
+              color: "#fff",
+              backgroundColor: "#6c757d",
+              border: "1px solid #6c757d",
+              padding: "0.375rem 0.75rem",
+              fontSize: "1rem",
+              lineHeight: "1.5",
+              textAlign: "center",
+              cursor: "pointer",
+              userSelect: "none",
+            }}
+          >
+            {component.props.title}
+          </button>
         );
 
       case "textarea":
