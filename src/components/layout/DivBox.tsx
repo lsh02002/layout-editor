@@ -15,6 +15,9 @@ interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
 
   onLayoutChange?: (layout: Partial<ComponentLayout>) => void;
 
+  onLayoutActionStart?: () => void;
+  onLayoutActionEnd?: () => void;
+
   onEdit?: () => void;
   onCopy?: () => void;
   onDelete?: () => void;
@@ -23,6 +26,8 @@ interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
 function DivBox({
   children,
   layout,
+  onLayoutActionStart,
+  onLayoutActionEnd,
   onEdit,
   onCopy,
   onDelete,
@@ -74,6 +79,18 @@ function DivBox({
     <div
       {...props}
       data-layout-box
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        onLayoutActionStart?.();
+      }}
+      onPointerUp={(e) => {
+        e.stopPropagation();
+        onLayoutActionEnd?.();
+      }}
+      onPointerCancel={(e) => {
+        e.stopPropagation();
+        onLayoutActionEnd?.();
+      }}
       className={`d-inline-block ${className} bg-white`}
       style={{
         position:

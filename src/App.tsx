@@ -97,6 +97,14 @@ function App() {
 
   const [layerSearch, setLayerSearch] = useState("");
 
+  const historyActionRef = useRef<{
+    active: boolean;
+    snapshot: LayoutComponent[] | null;
+  }>({
+    active: false,
+    snapshot: null,
+  });
+
   const VALID_COMPONENT_TYPES = [
     "button",
     "textarea",
@@ -106,6 +114,70 @@ function App() {
     "container",
     "scrollToTopButton",
   ] as const;
+
+  const beginHistoryAction = () => {
+    if (historyActionRef.current.active) {
+      return;
+    }
+
+    historyActionRef.current = {
+      active: true,
+
+      // 액션 시작 직전 상태
+      snapshot: history.present,
+    };
+  };
+
+  const updateHistoryAction = (
+    updater: (prev: LayoutComponent[]) => LayoutComponent[],
+  ) => {
+    setHistory((prev) => ({
+      ...prev,
+
+      // past는 건드리지 않고
+      // 현재 화면만 계속 업데이트
+      present: updater(prev.present),
+
+      // 새로운 수정이 시작됐으므로 redo 제거
+      future: [],
+    }));
+  };
+
+  const endHistoryAction = () => {
+    const action = historyActionRef.current;
+
+    if (!action.active || !action.snapshot) {
+      return;
+    }
+
+    setHistory((prev) => {
+      /*
+       * 실제 변화가 없으면
+       * history 추가 안 함
+       */
+      if (JSON.stringify(action.snapshot) === JSON.stringify(prev.present)) {
+        return prev;
+      }
+
+      return {
+        past: [
+          ...prev.past,
+
+          // 액션 시작 전 상태를 딱 한 번 저장
+          action.snapshot!,
+        ],
+
+        present: prev.present,
+
+        future: [],
+      };
+    });
+
+    historyActionRef.current = {
+      active: false,
+      snapshot: null,
+    };
+  };
 
   const isObject = (value: unknown): value is Record<string, unknown> => {
     return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -841,9 +913,20 @@ function App() {
   };
 
   const updateLayout = (id: string, newLayout: Partial<ComponentLayout>) => {
+    // 그리드 스냅 적용
     const snappedLayout = snapLayout(newLayout);
 
-    setComponents((prev) => updateLayoutRecursive(prev, id, snappedLayout));
+    const updater = (prev: LayoutComponent[]) =>
+      updateLayoutRecursive(prev, id, snappedLayout);
+
+    // 드래그 / 리사이즈 액션 중
+    if (historyActionRef.current.active) {
+      updateHistoryAction(updater);
+      return;
+    }
+
+    // 일반 단발 변경
+    setComponents(updater);
   };
 
   const editComponent = (id: string) => {
@@ -2465,6 +2548,8 @@ ${body}
                   ? "2px"
                   : component.style?.outlineOffset,
             }}
+            onLayoutActionStart={beginHistoryAction}
+            onLayoutActionEnd={endHistoryAction}
             onLayoutChange={(layout) => updateLayout(component.id, layout)}
             onEdit={() => editComponent(component.id)}
             onCopy={() => copyComponent(component.id)}
@@ -2534,6 +2619,8 @@ ${body}
                 ? "2px"
                 : component.style?.outlineOffset,
           }}
+          onLayoutActionStart={beginHistoryAction}
+          onLayoutActionEnd={endHistoryAction}
           onLayoutChange={(layout) => updateLayout(component.id, layout)}
           onEdit={() => editComponent(component.id)}
           onCopy={() => copyComponent(component.id)}
