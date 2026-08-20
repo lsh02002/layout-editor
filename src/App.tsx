@@ -2771,6 +2771,149 @@ ${body}
     );
   };
 
+  const renderLayerPanel = () => {
+    if (!showLayerPanel) return null;
+
+    return (
+      <aside
+        onDragOver={(e) => {
+          if (draggingIdRef.current) {
+            e.preventDefault();
+          }
+        }}
+        onDrop={(e) => {
+          // 실제 drop은 내부 drop zone에서만 처리
+          e.preventDefault();
+        }}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: 280,
+          background: "#ffffff",
+          borderRight: "1px solid #dee2e6",
+          zIndex: 1100,
+          display: "flex",
+          flexDirection: "column",
+          boxShadow: "2px 0 8px rgba(0,0,0,0.05)",
+        }}
+      >
+        <div
+          className="
+          d-flex
+          align-items-center
+          justify-content-between
+          border-bottom
+          px-3
+          py-2
+        "
+        >
+          <strong>레이어</strong>
+
+          <button
+            type="button"
+            className="btn btn-sm border-0"
+            onClick={() => setShowLayerPanel(false)}
+          >
+            ×
+          </button>
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: 8,
+          }}
+        >
+          {components.length > 0 ? (
+            renderLayerTree(components)
+          ) : (
+            <div
+              className="text-secondary text-center"
+              style={{
+                padding: 20,
+                fontSize: 13,
+              }}
+            >
+              컴포넌트가 없습니다.
+            </div>
+          )}
+        </div>
+
+        {selectedComponentId && (
+          <div className="border-top p-2">
+            <button
+              type="button"
+              className="btn btn-primary btn-sm w-100"
+              onClick={() => {
+                editComponent(selectedComponentId);
+              }}
+            >
+              선택한 컴포넌트 편집
+            </button>
+          </div>
+        )}
+      </aside>
+    );
+  };
+
+  const renderProjectToolbar = () => {
+    return (
+      <div className="d-flex gap-2 mb-3">
+        <button
+          type="button"
+          className="btn btn-outline-secondary"
+          disabled={!canUndo}
+          onClick={undo}
+        >
+          ↶ Undo
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-outline-secondary"
+          disabled={!canRedo}
+          onClick={redo}
+        >
+          ↷ Redo
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-success"
+          onClick={saveProjectFile}
+        >
+          프로젝트 저장
+        </button>
+
+        <label
+          className="btn btn-outline-success mb-0"
+          style={{ cursor: "pointer" }}
+        >
+          프로젝트 불러오기
+          <input
+            type="file"
+            accept=".json,application/json"
+            onChange={loadProjectFile}
+            style={{ display: "none" }}
+          />
+        </label>
+
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => {
+            void downloadHtml();
+          }}
+        >
+          HTML 다운로드
+        </button>
+      </div>
+    );
+  };
+
   const sortedComponents = [...components].sort((a, b) => a.order - b.order);
 
   return (
@@ -2780,110 +2923,7 @@ ${body}
     background: #f1f3f5;
   }
     `}</style>
-      {showLayerPanel && (
-        <aside
-          onDragOver={(e) => {
-            if (draggingIdRef.current) {
-              e.preventDefault();
-            }
-          }}
-          onDrop={(e) => {
-            // 실제 drop은
-            // 내부 drop zone에서만 처리
-            e.preventDefault();
-          }}
-          style={{
-            position: "fixed",
-
-            top: 0,
-            left: 0,
-            bottom: 0,
-
-            width: 280,
-
-            background: "#ffffff",
-
-            borderRight: "1px solid #dee2e6",
-
-            zIndex: 1100,
-
-            display: "flex",
-            flexDirection: "column",
-
-            boxShadow: "2px 0 8px rgba(0,0,0,0.05)",
-          }}
-        >
-          <div
-            className="
-        d-flex
-        align-items-center
-        justify-content-between
-        border-bottom
-        px-3
-        py-2
-      "
-          >
-            <strong>레이어</strong>
-
-            <button
-              type="button"
-              className="btn btn-sm border-0"
-              onClick={() => setShowLayerPanel(false)}
-            >
-              ×
-            </button>
-          </div>
-
-          <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              padding: 8,
-            }}
-          >
-            {components.length > 0 ? (
-              renderLayerTree(components)
-            ) : (
-              <div
-                className="
-            text-secondary
-            text-center
-          "
-                style={{
-                  padding: 20,
-                  fontSize: 13,
-                }}
-              >
-                컴포넌트가 없습니다.
-              </div>
-            )}
-          </div>
-
-          {selectedComponentId && (
-            <div
-              className="
-          border-top
-          p-2
-        "
-            >
-              <button
-                type="button"
-                className="
-            btn
-            btn-primary
-            btn-sm
-            w-100
-          "
-                onClick={() => {
-                  editComponent(selectedComponentId);
-                }}
-              >
-                선택한 컴포넌트 편집
-              </button>
-            </div>
-          )}
-        </aside>
-      )}
+      {renderLayerPanel()}
       {!showLayerPanel && (
         <button
           type="button"
@@ -2912,60 +2952,7 @@ ${body}
           transition: "margin-left 160ms ease",
         }}
       >
-        <div className="d-flex gap-2 mb-3">
-          <button
-            type="button"
-            className="btn btn-outline-secondary"
-            disabled={!canUndo}
-            onClick={undo}
-          >
-            ↶ Undo
-          </button>
-
-          <button
-            type="button"
-            className="btn btn-outline-secondary"
-            disabled={!canRedo}
-            onClick={redo}
-          >
-            ↷ Redo
-          </button>
-
-          <button
-            type="button"
-            className="btn btn-success"
-            onClick={saveProjectFile}
-          >
-            프로젝트 저장
-          </button>
-
-          <label
-            className="btn btn-outline-success mb-0"
-            style={{
-              cursor: "pointer",
-            }}
-          >
-            프로젝트 불러오기
-            <input
-              type="file"
-              accept=".json,application/json"
-              onChange={loadProjectFile}
-              style={{
-                display: "none",
-              }}
-            />
-          </label>
-
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => {
-              void downloadHtml();
-            }}
-          >
-            HTML 다운로드
-          </button>
-        </div>
+        {renderProjectToolbar()}
         {/* 최상위 맨 앞 + */}
         {renderAddButton(null, 0, "column")}
 
