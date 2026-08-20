@@ -8,6 +8,7 @@ import type {
   ContainerDirection,
   HistoryState,
   ComponentsUpdater,
+  LinkType,
 } from "./types/types";
 
 import { data } from "./data/data";
@@ -32,6 +33,9 @@ function App() {
     useState<ContainerDirection>("column");
 
   const [newImagePreviewUrl, setNewImagePreviewUrl] = useState("");
+
+  const [newLinkType, setNewLinkType] = useState<LinkType>("url");
+  const [newLinkNewWindow, setNewLinkNewWindow] = useState(false);
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingComponentId, setEditingComponentId] = useState<string | null>(
@@ -60,6 +64,16 @@ function App() {
 
   const [editImagePreviewUrl, setEditImagePreviewUrl] = useState("");
 
+  const [editLinkType, setEditLinkType] = useState<LinkType>("url");
+  const [editLinkNewWindow, setEditLinkNewWindow] = useState(false);
+
+  const [snapEnabled, setSnapEnabled] = useState(true);
+  const [gridSize, setGridSize] = useState(10);
+
+  const [lastSavedSnapshot, setLastSavedSnapshot] = useState(() =>
+    JSON.stringify(history.present),
+  );
+
   const [insertTarget, setInsertTarget] = useState<{
     parentId: string | null;
     index: number;
@@ -84,6 +98,67 @@ function App() {
   const [layerSearch, setLayerSearch] = useState("");
 
   const components = history.present;
+
+  const hasUnsavedChanges =
+    JSON.stringify(history.present) !== lastSavedSnapshot;
+
+  const snapNumber = (value: number, size: number) => {
+    return Math.round(value / size) * size;
+  };
+
+  const snapLayout = (
+    layout: Partial<ComponentLayout>,
+  ): Partial<ComponentLayout> => {
+    if (!snapEnabled) {
+      return layout;
+    }
+
+    const next = {
+      ...layout,
+    };
+
+    Object.entries(next).forEach(([key, value]) => {
+      if (typeof value !== "number") {
+        return;
+      }
+
+      (next as Record<string, unknown>)[key] = snapNumber(value, gridSize);
+    });
+
+    return next;
+  };
+
+  const getLinkHref = (
+    component: Extract<LayoutComponent, { type: "link" }>,
+  ) => {
+    const value = component.props.value?.trim() ?? "";
+
+    if (!value) {
+      return "#";
+    }
+
+    switch (component.props.linkType) {
+      case "tel": {
+        // 공백 제거
+        const phone = value.replace(/\s+/g, "");
+
+        return `tel:${phone}`;
+      }
+
+      case "email":
+        return `mailto:${value}`;
+
+      case "url":
+      default:
+        // http:// 또는 https://가 없으면
+        // https:// 자동 추가
+        if (/^https?:\/\//i.test(value)) {
+          return value;
+        }
+
+        return `https://${value}`;
+    }
+  };
 
   const getComponentSearchText = (component: LayoutComponent) => {
     const type = component.type.toLowerCase();
@@ -124,6 +199,18 @@ function App() {
 
       case "scrollToTopButton":
         name = [component.props.title, "scrollToTop", "scroll top", "맨위로"]
+          .filter(Boolean)
+          .join(" ");
+        break;
+
+      case "link":
+        name = [
+          component.props.title,
+          component.props.value,
+          component.props.linkType,
+          "link",
+          "링크",
+        ]
           .filter(Boolean)
           .join(" ");
         break;
@@ -544,7 +631,9 @@ function App() {
   };
 
   const updateLayout = (id: string, newLayout: Partial<ComponentLayout>) => {
-    setComponents((prev) => updateLayoutRecursive(prev, id, newLayout));
+    const snappedLayout = snapLayout(newLayout);
+
+    setComponents((prev) => updateLayoutRecursive(prev, id, snappedLayout));
   };
 
   const editComponent = (id: string) => {
@@ -611,6 +700,16 @@ function App() {
         setEditValue("");
         setEditPlaceholder("");
         setEditDirection("column");
+        break;
+
+      case "link":
+        setEditTitle(component.props.title ?? "");
+        setEditValue(component.props.value ?? "");
+        setEditPlaceholder("");
+        setEditDirection("column");
+
+        setEditLinkType(component.props.linkType ?? "url");
+        setEditLinkNewWindow(component.props.newWindow ?? false);
         break;
     }
 
@@ -731,6 +830,32 @@ function App() {
                       type: "scrollToTop",
                       payload: component.props.action.payload ?? null,
                     },
+                  },
+                };
+
+              case "link":
+                return {
+                  ...component,
+
+                  style: {
+                    ...editStyle,
+                  },
+
+                  contentStyle: {
+                    ...editContentStyle,
+                  },
+
+                  props: {
+                    ...component.props,
+
+                    title: editTitle.trim() || "링크",
+                    value: editValue.trim(),
+                    linkType: editLinkType,
+
+                    newWindow:
+                      editLinkType === "url" ? editLinkNewWindow : false,
+
+                    disabled: editDisabled,
                   },
                 };
             }
@@ -916,6 +1041,10 @@ function App() {
 
     setNewImagePreviewUrl("");
 
+    // LINK
+    setNewLinkType("url");
+    setNewLinkNewWindow(false);
+
     setShowCreateModal(true);
   };
 
@@ -1036,6 +1165,31 @@ function App() {
 
           style: {
             width: "100%",
+          },
+        };
+
+      case "link":
+        return {
+          id,
+          type: "link",
+          order: 0,
+
+          props: {
+            title: newTitle.trim() || "링크",
+            linkType: newLinkType,
+            value: newValue.trim(),
+            newWindow: newLinkType === "url" ? newLinkNewWindow : false,
+            disabled: false,
+          },
+
+          style: {
+            width: "100%",
+          },
+
+          contentStyle: {
+            color: "#0d6efd",
+            textDecoration: "underline",
+            cursor: "pointer",
           },
         };
 
@@ -1324,6 +1478,35 @@ function App() {
   `;
       }
 
+      case "link": {
+        const href = getLinkHref(component);
+
+        const title = component.props.title || component.props.value || "링크";
+
+        const target =
+          component.props.linkType === "url" && component.props.newWindow
+            ? ' target="_blank"'
+            : "";
+
+        const rel =
+          component.props.linkType === "url" && component.props.newWindow
+            ? ' rel="noopener noreferrer"'
+            : "";
+
+        return `
+    <div style="${escapeAttribute(wrapperStyle)}">
+      <a
+        href="${escapeAttribute(href)}"
+        ${target}
+        ${rel}
+        style="${escapeAttribute(contentStyle)}"
+      >
+        ${escapeHtml(title)}
+      </a>
+    </div>
+  `;
+      }
+
       default:
         return "";
     }
@@ -1537,6 +1720,8 @@ ${body}
       anchor.remove();
 
       URL.revokeObjectURL(url);
+
+      setLastSavedSnapshot(JSON.stringify(history.present));
     } catch (error) {
       console.error("프로젝트 저장 실패:", error);
 
@@ -1574,6 +1759,8 @@ ${body}
 
           future: [],
         });
+
+        setLastSavedSnapshot(JSON.stringify(parsed.components));
       } catch (error) {
         console.error("프로젝트 불러오기 실패:", error);
 
@@ -1682,6 +1869,37 @@ ${body}
               <div className="text-secondary">이미지 없음</div>
             )}
           </div>
+        );
+      }
+
+      case "link": {
+        const href = getLinkHref(component);
+
+        return (
+          <a
+            href={href}
+            target={
+              component.props.linkType === "url" && component.props.newWindow
+                ? "_blank"
+                : undefined
+            }
+            rel={
+              component.props.linkType === "url" && component.props.newWindow
+                ? "noopener noreferrer"
+                : undefined
+            }
+            style={{
+              ...component.contentStyle,
+
+              display: "inline-block",
+
+              pointerEvents: component.props.disabled ? "none" : "auto",
+
+              opacity: component.props.disabled ? 0.5 : 1,
+            }}
+          >
+            {component.props.title || component.props.value || "링크"}
+          </a>
         );
       }
 
@@ -2042,6 +2260,9 @@ ${body}
               case "scrollToTopButton":
                 return "Scroll To Top";
 
+              case "link":
+                return component.props.title || component.props.value || "Link";
+
               case "container":
                 return "Container";
             }
@@ -2152,7 +2373,7 @@ ${body}
                       fontWeight: isContainer ? 600 : 400,
                     }}
                   >
-                    {highlightSearchText(getLabel(), layerSearch)}
+                    {highlightSearchText(getLabel() ?? "", layerSearch)}
                   </span>
                 </span>
 
@@ -2228,6 +2449,7 @@ ${body}
                       Scroll To Top Button
                     </option>
                     <option value="image">Image</option>
+                    <option value="link">Link</option>
                   </select>
                 </div>
 
@@ -2340,6 +2562,97 @@ ${body}
                       </div>
                     )}
                   </div>
+                )}
+
+                {/* LINK */}
+                {newType === "link" && (
+                  <>
+                    <div className="mb-3">
+                      <label className="form-label">표시할 텍스트</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newTitle}
+                        onChange={(e) => setNewTitle(e.target.value)}
+                        placeholder="링크"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">링크 종류</label>
+
+                      <select
+                        className="form-select"
+                        value={newLinkType}
+                        onChange={(e) => {
+                          const type = e.target.value as LinkType;
+
+                          setNewLinkType(type);
+                          setNewValue("");
+
+                          if (type !== "url") {
+                            setNewLinkNewWindow(false);
+                          }
+                        }}
+                      >
+                        <option value="url">URL</option>
+                        <option value="tel">전화</option>
+                        <option value="email">이메일</option>
+                      </select>
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">
+                        {newLinkType === "tel"
+                          ? "전화번호"
+                          : newLinkType === "email"
+                            ? "이메일 주소"
+                            : "URL"}
+                      </label>
+
+                      <input
+                        type={
+                          newLinkType === "email"
+                            ? "email"
+                            : newLinkType === "tel"
+                              ? "tel"
+                              : "text"
+                        }
+                        className="form-control"
+                        value={newValue}
+                        onChange={(e) => setNewValue(e.target.value)}
+                        placeholder={
+                          newLinkType === "tel"
+                            ? "010-1234-5678"
+                            : newLinkType === "email"
+                              ? "example@email.com"
+                              : "https://example.com"
+                        }
+                      />
+                    </div>
+
+                    {newLinkType === "url" && (
+                      <div className="form-check mb-3">
+                        <input
+                          id="new-link-new-window"
+                          type="checkbox"
+                          className="form-check-input"
+                          checked={newLinkNewWindow}
+                          onChange={(e) =>
+                            setNewLinkNewWindow(e.target.checked)
+                          }
+                        />
+
+                        <label
+                          htmlFor="new-link-new-window"
+                          className="form-check-label"
+                        >
+                          새 창에서 열기
+                        </label>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {/* CONTAINER */}
@@ -2611,6 +2924,97 @@ ${body}
                           </div>
                         )}
                       </div>
+                    )}
+
+                    {/* LINK */}
+                    {editType === "link" && (
+                      <>
+                        <div className="mb-3">
+                          <label className="form-label">표시할 텍스트</label>
+
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            placeholder="링크"
+                          />
+                        </div>
+
+                        <div className="mb-3">
+                          <label className="form-label">링크 종류</label>
+
+                          <select
+                            className="form-select"
+                            value={editLinkType}
+                            onChange={(e) => {
+                              const type = e.target.value as LinkType;
+
+                              setEditLinkType(type);
+                              setEditValue("");
+
+                              if (type !== "url") {
+                                setEditLinkNewWindow(false);
+                              }
+                            }}
+                          >
+                            <option value="url">URL</option>
+                            <option value="tel">전화</option>
+                            <option value="email">이메일</option>
+                          </select>
+                        </div>
+
+                        <div className="mb-3">
+                          <label className="form-label">
+                            {editLinkType === "tel"
+                              ? "전화번호"
+                              : editLinkType === "email"
+                                ? "이메일 주소"
+                                : "URL"}
+                          </label>
+
+                          <input
+                            type={
+                              editLinkType === "email"
+                                ? "email"
+                                : editLinkType === "tel"
+                                  ? "tel"
+                                  : "text"
+                            }
+                            className="form-control"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            placeholder={
+                              editLinkType === "tel"
+                                ? "010-1234-5678"
+                                : editLinkType === "email"
+                                  ? "example@email.com"
+                                  : "https://example.com"
+                            }
+                          />
+                        </div>
+
+                        {editLinkType === "url" && (
+                          <div className="form-check mb-3">
+                            <input
+                              id="edit-link-new-window"
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={editLinkNewWindow}
+                              onChange={(e) =>
+                                setEditLinkNewWindow(e.target.checked)
+                              }
+                            />
+
+                            <label
+                              htmlFor="edit-link-new-window"
+                              className="form-check-label"
+                            >
+                              새 창에서 열기
+                            </label>
+                          </div>
+                        )}
+                      </>
                     )}
 
                     {/* CONTAINER */}
@@ -3048,6 +3452,37 @@ ${body}
   const renderProjectToolbar = () => {
     return (
       <div className="d-flex gap-2 mb-3">
+        <div className="d-flex align-items-center gap-2">
+          <div className="form-check mb-0">
+            <input
+              id="snap-enabled"
+              type="checkbox"
+              className="form-check-input"
+              checked={snapEnabled}
+              onChange={(e) => setSnapEnabled(e.target.checked)}
+            />
+
+            <label htmlFor="snap-enabled" className="form-check-label">
+              스냅
+            </label>
+          </div>
+
+          <select
+            className="form-select form-select-sm"
+            style={{
+              width: 90,
+            }}
+            value={gridSize}
+            disabled={!snapEnabled}
+            onChange={(e) => setGridSize(Number(e.target.value))}
+          >
+            <option value={5}>5px</option>
+            <option value={10}>10px</option>
+            <option value={20}>20px</option>
+            <option value={25}>25px</option>
+            <option value={50}>50px</option>
+          </select>
+        </div>
         <button
           type="button"
           className="btn btn-outline-secondary"
@@ -3066,13 +3501,41 @@ ${body}
           ↷ Redo
         </button>
 
-        <button
-          type="button"
-          className="btn btn-success"
-          onClick={saveProjectFile}
+        <div
+          style={{
+            position: "relative",
+            display: "inline-block",
+          }}
         >
-          프로젝트 저장
-        </button>
+          <button
+            type="button"
+            className="btn btn-success"
+            onClick={saveProjectFile}
+          >
+            프로젝트 저장
+          </button>
+
+          {hasUnsavedChanges && (
+            <span
+              style={{
+                position: "absolute",
+                top: -4,
+                right: -4,
+
+                width: 10,
+                height: 10,
+
+                backgroundColor: "#dc3545",
+                borderRadius: "50%",
+
+                border: "2px solid white",
+
+                pointerEvents: "none",
+              }}
+              title="저장되지 않은 변경사항 있음"
+            />
+          )}
+        </div>
 
         <label
           className="btn btn-outline-success mb-0"

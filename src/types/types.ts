@@ -2,6 +2,11 @@ import type { CSSProperties } from "react";
 
 export type ComponentType = LayoutComponent["type"];
 export type ContainerDirection = "row" | "column";
+export type LinkType =
+  | "url"
+  | "tel"
+  | "email";
+
 
 export interface ComponentLayout {
   width?: number | string;
@@ -77,6 +82,20 @@ interface ImageComponent extends BaseComponent {
   };
 }
 
+interface LinkComponent extends BaseComponent {  
+  type: "link";  
+
+  props: {
+    title: string;
+    linkType: LinkType;
+    // URL / 전화번호 / 이메일 주소
+    value: string;
+    // URL일 때 새 창
+    newWindow?: boolean;
+    disabled?: boolean;
+  };
+};
+
 interface ContainerComponent extends BaseComponent {
   type: "container";
 
@@ -94,6 +113,7 @@ export type LayoutComponent =
   | TextAreaComponent
   | QuillComponent
   | ImageComponent
+  | LinkComponent
   | ContainerComponent;
 
 export interface HistoryState {
