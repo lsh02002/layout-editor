@@ -1120,29 +1120,6 @@ function App() {
       .join(";");
   };
 
-  const imageUrlToDataUrl = async (url: string) => {
-    if (!url) return "";
-    if (url.startsWith("data:")) return url;
-
-    try {
-      const response = await fetch(url);
-      if (!response.ok) return url;
-
-      const blob = await response.blob();
-
-      return await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-
-        reader.onload = () => resolve(String(reader.result ?? url));
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(blob);
-      });
-    } catch {
-      // 외부 URL이 CORS 등으로 읽히지 않으면 기존 URL을 그대로 유지한다.
-      return url;
-    }
-  };
-
   const componentToHtml = async (
     component: LayoutComponent,
   ): Promise<string> => {
@@ -1174,28 +1151,64 @@ function App() {
       }
 
       case "image": {
-        const imageUrl = component.props.urls?.[0] ?? "";
+        const originalUrl = component.props.urls?.[0] ?? "";
 
-        if (!imageUrl) {
-          return `<div style="${escapeAttribute(wrapperStyle)}"></div>`;
+        if (!originalUrl) {
+          return `
+      <div style="${wrapperStyle}">
+      </div>
+    `;
         }
 
-        const embeddedUrl = await imageUrlToDataUrl(imageUrl);
+        let imageUrl = originalUrl;
 
-        return `<div style="${escapeAttribute(wrapperStyle)}"><img src="${escapeAttribute(embeddedUrl)}" alt="" style="${escapeAttribute(`display:block;width:100%;height:auto;${contentStyle}`)}" /></div>`;
+        try {
+          imageUrl = await compressImageUrl(originalUrl, 1600, 1600, 0.8);
+        } catch (error) {
+          console.error("HTML 이미지 압축 실패:", error);
+        }
+
+        return `
+    <div style="${wrapperStyle}">
+      <img
+        src="${imageUrl}"
+        alt=""
+        style="
+          display:block;
+          width:100%;
+          height:auto;
+          ${contentStyle}
+        "
+      />
+    </div>
+  `;
       }
 
       case "container": {
         const direction = component.props.direction ?? "column";
-        const gap = component.props.gap ?? 8;
-        const children = [...component.children].sort(
-          (a, b) => a.order - b.order,
-        );
-        const childHtml = (
-          await Promise.all(children.map(componentToHtml))
-        ).join("\n");
 
-        return `<div style="${escapeAttribute(`display:flex;flex-direction:${direction};gap:${gap}px;${wrapperStyle}`)}">${childHtml}</div>`;
+        const gap = component.props.gap ?? 8;
+
+        const children = (
+          await Promise.all(
+            [...component.children]
+              .sort((a, b) => a.order - b.order)
+              .map((child) => componentToHtml(child)),
+          )
+        ).join("");
+
+        return `
+    <div
+      style="
+        display:flex;
+        flex-direction:${direction};
+        gap:${gap}px;
+        ${wrapperStyle}
+      "
+    >
+      ${children}
+    </div>
+  `;
       }
 
       default:
@@ -1204,79 +1217,124 @@ function App() {
   };
 
   const buildHtmlDocument = async () => {
-    const sorted = [...components].sort((a, b) => a.order - b.order);
-    const bodyHtml = (await Promise.all(sorted.map(componentToHtml))).join(
-      "\n",
-    );
+    const body = (
+      await Promise.all(
+        [...components]
+          .sort((a, b) => a.order - b.order)
+          .map((component) => componentToHtml(component)),
+      )
+    ).join("");
 
     return `<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
   <title>Exported Page</title>
+
   <style>
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       padding: 16px;
       font-family: Arial, Helvetica, sans-serif;
-      color: #212529;
-      background: #fff;
     }
-    img { max-width: 100%; }
-    button { font: inherit; }
+
+    img {
+      max-width: 100%;
+    }
   </style>
 </head>
+
 <body>
-${bodyHtml}
+${body}
 </body>
 </html>`;
   };
 
   const downloadHtml = async () => {
-    const html = await buildHtmlDocument();
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
+    try {
+      const html = await buildHtmlDocument();
 
-    anchor.href = url;
-    anchor.download = "page.html";
+      const blob = new Blob([html], {
+        type: "text/html;charset=utf-8",
+      });
 
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
+      const url = URL.createObjectURL(blob);
 
-    URL.revokeObjectURL(url);
+      const anchor = document.createElement("a");
+
+      anchor.href = url;
+      anchor.download = "page.html";
+
+      document.body.appendChild(anchor);
+
+      anchor.click();
+      anchor.remove();
+
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("HTML 저장 실패:", error);
+
+      alert("HTML 저장 중 오류가 발생했습니다.");
+    }
   };
 
-  const blobUrlToDataUrl = async (blobUrl: string): Promise<string> => {
-    // 이미 base64라면 그대로
-    if (blobUrl.startsWith("data:")) {
-      return blobUrl;
-    }
+  const compressImageUrl = async (
+    src: string,
+    maxWidth = 1600,
+    maxHeight = 1600,
+    quality = 0.8,
+  ): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
 
-    // 일반 http 이미지라면 그대로
-    if (!blobUrl.startsWith("blob:")) {
-      return blobUrl;
-    }
+      img.onload = () => {
+        let width = img.naturalWidth;
+        let height = img.naturalHeight;
 
-    const response = await fetch(blobUrl);
-    const blob = await response.blob();
+        // 비율 유지하면서 축소
+        const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
 
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
 
-      reader.onloadend = () => {
-        resolve(String(reader.result));
+        const canvas = document.createElement("canvas");
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) {
+          reject(new Error("Canvas context를 생성할 수 없습니다."));
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        try {
+          // HTML 용량 절감을 위해 WebP
+          const dataUrl = canvas.toDataURL("image/webp", quality);
+
+          resolve(dataUrl);
+        } catch (error) {
+          reject(error);
+        }
       };
 
-      reader.onerror = () => {
-        reject(reader.error);
+      img.onerror = () => {
+        reject(new Error("이미지를 불러올 수 없습니다."));
       };
 
-      reader.readAsDataURL(blob);
+      img.src = src;
     });
   };
 
@@ -1287,17 +1345,21 @@ ${bodyHtml}
       items.map(async (component) => {
         // 이미지
         if (component.type === "image") {
-          const imageUrl = component.props.urls?.[0] ?? "";
+          let exportImageUrl = component.props.urls?.[0] ?? "";
 
-          let savedUrl = "";
-
-          if (imageUrl) {
+          if (exportImageUrl) {
             try {
-              savedUrl = await blobUrlToDataUrl(imageUrl);
+              exportImageUrl = await compressImageUrl(
+                exportImageUrl,
+                1600, // 최대 width
+                1600, // 최대 height
+                0.8, // 품질
+              );
             } catch (error) {
-              console.error("이미지 변환 실패:", error);
+              console.error("이미지 압축 실패:", error);
 
-              savedUrl = "";
+              // 압축 실패하면 원본 사용
+              exportImageUrl = component.props.urls?.[0] ?? "";
             }
           }
 
@@ -1308,7 +1370,7 @@ ${bodyHtml}
               ...component.props,
 
               // 컴포넌트당 1개만 유지
-              urls: savedUrl ? [savedUrl] : [],
+              urls: exportImageUrl ? [exportImageUrl] : [],
 
               maxCount: 1,
             },
