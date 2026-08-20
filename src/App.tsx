@@ -97,6 +97,29 @@ function App() {
 
   const [layerSearch, setLayerSearch] = useState("");
 
+  const VALID_COMPONENT_TYPES = [
+    "button",
+    "textarea",
+    "quill",
+    "image",
+    "link",
+    "container",
+    "scrollToTopButton",
+  ] as const;
+
+  const isObject = (value: unknown): value is Record<string, unknown> => {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  };
+
+  const isValidComponentType = (value: unknown): value is ComponentType => {
+    return (
+      typeof value === "string" &&
+      VALID_COMPONENT_TYPES.includes(
+        value as (typeof VALID_COMPONENT_TYPES)[number],
+      )
+    );
+  };
+
   const components = history.present;
 
   const hasUnsavedChanges =
@@ -324,6 +347,193 @@ function App() {
       ...item,
       order: index,
     }));
+  };
+
+  const validateComponent = (
+    value: unknown,
+    path = "components",
+  ): string | null => {
+    if (!isObject(value)) {
+      return `${path}: 컴포넌트 형식이 올바르지 않습니다.`;
+    }
+
+    /*
+     * 공통 필드
+     */
+    if (typeof value.id !== "string" || value.id.trim() === "") {
+      return `${path}: id가 올바르지 않습니다.`;
+    }
+
+    if (!isValidComponentType(value.type)) {
+      return `${path}: 지원하지 않는 component type입니다. (${String(
+        value.type,
+      )})`;
+    }
+
+    if (typeof value.order !== "number" || !Number.isFinite(value.order)) {
+      return `${path}: order가 올바르지 않습니다.`;
+    }
+
+    if (!isObject(value.props)) {
+      return `${path}: props가 올바르지 않습니다.`;
+    }
+
+    /*
+     * style 관련은 존재하는 경우 객체인지 검사
+     */
+    if (value.style !== undefined && !isObject(value.style)) {
+      return `${path}: style이 올바르지 않습니다.`;
+    }
+
+    if (value.contentStyle !== undefined && !isObject(value.contentStyle)) {
+      return `${path}: contentStyle이 올바르지 않습니다.`;
+    }
+
+    if (value.layout !== undefined && !isObject(value.layout)) {
+      return `${path}: layout이 올바르지 않습니다.`;
+    }
+
+    const props = value.props;
+
+    /*
+     * 타입별 검사
+     */
+    switch (value.type) {
+      case "button": {
+        if (typeof props.title !== "string") {
+          return `${path}: button.title이 올바르지 않습니다.`;
+        }
+
+        break;
+      }
+
+      case "scrollToTopButton": {
+        if (typeof props.title !== "string") {
+          return `${path}: scrollToTopButton.title이 올바르지 않습니다.`;
+        }
+
+        break;
+      }
+
+      case "textarea": {
+        if (typeof props.value !== "string") {
+          return `${path}: textarea.value가 올바르지 않습니다.`;
+        }
+
+        if (
+          props.placeholder !== undefined &&
+          typeof props.placeholder !== "string"
+        ) {
+          return `${path}: textarea.placeholder가 올바르지 않습니다.`;
+        }
+
+        if (props.rows !== undefined && typeof props.rows !== "number") {
+          return `${path}: textarea.rows가 올바르지 않습니다.`;
+        }
+
+        break;
+      }
+
+      case "quill": {
+        if (typeof props.value !== "string") {
+          return `${path}: quill.value가 올바르지 않습니다.`;
+        }
+
+        if (
+          props.placeholder !== undefined &&
+          typeof props.placeholder !== "string"
+        ) {
+          return `${path}: quill.placeholder가 올바르지 않습니다.`;
+        }
+
+        break;
+      }
+
+      case "image": {
+        if (!Array.isArray(props.urls)) {
+          return `${path}: image.urls가 배열이 아닙니다.`;
+        }
+
+        if (props.urls.some((url) => typeof url !== "string")) {
+          return `${path}: image.urls에 잘못된 값이 있습니다.`;
+        }
+
+        /*
+         * 현재 프로젝트는 이미지 컴포넌트당 1장
+         */
+        if (props.urls.length > 1) {
+          return `${path}: 이미지 컴포넌트에는 이미지 1개만 허용됩니다.`;
+        }
+
+        break;
+      }
+
+      case "link": {
+        if (typeof props.title !== "string") {
+          return `${path}: link.title이 올바르지 않습니다.`;
+        }
+
+        if (typeof props.value !== "string") {
+          return `${path}: link.value가 올바르지 않습니다.`;
+        }
+
+        if (
+          props.linkType !== "url" &&
+          props.linkType !== "tel" &&
+          props.linkType !== "email"
+        ) {
+          return `${path}: link.linkType이 올바르지 않습니다.`;
+        }
+
+        if (
+          props.newWindow !== undefined &&
+          typeof props.newWindow !== "boolean"
+        ) {
+          return `${path}: link.newWindow가 올바르지 않습니다.`;
+        }
+
+        break;
+      }
+
+      case "container": {
+        if (props.direction !== "row" && props.direction !== "column") {
+          return `${path}: container.direction이 올바르지 않습니다.`;
+        }
+
+        if (!Array.isArray(value.children)) {
+          return `${path}: container.children이 배열이 아닙니다.`;
+        }
+
+        /*
+         * Container 내부 재귀 검증
+         */
+        for (let index = 0; index < value.children.length; index++) {
+          const error = validateComponent(
+            value.children[index],
+            `${path}.children[${index}]`,
+          );
+
+          if (error) {
+            return error;
+          }
+        }
+
+        break;
+      }
+    }
+
+    /*
+     * disabled가 존재하는 컴포넌트
+     */
+    if (
+      "disabled" in props &&
+      props.disabled !== undefined &&
+      typeof props.disabled !== "boolean"
+    ) {
+      return `${path}: disabled 값이 올바르지 않습니다.`;
+    }
+
+    return null;
   };
 
   const findComponentRecursive = (
@@ -1687,6 +1897,103 @@ ${body}
     );
   };
 
+  const validateProjectFile = (
+    value: unknown,
+  ):
+    | {
+        valid: true;
+        components: LayoutComponent[];
+      }
+    | {
+        valid: false;
+        error: string;
+      } => {
+    if (!isObject(value)) {
+      return {
+        valid: false,
+        error: "프로젝트 파일 형식이 올바르지 않습니다.",
+      };
+    }
+
+    /*
+     * 현재 파일 버전
+     */
+    if (value.version !== undefined && value.version !== 1) {
+      return {
+        valid: false,
+        error: `지원하지 않는 프로젝트 버전입니다. (${String(value.version)})`,
+      };
+    }
+
+    if (!Array.isArray(value.components)) {
+      return {
+        valid: false,
+        error: "components가 존재하지 않거나 배열이 아닙니다.",
+      };
+    }
+
+    /*
+     * ID 중복 검사용
+     */
+    const ids = new Set<string>();
+
+    const checkIds = (items: unknown[], path = "components"): string | null => {
+      for (let index = 0; index < items.length; index++) {
+        const item = items[index];
+
+        if (!isObject(item)) {
+          continue;
+        }
+
+        if (typeof item.id === "string") {
+          if (ids.has(item.id)) {
+            return `${path}[${index}]: 중복된 component id입니다. (${item.id})`;
+          }
+
+          ids.add(item.id);
+        }
+
+        if (item.type === "container" && Array.isArray(item.children)) {
+          const error = checkIds(item.children, `${path}[${index}].children`);
+
+          if (error) {
+            return error;
+          }
+        }
+      }
+
+      return null;
+    };
+
+    for (let index = 0; index < value.components.length; index++) {
+      const error = validateComponent(
+        value.components[index],
+        `components[${index}]`,
+      );
+
+      if (error) {
+        return {
+          valid: false,
+          error,
+        };
+      }
+    }
+
+    const duplicateError = checkIds(value.components);
+
+    if (duplicateError) {
+      return {
+        valid: false,
+        error: duplicateError,
+      };
+    }
+
+    return {
+      valid: true,
+      components: value.components as LayoutComponent[],
+    };
+  };
+
   const saveProjectFile = async () => {
     try {
       const savedComponents = await convertComponentsForSave(history.present);
@@ -1732,7 +2039,34 @@ ${body}
   const loadProjectFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
-    if (!file) return;
+    if (!file) {
+      return;
+    }
+
+    /*
+     * JSON 파일만 허용
+     */
+    if (!file.name.toLowerCase().endsWith(".json")) {
+      alert("JSON 프로젝트 파일만 불러올 수 있습니다.");
+
+      event.target.value = "";
+
+      return;
+    }
+
+    /*
+     * 너무 큰 JSON 방지
+     * 필요하면 크기 조절 가능
+     */
+    const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
+    if (file.size > MAX_FILE_SIZE) {
+      alert("프로젝트 파일이 너무 큽니다.");
+
+      event.target.value = "";
+
+      return;
+    }
 
     const reader = new FileReader();
 
@@ -1740,32 +2074,61 @@ ${body}
       try {
         const text = String(reader.result ?? "");
 
-        const parsed = JSON.parse(text) as {
-          version?: number;
-
-          components?: LayoutComponent[];
-
-          savedAt?: string;
-        };
-
-        if (!Array.isArray(parsed.components)) {
-          throw new Error("올바른 프로젝트 파일이 아닙니다.");
+        /*
+         * 빈 파일 방지
+         */
+        if (!text.trim()) {
+          throw new Error("파일 내용이 비어 있습니다.");
         }
 
+        /*
+         * JSON 문법 검사
+         */
+        let parsed: unknown;
+
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          throw new Error("JSON 형식이 깨져 있습니다.");
+        }
+
+        /*
+         * 프로젝트 구조 검사
+         */
+        const validation = validateProjectFile(parsed);
+
+        if (!validation.valid) {
+          throw new Error(validation.error);
+        }
+
+        /*
+         * 모든 검증을 통과한 뒤에만
+         * 실제 프로젝트 상태 변경
+         */
         setHistory({
           past: [],
-
-          present: parsed.components,
-
+          present: validation.components,
           future: [],
         });
 
-        setLastSavedSnapshot(JSON.stringify(parsed.components));
+        /*
+         * 저장 여부 표시 기능을
+         * 이미 넣었다면 유지
+         */
+        setLastSavedSnapshot(JSON.stringify(validation.components));
+
+        setSelectedComponentId(null);
       } catch (error) {
         console.error("프로젝트 불러오기 실패:", error);
 
-        alert("프로젝트 파일을 불러올 수 없습니다.");
+        const message =
+          error instanceof Error ? error.message : "알 수 없는 오류입니다.";
+
+        alert(`프로젝트 파일을 불러올 수 없습니다.\n\n${message}`);
       } finally {
+        /*
+         * 같은 파일 다시 선택 가능
+         */
         event.target.value = "";
       }
     };
