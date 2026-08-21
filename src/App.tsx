@@ -124,9 +124,17 @@ const convertComponentsForSave = async (
   );
 };
 
+const getAutoSaveSnapshot = (components: LayoutComponent[], css: string) => {
+  return JSON.stringify({
+    components,
+    projectCustomCss: css,
+  });
+};
+
 const downloadProjectFile = async (
   components: LayoutComponent[],
   projectCustomCss: string,
+  setAutoSaveBaseline: React.Dispatch<React.SetStateAction<string>>,
 ) => {
   try {
     const savedComponents = await convertComponentsForSave(components);
@@ -163,6 +171,8 @@ const downloadProjectFile = async (
     URL.revokeObjectURL(url);
 
     localStorage.removeItem(AUTOSAVE_KEY);
+
+    setAutoSaveBaseline(getAutoSaveSnapshot(components, projectCustomCss));
   } catch (error) {
     console.error("프로젝트 저장 실패:", error);
 
@@ -371,13 +381,16 @@ function App() {
   const [projectCssDraft, setProjectCssDraft] = useState("");
 
   const [lastAutoSavedAt, setLastAutoSavedAt] = useState<string | null>(null);
-  
+
   const [restoreData, setRestoreData] = useState<AutoSaveData | null>(() =>
     readAutoSaveData(),
   );
 
   const showRestoreModal = restoreData !== null;
 
+  const [autoSaveBaseline, setAutoSaveBaseline] = useState(() =>
+    getAutoSaveSnapshot(history.present, projectCustomCss),
+  );
 
   const historyActionRef = useRef<{
     active: boolean;
@@ -402,22 +415,35 @@ function App() {
       return;
     }
 
+    const restoredCss = restoreData.projectCustomCss ?? "";
+
     setHistory({
       past: [],
       present: restoreData.components,
       future: [],
     });
 
-    setProjectCustomCss(restoreData.projectCustomCss ?? "");
+    setProjectCustomCss(restoredCss);
 
-    setLastSavedSnapshot(
-      JSON.stringify({
-        components: restoreData.components,
+    setSelectedComponentId(null);
 
-        projectCustomCss: restoreData.projectCustomCss ?? "",
-      }),
+    /*
+     * 중요:
+     * 현재 복구에 사용한 AutoSave는 제거
+     */
+    localStorage.removeItem(AUTOSAVE_KEY);
+
+    /*
+     * 복구 직후 같은 내용이
+     * 다시 AutoSave 되는 것을 방지
+     */
+    setAutoSaveBaseline(
+      getAutoSaveSnapshot(restoreData.components, restoredCss),
     );
 
+    /*
+     * 복구 모달 종료
+     */
     setRestoreData(null);
   };
 
@@ -428,6 +454,19 @@ function App() {
   };
 
   useEffect(() => {
+    const currentSnapshot = getAutoSaveSnapshot(
+      history.present,
+      projectCustomCss,
+    );
+
+    /*
+     * 마지막 AutoSave 기준과
+     * 현재 상태가 같으면 저장 안 함
+     */
+    if (currentSnapshot === autoSaveBaseline) {
+      return;
+    }
+
     const timeoutId = window.setTimeout(() => {
       try {
         const data: AutoSaveData = {
@@ -442,6 +481,11 @@ function App() {
 
         localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
 
+        /*
+         * 현재 내용을 새로운 기준점으로
+         */
+        setAutoSaveBaseline(currentSnapshot);
+
         setLastAutoSavedAt(data.savedAt);
       } catch (error) {
         console.error("자동 저장 실패:", error);
@@ -451,7 +495,7 @@ function App() {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [history.present, projectCustomCss]);
+  }, [history.present, projectCustomCss, autoSaveBaseline]);
 
   const addSelectedComponentToFavorites = () => {
     if (!selectedComponentId) {
@@ -2538,7 +2582,11 @@ function App() {
 
       const snapshot = history.present;
 
-      void downloadProjectFile(snapshot, projectCustomCss).then(() => {
+      void downloadProjectFile(
+        snapshot,
+        projectCustomCss,
+        setAutoSaveBaseline,
+      ).then(() => {
         setLastSavedSnapshot(
           JSON.stringify({ components: snapshot, projectCustomCss }),
         );
@@ -2940,7 +2988,11 @@ ${body}
   };
 
   const saveProjectFile = async () => {
-    await downloadProjectFile(history.present, projectCustomCss);
+    await downloadProjectFile(
+      history.present,
+      projectCustomCss,
+      setAutoSaveBaseline,
+    );
 
     setLastSavedSnapshot(
       JSON.stringify({ components: history.present, projectCustomCss }),
