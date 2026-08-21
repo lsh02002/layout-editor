@@ -37,6 +37,8 @@ function App() {
   const [newLinkType, setNewLinkType] = useState<LinkType>("url");
   const [newLinkNewWindow, setNewLinkNewWindow] = useState(false);
 
+  const [newComponentName, setNewComponentName] = useState("");
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingComponentId, setEditingComponentId] = useState<string | null>(
     null,
@@ -66,6 +68,8 @@ function App() {
 
   const [editLinkType, setEditLinkType] = useState<LinkType>("url");
   const [editLinkNewWindow, setEditLinkNewWindow] = useState(false);
+
+  const [editComponentName, setEditComponentName] = useState("");
 
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [gridSize, setGridSize] = useState(10);
@@ -258,21 +262,23 @@ function App() {
   const getComponentSearchText = (component: LayoutComponent) => {
     const type = component.type.toLowerCase();
 
-    let name = "";
+    const componentName = component.name ?? "";
+
+    let content = "";
 
     switch (component.type) {
       case "button":
-        name = component.props.title ?? "";
+        content = component.props.title ?? "";
         break;
 
       case "textarea":
-        name = [component.props.value, component.props.placeholder]
+        content = [component.props.value, component.props.placeholder]
           .filter(Boolean)
           .join(" ");
         break;
 
       case "quill":
-        name = [
+        content = [
           component.props.value
             ?.replace(/<[^>]*>/g, " ")
             .replace(/\s+/g, " ")
@@ -285,21 +291,21 @@ function App() {
         break;
 
       case "image":
-        name = "image 이미지";
+        content = "image 이미지";
         break;
 
       case "container":
-        name = "container 컨테이너";
+        content = "container 컨테이너";
         break;
 
       case "scrollToTopButton":
-        name = [component.props.title, "scrollToTop", "scroll top", "맨위로"]
+        content = [component.props.title, "scrollToTop", "scroll top", "맨위로"]
           .filter(Boolean)
           .join(" ");
         break;
 
       case "link":
-        name = [
+        content = [
           component.props.title,
           component.props.value,
           component.props.linkType,
@@ -311,7 +317,7 @@ function App() {
         break;
     }
 
-    return `${type} ${name}`.toLowerCase();
+    return `${componentName} ${type} ${content}`.toLowerCase();
   };
 
   const filterLayerComponents = (
@@ -434,6 +440,10 @@ function App() {
      */
     if (typeof value.id !== "string" || value.id.trim() === "") {
       return `${path}: id가 올바르지 않습니다.`;
+    }
+
+    if (typeof value.name !== "string" || value.name.trim() === "") {
+      return `${path}: name이 올바르지 않습니다.`;
     }
 
     if (!isValidComponentType(value.type)) {
@@ -935,6 +945,7 @@ function App() {
     if (!component) return;
 
     setEditingComponentId(component.id);
+    setEditComponentName(component.name ?? "");
     setEditType(component.type);
     setEditStyle(component.style ?? {});
     setEditContentStyle(component.contentStyle ?? {});
@@ -1022,6 +1033,7 @@ function App() {
               case "button":
                 return {
                   ...component,
+                  name: editComponentName.trim() || component.name,
                   style: {
                     ...editStyle,
                   },
@@ -1038,6 +1050,7 @@ function App() {
               case "textarea":
                 return {
                   ...component,
+                  name: editComponentName.trim() || component.name,
                   style: {
                     ...editStyle,
                   },
@@ -1055,6 +1068,7 @@ function App() {
               case "quill":
                 return {
                   ...component,
+                  name: editComponentName.trim() || component.name,
                   style: {
                     ...editStyle,
                   },
@@ -1072,6 +1086,7 @@ function App() {
               case "container":
                 return {
                   ...component,
+                  name: editComponentName.trim() || component.name,
                   style: {
                     ...editStyle,
                   },
@@ -1087,6 +1102,8 @@ function App() {
               case "image":
                 return {
                   ...component,
+
+                  name: editComponentName.trim() || component.name,
 
                   style: {
                     ...editStyle,
@@ -1110,6 +1127,9 @@ function App() {
               case "scrollToTopButton":
                 return {
                   ...component,
+
+                  name: editComponentName.trim() || component.name,
+
                   style: {
                     ...editStyle,
                   },
@@ -1129,6 +1149,8 @@ function App() {
               case "link":
                 return {
                   ...component,
+
+                  name: editComponentName.trim() || component.name,
 
                   style: {
                     ...editStyle,
@@ -1157,6 +1179,9 @@ function App() {
           if (component.type === "container") {
             return {
               ...component,
+
+              name: editComponentName.trim() || component.name,
+
               children: recursiveUpdate(component.children),
             };
           }
@@ -1327,6 +1352,7 @@ function App() {
     });
 
     setNewType("textarea");
+    setNewComponentName("");
     setNewTitle("");
     setNewValue("");
     setNewPlaceholder("");
@@ -1358,6 +1384,7 @@ function App() {
       case "button":
         return {
           id,
+          name: newComponentName.trim() || "Button",
           type: "button",
           order: 0,
 
@@ -1380,6 +1407,7 @@ function App() {
       case "scrollToTopButton":
         return {
           id,
+          name: newComponentName.trim() || "ScrollToTopButton",
           type: "scrollToTopButton",
           order: 0,
 
@@ -1408,6 +1436,7 @@ function App() {
       case "textarea":
         return {
           id,
+          name: newComponentName.trim() || "Textarea",
           type: "textarea",
           order: 0,
 
@@ -1428,6 +1457,7 @@ function App() {
       case "quill":
         return {
           id,
+          name: newComponentName.trim() || "RichText",
           type: "quill",
           order: 0,
 
@@ -1447,6 +1477,7 @@ function App() {
       case "image":
         return {
           id,
+          name: newComponentName.trim() || "Image",
           type: "image",
           order: 0,
 
@@ -1464,6 +1495,7 @@ function App() {
       case "link":
         return {
           id,
+          name: newComponentName.trim() || "Link",
           type: "link",
           order: 0,
 
@@ -1489,6 +1521,7 @@ function App() {
       case "container":
         return {
           id,
+          name: newComponentName.trim() || "Container",
           type: "container",
           order: 0,
 
@@ -2688,34 +2721,7 @@ ${body}
           const isDragging = draggingId === component.id;
 
           const getLabel = () => {
-            switch (component.type) {
-              case "button":
-                return component.props.title || "Button";
-
-              case "textarea":
-                return component.props.value?.slice(0, 20) || "TextArea";
-
-              case "quill": {
-                const text = component.props.value
-                  ?.replace(/<[^>]*>/g, " ")
-                  .replace(/\s+/g, " ")
-                  .trim();
-
-                return text?.slice(0, 30) || "Quill";
-              }
-
-              case "image":
-                return "Image";
-
-              case "scrollToTopButton":
-                return "Scroll To Top";
-
-              case "link":
-                return component.props.title || component.props.value || "Link";
-
-              case "container":
-                return "Container";
-            }
+            return component.name?.trim() || component.type;
           };
 
           return (
@@ -2905,22 +2911,46 @@ ${body}
 
                 {/* BUTTON */}
                 {newType === "button" && (
-                  <div className="mb-3">
-                    <label className="form-label">버튼 제목</label>
+                  <>
+                    <div className="mb-3">
+                      <label className="form-label">컴포넌트 이름</label>
 
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={newTitle}
-                      onChange={(e) => setNewTitle(e.target.value)}
-                      placeholder="버튼"
-                    />
-                  </div>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newComponentName}
+                        onChange={(e) => setNewComponentName(e.target.value)}
+                        placeholder={"예: 신청 버튼, 메인 이미지"}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">버튼 제목</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newTitle}
+                        onChange={(e) => setNewTitle(e.target.value)}
+                        placeholder="버튼"
+                      />
+                    </div>
+                  </>
                 )}
 
                 {/* PLACEHOLDER */}
                 {newType === "textarea" && (
                   <>
+                    <div className="mb-3">
+                      <label className="form-label">컴포넌트 이름</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newComponentName}
+                        onChange={(e) => setNewComponentName(e.target.value)}
+                        placeholder={"예: 신청 버튼, 메인 이미지"}
+                      />
+                    </div>
                     <div className="mb-3">
                       <label className="form-label">Edit</label>
 
@@ -2951,6 +2981,17 @@ ${body}
                 {newType === "quill" && (
                   <>
                     <div className="mb-3">
+                      <label className="form-label">컴포넌트 이름</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newComponentName}
+                        onChange={(e) => setNewComponentName(e.target.value)}
+                        placeholder={"예: 신청 버튼, 메인 이미지"}
+                      />
+                    </div>
+                    <div className="mb-3">
                       <label className="form-label">Edit</label>
 
                       <QuillEditorSimpleInput
@@ -2976,47 +3017,71 @@ ${body}
 
                 {/* IMAGE */}
                 {newType === "image" && (
-                  <div className="mb-3">
-                    <label className="form-label">이미지</label>
+                  <>
+                    <div className="mb-3">
+                      <label className="form-label">컴포넌트 이름</label>
 
-                    <input
-                      type="file"
-                      className="form-control"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] ?? null;
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newComponentName}
+                        onChange={(e) => setNewComponentName(e.target.value)}
+                        placeholder={"예: 신청 버튼, 메인 이미지"}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">이미지</label>
 
-                        if (!file) {
-                          setNewImagePreviewUrl("");
-                          return;
-                        }
+                      <input
+                        type="file"
+                        className="form-control"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] ?? null;
 
-                        const imageUrl = URL.createObjectURL(file);
-                        setNewImagePreviewUrl(imageUrl);
-                      }}
-                    />
+                          if (!file) {
+                            setNewImagePreviewUrl("");
+                            return;
+                          }
 
-                    {newImagePreviewUrl && (
-                      <div className="mt-3">
-                        <img
-                          src={newImagePreviewUrl}
-                          alt="미리보기"
-                          style={{
-                            display: "block",
-                            maxWidth: "100%",
-                            maxHeight: 300,
-                            objectFit: "contain",
-                            borderRadius: 8,
-                          }}
-                        />
-                      </div>
-                    )}
-                  </div>
+                          const imageUrl = URL.createObjectURL(file);
+                          setNewImagePreviewUrl(imageUrl);
+                        }}
+                      />
+
+                      {newImagePreviewUrl && (
+                        <div className="mt-3">
+                          <img
+                            src={newImagePreviewUrl}
+                            alt="미리보기"
+                            style={{
+                              display: "block",
+                              maxWidth: "100%",
+                              maxHeight: 300,
+                              objectFit: "contain",
+                              borderRadius: 8,
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </>
                 )}
 
                 {/* LINK */}
                 {newType === "link" && (
                   <>
+                    <div className="mb-3">
+                      <label className="form-label">컴포넌트 이름</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newComponentName}
+                        onChange={(e) => setNewComponentName(e.target.value)}
+                        placeholder={"예: 신청 버튼, 메인 이미지"}
+                      />
+                    </div>
                     <div className="mb-3">
                       <label className="form-label">표시할 텍스트</label>
 
@@ -3108,6 +3173,19 @@ ${body}
                 {/* CONTAINER */}
                 {newType === "container" && (
                   <div className="mb-3">
+                    <label className="form-label">컴포넌트 이름</label>
+
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newComponentName}
+                      onChange={(e) => setNewComponentName(e.target.value)}
+                      placeholder={
+                        newType === "container"
+                          ? "예: 메인 배너, 소개 영역"
+                          : "예: 신청 버튼, 메인 이미지"
+                      }
+                    />
                     <label className="form-label">배치 방향</label>
 
                     <div className="d-flex gap-3">
@@ -3260,22 +3338,50 @@ ${body}
 
                     {/* BUTTON */}
                     {editType === "button" && (
-                      <div className="mb-3">
-                        <label className="form-label">버튼 제목</label>
+                      <>
+                        <div className="mb-3">
+                          <label className="form-label">컴포넌트 이름</label>
 
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={editTitle}
-                          onChange={(e) => setEditTitle(e.target.value)}
-                          placeholder="버튼"
-                        />
-                      </div>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={editComponentName}
+                            onChange={(e) =>
+                              setEditComponentName(e.target.value)
+                            }
+                            placeholder="예: 메인 배너"
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label">버튼 제목</label>
+
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            placeholder="버튼"
+                          />
+                        </div>
+                      </>
                     )}
 
                     {/* TEXTAREA */}
                     {editType === "textarea" && (
                       <>
+                        <div className="mb-3">
+                          <label className="form-label">컴포넌트 이름</label>
+
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={editComponentName}
+                            onChange={(e) =>
+                              setEditComponentName(e.target.value)
+                            }
+                            placeholder="예: 메인 배너"
+                          />
+                        </div>
                         <div className="mb-3">
                           <label className="form-label">내용</label>
 
@@ -3306,6 +3412,19 @@ ${body}
                     {editType === "quill" && (
                       <>
                         <div className="mb-3">
+                          <label className="form-label">컴포넌트 이름</label>
+
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={editComponentName}
+                            onChange={(e) =>
+                              setEditComponentName(e.target.value)
+                            }
+                            placeholder="예: 메인 배너"
+                          />
+                        </div>
+                        <div className="mb-3">
                           <label className="form-label">내용</label>
 
                           <QuillEditorSimpleInput
@@ -3335,50 +3454,78 @@ ${body}
 
                     {/* IMAGE */}
                     {editType === "image" && (
-                      <div className="mb-3">
-                        <label className="form-label">이미지</label>
+                      <>
+                        <div className="mb-3">
+                          <label className="form-label">컴포넌트 이름</label>
 
-                        <input
-                          type="file"
-                          className="form-control"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] ?? null;
-
-                            if (!file) {
-                              setEditImageUrl("");
-                              setEditImagePreviewUrl("");
-                              return;
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={editComponentName}
+                            onChange={(e) =>
+                              setEditComponentName(e.target.value)
                             }
+                            placeholder="예: 메인 배너"
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label">이미지</label>
 
-                            const imageUrl = URL.createObjectURL(file);
+                          <input
+                            type="file"
+                            className="form-control"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] ?? null;
 
-                            setEditImageUrl(imageUrl);
-                            setEditImagePreviewUrl(imageUrl);
-                          }}
-                        />
+                              if (!file) {
+                                setEditImageUrl("");
+                                setEditImagePreviewUrl("");
+                                return;
+                              }
 
-                        {editImagePreviewUrl && (
-                          <div className="mt-3">
-                            <img
-                              src={editImagePreviewUrl}
-                              alt="미리보기"
-                              style={{
-                                display: "block",
-                                maxWidth: "100%",
-                                maxHeight: 300,
-                                objectFit: "contain",
-                                borderRadius: 8,
-                              }}
-                            />
-                          </div>
-                        )}
-                      </div>
+                              const imageUrl = URL.createObjectURL(file);
+
+                              setEditImageUrl(imageUrl);
+                              setEditImagePreviewUrl(imageUrl);
+                            }}
+                          />
+
+                          {editImagePreviewUrl && (
+                            <div className="mt-3">
+                              <img
+                                src={editImagePreviewUrl}
+                                alt="미리보기"
+                                style={{
+                                  display: "block",
+                                  maxWidth: "100%",
+                                  maxHeight: 300,
+                                  objectFit: "contain",
+                                  borderRadius: 8,
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </>
                     )}
 
                     {/* LINK */}
                     {editType === "link" && (
                       <>
+                        <div className="mb-3">
+                          <label className="form-label">컴포넌트 이름</label>
+
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={editComponentName}
+                            onChange={(e) =>
+                              setEditComponentName(e.target.value)
+                            }
+                            placeholder="예: 메인 배너"
+                          />
+                        </div>
                         <div className="mb-3">
                           <label className="form-label">표시할 텍스트</label>
 
@@ -3469,47 +3616,62 @@ ${body}
 
                     {/* CONTAINER */}
                     {editType === "container" && (
-                      <div className="mb-3">
-                        <label className="form-label">배치 방향</label>
+                      <>
+                        <div className="mb-3">
+                          <label className="form-label">컴포넌트 이름</label>
 
-                        <div className="d-flex gap-3">
-                          <div className="form-check">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="editContainerDirection"
-                              id="editDirectionColumn"
-                              checked={editDirection === "column"}
-                              onChange={() => setEditDirection("column")}
-                            />
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={editComponentName}
+                            onChange={(e) =>
+                              setEditComponentName(e.target.value)
+                            }
+                            placeholder="예: 메인 배너"
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label">배치 방향</label>
 
-                            <label
-                              className="form-check-label"
-                              htmlFor="editDirectionColumn"
-                            >
-                              세로
-                            </label>
-                          </div>
+                          <div className="d-flex gap-3">
+                            <div className="form-check">
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="editContainerDirection"
+                                id="editDirectionColumn"
+                                checked={editDirection === "column"}
+                                onChange={() => setEditDirection("column")}
+                              />
 
-                          <div className="form-check">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="editContainerDirection"
-                              id="editDirectionRow"
-                              checked={editDirection === "row"}
-                              onChange={() => setEditDirection("row")}
-                            />
+                              <label
+                                className="form-check-label"
+                                htmlFor="editDirectionColumn"
+                              >
+                                세로
+                              </label>
+                            </div>
 
-                            <label
-                              className="form-check-label"
-                              htmlFor="editDirectionRow"
-                            >
-                              가로
-                            </label>
+                            <div className="form-check">
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="editContainerDirection"
+                                id="editDirectionRow"
+                                checked={editDirection === "row"}
+                                onChange={() => setEditDirection("row")}
+                              />
+
+                              <label
+                                className="form-check-label"
+                                htmlFor="editDirectionRow"
+                              >
+                                가로
+                              </label>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </>
                     )}
 
                     {/* DISABLED */}

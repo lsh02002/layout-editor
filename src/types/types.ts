@@ -17,6 +17,7 @@ export interface ComponentLayout {
 
 interface BaseComponent {
   id: string;
+  name?: string;
   order: number;
   layout?: ComponentLayout;
   style?: CSSProperties;
