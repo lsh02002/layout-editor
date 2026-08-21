@@ -5333,8 +5333,6 @@ ${body}
         }}
       >
         {renderProjectToolbar()}
-        {/* 최상위 맨 앞 + */}
-        {renderAddButton(null, 0, "column")}
 
         <div
           className="builder-preview"
@@ -5342,6 +5340,9 @@ ${body}
             minHeight: "100vh",
           }}
         >
+          {/* 최상위 맨 앞 + */}
+          {renderAddButton(null, 0, "column")}
+
           {sortedComponents.map((component, index) => (
             <div key={component.id}>
               {renderLayoutComponent(component)}
