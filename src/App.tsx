@@ -1149,11 +1149,23 @@ function App() {
     return `${componentName} ${type} ${content}`.toLowerCase();
   };
 
+  const normalizeSearchText = (value: string) => {
+    return value
+      .toLowerCase()
+      .replace(/\u00A0/g, " ")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
   const filterLayerComponents = (
     items: LayoutComponent[],
     search: string,
   ): LayoutComponent[] => {
-    const keyword = search.trim().toLowerCase();
+    /*
+     * 검색어도 동일하게 정규화
+     */
+    const keyword = normalizeSearchText(search);
 
     if (!keyword) {
       return items;
@@ -1162,7 +1174,13 @@ function App() {
     const filterRecursive = (
       component: LayoutComponent,
     ): LayoutComponent | null => {
-      const selfMatched = getComponentSearchText(component).includes(keyword);
+      /*
+       * 컴포넌트 검색 문자열도
+       * 동일하게 정규화
+       */
+      const searchText = normalizeSearchText(getComponentSearchText(component));
+
+      const selfMatched = searchText.includes(keyword);
 
       /*
        * 일반 컴포넌트
@@ -1172,30 +1190,16 @@ function App() {
       }
 
       /*
-       * Container
-       *
-       * 자식도 재귀적으로 검색
+       * Container 자식 검색
        */
       const filteredChildren = component.children
         .map(filterRecursive)
         .filter((child): child is LayoutComponent => child !== null);
 
-      /*
-       * Container 자신이 검색되거나
-       * 자식 중 검색된 것이 있으면
-       * Container 유지
-       */
       if (selfMatched || filteredChildren.length > 0) {
         return {
           ...component,
 
-          /*
-           * 부모 자체가 검색된 경우에는
-           * 모든 자식을 보여주는 게 편함.
-           *
-           * 자식만 검색된 경우에는
-           * 검색된 자식만 보여줌.
-           */
           children: selfMatched ? component.children : filteredChildren,
         };
       }
@@ -3564,8 +3568,12 @@ ${body}
 
     if (component.type === "quill") {
       const plainText = component.props.value
-        .replace(/<[^>]*>/g, " ")
-        .replace(/&nbsp;/g, " ")
+        .replace(/<br\s*\/?>/gi, " ")
+        .replace(/<\/p>/gi, " ")
+        .replace(/<\/div>/gi, " ")
+        .replace(/<[^>]*>/g, "")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/\u00A0/g, " ")
         .replace(/\s+/g, " ")
         .trim();
 
@@ -4753,11 +4761,11 @@ ${body}
 
                           <QuillEditorSimpleInput
                             data={editValue}
-                            placeholder={
-                              editPlaceholder || "본문을 입력하세요."
-                            }
-                            disabled={false}
-                            style={editContentStyle}
+                            // placeholder={
+                            //   editPlaceholder || "본문을 입력하세요."
+                            // }
+                            // disabled={false}
+                            // style={editContentStyle}
                             setData={setEditValue}
                           />
                         </div>
