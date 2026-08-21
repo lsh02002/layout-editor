@@ -146,3 +146,12 @@ export type FavoriteComponent = {
   name: string;
   component: LayoutComponent;
 };
+
+export const AUTOSAVE_KEY = "layout-editor-autosave";
+
+export type AutoSaveData = {
+  version: 1;
+  savedAt: string;
+  components: LayoutComponent[];
+  projectCustomCss: string;
+};

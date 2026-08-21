@@ -7,16 +7,18 @@ import React, {
 } from "react";
 
 import DivBox from "./components/layout/DivBox";
-import type {
-  ComponentLayout,
-  LayoutComponent,
-  ComponentType,
-  ContainerDirection,
-  HistoryState,
-  ComponentsUpdater,
-  LinkType,
-  TemplateFile,
-  FavoriteComponent,
+import {
+  type ComponentLayout,
+  type LayoutComponent,
+  type ComponentType,
+  type ContainerDirection,
+  type HistoryState,
+  type ComponentsUpdater,
+  type LinkType,
+  type TemplateFile,
+  type FavoriteComponent,
+  type AutoSaveData,
+  AUTOSAVE_KEY,
 } from "./types/types";
 
 import { data } from "./data/data";
@@ -159,6 +161,8 @@ const downloadProjectFile = async (
     anchor.remove();
 
     URL.revokeObjectURL(url);
+
+    localStorage.removeItem(AUTOSAVE_KEY);
   } catch (error) {
     console.error("프로젝트 저장 실패:", error);
 
@@ -213,6 +217,48 @@ const removeComponentRecursive = (
     items,
     removed: null,
   };
+};
+
+const readAutoSaveData = (): AutoSaveData | null => {
+  try {
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+
+    if (!raw) {
+      return null;
+    }
+
+    const parsed: unknown = JSON.parse(raw);
+
+    if (!parsed || typeof parsed !== "object") {
+      return null;
+    }
+
+    const value = parsed as Partial<AutoSaveData>;
+
+    if (value.version !== 1 || !Array.isArray(value.components)) {
+      return null;
+    }
+
+    return {
+      version: 1,
+
+      savedAt:
+        typeof value.savedAt === "string"
+          ? value.savedAt
+          : new Date().toISOString(),
+
+      components: value.components,
+
+      projectCustomCss:
+        typeof value.projectCustomCss === "string"
+          ? value.projectCustomCss
+          : "",
+    };
+  } catch (error) {
+    console.error("자동 저장본 읽기 실패:", error);
+
+    return null;
+  }
 };
 
 function App() {
@@ -324,6 +370,15 @@ function App() {
 
   const [projectCssDraft, setProjectCssDraft] = useState("");
 
+  const [lastAutoSavedAt, setLastAutoSavedAt] = useState<string | null>(null);
+  
+  const [restoreData, setRestoreData] = useState<AutoSaveData | null>(() =>
+    readAutoSaveData(),
+  );
+
+  const showRestoreModal = restoreData !== null;
+
+
   const historyActionRef = useRef<{
     active: boolean;
     snapshot: LayoutComponent[] | null;
@@ -341,6 +396,62 @@ function App() {
     "container",
     "scrollToTopButton",
   ] as const;
+
+  const restoreAutoSave = () => {
+    if (!restoreData) {
+      return;
+    }
+
+    setHistory({
+      past: [],
+      present: restoreData.components,
+      future: [],
+    });
+
+    setProjectCustomCss(restoreData.projectCustomCss ?? "");
+
+    setLastSavedSnapshot(
+      JSON.stringify({
+        components: restoreData.components,
+
+        projectCustomCss: restoreData.projectCustomCss ?? "",
+      }),
+    );
+
+    setRestoreData(null);
+  };
+
+  const discardAutoSave = () => {
+    localStorage.removeItem(AUTOSAVE_KEY);
+
+    setRestoreData(null);
+  };
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      try {
+        const data: AutoSaveData = {
+          version: 1,
+
+          savedAt: new Date().toISOString(),
+
+          components: history.present,
+
+          projectCustomCss,
+        };
+
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
+
+        setLastAutoSavedAt(data.savedAt);
+      } catch (error) {
+        console.error("자동 저장 실패:", error);
+      }
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [history.present, projectCustomCss]);
 
   const addSelectedComponentToFavorites = () => {
     if (!selectedComponentId) {
@@ -3553,6 +3664,65 @@ ${body}
     );
   };
 
+  const renderAutoSaveRestoreModal = () => {
+    if (!showRestoreModal || !restoreData) {
+      return null;
+    }
+
+    const savedAt = new Date(restoreData.savedAt).toLocaleString();
+
+    return (
+      <>
+        <div
+          className="modal fade show"
+          style={{
+            display: "block",
+            zIndex: 1060,
+          }}
+        >
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">자동 저장본 복구</h5>
+              </div>
+
+              <div className="modal-body">
+                <p className="mb-2">이전 작업의 자동 저장본이 있습니다.</p>
+
+                <small className="text-secondary">저장 시간: {savedAt}</small>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-outline-danger"
+                  onClick={discardAutoSave}
+                >
+                  버리기
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={restoreAutoSave}
+                >
+                  복구
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="modal-backdrop fade show"
+          style={{
+            zIndex: 1055,
+          }}
+        />
+      </>
+    );
+  };
+
   const buildComponentCustomCss = (component: LayoutComponent) => {
     const css = component.customCss?.trim();
 
@@ -5352,6 +5522,11 @@ ${body}
             }}
           />
         </label>
+        {lastAutoSavedAt && (
+          <small className="text-secondary">
+            자동 저장 {new Date(lastAutoSavedAt).toLocaleTimeString()}
+          </small>
+        )}
       </div>
     );
   };
@@ -5418,6 +5593,7 @@ ${body}
           ))}
         </div>
       </div>
+      {renderAutoSaveRestoreModal()}
       {renderTemplateSaveModal()}
       {renderProjectCssModal()}
       {renderFavoritePanel()}
