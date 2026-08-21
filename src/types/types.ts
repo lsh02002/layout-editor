@@ -18,6 +18,7 @@ interface BaseComponent {
   layout?: ComponentLayout;
   style?: CSSProperties;
   contentStyle?: CSSProperties;
+  customCss?: string;
 }
 
 interface ButtonComponent extends BaseComponent {

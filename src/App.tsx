@@ -122,7 +122,10 @@ const convertComponentsForSave = async (
   );
 };
 
-const downloadProjectFile = async (components: LayoutComponent[]) => {
+const downloadProjectFile = async (
+  components: LayoutComponent[],
+  projectCustomCss: string,
+) => {
   try {
     const savedComponents = await convertComponentsForSave(components);
 
@@ -130,6 +133,8 @@ const downloadProjectFile = async (components: LayoutComponent[]) => {
       version: 1,
 
       components: savedComponents,
+
+      projectCustomCss,
 
       savedAt: new Date().toISOString(),
     };
@@ -209,7 +214,9 @@ function App() {
   const [editStyle, setEditStyle] = useState<CSSProperties>({});
   const [editContentStyle, setEditContentStyle] = useState<CSSProperties>({});
 
-  const [editTab, setEditTab] = useState<"basic" | "style">("basic");
+  const [editCustomCss, setEditCustomCss] = useState("");
+
+  const [editTab, setEditTab] = useState<"basic" | "style" | "css">("basic");
 
   const [editImageUrl, setEditImageUrl] = useState("");
 
@@ -224,7 +231,7 @@ function App() {
   const [gridSize, setGridSize] = useState(10);
 
   const [lastSavedSnapshot, setLastSavedSnapshot] = useState(() =>
-    JSON.stringify(history.present),
+    JSON.stringify({ components: history.present, projectCustomCss: "" }),
   );
 
   const [insertTarget, setInsertTarget] = useState<{
@@ -263,6 +270,12 @@ function App() {
   >([]);
 
   const [showFavoritePanel, setShowFavoritePanel] = useState(false);
+
+  const [projectCustomCss, setProjectCustomCss] = useState("");
+
+  const [showProjectCssModal, setShowProjectCssModal] = useState(false);
+
+  const [projectCssDraft, setProjectCssDraft] = useState("");
 
   const historyActionRef = useRef<{
     active: boolean;
@@ -808,8 +821,12 @@ function App() {
 
   const components = history.present;
 
-  const hasUnsavedChanges =
-    JSON.stringify(history.present) !== lastSavedSnapshot;
+  const currentSnapshot = JSON.stringify({
+    components: history.present,
+    projectCustomCss,
+  });
+
+  const hasUnsavedChanges = currentSnapshot !== lastSavedSnapshot;
 
   const snapNumber = (value: number, size: number) => {
     return Math.round(value / size) * size;
@@ -1052,9 +1069,13 @@ function App() {
       return `${path}: id가 올바르지 않습니다.`;
     }
 
-    // if (typeof value.name !== "string" || value.name.trim() === "") {
-    //   return `${path}: name이 올바르지 않습니다.`;
-    // }
+    if (typeof value.name !== "string" || value.name.trim() === "") {
+      return `${path}: name이 올바르지 않습니다.`;
+    }
+
+    if (value.customCss !== undefined && typeof value.customCss !== "string") {
+      return `${path}: customCss가 올바르지 않습니다.`;
+    }
 
     if (!isValidComponentType(value.type)) {
       return `${path}: 지원하지 않는 component type입니다. (${String(
@@ -1559,6 +1580,7 @@ function App() {
     setEditType(component.type);
     setEditStyle(component.style ?? {});
     setEditContentStyle(component.contentStyle ?? {});
+    setEditCustomCss(component.customCss ?? "");
     setEditTab("basic");
     setEditDisabled(
       "disabled" in component.props
@@ -1650,6 +1672,7 @@ function App() {
                   contentStyle: {
                     ...editContentStyle,
                   },
+                  customCss: editCustomCss,
                   props: {
                     ...component.props,
                     title: editTitle.trim() || "버튼",
@@ -1667,6 +1690,7 @@ function App() {
                   contentStyle: {
                     ...editContentStyle,
                   },
+                  customCss: editCustomCss,
                   props: {
                     ...component.props,
                     value: editValue,
@@ -1685,6 +1709,7 @@ function App() {
                   contentStyle: {
                     ...editContentStyle,
                   },
+                  customCss: editCustomCss,
                   props: {
                     ...component.props,
                     value: editValue,
@@ -1703,6 +1728,7 @@ function App() {
                   contentStyle: {
                     ...editContentStyle,
                   },
+                  customCss: editCustomCss,
                   props: {
                     ...component.props,
                     direction: editDirection,
@@ -1722,6 +1748,8 @@ function App() {
                   contentStyle: {
                     ...editContentStyle,
                   },
+
+                  customCss: editCustomCss,
 
                   props: {
                     ...component.props,
@@ -1746,6 +1774,7 @@ function App() {
                   contentStyle: {
                     ...editContentStyle,
                   },
+                  customCss: editCustomCss,
                   props: {
                     ...component.props,
                     disabled: editDisabled,
@@ -1769,6 +1798,8 @@ function App() {
                   contentStyle: {
                     ...editContentStyle,
                   },
+
+                  customCss: editCustomCss,
 
                   props: {
                     ...component.props,
@@ -2329,8 +2360,10 @@ function App() {
 
       const snapshot = history.present;
 
-      void downloadProjectFile(snapshot).then(() => {
-        setLastSavedSnapshot(JSON.stringify(snapshot));
+      void downloadProjectFile(snapshot, projectCustomCss).then(() => {
+        setLastSavedSnapshot(
+          JSON.stringify({ components: snapshot, projectCustomCss }),
+        );
       });
     };
 
@@ -2339,7 +2372,7 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [history.present]);
+  }, [history.present, projectCustomCss]);
 
   const escapeHtml = (value: string) =>
     value
@@ -2420,10 +2453,10 @@ function App() {
 
     switch (component.type) {
       case "button":
-        return `<div style="${escapeAttribute(wrapperStyle)}"><button type="button" style="${escapeAttribute(contentStyle)}">${escapeHtml(component.props.title)}</button></div>`;
+        return `<div data-component-id="${escapeAttribute(component.id)}" style="${escapeAttribute(wrapperStyle)}"><button type="button" style="${escapeAttribute(contentStyle)}">${escapeHtml(component.props.title)}</button></div>`;
 
       case "scrollToTopButton":
-        return `<button type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="${escapeAttribute(`${wrapperStyle};${contentStyle};display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;background-color:#6c757d;border:1px solid #6c757d;padding:0.375rem 0.75rem;font-size:1rem;line-height:1.5;text-align:center;cursor:pointer;user-select:none;`)}">${escapeHtml(component.props.title)}</button>`;
+        return `<button data-component-id="${escapeAttribute(component.id)}" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="${escapeAttribute(`${wrapperStyle};${contentStyle};display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;background-color:#6c757d;border:1px solid #6c757d;padding:0.375rem 0.75rem;font-size:1rem;line-height:1.5;text-align:center;cursor:pointer;user-select:none;`)}">${escapeHtml(component.props.title)}</button>`;
 
       case "textarea": {
         const text =
@@ -2431,7 +2464,7 @@ function App() {
           component.props.placeholder ||
           "내용을 입력하세요.";
 
-        return `<div style="${escapeAttribute(wrapperStyle)}"><div style="${escapeAttribute(`white-space:pre-wrap;word-break:break-word;${contentStyle}`)}">${escapeHtml(text)}</div></div>`;
+        return `<div data-component-id="${escapeAttribute(component.id)}" style="${escapeAttribute(wrapperStyle)}"><div style="${escapeAttribute(`white-space:pre-wrap;word-break:break-word;${contentStyle}`)}">${escapeHtml(text)}</div></div>`;
       }
 
       case "quill": {
@@ -2439,7 +2472,7 @@ function App() {
           component.props.value ||
           `<span style="color:#6c757d">${escapeHtml(component.props.placeholder || "본문을 입력하세요.")}</span>`;
 
-        return `<div style="${escapeAttribute(wrapperStyle)}"><div style="${escapeAttribute(`word-break:break-word;${contentStyle}`)}">${html}</div></div>`;
+        return `<div data-component-id="${escapeAttribute(component.id)}" style="${escapeAttribute(wrapperStyle)}"><div style="${escapeAttribute(`word-break:break-word;${contentStyle}`)}">${html}</div></div>`;
       }
 
       case "image": {
@@ -2461,7 +2494,7 @@ function App() {
         }
 
         return `
-    <div style="${wrapperStyle}">
+    <div data-component-id="${escapeAttribute(component.id)}" style="${wrapperStyle}">
       <img
         src="${imageUrl}"
         alt=""
@@ -2491,6 +2524,7 @@ function App() {
 
         return `
     <div
+    data-component-id="${escapeAttribute(component.id)}"
       style="
         display:flex;
         flex-direction:${direction};
@@ -2519,7 +2553,9 @@ function App() {
             : "";
 
         return `
-    <div style="${escapeAttribute(wrapperStyle)}">
+    <div
+    data-component-id="${escapeAttribute(component.id)}"
+    style="${escapeAttribute(wrapperStyle)}">
       <a
         href="${escapeAttribute(href)}"
         ${target}
@@ -2571,6 +2607,10 @@ function App() {
     img {
       max-width: 100%;
     }
+
+    ${projectCustomCss}
+
+    ${collectComponentCustomCss(components)}
   </style>
 </head>
 
@@ -2614,6 +2654,7 @@ ${body}
     | {
         valid: true;
         components: LayoutComponent[];
+        projectCustomCss: string;
       }
     | {
         valid: false;
@@ -2633,6 +2674,17 @@ ${body}
       return {
         valid: false,
         error: `지원하지 않는 프로젝트 버전입니다. (${String(value.version)})`,
+      };
+    }
+
+    if (
+      value.projectCustomCss !== undefined &&
+      typeof value.projectCustomCss !== "string"
+    ) {
+      return {
+        valid: false,
+
+        error: "projectCustomCss가 올바르지 않습니다.",
       };
     }
 
@@ -2702,13 +2754,19 @@ ${body}
     return {
       valid: true,
       components: value.components as LayoutComponent[],
+      projectCustomCss:
+        typeof value.projectCustomCss === "string"
+          ? value.projectCustomCss
+          : "",
     };
   };
 
   const saveProjectFile = async () => {
-    await downloadProjectFile(history.present);
+    await downloadProjectFile(history.present, projectCustomCss);
 
-    setLastSavedSnapshot(JSON.stringify(history.present));
+    setLastSavedSnapshot(
+      JSON.stringify({ components: history.present, projectCustomCss }),
+    );
   };
 
   const loadProjectFile = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -2786,11 +2844,18 @@ ${body}
           future: [],
         });
 
+        setProjectCustomCss(validation.projectCustomCss);
+
         /*
          * 저장 여부 표시 기능을
          * 이미 넣었다면 유지
          */
-        setLastSavedSnapshot(JSON.stringify(validation.components));
+        setLastSavedSnapshot(
+          JSON.stringify({
+            components: validation.components,
+            projectCustomCss: validation.projectCustomCss,
+          }),
+        );
 
         setSelectedComponentId(null);
       } catch (error) {
@@ -3119,6 +3184,7 @@ ${body}
 
       return (
         <div
+          data-component-id={component.id}
           style={{
             opacity: isDragging ? 0.45 : 1,
             transition: "opacity 100ms ease",
@@ -3190,6 +3256,7 @@ ${body}
 
     return (
       <div
+        data-component-id={component.id}
         style={{
           opacity: isDragging ? 0.45 : 1,
           transition: "opacity 100ms ease",
@@ -3415,6 +3482,124 @@ ${body}
             </React.Fragment>
           );
         })}
+      </>
+    );
+  };
+
+  const buildComponentCustomCss = (component: LayoutComponent) => {
+    const css = component.customCss?.trim();
+
+    if (!css) {
+      return "";
+    }
+
+    const selector = `[data-component-id="${component.id}"]`;
+
+    return css.replaceAll("&", selector);
+  };
+
+  const collectComponentCustomCss = (items: LayoutComponent[]): string => {
+    return items
+      .flatMap((component) => {
+        const own = buildComponentCustomCss(component);
+
+        if (component.type === "container") {
+          return [own, collectComponentCustomCss(component.children)];
+        }
+
+        return [own];
+      })
+      .filter(Boolean)
+      .join("\n\n");
+  };
+
+  const componentCustomCss = collectComponentCustomCss(components);
+
+  const openProjectCssModal = () => {
+    setProjectCssDraft(projectCustomCss);
+
+    setShowProjectCssModal(true);
+  };
+
+  const saveProjectCustomCss = () => {
+    setProjectCustomCss(projectCssDraft);
+
+    setShowProjectCssModal(false);
+  };
+
+  const renderProjectCssModal = () => {
+    if (!showProjectCssModal) {
+      return null;
+    }
+
+    return (
+      <>
+        <div
+          className="modal fade show"
+          style={{
+            display: "block",
+            zIndex: 1060,
+          }}
+        >
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">프로젝트 Custom CSS</h5>
+
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowProjectCssModal(false)}
+                />
+              </div>
+
+              <div className="modal-body">
+                <textarea
+                  className="
+                  form-control
+                  font-monospace
+                "
+                  rows={20}
+                  spellCheck={false}
+                  value={projectCssDraft}
+                  onChange={(e) => setProjectCssDraft(e.target.value)}
+                  placeholder={`.builder-preview {
+  background: #f8f9fa;
+}
+
+.builder-preview button {
+  border-radius: 20px;
+}`}
+                />
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowProjectCssModal(false)}
+                >
+                  취소
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={saveProjectCustomCss}
+                >
+                  적용
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="modal-backdrop fade show"
+          style={{
+            zIndex: 1055,
+          }}
+        />
       </>
     );
   };
@@ -4126,6 +4311,18 @@ ${body}
                       스타일
                     </button>
                   </li>
+
+                  <li className="nav-item">
+                    <button
+                      type="button"
+                      className={`nav-link ${
+                        editTab === "css" ? "active" : ""
+                      }`}
+                      onClick={() => setEditTab("css")}
+                    >
+                      Custom CSS
+                    </button>
+                  </li>
                 </ul>
               </div>
 
@@ -4719,6 +4916,35 @@ ${body}
                     </div>
                   </div>
                 )}
+                {editTab === "css" && (
+                  <div>
+                    <label className="form-label">컴포넌트 Custom CSS</label>
+
+                    <textarea
+                      className="form-control font-monospace"
+                      rows={14}
+                      value={editCustomCss}
+                      onChange={(e) => setEditCustomCss(e.target.value)}
+                      placeholder={`& {
+  background: #111;
+  color: white;
+}
+
+&:hover {
+  opacity: 0.9;
+}
+
+& button {
+  border-radius: 20px;
+}`}
+                      spellCheck={false}
+                    />
+
+                    <div className="form-text">
+                      &amp; 는 현재 컴포넌트를 의미합니다.
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* FOOTER */}
@@ -4914,6 +5140,13 @@ ${body}
         <button
           type="button"
           className="btn btn-outline-secondary"
+          onClick={openProjectCssModal}
+        >
+          CSS
+        </button>
+        <button
+          type="button"
+          className="btn btn-outline-secondary"
           disabled={!canUndo}
           onClick={undo}
         >
@@ -5065,6 +5298,8 @@ ${body}
     background: #f1f3f5;
   }
     `}</style>
+      <style>{projectCustomCss}</style>
+      <style>{componentCustomCss}</style>
       {renderLayerPanel()}
       {!showLayerPanel && (
         <button
@@ -5098,17 +5333,25 @@ ${body}
         {/* 최상위 맨 앞 + */}
         {renderAddButton(null, 0, "column")}
 
-        {sortedComponents.map((component, index) => (
-          <div key={component.id}>
-            {renderLayoutComponent(component)}
+        <div
+          className="builder-preview"
+          style={{
+            minHeight: "100vh",
+          }}
+        >
+          {sortedComponents.map((component, index) => (
+            <div key={component.id}>
+              {renderLayoutComponent(component)}
 
-            {/* 특수한 경우임!!! */}
-            {component.type !== "scrollToTopButton" &&
-              renderAddButton(null, index + 1, "column")}
-          </div>
-        ))}
+              {/* 특수한 경우임!!! */}
+              {component.type !== "scrollToTopButton" &&
+                renderAddButton(null, index + 1, "column")}
+            </div>
+          ))}
+        </div>
       </div>
       {renderTemplateSaveModal()}
+      {renderProjectCssModal()}
       {renderFavoritePanel()}
       {renderCreateModal()}
       {renderEditModal()}
