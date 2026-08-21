@@ -1526,8 +1526,6 @@ function App() {
             return {
               ...component,
 
-              name: editComponentName.trim() || component.name,
-
               children: recursiveUpdate(component.children),
             };
           }
