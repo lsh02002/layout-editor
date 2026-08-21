@@ -3557,6 +3557,35 @@ ${body}
     });
   };
 
+  const getComponentDisplayName = (component: LayoutComponent) => {
+    if (component.type === "textarea") {
+      return component.props.value || component.name || component.type;
+    }
+
+    if (component.type === "quill") {
+      const plainText = component.props.value
+        .replace(/<[^>]*>/g, " ")
+        .replace(/&nbsp;/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      return plainText || component.name || component.type;
+    }
+
+    if (component.name?.trim()) {
+      return component.name.trim();
+    }
+
+    if (
+      "title" in component.props &&
+      typeof component.props.title === "string" &&
+      component.props.title.trim()
+    ) {
+      return `${component.props.title.trim()} (${component.type})`;
+    }
+
+    return component.type;
+  };
   const renderLayerTree = (
     items: LayoutComponent[],
     parentId: string | null = null,
@@ -3577,7 +3606,7 @@ ${body}
           const isDragging = draggingId === component.id;
 
           const getLabel = () => {
-            return component.name?.trim() || component.type;
+            return getComponentDisplayName(component);
           };
 
           return (
