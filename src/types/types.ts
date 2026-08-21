@@ -2,11 +2,7 @@ import type { CSSProperties } from "react";
 
 export type ComponentType = LayoutComponent["type"];
 export type ContainerDirection = "row" | "column";
-export type LinkType =
-  | "url"
-  | "tel"
-  | "email";
-
+export type LinkType = "url" | "tel" | "email";
 
 export interface ComponentLayout {
   width?: number | string;
@@ -83,8 +79,8 @@ interface ImageComponent extends BaseComponent {
   };
 }
 
-interface LinkComponent extends BaseComponent {  
-  type: "link";  
+interface LinkComponent extends BaseComponent {
+  type: "link";
 
   props: {
     title: string;
@@ -95,7 +91,7 @@ interface LinkComponent extends BaseComponent {
     newWindow?: boolean;
     disabled?: boolean;
   };
-};
+}
 
 interface ContainerComponent extends BaseComponent {
   type: "container";
@@ -142,3 +138,10 @@ export type TemplateFile =
       createdAt: string;
       component: LayoutComponent;
     };
+
+export type FavoriteComponent = {
+  id: string;
+  sourceComponentId: string;
+  name: string;
+  component: LayoutComponent;
+};

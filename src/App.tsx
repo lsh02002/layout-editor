@@ -1,4 +1,10 @@
-import React, { useRef, useState, type CSSProperties } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 
 import DivBox from "./components/layout/DivBox";
 import type {
@@ -10,10 +16,152 @@ import type {
   ComponentsUpdater,
   LinkType,
   TemplateFile,
+  FavoriteComponent,
 } from "./types/types";
 
 import { data } from "./data/data";
 import QuillEditorSimpleInput from "./components/form/QuillEditorSimpleInput";
+
+const compressImageUrl = async (
+  src: string,
+  maxWidth = 1600,
+  maxHeight = 1600,
+  quality = 0.8,
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+
+    img.onload = () => {
+      let width = img.naturalWidth;
+      let height = img.naturalHeight;
+
+      // 비율 유지하면서 축소
+      const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+
+      width = Math.round(width * ratio);
+      height = Math.round(height * ratio);
+
+      const canvas = document.createElement("canvas");
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx) {
+        reject(new Error("Canvas context를 생성할 수 없습니다."));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      try {
+        // HTML 용량 절감을 위해 WebP
+        const dataUrl = canvas.toDataURL("image/webp", quality);
+
+        resolve(dataUrl);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    img.onerror = () => {
+      reject(new Error("이미지를 불러올 수 없습니다."));
+    };
+
+    img.src = src;
+  });
+};
+
+const convertComponentsForSave = async (
+  items: LayoutComponent[],
+): Promise<LayoutComponent[]> => {
+  return Promise.all(
+    items.map(async (component) => {
+      if (component.type === "image") {
+        let exportImageUrl = component.props.urls?.[0] ?? "";
+
+        if (exportImageUrl) {
+          try {
+            exportImageUrl = await compressImageUrl(
+              exportImageUrl,
+              1600,
+              1600,
+              0.8,
+            );
+          } catch (error) {
+            console.error("이미지 압축 실패:", error);
+
+            exportImageUrl = component.props.urls?.[0] ?? "";
+          }
+        }
+
+        return {
+          ...component,
+
+          props: {
+            ...component.props,
+
+            urls: exportImageUrl ? [exportImageUrl] : [],
+
+            maxCount: 1,
+          },
+        };
+      }
+
+      if (component.type === "container") {
+        return {
+          ...component,
+
+          children: await convertComponentsForSave(component.children),
+        };
+      }
+
+      return component;
+    }),
+  );
+};
+
+const downloadProjectFile = async (components: LayoutComponent[]) => {
+  try {
+    const savedComponents = await convertComponentsForSave(components);
+
+    const projectData = {
+      version: 1,
+
+      components: savedComponents,
+
+      savedAt: new Date().toISOString(),
+    };
+
+    const json = JSON.stringify(projectData, null, 2);
+
+    const blob = new Blob([json], {
+      type: "application/json;charset=utf-8",
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+
+    anchor.download = "page-builder-project.json";
+
+    document.body.appendChild(anchor);
+
+    anchor.click();
+    anchor.remove();
+
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("프로젝트 저장 실패:", error);
+
+    alert("프로젝트 저장 중 오류가 발생했습니다.");
+
+    throw error;
+  }
+};
 
 function App() {
   const [history, setHistory] = useState<HistoryState>(() => ({
@@ -110,6 +258,12 @@ function App() {
 
   const [templateFileName, setTemplateFileName] = useState("");
 
+  const [favoriteComponents, setFavoriteComponents] = useState<
+    FavoriteComponent[]
+  >([]);
+
+  const [showFavoritePanel, setShowFavoritePanel] = useState(false);
+
   const historyActionRef = useRef<{
     active: boolean;
     snapshot: LayoutComponent[] | null;
@@ -127,6 +281,116 @@ function App() {
     "container",
     "scrollToTopButton",
   ] as const;
+
+  const addSelectedComponentToFavorites = () => {
+    if (!selectedComponentId) {
+      return;
+    }
+
+    const component = findComponentRecursive(
+      history.present,
+      selectedComponentId,
+    );
+
+    if (!component) {
+      return;
+    }
+
+    const alreadyExists = favoriteComponents.some(
+      (favorite) => favorite.sourceComponentId === component.id,
+    );
+
+    if (alreadyExists) {
+      alert("이미 즐겨찾기에 등록된 컴포넌트입니다.");
+      return;
+    }
+
+    setFavoriteComponents((prev) => [
+      ...prev,
+
+      {
+        id: crypto.randomUUID(),
+
+        sourceComponentId: component.id,
+
+        name: component.name?.trim() || component.type,
+
+        component: structuredClone(component),
+      },
+    ]);
+  };
+
+  const insertFavoriteComponent = (favorite: FavoriteComponent) => {
+    const cloned = cloneComponent(favorite.component);
+
+    /*
+     * 선택 없음
+     */
+    if (!selectedComponentId) {
+      commitHistory((prev) => normalizeOrder([...prev, cloned]));
+
+      setSelectedComponentId(cloned.id);
+
+      return;
+    }
+
+    const selected = findComponentRecursive(
+      history.present,
+      selectedComponentId,
+    );
+
+    /*
+     * Container 선택
+     * → 내부 마지막
+     */
+    if (selected && selected.type === "container") {
+      commitHistory((prev) =>
+        insertComponentRecursive(
+          prev,
+          selected.id,
+          selected.children.length,
+          cloned,
+        ),
+      );
+
+      setSelectedComponentId(cloned.id);
+
+      return;
+    }
+
+    /*
+     * 일반 컴포넌트 선택
+     * → 선택 컴포넌트 바로 다음
+     */
+    const location = findComponentLocation(
+      history.present,
+      selectedComponentId,
+    );
+
+    if (!location) {
+      return;
+    }
+
+    commitHistory((prev) =>
+      insertComponentRecursive(
+        prev,
+
+        location.parentId,
+
+        location.index + 1,
+
+        cloned,
+      ),
+    );
+
+    setSelectedComponentId(cloned.id);
+  };
+
+  const removeFavoriteComponent = (favoriteId: string) => {
+    setFavoriteComponents((prev) =>
+      prev.filter((favorite) => favorite.id !== favoriteId),
+    );
+  };
 
   const sanitizeFileName = (name: string) => {
     return (
@@ -1951,7 +2215,7 @@ function App() {
     closeCreateModal();
   };
 
-  const undo = () => {
+  const undo = useCallback(() => {
     setHistory((prev) => {
       if (prev.past.length === 0) {
         return prev;
@@ -1965,9 +2229,9 @@ function App() {
         future: [prev.present, ...prev.future],
       };
     });
-  };
+  }, []);
 
-  const redo = () => {
+  const redo = useCallback(() => {
     setHistory((prev) => {
       if (prev.future.length === 0) {
         return prev;
@@ -1981,10 +2245,101 @@ function App() {
         future: prev.future.slice(1),
       };
     });
-  };
+  }, []);
 
   const canUndo = history.past.length > 0;
   const canRedo = history.future.length > 0;
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const ctrlOrMeta = event.ctrlKey || event.metaKey;
+
+      if (!ctrlOrMeta) {
+        return;
+      }
+
+      const key = event.key.toLowerCase();
+
+      /*
+       * =================================
+       * 아래부터 Undo / Redo
+       *
+       * input, textarea, Quill에서는
+       * 자체 Undo/Redo 사용
+       * =================================
+       */
+      const target = event.target as HTMLElement | null;
+
+      if (target) {
+        const tag = target.tagName.toLowerCase();
+
+        if (
+          tag === "input" ||
+          tag === "textarea" ||
+          tag === "select" ||
+          target.isContentEditable ||
+          !!target.closest(".ql-editor")
+        ) {
+          return;
+        }
+      }
+
+      /*
+       * Ctrl/Cmd + Z
+       */
+      if (key === "z" && !event.shiftKey && canUndo) {
+        event.preventDefault();
+
+        undo();
+
+        return;
+      }
+
+      /*
+       * Ctrl + Y
+       * Cmd/Ctrl + Shift + Z
+       */
+      if ((key === "y" || (key === "z" && event.shiftKey)) && canRedo) {
+        event.preventDefault();
+
+        redo();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [canUndo, canRedo, undo, redo]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const ctrlOrMeta = event.ctrlKey || event.metaKey;
+
+      if (!ctrlOrMeta || event.key.toLowerCase() !== "s") {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (event.repeat) {
+        return;
+      }
+
+      const snapshot = history.present;
+
+      void downloadProjectFile(snapshot).then(() => {
+        setLastSavedSnapshot(JSON.stringify(snapshot));
+      });
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [history.present]);
 
   const escapeHtml = (value: string) =>
     value
@@ -2253,110 +2608,6 @@ ${body}
     }
   };
 
-  const compressImageUrl = async (
-    src: string,
-    maxWidth = 1600,
-    maxHeight = 1600,
-    quality = 0.8,
-  ): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-
-      img.onload = () => {
-        let width = img.naturalWidth;
-        let height = img.naturalHeight;
-
-        // 비율 유지하면서 축소
-        const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
-
-        width = Math.round(width * ratio);
-        height = Math.round(height * ratio);
-
-        const canvas = document.createElement("canvas");
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext("2d");
-
-        if (!ctx) {
-          reject(new Error("Canvas context를 생성할 수 없습니다."));
-          return;
-        }
-
-        ctx.drawImage(img, 0, 0, width, height);
-
-        try {
-          // HTML 용량 절감을 위해 WebP
-          const dataUrl = canvas.toDataURL("image/webp", quality);
-
-          resolve(dataUrl);
-        } catch (error) {
-          reject(error);
-        }
-      };
-
-      img.onerror = () => {
-        reject(new Error("이미지를 불러올 수 없습니다."));
-      };
-
-      img.src = src;
-    });
-  };
-
-  const convertComponentsForSave = async (
-    items: LayoutComponent[],
-  ): Promise<LayoutComponent[]> => {
-    return Promise.all(
-      items.map(async (component) => {
-        // 이미지
-        if (component.type === "image") {
-          let exportImageUrl = component.props.urls?.[0] ?? "";
-
-          if (exportImageUrl) {
-            try {
-              exportImageUrl = await compressImageUrl(
-                exportImageUrl,
-                1600, // 최대 width
-                1600, // 최대 height
-                0.8, // 품질
-              );
-            } catch (error) {
-              console.error("이미지 압축 실패:", error);
-
-              // 압축 실패하면 원본 사용
-              exportImageUrl = component.props.urls?.[0] ?? "";
-            }
-          }
-
-          return {
-            ...component,
-
-            props: {
-              ...component.props,
-
-              // 컴포넌트당 1개만 유지
-              urls: exportImageUrl ? [exportImageUrl] : [],
-
-              maxCount: 1,
-            },
-          };
-        }
-
-        // 컨테이너 내부도 재귀 처리
-        if (component.type === "container") {
-          return {
-            ...component,
-
-            children: await convertComponentsForSave(component.children),
-          };
-        }
-
-        return component;
-      }),
-    );
-  };
-
   const validateProjectFile = (
     value: unknown,
   ):
@@ -2455,45 +2706,9 @@ ${body}
   };
 
   const saveProjectFile = async () => {
-    try {
-      const savedComponents = await convertComponentsForSave(history.present);
+    await downloadProjectFile(history.present);
 
-      const projectData = {
-        version: 1,
-
-        components: savedComponents,
-
-        savedAt: new Date().toISOString(),
-      };
-
-      const json = JSON.stringify(projectData, null, 2);
-
-      const blob = new Blob([json], {
-        type: "application/json;charset=utf-8",
-      });
-
-      const url = URL.createObjectURL(blob);
-
-      const anchor = document.createElement("a");
-
-      anchor.href = url;
-
-      anchor.download = "page-builder-project.json";
-
-      document.body.appendChild(anchor);
-
-      anchor.click();
-
-      anchor.remove();
-
-      URL.revokeObjectURL(url);
-
-      setLastSavedSnapshot(JSON.stringify(history.present));
-    } catch (error) {
-      console.error("프로젝트 저장 실패:", error);
-
-      alert("프로젝트 저장 중 오류가 발생했습니다.");
-    }
+    setLastSavedSnapshot(JSON.stringify(history.present));
   };
 
   const loadProjectFile = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -3301,6 +3516,156 @@ ${body}
           onClick={() => setShowTemplateSaveModal(false)}
         />
       </>
+    );
+  };
+
+  const renderFavoritePanel = () => {
+    if (!showFavoritePanel) {
+      return null;
+    }
+
+    return (
+      <aside
+        style={{
+          position: "fixed",
+
+          top: 0,
+          right: 0,
+          bottom: 0,
+
+          width: 300,
+
+          background: "#fff",
+
+          borderLeft: "1px solid #dee2e6",
+
+          zIndex: 1200,
+
+          display: "flex",
+          flexDirection: "column",
+
+          boxShadow: "-2px 0 8px rgba(0,0,0,0.05)",
+        }}
+      >
+        {/* HEADER */}
+        <div
+          className="
+          d-flex
+          align-items-center
+          justify-content-between
+          border-bottom
+          px-3
+          py-2
+        "
+        >
+          <strong>⭐ 즐겨찾기</strong>
+
+          <button
+            type="button"
+            className="btn btn-sm border-0"
+            onClick={() => setShowFavoritePanel(false)}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* LIST */}
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: 8,
+          }}
+        >
+          {favoriteComponents.length === 0 ? (
+            <div
+              className="
+              text-secondary
+              text-center
+            "
+              style={{
+                padding: 20,
+                fontSize: 13,
+              }}
+            >
+              등록된 즐겨찾기가 없습니다.
+            </div>
+          ) : (
+            favoriteComponents.map((favorite) => (
+              <div
+                key={favorite.id}
+                className="
+                  border
+                  rounded
+                  p-2
+                  mb-2
+                "
+              >
+                <div
+                  className="
+                    d-flex
+                    justify-content-between
+                    align-items-center
+                    mb-2
+                  "
+                >
+                  <div
+                    style={{
+                      minWidth: 0,
+                    }}
+                  >
+                    <strong
+                      style={{
+                        display: "block",
+
+                        overflow: "hidden",
+
+                        whiteSpace: "nowrap",
+
+                        textOverflow: "ellipsis",
+
+                        fontSize: 13,
+                      }}
+                    >
+                      {favorite.name}
+                    </strong>
+
+                    <small className="text-secondary">
+                      {favorite.component.type}
+                    </small>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="
+                      btn
+                      btn-sm
+                      btn-outline-danger
+                    "
+                    onClick={() => removeFavoriteComponent(favorite.id)}
+                    title="즐겨찾기 삭제"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  className="
+                    btn
+                    btn-sm
+                    btn-warning
+                    w-100
+                  "
+                  onClick={() => insertFavoriteComponent(favorite)}
+                >
+                  + 바로 추가
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      </aside>
     );
   };
 
@@ -4499,6 +4864,13 @@ ${body}
             >
               선택한 컴포넌트 편집
             </button>
+            <button
+              type="button"
+              className="btn btn-outline-warning btn-sm w-100"
+              onClick={addSelectedComponentToFavorites}
+            >
+              ⭐ 즐겨찾기 등록
+            </button>
           </div>
         )}
       </aside>
@@ -4555,6 +4927,15 @@ ${body}
           onClick={redo}
         >
           ↷ Redo
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-outline-warning"
+          onClick={() => setShowFavoritePanel((prev) => !prev)}
+        >
+          ⭐ 즐겨찾기
+          {favoriteComponents.length > 0 && <> ({favoriteComponents.length})</>}
         </button>
 
         <div
@@ -4728,6 +5109,7 @@ ${body}
         ))}
       </div>
       {renderTemplateSaveModal()}
+      {renderFavoritePanel()}
       {renderCreateModal()}
       {renderEditModal()}
     </>
