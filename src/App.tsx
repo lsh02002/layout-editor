@@ -168,6 +168,53 @@ const downloadProjectFile = async (
   }
 };
 
+const removeComponentRecursive = (
+  items: LayoutComponent[],
+  id: string,
+  normalizeOrder = (items: LayoutComponent[]) => items,
+): { items: LayoutComponent[]; removed: LayoutComponent | null } => {
+  const directIndex = items.findIndex((item) => item.id === id);
+
+  if (directIndex >= 0) {
+    const next = [...items];
+    const [removed] = next.splice(directIndex, 1);
+
+    return {
+      items: normalizeOrder(next),
+      removed,
+    };
+  }
+
+  for (let index = 0; index < items.length; index += 1) {
+    const item = items[index];
+
+    if (item.type !== "container") {
+      continue;
+    }
+
+    const result = removeComponentRecursive(item.children, id, normalizeOrder);
+
+    if (result.removed) {
+      const next = [...items];
+
+      next[index] = {
+        ...item,
+        children: result.items,
+      };
+
+      return {
+        items: normalizeOrder(next),
+        removed: result.removed,
+      };
+    }
+  }
+
+  return {
+    items,
+    removed: null,
+  };
+};
+
 function App() {
   const [history, setHistory] = useState<HistoryState>(() => ({
     past: [],
@@ -1011,19 +1058,20 @@ function App() {
     layerSearch,
   );
 
-  const commitHistory = (
-    updater: (prev: LayoutComponent[]) => LayoutComponent[],
-  ) => {
-    setHistory((prev) => {
-      const next = updater(prev.present);
+  const commitHistory = useCallback(
+    (updater: (prev: LayoutComponent[]) => LayoutComponent[]) => {
+      setHistory((prev) => {
+        const next = updater(prev.present);
 
-      return {
-        past: [...prev.past, prev.present],
-        present: next,
-        future: [],
-      };
-    });
-  };
+        return {
+          past: [...prev.past, prev.present],
+          present: next,
+          future: [],
+        };
+      });
+    },
+    [],
+  );
 
   const setComponents = (updater: ComponentsUpdater, recordHistory = true) => {
     setHistory((prev) => {
@@ -1314,52 +1362,6 @@ function App() {
     );
   };
 
-  const removeComponentRecursive = (
-    items: LayoutComponent[],
-    id: string,
-  ): { items: LayoutComponent[]; removed: LayoutComponent | null } => {
-    const directIndex = items.findIndex((item) => item.id === id);
-
-    if (directIndex >= 0) {
-      const next = [...items];
-      const [removed] = next.splice(directIndex, 1);
-
-      return {
-        items: normalizeOrder(next),
-        removed,
-      };
-    }
-
-    for (let index = 0; index < items.length; index += 1) {
-      const item = items[index];
-
-      if (item.type !== "container") {
-        continue;
-      }
-
-      const result = removeComponentRecursive(item.children, id);
-
-      if (result.removed) {
-        const next = [...items];
-
-        next[index] = {
-          ...item,
-          children: result.items,
-        };
-
-        return {
-          items: normalizeOrder(next),
-          removed: result.removed,
-        };
-      }
-    }
-
-    return {
-      items,
-      removed: null,
-    };
-  };
-
   const insertComponentRecursive = (
     items: LayoutComponent[],
     parentId: string | null,
@@ -1443,7 +1445,11 @@ function App() {
     }
 
     commitHistory((prev) => {
-      const removedResult = removeComponentRecursive(prev, componentId);
+      const removedResult = removeComponentRecursive(
+        prev,
+        componentId,
+        normalizeOrder,
+      );
 
       if (!removedResult.removed) {
         return prev;
@@ -1457,6 +1463,64 @@ function App() {
       );
     });
   };
+
+  const deleteSelectedComponent = useCallback(() => {
+    if (!selectedComponentId) {
+      return;
+    }
+
+    const targetId = selectedComponentId;
+
+    commitHistory((prev) => {
+      const result = removeComponentRecursive(prev, targetId, normalizeOrder);
+
+      return result.items;
+    });
+
+    setSelectedComponentId(null);
+  }, [selectedComponentId, commitHistory]);
+
+  useEffect(() => {
+    const handleDeleteKey = (event: KeyboardEvent) => {
+      if (event.key !== "Delete" && event.key !== "Backspace") {
+        return;
+      }
+
+      const target = event.target as HTMLElement | null;
+
+      if (target) {
+        const tag = target.tagName.toLowerCase();
+
+        if (
+          tag === "input" ||
+          tag === "textarea" ||
+          tag === "select" ||
+          target.isContentEditable ||
+          !!target.closest(".ql-editor")
+        ) {
+          return;
+        }
+      }
+
+      if (!selectedComponentId) {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (event.repeat) {
+        return;
+      }
+
+      deleteSelectedComponent();
+    };
+
+    window.addEventListener("keydown", handleDeleteKey);
+
+    return () => {
+      window.removeEventListener("keydown", handleDeleteKey);
+    };
+  }, [selectedComponentId, deleteSelectedComponent]);
 
   const handleDragStart = (
     e: React.DragEvent<HTMLElement>,
