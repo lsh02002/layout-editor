@@ -1069,7 +1069,10 @@ function App() {
       return `${path}: id가 올바르지 않습니다.`;
     }
 
-    if (typeof value.name !== "string" || value.name.trim() === "") {
+    if (
+      value.name !== undefined &&
+      (typeof value.name !== "string" || value.name.trim() === "")
+    ) {
       return `${path}: name이 올바르지 않습니다.`;
     }
 
