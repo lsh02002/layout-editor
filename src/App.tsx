@@ -9,6 +9,7 @@ import type {
   HistoryState,
   ComponentsUpdater,
   LinkType,
+  TemplateFile,
 } from "./types/types";
 
 import { data } from "./data/data";
@@ -101,6 +102,14 @@ function App() {
 
   const [layerSearch, setLayerSearch] = useState("");
 
+  const [showTemplateSaveModal, setShowTemplateSaveModal] = useState(false);
+
+  const [templateSaveType, setTemplateSaveType] = useState<
+    "project" | "component"
+  >("project");
+
+  const [templateFileName, setTemplateFileName] = useState("");
+
   const historyActionRef = useRef<{
     active: boolean;
     snapshot: LayoutComponent[] | null;
@@ -118,6 +127,343 @@ function App() {
     "container",
     "scrollToTopButton",
   ] as const;
+
+  const sanitizeFileName = (name: string) => {
+    return (
+      name
+        .trim()
+        .replace(/[\\/:*?"<>|]/g, "_")
+        .replace(/\s+/g, "-") || "template"
+    );
+  };
+
+  const downloadTemplateFile = (data: TemplateFile, fileName: string) => {
+    const json = JSON.stringify(data, null, 2);
+
+    const blob = new Blob([json], {
+      type: "application/json;charset=utf-8",
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = `${fileName}.pbtpl`;
+
+    document.body.appendChild(anchor);
+
+    anchor.click();
+    anchor.remove();
+
+    URL.revokeObjectURL(url);
+  };
+
+  const saveProjectAsTemplateFile = async (templateName: string) => {
+    const name = templateName.trim();
+
+    if (!name) {
+      alert("템플릿 이름을 입력해주세요.");
+      return;
+    }
+
+    if (history.present.length === 0) {
+      alert("저장할 컴포넌트가 없습니다.");
+      return;
+    }
+
+    try {
+      const components = await convertComponentsForSave(history.present);
+
+      const template: TemplateFile = {
+        version: 1,
+        templateType: "project",
+        name,
+        createdAt: new Date().toISOString(),
+        components,
+      };
+
+      downloadTemplateFile(template, sanitizeFileName(name));
+
+      setShowTemplateSaveModal(false);
+    } catch (error) {
+      console.error("프로젝트 템플릿 저장 실패:", error);
+
+      alert("템플릿 저장 중 오류가 발생했습니다.");
+    }
+  };
+
+  const saveSelectedComponentAsTemplateFile = async (templateName: string) => {
+    const name = templateName.trim();
+
+    if (!name) {
+      alert("템플릿 이름을 입력해주세요.");
+      return;
+    }
+
+    if (!selectedComponentId) {
+      alert("먼저 컴포넌트를 선택해주세요.");
+      return;
+    }
+
+    const component = findComponentRecursive(
+      history.present,
+      selectedComponentId,
+    );
+
+    if (!component) {
+      alert("선택한 컴포넌트를 찾을 수 없습니다.");
+      return;
+    }
+
+    try {
+      const [savedComponent] = await convertComponentsForSave([component]);
+
+      const template: TemplateFile = {
+        version: 1,
+        templateType: "component",
+        name,
+        createdAt: new Date().toISOString(),
+        component: savedComponent,
+      };
+
+      downloadTemplateFile(template, sanitizeFileName(name));
+
+      setShowTemplateSaveModal(false);
+    } catch (error) {
+      console.error("컴포넌트 템플릿 저장 실패:", error);
+
+      alert("템플릿 저장 중 오류가 발생했습니다.");
+    }
+  };
+
+  const validateTemplateFile = (
+    value: unknown,
+  ):
+    | {
+        valid: true;
+        template: TemplateFile;
+      }
+    | {
+        valid: false;
+        error: string;
+      } => {
+    if (!isObject(value)) {
+      return {
+        valid: false,
+        error: "템플릿 파일 형식이 올바르지 않습니다.",
+      };
+    }
+
+    if (value.version !== 1) {
+      return {
+        valid: false,
+        error: `지원하지 않는 템플릿 버전입니다. (${String(value.version)})`,
+      };
+    }
+
+    if (
+      value.templateType !== "project" &&
+      value.templateType !== "component"
+    ) {
+      return {
+        valid: false,
+        error: "templateType이 올바르지 않습니다.",
+      };
+    }
+
+    if (typeof value.name !== "string" || !value.name.trim()) {
+      return {
+        valid: false,
+        error: "템플릿 이름이 올바르지 않습니다.",
+      };
+    }
+
+    /*
+     * 프로젝트 템플릿
+     */
+    if (value.templateType === "project") {
+      if (!Array.isArray(value.components)) {
+        return {
+          valid: false,
+          error: "components가 올바르지 않습니다.",
+        };
+      }
+
+      for (let index = 0; index < value.components.length; index++) {
+        const error = validateComponent(
+          value.components[index],
+          `components[${index}]`,
+        );
+
+        if (error) {
+          return {
+            valid: false,
+            error,
+          };
+        }
+      }
+    }
+
+    /*
+     * 컴포넌트 템플릿
+     */
+    if (value.templateType === "component") {
+      const error = validateComponent(value.component, "component");
+
+      if (error) {
+        return {
+          valid: false,
+          error,
+        };
+      }
+    }
+
+    return {
+      valid: true,
+      template: value as TemplateFile,
+    };
+  };
+
+  const applyLoadedProjectTemplate = (
+    template: Extract<TemplateFile, { templateType: "project" }>,
+  ) => {
+    const replace = window.confirm(
+      `"${template.name}" 템플릿을 불러왔습니다.\n\n` +
+        `확인: 현재 프로젝트 교체\n` +
+        `취소: 현재 프로젝트 뒤에 추가`,
+    );
+
+    const cloned = template.components.map(cloneComponent);
+
+    if (replace) {
+      commitHistory(() => normalizeOrder(cloned));
+
+      setSelectedComponentId(null);
+
+      return;
+    }
+
+    commitHistory((prev) => normalizeOrder([...prev, ...cloned]));
+  };
+
+  const applyLoadedComponentTemplate = (
+    template: Extract<TemplateFile, { templateType: "component" }>,
+  ) => {
+    const cloned = cloneComponent(template.component);
+
+    /*
+     * 아무것도 선택 안 됨
+     * → Root 끝에 추가
+     */
+    if (!selectedComponentId) {
+      commitHistory((prev) => normalizeOrder([...prev, cloned]));
+
+      setSelectedComponentId(cloned.id);
+
+      return;
+    }
+
+    const selected = findComponentRecursive(
+      history.present,
+      selectedComponentId,
+    );
+
+    /*
+     * 선택 컴포넌트가 Container면
+     * → Container 내부 마지막에 추가
+     */
+    if (selected && selected.type === "container") {
+      commitHistory((prev) =>
+        insertComponentRecursive(
+          prev,
+          selected.id,
+          selected.children.length,
+          cloned,
+        ),
+      );
+
+      setSelectedComponentId(cloned.id);
+
+      return;
+    }
+
+    /*
+     * 일반 컴포넌트 선택 상태
+     * → 일단 Root 마지막에 추가
+     */
+    commitHistory((prev) => normalizeOrder([...prev, cloned]));
+
+    setSelectedComponentId(cloned.id);
+  };
+
+  const applyLoadedTemplate = (template: TemplateFile) => {
+    if (template.templateType === "project") {
+      applyLoadedProjectTemplate(template);
+
+      return;
+    }
+
+    applyLoadedComponentTemplate(template);
+  };
+
+  const loadTemplateFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const lowerName = file.name.toLowerCase();
+
+    if (!lowerName.endsWith(".pbtpl") && !lowerName.endsWith(".json")) {
+      alert("템플릿 파일만 불러올 수 있습니다.");
+
+      event.target.value = "";
+
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      try {
+        const text = String(reader.result ?? "");
+
+        if (!text.trim()) {
+          throw new Error("빈 템플릿 파일입니다.");
+        }
+
+        const parsed: unknown = JSON.parse(text);
+
+        const validation = validateTemplateFile(parsed);
+
+        if (!validation.valid) {
+          throw new Error(validation.error);
+        }
+
+        applyLoadedTemplate(validation.template);
+      } catch (error) {
+        console.error("템플릿 불러오기 실패:", error);
+
+        const message =
+          error instanceof Error ? error.message : "알 수 없는 오류입니다.";
+
+        alert(`템플릿을 불러올 수 없습니다.\n\n${message}`);
+      } finally {
+        // 같은 파일 다시 선택 가능
+        event.target.value = "";
+      }
+    };
+
+    reader.onerror = () => {
+      alert("파일을 읽는 중 오류가 발생했습니다.");
+
+      event.target.value = "";
+    };
+
+    reader.readAsText(file);
+  };
 
   const beginHistoryAction = () => {
     if (historyActionRef.current.active) {
@@ -442,9 +788,9 @@ function App() {
       return `${path}: id가 올바르지 않습니다.`;
     }
 
-    if (typeof value.name !== "string" || value.name.trim() === "") {
-      return `${path}: name이 올바르지 않습니다.`;
-    }
+    // if (typeof value.name !== "string" || value.name.trim() === "") {
+    //   return `${path}: name이 올바르지 않습니다.`;
+    // }
 
     if (!isValidComponentType(value.type)) {
       return `${path}: 지원하지 않는 component type입니다. (${String(
@@ -2860,6 +3206,106 @@ ${body}
     );
   };
 
+  const renderTemplateSaveModal = () => {
+    if (!showTemplateSaveModal) {
+      return null;
+    }
+
+    const handleSave = () => {
+      if (!templateFileName.trim()) {
+        alert("템플릿 이름을 입력해주세요.");
+        return;
+      }
+
+      if (templateSaveType === "project") {
+        void saveProjectAsTemplateFile(templateFileName);
+        return;
+      }
+
+      void saveSelectedComponentAsTemplateFile(templateFileName);
+    };
+
+    return (
+      <>
+        <div
+          className="modal fade show"
+          style={{
+            display: "block",
+            zIndex: 1060,
+          }}
+          tabIndex={-1}
+        >
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  {templateSaveType === "project"
+                    ? "프로젝트 템플릿 저장"
+                    : "컴포넌트 템플릿 저장"}
+                </h5>
+
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowTemplateSaveModal(false)}
+                />
+              </div>
+
+              <div className="modal-body">
+                <label className="form-label">템플릿 이름</label>
+
+                <input
+                  type="text"
+                  className="form-control"
+                  value={templateFileName}
+                  onChange={(e) => setTemplateFileName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSave();
+                    }
+                  }}
+                  autoFocus
+                />
+
+                <div className="form-text">
+                  {sanitizeFileName(templateFileName)}
+                  .pbtpl 로 저장됩니다.
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowTemplateSaveModal(false)}
+                >
+                  취소
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  disabled={!templateFileName.trim()}
+                  onClick={handleSave}
+                >
+                  저장
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="modal-backdrop fade show"
+          style={{
+            zIndex: 1055,
+          }}
+          onClick={() => setShowTemplateSaveModal(false)}
+        />
+      </>
+    );
+  };
+
   const renderCreateModal = () => {
     if (!showCreateModal) return null;
 
@@ -4171,6 +4617,62 @@ ${body}
         >
           HTML 다운로드
         </button>
+
+        <label className="btn btn-outline-primary mb-0">
+          템플릿 불러오기
+          <input
+            type="file"
+            accept=".pbtpl,.json,application/json"
+            onChange={loadTemplateFile}
+            style={{
+              display: "none",
+            }}
+          />
+        </label>
+        <button
+          type="button"
+          className="btn btn-outline-primary"
+          onClick={() => {
+            setTemplateSaveType("project");
+            setTemplateFileName("새 프로젝트 템플릿");
+            setShowTemplateSaveModal(true);
+          }}
+        >
+          전체 템플릿 저장
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-outline-primary"
+          disabled={!selectedComponentId}
+          onClick={() => {
+            setTemplateSaveType("component");
+
+            const component = selectedComponentId
+              ? findComponentRecursive(history.present, selectedComponentId)
+              : undefined;
+
+            setTemplateFileName(
+              component?.name?.trim() || "새 컴포넌트 템플릿",
+            );
+
+            setShowTemplateSaveModal(true);
+          }}
+        >
+          선택 템플릿 저장
+        </button>
+
+        <label className="btn btn-outline-primary mb-0">
+          템플릿 불러오기
+          <input
+            type="file"
+            accept=".pbtpl,.json"
+            onChange={loadTemplateFile}
+            style={{
+              display: "none",
+            }}
+          />
+        </label>
       </div>
     );
   };
@@ -4227,6 +4729,7 @@ ${body}
           </div>
         ))}
       </div>
+      {renderTemplateSaveModal()}
       {renderCreateModal()}
       {renderEditModal()}
     </>

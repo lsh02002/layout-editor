@@ -126,3 +126,19 @@ export interface HistoryState {
 export type ComponentsUpdater =
   | LayoutComponent[]
   | ((prev: LayoutComponent[]) => LayoutComponent[]);
+
+export type TemplateFile =
+  | {
+      version: 1;
+      templateType: "project";
+      name: string;
+      createdAt: string;
+      components: LayoutComponent[];
+    }
+  | {
+      version: 1;
+      templateType: "component";
+      name: string;
+      createdAt: string;
+      component: LayoutComponent;
+    };
