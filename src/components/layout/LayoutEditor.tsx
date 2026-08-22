@@ -3442,7 +3442,7 @@ ${body}
             className="btn btn-secondary rounded-circle"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             style={{
-              ...component.contentStyle,              
+              ...component.contentStyle,
             }}
             disabled={disabled}
           >
@@ -4372,25 +4372,11 @@ ${body}
 
     return (
       <aside
+        className="editor-side-panel right"
         style={{
-          position: "fixed",
+          display: showFavoritePanel ? "flex" : "none",
 
-          top: 0,
-          right: 0,
-          bottom: 0,
-
-          width: 300,
-
-          background: "#fff",
-
-          borderLeft: "1px solid #dee2e6",
-
-          zIndex: 1200,
-
-          display: "flex",
           flexDirection: "column",
-
-          boxShadow: "-2px 0 8px rgba(0,0,0,0.05)",
         }}
       >
         {/* HEADER */}
@@ -5729,18 +5715,11 @@ ${body}
           // 실제 drop은 내부 drop zone에서만 처리
           e.preventDefault();
         }}
+        className="editor-side-panel left"
         style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          bottom: 0,
-          width: 280,
-          background: "#ffffff",
-          borderRight: "1px solid #dee2e6",
-          zIndex: 1100,
-          display: "flex",
+          display: showLayerPanel ? "flex" : "none",
+
           flexDirection: "column",
-          boxShadow: "2px 0 8px rgba(0,0,0,0.05)",
         }}
       >
         <div
@@ -5840,8 +5819,15 @@ ${body}
 
   const renderProjectToolbar = () => {
     return (
-      <div className="d-flex gap-2 mb-3">
-        <div className="d-flex align-items-center gap-2">
+      <div
+        className="d-flex flex-wrap align-items-center gap-2 mb-3 p-2 border rounded bg-light"
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 1000,
+        }}
+      >
+        <div className="d-flex align-items-center gap-2 pe-2 border-end">
           <div className="form-check mb-0">
             <input
               id="snap-enabled"
@@ -5859,7 +5845,7 @@ ${body}
           <select
             className="form-select form-select-sm"
             style={{
-              width: 90,
+              width: 82,
             }}
             value={gridSize}
             disabled={!snapEnabled}
@@ -5872,180 +5858,343 @@ ${body}
             <option value={50}>50px</option>
           </select>
         </div>
-        <button
-          type="button"
-          className="btn btn-outline-secondary"
-          onClick={openProjectCssModal}
-        >
-          CSS
-        </button>
-        <button
-          type="button"
-          className="btn btn-outline-secondary"
-          disabled={!canUndo}
-          onClick={undo}
-        >
-          ↶ Undo
-        </button>
 
-        <button
-          type="button"
-          className="btn btn-outline-secondary"
-          disabled={!canRedo}
-          onClick={redo}
-        >
-          ↷ Redo
-        </button>
-
-        <button
-          type="button"
-          className="btn btn-outline-warning"
-          onClick={() => setShowFavoritePanel((prev) => !prev)}
-        >
-          ⭐ 즐겨찾기
-          {favoriteComponents.length > 0 && <> ({favoriteComponents.length})</>}
-        </button>
-
-        <div
-          style={{
-            position: "relative",
-            display: "inline-block",
-          }}
-        >
+        <div className="d-flex align-items-center gap-1 pe-2 border-end">
           <button
             type="button"
-            className="btn btn-success"
-            onClick={saveProjectFile}
+            className="btn btn-outline-secondary btn-sm"
+            onClick={openProjectCssModal}
+            title="프로젝트 Custom CSS"
           >
-            프로젝트 저장
+            CSS
           </button>
 
-          {hasUnsavedChanges && (
-            <span
-              style={{
-                position: "absolute",
-                top: -4,
-                right: -4,
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-sm"
+            disabled={!canUndo}
+            onClick={undo}
+            title="Ctrl + Z"
+          >
+            ↶ Undo
+          </button>
 
-                width: 10,
-                height: 10,
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-sm"
+            disabled={!canRedo}
+            onClick={redo}
+            title="Ctrl + Y"
+          >
+            ↷ Redo
+          </button>
 
-                backgroundColor: "#dc3545",
-                borderRadius: "50%",
-
-                border: "2px solid white",
-
-                pointerEvents: "none",
-              }}
-              title="저장되지 않은 변경사항 있음"
-            />
-          )}
+          <button
+            type="button"
+            className="btn btn-outline-warning btn-sm"
+            onClick={() => setShowFavoritePanel((prev) => !prev)}
+          >
+            ⭐ 즐겨찾기
+            {favoriteComponents.length > 0 && (
+              <span className="ms-1">{favoriteComponents.length}</span>
+            )}
+          </button>
         </div>
 
-        <label
-          className="btn btn-outline-success mb-0"
-          style={{ cursor: "pointer" }}
-        >
-          프로젝트 불러오기
-          <input
-            type="file"
-            accept=".json,application/json"
-            onChange={loadProjectFile}
-            style={{ display: "none" }}
-          />
-        </label>
-
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => {
-            void downloadHtml();
-          }}
-        >
-          HTML 다운로드
-        </button>
-
-        <label className="btn btn-outline-primary mb-0">
-          템플릿 불러오기
-          <input
-            type="file"
-            accept=".pbtpl,.json,application/json"
-            onChange={loadTemplateFile}
+        <div className="d-flex align-items-center gap-1 pe-2 border-end">
+          <div
             style={{
-              display: "none",
+              position: "relative",
             }}
-          />
-        </label>
-        <button
-          type="button"
-          className="btn btn-outline-primary"
-          onClick={() => {
-            setTemplateSaveType("project");
-            setTemplateFileName("새 프로젝트 템플릿");
-            setShowTemplateSaveModal(true);
-          }}
-        >
-          전체 템플릿 저장
-        </button>
+          >
+            <button
+              type="button"
+              className="btn btn-success btn-sm"
+              onClick={saveProjectFile}
+              title="Ctrl + S"
+            >
+              💾 프로젝트 저장
+            </button>
 
-        <button
-          type="button"
-          className="btn btn-outline-primary"
-          disabled={!selectedComponentId}
-          onClick={() => {
-            setTemplateSaveType("component");
+            {hasUnsavedChanges && (
+              <span
+                title="저장되지 않은 변경사항 있음"
+                style={{
+                  position: "absolute",
+                  top: -4,
+                  right: -4,
 
-            const component = selectedComponentId
-              ? findComponentRecursive(history.present, selectedComponentId)
-              : undefined;
+                  width: 9,
+                  height: 9,
 
-            setTemplateFileName(
-              component?.name?.trim() || "새 컴포넌트 템플릿",
-            );
+                  backgroundColor: "#dc3545",
 
-            setShowTemplateSaveModal(true);
-          }}
-        >
-          선택 템플릿 저장
-        </button>
+                  borderRadius: "50%",
 
-        <label className="btn btn-outline-primary mb-0">
-          템플릿 불러오기
-          <input
-            type="file"
-            accept=".pbtpl,.json"
-            onChange={loadTemplateFile}
+                  border: "2px solid white",
+
+                  pointerEvents: "none",
+                }}
+              />
+            )}
+          </div>
+
+          <label
+            className="btn btn-outline-success btn-sm mb-0"
             style={{
-              display: "none",
+              cursor: "pointer",
             }}
-          />
-        </label>
-        {lastAutoSavedAt && (
-          <small className="text-secondary">
-            자동 저장 {new Date(lastAutoSavedAt).toLocaleTimeString()}
-          </small>
-        )}
+          >
+            📂 불러오기
+            <input
+              type="file"
+              accept=".json,application/json"
+              onChange={loadProjectFile}
+              style={{
+                display: "none",
+              }}
+            />
+          </label>
+
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => {
+              void downloadHtml();
+            }}
+          >
+            HTML 다운로드
+          </button>
+        </div>
+
+        <div className="d-flex align-items-center gap-1 pe-2 border-end">
+          <button
+            type="button"
+            className="btn btn-outline-primary btn-sm"
+            onClick={() => {
+              setTemplateSaveType("project");
+
+              setTemplateFileName("새 프로젝트 템플릿");
+
+              setShowTemplateSaveModal(true);
+            }}
+          >
+            전체 템플릿
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-outline-primary btn-sm"
+            disabled={!selectedComponentId}
+            onClick={() => {
+              setTemplateSaveType("component");
+
+              const component = selectedComponentId
+                ? findComponentRecursive(history.present, selectedComponentId)
+                : undefined;
+
+              setTemplateFileName(
+                component?.name?.trim() || "새 컴포넌트 템플릿",
+              );
+
+              setShowTemplateSaveModal(true);
+            }}
+          >
+            선택 템플릿
+          </button>
+
+          <label
+            className="btn btn-outline-primary btn-sm mb-0"
+            style={{
+              cursor: "pointer",
+            }}
+          >
+            템플릿 불러오기
+            <input
+              type="file"
+              accept=".pbtpl,.json,application/json"
+              onChange={loadTemplateFile}
+              style={{
+                display: "none",
+              }}
+            />
+          </label>
+        </div>
+
+        <div
+          className="ms-auto d-flex align-items-center"
+          style={{
+            minHeight: 31,
+          }}
+        >
+          {lastAutoSavedAt ? (
+            <small
+              className="text-secondary"
+              title={new Date(lastAutoSavedAt).toLocaleString()}
+            >
+              자동 저장{" "}
+              {new Date(lastAutoSavedAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </small>
+          ) : (
+            <small className="text-secondary">자동 저장 대기</small>
+          )}
+        </div>
       </div>
     );
   };
 
   const sortedComponents = [...components].sort((a, b) => a.order - b.order);
 
+  const showAnySidePanel = showLayerPanel || showFavoritePanel;
+
   return (
     <>
       <style>{`
-  .layer-tree-item:hover {
-    background: #f1f3f5;
-  }
+      .layer-tree-item:hover {
+        background: #f1f3f5;
+      }
+
+      .editor-side-panel {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+
+        width: 280px;
+
+        background: #fff;
+
+        z-index: 1200;
+
+        box-shadow:
+          0 0 16px rgba(0, 0, 0, 0.08);
+      }
+
+      .editor-side-panel.left {
+        left: 0;
+
+        border-right:
+          1px solid #dee2e6;
+      }
+
+      .editor-side-panel.right {
+        right: 0;
+
+        border-left:
+          1px solid #dee2e6;
+      }
+
+      .editor-panel-backdrop {
+        display: none;
+      }
+
+      .editor-main {
+        transition:
+          margin-left 160ms ease,
+          margin-right 160ms ease;
+      }
+
+      .editor-mobile-panel-buttons {
+        display: none;
+      }
+
+      @media (max-width: 767.98px) {
+        .editor-side-panel {
+          width: min(88vw, 340px);
+
+          z-index: 1300;
+
+          box-shadow:
+            0 0 24px rgba(0, 0, 0, 0.18);
+        }
+
+        .editor-panel-backdrop {
+          display: block;
+
+          position: fixed;
+
+          inset: 0;
+
+          background:
+            rgba(0, 0, 0, 0.35);
+
+          z-index: 1290;
+        }
+
+        .editor-main {
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+
+          padding: 8px !important;
+        }
+
+        .editor-mobile-panel-buttons {
+          display: flex;
+
+          position: fixed;
+
+          left: 12px;
+          right: 12px;
+          bottom: 12px;
+
+          z-index: 1250;
+
+          gap: 8px;
+
+          pointer-events: none;
+        }
+
+        .editor-mobile-panel-buttons > button {
+          pointer-events: auto;
+
+          box-shadow:
+            0 3px 12px rgba(0, 0, 0, 0.18);
+        }
+
+        .builder-preview {
+          padding-bottom: 70px;
+        }
+
+        .desktop-layer-open-button {
+          display: none !important;
+        }
+      }
+
+      @media (min-width: 768px) {
+        .editor-mobile-panel-buttons {
+          display: none !important;
+        }
+      }
     `}</style>
+      {/* 프로젝트 전체 CSS */}
       <style>{projectCustomCss}</style>
+      {/* 컴포넌트별 CSS */}
       <style>{componentCustomCss}</style>
+      {showAnySidePanel && (
+        <div
+          className="editor-panel-backdrop"
+          onClick={() => {
+            setShowLayerPanel(false);
+            setShowFavoritePanel(false);
+          }}
+        />
+      )}
       {renderLayerPanel()}
       {!showLayerPanel && (
         <button
           type="button"
-          className="btn btn-dark btn-sm"
-          onClick={() => setShowLayerPanel(true)}
+          className="
+          btn
+          btn-dark
+          btn-sm
+          desktop-layer-open-button
+        "
+          onClick={() => {
+            setShowFavoritePanel(false);
+            setShowLayerPanel(true);
+          }}
           style={{
             position: "fixed",
 
@@ -6059,14 +6208,18 @@ ${body}
         </button>
       )}
       <div
-        className="position-relative"
+        className="
+        position-relative
+        editor-main
+      "
         style={{
           minHeight: "100vh",
+
           padding: 16,
 
           marginLeft: showLayerPanel ? 280 : 0,
 
-          transition: "margin-left 160ms ease",
+          marginRight: showFavoritePanel ? 300 : 0,
         }}
       >
         {renderProjectToolbar()}
@@ -6084,19 +6237,52 @@ ${body}
             <div key={component.id} data-component-id={component.id}>
               {renderLayoutComponent(component)}
 
-              {/* 특수한 경우임!!! */}
               {component.type !== "scrollToTopButton" &&
                 renderAddButton(null, index + 1, "column")}
             </div>
           ))}
         </div>
       </div>
+      <div className="editor-mobile-panel-buttons">
+        <button
+          type="button"
+          className="btn btn-dark btn-sm"
+          onClick={() => {
+            setShowFavoritePanel(false);
+            setShowLayerPanel((prev) => !prev);
+          }}
+          style={{
+            flex: 1,
+          }}
+        >
+          레이어
+        </button>
+
+        <button
+          type="button"
+          className="
+          btn
+          btn-warning
+          btn-sm
+        "
+          onClick={() => {
+            setShowLayerPanel(false);
+            setShowFavoritePanel((prev) => !prev);
+          }}
+          style={{
+            flex: 1,
+          }}
+        >
+          ⭐ 즐겨찾기
+          {favoriteComponents.length > 0 && <> ({favoriteComponents.length})</>}
+        </button>
+      </div>
       {renderAutoSaveRestoreModal()}
       {renderTemplateSaveModal()}
       {renderProjectCssModal()}
       {renderFavoritePanel()}
       {renderCreateModal()}
-      {renderEditModal()}
+      {renderEditModal()}{" "}
     </>
   );
 }
