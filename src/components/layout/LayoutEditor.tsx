@@ -189,6 +189,26 @@ const normalizeOrder = (items: LayoutComponent[]): LayoutComponent[] => {
   }));
 };
 
+function hasComponentType(
+  items: LayoutComponent[],
+  type: ComponentType,
+): boolean {
+  for (const component of items) {
+    if (component.type === type) {
+      return true;
+    }
+
+    if (
+      component.type === "container" &&
+      hasComponentType(component.children, type)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 const removeComponentRecursive = (
   items: LayoutComponent[],
   id: string,
@@ -2693,6 +2713,15 @@ function LayoutEditor() {
     if (!insertTarget) return;
 
     const newComponent = makeNewComponent();
+
+    if (
+      newType === "scrollToTopButton" &&
+      hasComponentType(history.present, "scrollToTopButton")
+    ) {
+      alert("Scroll To Top Button은 이미 등록되어 있습니다.");
+
+      return;
+    }
 
     commitHistory((prev) => {
       let nextComponents: LayoutComponent[];
