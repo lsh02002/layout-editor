@@ -3437,6 +3437,7 @@ ${body}
               textAlign: "center",
               cursor: "pointer",
             }}
+            disabled={component.props.disabled}
           >
             {component.props.title}
           </button>
@@ -3463,6 +3464,7 @@ ${body}
               cursor: "pointer",
               userSelect: "none",
             }}
+            disabled={component.props.disabled}
           >
             {component.props.title}
           </button>
