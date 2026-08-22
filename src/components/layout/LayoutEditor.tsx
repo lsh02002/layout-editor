@@ -3701,7 +3701,9 @@ ${body}
           transition:
             "min-height 120ms ease, min-width 120ms ease, background 120ms ease",
 
-          background: isActive ? "rgba(13, 110, 253, 0.10)" : "transparent",
+          background: isActive
+            ? "rgba(13, 110, 253, 0.16)"
+            : "transparent",
 
           outline: isActive ? "2px dashed #0d6efd" : "2px dashed transparent",
         }}
