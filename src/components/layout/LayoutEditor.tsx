@@ -2116,14 +2116,14 @@ function LayoutEditor() {
     index: number,
     area: "canvas" | "layer",
   ) => {
-    if (!draggingIdRef.current) {
-      return;
-    }
-
     e.preventDefault();
     e.stopPropagation();
 
     e.dataTransfer.dropEffect = "move";
+    
+    if (!draggingIdRef.current) {
+      return;
+    }    
 
     if (
       activeDropTarget?.parentId !== parentId ||
