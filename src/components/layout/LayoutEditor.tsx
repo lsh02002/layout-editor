@@ -3418,57 +3418,38 @@ ${body}
 
   const renderComponent = (component: LayoutComponent) => {
     switch (component.type) {
-      case "button":
+      case "button": {
+        const disabled = component.props.disabled ?? false;
         return (
           <button
             type="button"
+            className="btn btn-primary w-100 mt-4"
+            disabled={disabled ?? false}
             style={{
               ...component.contentStyle,
-              display: "block",
-              width: "100%",
-              marginTop: "1.5rem",
-              padding: "0.375rem 0.75rem",
-              color: "#fff",
-              backgroundColor: "#0d6efd",
-              border: "1px solid #0d6efd",
-              borderRadius: "0.375rem",
-              fontSize: "1rem",
-              lineHeight: 1.5,
-              textAlign: "center",
-              cursor: "pointer",
             }}
-            disabled={component.props.disabled}
           >
             {component.props.title}
           </button>
         );
+      }
 
-      case "scrollToTopButton":
+      case "scrollToTopButton": {
+        const disabled = component.props.disabled ?? false;
         return (
           <button
             type="button"
+            className="btn btn-secondary rounded-circle"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             style={{
-              ...component.contentStyle,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "50%",
-              color: "#fff",
-              backgroundColor: "#6c757d",
-              border: "1px solid #6c757d",
-              padding: "0.375rem 0.75rem",
-              fontSize: "1rem",
-              lineHeight: "1.5",
-              textAlign: "center",
-              cursor: "pointer",
-              userSelect: "none",
+              ...component.contentStyle,              
             }}
-            disabled={component.props.disabled}
+            disabled={disabled}
           >
             {component.props.title}
           </button>
         );
+      }
 
       case "heading":
         {
