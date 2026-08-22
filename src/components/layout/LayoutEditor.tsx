@@ -2074,6 +2074,19 @@ function LayoutEditor() {
     setActiveDropTarget(null);
   };
 
+  const handlePointerDragCancel = () => {
+    pointerDragRef.current = {
+      componentId: null,
+      targetParentId: null,
+      targetIndex: null,
+    };
+
+    draggingIdRef.current = null;
+
+    setDraggingId(null);
+    setActiveDropTarget(null);
+  };
+
   const handleDrop = (
     e: React.DragEvent<HTMLElement>,
     parentId: string | null,
@@ -3801,7 +3814,10 @@ ${body}
         }}
         onPointerMove={handlePointerDragMove}
         onPointerUp={handlePointerDragEnd}
-        onPointerCancel={handlePointerDragEnd}
+        onPointerCancel={handlePointerDragCancel}
+        onContextMenu={(e) => {
+          e.preventDefault();
+        }}
         onClick={(e) => {
           e.stopPropagation();
         }}
@@ -4122,7 +4138,10 @@ ${body}
                   }}
                   onPointerMove={handlePointerDragMove}
                   onPointerUp={handlePointerDragEnd}
-                  onPointerCancel={handlePointerDragEnd}
+                  onPointerCancel={handlePointerDragCancel}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
@@ -6312,6 +6331,7 @@ ${body}
       .layer-drag-handle {
         touch-action: none;
         -webkit-user-select: none;
+        -webkit-touch-callout: none;     
         user-select: none;
       }
 
