@@ -2531,7 +2531,7 @@ function LayoutEditor() {
           props: {
             title: newTitle.trim() || "↑",
 
-            disabled: false,            
+            disabled: false,
 
             action: {
               type: "scrollToTop",
@@ -3420,7 +3420,26 @@ ${body}
     switch (component.type) {
       case "button":
         return (
-          <div style={component.contentStyle}>{component.props.title}</div>
+          <button
+            type="button"
+            style={{
+              ...component.contentStyle,
+              display: "block",
+              width: "100%",
+              marginTop: "1.5rem",
+              padding: "0.375rem 0.75rem",
+              color: "#fff",
+              backgroundColor: "#0d6efd",
+              border: "1px solid #0d6efd",
+              borderRadius: "0.375rem",
+              fontSize: "1rem",
+              lineHeight: 1.5,
+              textAlign: "center",
+              cursor: "pointer",
+            }}
+          >
+            {component.props.title}
+          </button>
         );
 
       case "scrollToTopButton":
@@ -3442,7 +3461,7 @@ ${body}
               lineHeight: "1.5",
               textAlign: "center",
               cursor: "pointer",
-              userSelect: "none",              
+              userSelect: "none",
             }}
           >
             {component.props.title}
