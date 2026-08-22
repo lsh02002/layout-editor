@@ -5817,7 +5817,7 @@ ${body}
           {renderAddButton(null, 0, "column")}
 
           {sortedComponents.map((component, index) => (
-            <div key={component.id}>
+            <div key={component.id} data-component-id={component.id}>
               {renderLayoutComponent(component)}
 
               {/* 특수한 경우임!!! */}
