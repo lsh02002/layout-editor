@@ -1989,24 +1989,30 @@ function LayoutEditor() {
     };
   }, [selectedComponentId, commitHistory]);
 
-  const handleDragStart = (
-    e: React.DragEvent<HTMLElement>,
+  const handlePointerDragStart = (
+    e: React.PointerEvent<HTMLElement>,
     componentId: string,
   ) => {
-    draggingIdRef.current = componentId;
+    if (layerSearch) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    e.currentTarget.setPointerCapture(e.pointerId);
 
     setDraggingId(componentId);
 
-    e.dataTransfer.effectAllowed = "move";
+    beginHistoryAction();
 
-    e.dataTransfer.setData("text/plain", componentId);
-  };
-
-  const handleDragEnd = () => {
-    draggingIdRef.current = null;
-
-    setDraggingId(null);
-    setActiveDropTarget(null);
+    // 여기서 기존 드래그 시작 좌표/상태 저장
+    // 예:
+    // dragPointerRef.current = {
+    //   id: componentId,
+    //   startX: e.clientX,
+    //   startY: e.clientY,
+    // };
   };
 
   const handleDrop = (
@@ -3707,32 +3713,58 @@ ${body}
   };
 
   const renderDragHandle = (component: LayoutComponent) => {
-    return (
-      <span
-        draggable={!layerSearch}
-        onDragStart={(e) => {
-          if (layerSearch) {
-            e.preventDefault();
-            return;
-          }
+    const isDragging = draggingId === component.id;
 
-          handleDragStart(e, component.id);
+    return (
+      <button
+        type="button"
+        className="component-drag-handle"
+        onPointerDown={(e) => {
+          handlePointerDragStart(e, component.id);
         }}
-        onDragEnd={handleDragEnd}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+        disabled={!!layerSearch}
+        title={
+          layerSearch ? "검색 중에는 이동할 수 없습니다." : "드래그하여 이동"
+        }
         style={{
           cursor: layerSearch
             ? "not-allowed"
-            : draggingId === component.id
+            : isDragging
               ? "grabbing"
               : "grab",
 
           opacity: layerSearch ? 0.35 : 1,
 
           userSelect: "none",
+          WebkitUserSelect: "none",
+
+          touchAction: "none",
+
+          width: 36,
+          height: 36,
+
+          padding: 0,
+
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+
+          border: 0,
+          borderRadius: "50%",
+
+          background: "rgba(255,255,255,.95)",
+
+          fontWeight: 700,
+
+          position: "relative",
+          zIndex: 50,
         }}
       >
         ⋮⋮
-      </span>
+      </button>
     );
   };
 
@@ -3989,34 +4021,53 @@ ${body}
                 }}
               >
                 {/* 레이어 drag handle */}
-                <span
-                  draggable
-                  onDragStart={(e) => {
+                <button
+                  type="button"
+                  className="layer-drag-handle"
+                  onPointerDown={(e) => {
                     e.stopPropagation();
 
-                    handleDragStart(e, component.id);
+                    handlePointerDragStart(e, component.id);
                   }}
-                  onDragEnd={handleDragEnd}
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
+                  title="드래그하여 이동"
                   style={{
                     cursor: isDragging ? "grabbing" : "grab",
 
                     userSelect: "none",
+                    WebkitUserSelect: "none",
 
-                    width: 18,
+                    touchAction: "none",
 
-                    textAlign: "center",
+                    width: 36,
+                    height: 36,
+
+                    minWidth: 36,
+                    minHeight: 36,
+
+                    padding: 0,
+
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+
+                    border: 0,
+                    borderRadius: "50%",
+
+                    background: "transparent",
 
                     flexShrink: 0,
 
                     fontWeight: 700,
+
+                    position: "relative",
+                    zIndex: 50,
                   }}
-                  title="드래그하여 이동"
                 >
                   ⋮⋮
-                </span>
+                </button>
 
                 <span
                   style={{
@@ -6165,6 +6216,31 @@ ${body}
       @media (min-width: 768px) {
         .editor-mobile-panel-buttons {
           display: none !important;
+        }
+      }
+
+      .component-drag-handle,
+      .layer-drag-handle {
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      @media (max-width: 767.98px) {
+        .component-drag-handle,
+        .layer-drag-handle {
+          width: 44px !important;
+          height: 44px !important;
+
+          min-width: 44px !important;
+          min-height: 44px !important;
+
+          font-size: 20px;
+
+          background: rgba(255,255,255,.96) !important;
+
+          box-shadow:
+            0 2px 8px rgba(0,0,0,.16);
         }
       }
     `}</style>
