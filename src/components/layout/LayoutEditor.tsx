@@ -6282,7 +6282,7 @@ ${body}
       {renderProjectCssModal()}
       {renderFavoritePanel()}
       {renderCreateModal()}
-      {renderEditModal()}{" "}
+      {renderEditModal()}
     </>
   );
 }
