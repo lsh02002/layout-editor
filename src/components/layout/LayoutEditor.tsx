@@ -3734,7 +3734,7 @@ ${body}
 
             color: "#64748b",
 
-            opacity: draggingId ? 0 : 0.8,
+            opacity: draggingId ? 0.8 : 1,
 
             pointerEvents: draggingId ? "none" : "auto",
 
