@@ -483,6 +483,12 @@ function LayoutEditor() {
 
   const [newComponentName, setNewComponentName] = useState("");
 
+  const [newHeadingText, setNewHeadingText] = useState("");
+
+  const [newHeadingLevel, setNewHeadingLevel] = useState<1 | 2 | 3 | 4 | 5 | 6>(
+    2,
+  );
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingComponentId, setEditingComponentId] = useState<string | null>(
     null,
@@ -516,6 +522,10 @@ function LayoutEditor() {
   const [editLinkNewWindow, setEditLinkNewWindow] = useState(false);
 
   const [editComponentName, setEditComponentName] = useState("");
+
+  const [editHeadingLevel, setEditHeadingLevel] = useState<
+    1 | 2 | 3 | 4 | 5 | 6
+  >(2);
 
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [gridSize, setGridSize] = useState(10);
@@ -591,6 +601,7 @@ function LayoutEditor() {
 
   const VALID_COMPONENT_TYPES = [
     "button",
+    "heading",
     "textarea",
     "quill",
     "image",
@@ -1289,6 +1300,18 @@ function LayoutEditor() {
         content = component.props.title ?? "";
         break;
 
+      case "heading":
+        content = [
+          component.props.text,
+          `h${component.props.level}`,
+          "heading",
+          "제목",
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        break;
+
       case "textarea":
         content = [component.props.value, component.props.placeholder]
           .filter(Boolean)
@@ -1515,6 +1538,25 @@ function LayoutEditor() {
       case "scrollToTopButton": {
         if (typeof props.title !== "string") {
           return `${path}: scrollToTopButton.title이 올바르지 않습니다.`;
+        }
+
+        break;
+      }
+
+      case "heading": {
+        if (typeof props.text !== "string") {
+          return `${path}: heading.text가 올바르지 않습니다.`;
+        }
+
+        if (
+          props.level !== 1 &&
+          props.level !== 2 &&
+          props.level !== 3 &&
+          props.level !== 4 &&
+          props.level !== 5 &&
+          props.level !== 6
+        ) {
+          return `${path}: heading.level이 올바르지 않습니다.`;
         }
 
         break;
@@ -2060,6 +2102,14 @@ function LayoutEditor() {
         setEditDirection("column");
         break;
 
+      case "heading":
+        setEditTitle("");
+        setEditValue(component.props.text);
+
+        setEditHeadingLevel(component.props.level);
+
+        break;
+
       case "textarea":
         setEditTitle("");
         setEditValue(component.props.value);
@@ -2140,6 +2190,31 @@ function LayoutEditor() {
                     ...component.props,
                     title: editTitle.trim() || "버튼",
                     disabled: editDisabled,
+                  },
+                };
+
+              case "heading":
+                return {
+                  ...component,
+
+                  name: editComponentName.trim() || component.name,
+
+                  customCss: editCustomCss,
+
+                  style: {
+                    ...editStyle,
+                  },
+
+                  contentStyle: {
+                    ...editContentStyle,
+                  },
+
+                  props: {
+                    ...component.props,
+
+                    text: editValue.trim() || "제목",
+
+                    level: editHeadingLevel,
                   },
                 };
 
@@ -2375,6 +2450,9 @@ function LayoutEditor() {
     setNewLinkNewWindow(false);
 
     setShowCreateModal(true);
+
+    setNewHeadingText("");
+    setNewHeadingLevel(2);
   };
 
   const closeCreateModal = () => {
@@ -2440,6 +2518,29 @@ function LayoutEditor() {
             height: "50px",
             right: "10px",
             bottom: "10px",
+          },
+        };
+
+      case "heading":
+        return {
+          id,
+          name: newComponentName.trim() || "제목",
+
+          type: "heading",
+          order: 0,
+
+          props: {
+            text: newHeadingText.trim() || "제목을 입력하세요",
+
+            level: newHeadingLevel,
+          },
+
+          style: {
+            width: "100%",
+          },
+
+          contentStyle: {
+            margin: 0,
           },
         };
 
@@ -2832,6 +2933,23 @@ function LayoutEditor() {
 
       case "scrollToTopButton":
         return `<button data-component-id="${escapeAttribute(component.id)}" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="${escapeAttribute(`${wrapperStyle};${contentStyle};display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;background-color:#6c757d;border:1px solid #6c757d;padding:0.375rem 0.75rem;font-size:1rem;line-height:1.5;text-align:center;cursor:pointer;user-select:none;`)}">${escapeHtml(component.props.title)}</button>`;
+
+      case "heading": {
+        const tag = `h${component.props.level}`;
+
+        return `
+    <div
+      data-component-id="${escapeAttribute(component.id)}"
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <${tag}
+        style="${escapeAttribute(contentStyle)}"
+      >
+        ${escapeHtml(component.props.text)}
+      </${tag}>
+    </div>
+  `;
+      }
 
       case "textarea": {
         const text =
@@ -3294,6 +3412,35 @@ ${body}
           </button>
         );
 
+      case "heading":
+        {
+          const style = {
+            margin: 0,
+            ...component.contentStyle,
+          };
+
+          switch (component.props.level) {
+            case 1:
+              return <h1 style={style}>{component.props.text}</h1>;
+
+            case 2:
+              return <h2 style={style}>{component.props.text}</h2>;
+
+            case 3:
+              return <h3 style={style}>{component.props.text}</h3>;
+
+            case 4:
+              return <h4 style={style}>{component.props.text}</h4>;
+
+            case 5:
+              return <h5 style={style}>{component.props.text}</h5>;
+
+            case 6:
+              return <h6 style={style}>{component.props.text}</h6>;
+          }
+        }
+        break;
+
       case "textarea":
         return (
           <div
@@ -3723,6 +3870,10 @@ ${body}
         .trim();
 
       return plainText || component.name || component.type;
+    }
+
+    if (component.type === "heading") {
+      return component.props.text || component.name?.trim() || "Heading";
     }
 
     if (component.name?.trim()) {
@@ -4363,6 +4514,7 @@ ${body}
                     }
                   >
                     <option value="container">Container</option>
+                    <option value="heading">Heading</option>
                     <option value="textarea">TextArea</option>
                     <option value="quill">Quill Editor</option>
                     <option value="button">Button</option>
@@ -4398,6 +4550,43 @@ ${body}
                         onChange={(e) => setNewTitle(e.target.value)}
                         placeholder="버튼"
                       />
+                    </div>
+                  </>
+                )}
+
+                {newType === "heading" && (
+                  <>
+                    <div className="mb-3">
+                      <label className="form-label">제목</label>
+
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newHeadingText}
+                        onChange={(e) => setNewHeadingText(e.target.value)}
+                        placeholder="제목을 입력하세요"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Heading Level</label>
+
+                      <select
+                        className="form-select"
+                        value={newHeadingLevel}
+                        onChange={(e) =>
+                          setNewHeadingLevel(
+                            Number(e.target.value) as 1 | 2 | 3 | 4 | 5 | 6,
+                          )
+                        }
+                      >
+                        <option value={1}>H1</option>
+                        <option value={2}>H2</option>
+                        <option value={3}>H3</option>
+                        <option value={4}>H4</option>
+                        <option value={5}>H5</option>
+                        <option value={6}>H6</option>
+                      </select>
                     </div>
                   </>
                 )}
@@ -4839,6 +5028,42 @@ ${body}
                             onChange={(e) => setEditTitle(e.target.value)}
                             placeholder="버튼"
                           />
+                        </div>
+                      </>
+                    )}
+
+                    {editType === "heading" && (
+                      <>
+                        <div className="mb-3">
+                          <label className="form-label">제목</label>
+
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="mb-3">
+                          <label className="form-label">Heading Level</label>
+
+                          <select
+                            className="form-select"
+                            value={editHeadingLevel}
+                            onChange={(e) =>
+                              setEditHeadingLevel(
+                                Number(e.target.value) as 1 | 2 | 3 | 4 | 5 | 6,
+                              )
+                            }
+                          >
+                            <option value={1}>H1</option>
+                            <option value={2}>H2</option>
+                            <option value={3}>H3</option>
+                            <option value={4}>H4</option>
+                            <option value={5}>H5</option>
+                            <option value={6}>H6</option>
+                          </select>
                         </div>
                       </>
                     )}

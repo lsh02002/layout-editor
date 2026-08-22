@@ -35,7 +35,16 @@ interface ButtonComponent extends BaseComponent {
   };
 }
 
-interface TextAreaComponent extends BaseComponent {
+export interface HeadingComponent extends BaseComponent {
+  type: "heading";
+
+  props: {
+    text: string;
+    level: 1 | 2 | 3 | 4 | 5 | 6;
+  };
+}
+
+export interface TextAreaComponent extends BaseComponent {
   type: "textarea";
 
   props: {
@@ -46,7 +55,7 @@ interface TextAreaComponent extends BaseComponent {
   };
 }
 
-interface ScrollToTopButtonComponent extends BaseComponent {
+export interface ScrollToTopButtonComponent extends BaseComponent {
   type: "scrollToTopButton";
 
   props: {
@@ -60,7 +69,7 @@ interface ScrollToTopButtonComponent extends BaseComponent {
   };
 }
 
-interface QuillComponent extends BaseComponent {
+export interface QuillComponent extends BaseComponent {
   type: "quill";
 
   props: {
@@ -70,7 +79,7 @@ interface QuillComponent extends BaseComponent {
   };
 }
 
-interface ImageComponent extends BaseComponent {
+export interface ImageComponent extends BaseComponent {
   type: "image";
 
   props: {
@@ -80,7 +89,7 @@ interface ImageComponent extends BaseComponent {
   };
 }
 
-interface LinkComponent extends BaseComponent {
+export interface LinkComponent extends BaseComponent {
   type: "link";
 
   props: {
@@ -94,7 +103,7 @@ interface LinkComponent extends BaseComponent {
   };
 }
 
-interface ContainerComponent extends BaseComponent {
+export interface ContainerComponent extends BaseComponent {
   type: "container";
 
   props: {
@@ -108,6 +117,7 @@ interface ContainerComponent extends BaseComponent {
 export type LayoutComponent =
   | ButtonComponent
   | ScrollToTopButtonComponent
+  | HeadingComponent
   | TextAreaComponent
   | QuillComponent
   | ImageComponent
