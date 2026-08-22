@@ -3680,24 +3680,28 @@ ${body}
         }}
         style={{
           display: "flex",
+
           flexDirection: isRow ? "column" : "row",
 
           alignItems: "center",
           justifyContent: "center",
 
-          minHeight: isRow ? undefined : 40,
-          minWidth: isRow ? 40 : undefined,
+          minHeight: isRow ? undefined : draggingId ? 32 : 14,
+
+          minWidth: isRow ? (draggingId ? 32 : 14) : undefined,
 
           flexShrink: 0,
 
-          // ★ 중요
+          margin: isRow ? "0 3px" : "3px 0",
+
+          borderRadius: 6,
+
           position: "relative",
-          zIndex: 20,
-          pointerEvents: "auto",
 
-          borderRadius: 8,
+          transition:
+            "min-height 120ms ease, min-width 120ms ease, background 120ms ease",
 
-          background: isActive ? "rgba(13, 110, 253, 0.12)" : "transparent",
+          background: isActive ? "rgba(13, 110, 253, 0.10)" : "transparent",
 
           outline: isActive ? "2px dashed #0d6efd" : "2px dashed transparent",
         }}
@@ -3717,15 +3721,22 @@ ${body}
 
         <button
           type="button"
-          className="btn btn-outline-primary btn-sm rounded-circle"
+          className="btn btn-light btn-sm rounded-circle"
           style={{
-            width: 30,
-            height: 30,
-            minWidth: 30,
+            width: 28,
+            height: 28,
+            minWidth: 28,
             padding: 0,
 
-            // 드래그 중에는 부모 DropZone이 이벤트 받도록
+            border: "1px solid #cbd5e1",
+
+            color: "#64748b",
+
+            opacity: draggingId ? 0 : 0.8,
+
             pointerEvents: draggingId ? "none" : "auto",
+
+            transition: "opacity 120ms ease",
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -3892,15 +3903,22 @@ ${body}
           alignItems: "center",
           justifyContent: "center",
 
-          border: 0,
+          border: "1px solid #e2e8f0",
+
+          boxShadow: "0 2px 8px rgba(15,23,42,.10)",
           borderRadius: "50%",
 
-          background: "rgba(255,255,255,.95)",
+          background: isDragging ? "#0d6efd" : "rgba(255,255,255,.96)",
+
+          color: isDragging ? "#fff" : "#64748b",
 
           fontWeight: 700,
 
           position: "relative",
           zIndex: 50,
+
+          transition:
+            "background 120ms ease, color 120ms ease, box-shadow 120ms ease",
         }}
         title="드래그하여 이동"
       >
@@ -3941,7 +3959,7 @@ ${body}
                   : component.style?.outline,
               outlineOffset:
                 selectedComponentId === component.id
-                  ? "2px"
+                  ? 3
                   : component.style?.outlineOffset,
             }}
             onLayoutChange={(layout) => updateLayout(component.id, layout)}
@@ -6254,37 +6272,51 @@ ${body}
   return (
     <>
       <style>{`
+      .layer-tree-item {
+        border-radius: 6px;
+
+        transition:
+          background-color 120ms ease,
+          border-color 120ms ease;
+      }
+
       .layer-tree-item:hover {
-        background: #f1f3f5;
+        background: #f1f5f9;
       }
 
       .editor-side-panel {
         position: fixed;
+
         top: 0;
         bottom: 0;
 
         width: 280px;
 
-        background: #fff;
+        display: flex;
+        flex-direction: column;
+
+        background: #ffffff;
 
         z-index: 1200;
 
+        overflow: hidden;
+
         box-shadow:
-          0 0 16px rgba(0, 0, 0, 0.08);
+          0 0 20px rgba(15, 23, 42, 0.08);
       }
 
       .editor-side-panel.left {
         left: 0;
 
         border-right:
-          1px solid #dee2e6;
+          1px solid #e2e8f0;
       }
 
       .editor-side-panel.right {
         right: 0;
 
         border-left:
-          1px solid #dee2e6;
+          1px solid #e2e8f0;
       }
 
       .editor-panel-backdrop {
@@ -6292,9 +6324,67 @@ ${body}
       }
 
       .editor-main {
+        min-height: 100vh;
+
+        background-color: #f1f5f9;
+
+        background-image:
+          radial-gradient(
+            circle,
+            rgba(100, 116, 139, 0.28) 1px,
+            transparent 1px
+          );
+
+        background-size: 20px 20px;
+
         transition:
           margin-left 160ms ease,
           margin-right 160ms ease;
+      }
+
+      .builder-preview {
+        position: relative;
+
+        width: 100%;
+        max-width: 1100px;
+
+        min-height: calc(100vh - 100px);
+
+        margin:
+          0
+          auto
+          40px;
+
+        padding: 24px;
+
+        background: #ffffff;
+
+        border:
+          1px solid #e2e8f0;
+
+        border-radius: 12px;
+
+        box-shadow:
+          0 8px 30px
+          rgba(15, 23, 42, 0.08);
+
+        box-sizing: border-box;
+      }
+
+      .component-drag-handle,
+      .layer-drag-handle {
+        touch-action: none;
+
+        -webkit-user-select: none;
+        user-select: none;
+
+        -webkit-touch-callout: none;
+      }
+
+      .desktop-layer-open-button {
+        box-shadow:
+          0 3px 12px
+          rgba(15, 23, 42, 0.15);
       }
 
       .editor-mobile-panel-buttons {
@@ -6308,7 +6398,8 @@ ${body}
           z-index: 1300;
 
           box-shadow:
-            0 0 24px rgba(0, 0, 0, 0.18);
+            0 0 28px
+            rgba(15, 23, 42, 0.22);
         }
 
         .editor-panel-backdrop {
@@ -6319,7 +6410,9 @@ ${body}
           inset: 0;
 
           background:
-            rgba(0, 0, 0, 0.35);
+            rgba(15, 23, 42, 0.38);
+
+          backdrop-filter: blur(1px);
 
           z-index: 1290;
         }
@@ -6329,6 +6422,27 @@ ${body}
           margin-right: 0 !important;
 
           padding: 8px !important;
+
+          background-image: none;
+
+          background-color: #eef2f7;
+        }
+
+        .builder-preview {
+          width: 100% !important;
+          max-width: none !important;
+
+          min-height: calc(100vh - 16px) !important;
+
+          margin: 0 !important;
+
+          padding: 12px !important;
+
+          border-radius: 8px !important;
+
+          box-shadow: none !important;
+
+          padding-bottom: 80px !important;
         }
 
         .editor-mobile-panel-buttons {
@@ -6338,7 +6452,11 @@ ${body}
 
           left: 12px;
           right: 12px;
-          bottom: 12px;
+          bottom:
+            calc(
+              12px
+              + env(safe-area-inset-bottom)
+            );
 
           z-index: 1250;
 
@@ -6350,16 +6468,35 @@ ${body}
         .editor-mobile-panel-buttons > button {
           pointer-events: auto;
 
-          box-shadow:
-            0 3px 12px rgba(0, 0, 0, 0.18);
-        }
+          min-height: 44px;
 
-        .builder-preview {
-          padding-bottom: 70px;
+          border-radius: 10px;
+
+          box-shadow:
+            0 4px 16px
+            rgba(15, 23, 42, 0.20);
         }
 
         .desktop-layer-open-button {
           display: none !important;
+        }
+
+        .component-drag-handle,
+        .layer-drag-handle {
+          width: 44px !important;
+          height: 44px !important;
+
+          min-width: 44px !important;
+          min-height: 44px !important;
+
+          font-size: 20px;
+
+          touch-action: none;
+
+          -webkit-user-select: none;
+          user-select: none;
+
+          -webkit-touch-callout: none;
         }
       }
 
@@ -6368,29 +6505,6 @@ ${body}
           display: none !important;
         }
       }
-
-      .component-drag-handle,
-      .layer-drag-handle {
-        touch-action: none;
-        -webkit-user-select: none;
-        -webkit-touch-callout: none;     
-        user-select: none;
-      }
-
-      @media (max-width: 767.98px) {
-      .component-drag-handle,
-      .layer-drag-handle {
-        width: 44px !important;
-        height: 44px !important;
-
-        min-width: 44px !important;
-        min-height: 44px !important;
-
-        touch-action: none;
-
-        font-size: 20px;
-      }
-    }
     `}</style>
       {/* 프로젝트 전체 CSS */}
       <style>{projectCustomCss}</style>
@@ -6439,10 +6553,9 @@ ${body}
         style={{
           minHeight: "100vh",
 
-          padding: 16,
+          padding: "20px 28px 48px",
 
           marginLeft: showLayerPanel ? 280 : 0,
-
           marginRight: showFavoritePanel ? 300 : 0,
         }}
       >
@@ -6451,14 +6564,32 @@ ${body}
         <div
           className="builder-preview"
           style={{
-            minHeight: "100vh",
+            minHeight: 700,
+
+            maxWidth: 1100,
+            width: "100%",
+
+            margin: "0 auto",
+
+            background: "#fff",
+
+            border: "1px solid #e2e8f0",
+            borderRadius: 12,
+
+            boxShadow: "0 8px 30px rgba(15, 23, 42, 0.08)",
+
+            padding: 24,
           }}
         >
           {/* 최상위 맨 앞 + */}
           {renderAddButton(null, 0, "column")}
 
           {sortedComponents.map((component, index) => (
-            <div key={component.id} data-component-id={component.id}>
+            <div
+              key={component.id}
+              data-component-id={component.id}
+              style={{ position: "relative" }}
+            >
               {renderLayoutComponent(component)}
 
               {component.type !== "scrollToTopButton" &&
