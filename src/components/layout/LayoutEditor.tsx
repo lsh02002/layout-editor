@@ -569,7 +569,9 @@ function LayoutEditor() {
     area: "canvas" | "layer";
   } | null>(null);
 
-  const [showLayerPanel, setShowLayerPanel] = useState(true);
+  const [showLayerPanel, setShowLayerPanel] = useState(
+    () => window.innerWidth > 768,
+  );
 
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
     null,
@@ -609,15 +611,17 @@ function LayoutEditor() {
     getAutoSaveSnapshot(history.present, projectCustomCss),
   );
 
-  const copiedComponentRef = useRef<LayoutComponent | null>(null);
-
-  const historyActionRef = useRef<{
-    active: boolean;
-    snapshot: LayoutComponent[] | null;
+  const pointerDragRef = useRef<{
+    componentId: string | null;
+    targetParentId: string | null;
+    targetIndex: number | null;
   }>({
-    active: false,
-    snapshot: null,
+    componentId: null,
+    targetParentId: null,
+    targetIndex: null,
   });
+
+  const copiedComponentRef = useRef<LayoutComponent | null>(null);
 
   const VALID_COMPONENT_TYPES = [
     "button",
@@ -1171,70 +1175,6 @@ function LayoutEditor() {
     };
 
     reader.readAsText(file);
-  };
-
-  const beginHistoryAction = () => {
-    if (historyActionRef.current.active) {
-      return;
-    }
-
-    historyActionRef.current = {
-      active: true,
-
-      // 액션 시작 직전 상태
-      snapshot: history.present,
-    };
-  };
-
-  const updateHistoryAction = (
-    updater: (prev: LayoutComponent[]) => LayoutComponent[],
-  ) => {
-    setHistory((prev) => ({
-      ...prev,
-
-      // past는 건드리지 않고
-      // 현재 화면만 계속 업데이트
-      present: updater(prev.present),
-
-      // 새로운 수정이 시작됐으므로 redo 제거
-      future: [],
-    }));
-  };
-
-  const endHistoryAction = () => {
-    const action = historyActionRef.current;
-
-    if (!action.active || !action.snapshot) {
-      return;
-    }
-
-    setHistory((prev) => {
-      /*
-       * 실제 변화가 없으면
-       * history 추가 안 함
-       */
-      if (JSON.stringify(action.snapshot) === JSON.stringify(prev.present)) {
-        return prev;
-      }
-
-      return {
-        past: [
-          ...prev.past,
-
-          // 액션 시작 전 상태를 딱 한 번 저장
-          action.snapshot!,
-        ],
-
-        present: prev.present,
-
-        future: [],
-      };
-    });
-
-    historyActionRef.current = {
-      active: false,
-      snapshot: null,
-    };
   };
 
   const isObject = (value: unknown): value is Record<string, unknown> => {
@@ -1989,6 +1929,32 @@ function LayoutEditor() {
     };
   }, [selectedComponentId, commitHistory]);
 
+  const handleDragStart = (
+    e: React.DragEvent<HTMLElement>,
+    componentId: string,
+  ) => {
+    // 현재 드래그 중인 컴포넌트 저장
+    draggingIdRef.current = componentId;
+
+    setDraggingId(componentId);
+
+    // 이동 작업임을 브라우저에 알림
+    e.dataTransfer.effectAllowed = "move";
+
+    // drop 시 사용할 컴포넌트 ID
+    e.dataTransfer.setData("text/plain", componentId);
+  };
+
+  const handleDragEnd = () => {
+    // PC Drag 상태 초기화
+    draggingIdRef.current = null;
+
+    setDraggingId(null);
+
+    // 활성화된 Drop Zone 초기화
+    setActiveDropTarget(null);
+  };
+
   const handlePointerDragStart = (
     e: React.PointerEvent<HTMLElement>,
     componentId: string,
@@ -1997,14 +1963,22 @@ function LayoutEditor() {
       return;
     }
 
+    if (e.pointerType === "mouse") {
+      return;
+    }
+
     e.preventDefault();
     e.stopPropagation();
 
     e.currentTarget.setPointerCapture(e.pointerId);
 
-    setDraggingId(componentId);
+    pointerDragRef.current = {
+      componentId,
+      targetParentId: null,
+      targetIndex: null,
+    };
 
-    beginHistoryAction();
+    setDraggingId(componentId);
 
     // 여기서 기존 드래그 시작 좌표/상태 저장
     // 예:
@@ -2013,6 +1987,91 @@ function LayoutEditor() {
     //   startX: e.clientX,
     //   startY: e.clientY,
     // };
+  };
+
+  const handlePointerDragMove = (e: React.PointerEvent<HTMLElement>) => {
+    const componentId = pointerDragRef.current.componentId;
+
+    if (!componentId) {
+      return;
+    }
+
+    if (e.pointerType === "mouse") {
+      return;
+    }
+
+    e.preventDefault();
+
+    /*
+     * 현재 손가락 아래 DOM 찾기
+     */
+    const element = document.elementFromPoint(e.clientX, e.clientY);
+
+    const dropZone = element?.closest<HTMLElement>('[data-drop-zone="true"]');
+
+    if (!dropZone) {
+      pointerDragRef.current.targetParentId = null;
+
+      pointerDragRef.current.targetIndex = null;
+
+      setActiveDropTarget(null);
+
+      return;
+    }
+
+    const parentValue = dropZone.dataset.dropParent;
+
+    const indexValue = dropZone.dataset.dropIndex;
+
+    const area = dropZone.dataset.dropArea === "layer" ? "layer" : "canvas";
+
+    if (indexValue === undefined) {
+      return;
+    }
+
+    const parentId = parentValue === "root" ? null : (parentValue ?? null);
+
+    const index = Number(indexValue);
+
+    if (!Number.isFinite(index)) {
+      return;
+    }
+
+    pointerDragRef.current.targetParentId = parentId;
+
+    pointerDragRef.current.targetIndex = index;
+
+    /*
+     * 기존 파란 Drop 표시 재사용
+     */
+    setActiveDropTarget({
+      parentId,
+      index,
+      area,
+    });
+  };
+
+  const handlePointerDragEnd = (e: React.PointerEvent<HTMLElement>) => {
+    if (e.pointerType === "mouse") {
+      return;
+    }
+
+    const { componentId, targetParentId, targetIndex } = pointerDragRef.current;
+
+    if (componentId && targetIndex !== null) {
+      moveComponent(componentId, targetParentId, targetIndex);
+    }
+
+    pointerDragRef.current = {
+      componentId: null,
+      targetParentId: null,
+      targetIndex: null,
+    };
+
+    draggingIdRef.current = null;
+
+    setDraggingId(null);
+    setActiveDropTarget(null);
   };
 
   const handleDrop = (
@@ -2099,12 +2158,6 @@ function LayoutEditor() {
 
     const updater = (prev: LayoutComponent[]) =>
       updateLayoutRecursive(prev, id, snappedLayout);
-
-    // 드래그 / 리사이즈 액션 중
-    if (historyActionRef.current.active) {
-      updateHistoryAction(updater);
-      return;
-    }
 
     // 일반 단발 변경
     setComponents(updater);
@@ -3596,6 +3649,10 @@ ${body}
 
     return (
       <div
+        data-drop-zone="true"
+        data-drop-area="canvas"
+        data-drop-parent={parentId ?? "root"}
+        data-drop-index={index}
         onDragEnter={(e) => {
           handleDragOver(e, parentId, index, "canvas");
         }}
@@ -3683,6 +3740,10 @@ ${body}
 
     return (
       <div
+        data-drop-zone="true"
+        data-drop-area="layer"
+        data-drop-parent={parentId ?? "root"}
+        data-drop-index={index}
         onDragEnter={(e) => {
           handleDragOver(e, parentId, index, "layer");
         }}
@@ -3717,18 +3778,33 @@ ${body}
 
     return (
       <button
-        type="button"
         className="component-drag-handle"
+        type="button"
+        /*
+         * 데스크톱
+         */
+        draggable={!layerSearch}
+        onDragStart={(e) => {
+          if (layerSearch) {
+            e.preventDefault();
+            return;
+          }
+
+          handleDragStart(e, component.id);
+        }}
+        onDragEnd={handleDragEnd}
+        /*
+         * 모바일
+         */
         onPointerDown={(e) => {
           handlePointerDragStart(e, component.id);
         }}
+        onPointerMove={handlePointerDragMove}
+        onPointerUp={handlePointerDragEnd}
+        onPointerCancel={handlePointerDragEnd}
         onClick={(e) => {
           e.stopPropagation();
         }}
-        disabled={!!layerSearch}
-        title={
-          layerSearch ? "검색 중에는 이동할 수 없습니다." : "드래그하여 이동"
-        }
         style={{
           cursor: layerSearch
             ? "not-allowed"
@@ -3741,10 +3817,16 @@ ${body}
           userSelect: "none",
           WebkitUserSelect: "none",
 
+          /*
+           * 모바일 드래그 핵심
+           */
           touchAction: "none",
 
           width: 36,
           height: 36,
+
+          minWidth: 36,
+          minHeight: 36,
 
           padding: 0,
 
@@ -3762,6 +3844,7 @@ ${body}
           position: "relative",
           zIndex: 50,
         }}
+        title="드래그하여 이동"
       >
         ⋮⋮
       </button>
@@ -3803,8 +3886,6 @@ ${body}
                   ? "2px"
                   : component.style?.outlineOffset,
             }}
-            onLayoutActionStart={beginHistoryAction}
-            onLayoutActionEnd={endHistoryAction}
             onLayoutChange={(layout) => updateLayout(component.id, layout)}
             onEdit={() => editComponent(component.id)}
             onCopy={() => copyComponent(component.id)}
@@ -3875,8 +3956,6 @@ ${body}
                 ? "2px"
                 : component.style?.outlineOffset,
           }}
-          onLayoutActionStart={beginHistoryAction}
-          onLayoutActionEnd={endHistoryAction}
           onLayoutChange={(layout) => updateLayout(component.id, layout)}
           onEdit={() => editComponent(component.id)}
           onCopy={() => copyComponent(component.id)}
@@ -4024,47 +4103,57 @@ ${body}
                 <button
                   type="button"
                   className="layer-drag-handle"
+                  draggable={!layerSearch}
+                  onDragStart={(e) => {
+                    e.stopPropagation();
+
+                    if (layerSearch) {
+                      e.preventDefault();
+                      return;
+                    }
+
+                    handleDragStart(e, component.id);
+                  }}
+                  onDragEnd={handleDragEnd}
                   onPointerDown={(e) => {
                     e.stopPropagation();
 
                     handlePointerDragStart(e, component.id);
                   }}
+                  onPointerMove={handlePointerDragMove}
+                  onPointerUp={handlePointerDragEnd}
+                  onPointerCancel={handlePointerDragEnd}
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
-                  title="드래그하여 이동"
                   style={{
                     cursor: isDragging ? "grabbing" : "grab",
 
+                    touchAction: "none",
+
                     userSelect: "none",
                     WebkitUserSelect: "none",
-
-                    touchAction: "none",
 
                     width: 36,
                     height: 36,
 
                     minWidth: 36,
-                    minHeight: 36,
 
                     padding: 0,
+
+                    border: 0,
 
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-
-                    border: 0,
-                    borderRadius: "50%",
 
                     background: "transparent",
 
                     flexShrink: 0,
 
                     fontWeight: 700,
-
-                    position: "relative",
-                    zIndex: 50,
                   }}
+                  title="드래그하여 이동"
                 >
                   ⋮⋮
                 </button>
@@ -6227,22 +6316,19 @@ ${body}
       }
 
       @media (max-width: 767.98px) {
-        .component-drag-handle,
-        .layer-drag-handle {
-          width: 44px !important;
-          height: 44px !important;
+      .component-drag-handle,
+      .layer-drag-handle {
+        width: 44px !important;
+        height: 44px !important;
 
-          min-width: 44px !important;
-          min-height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
 
-          font-size: 20px;
+        touch-action: none;
 
-          background: rgba(255,255,255,.96) !important;
-
-          box-shadow:
-            0 2px 8px rgba(0,0,0,.16);
-        }
+        font-size: 20px;
       }
+    }
     `}</style>
       {/* 프로젝트 전체 CSS */}
       <style>{projectCustomCss}</style>
