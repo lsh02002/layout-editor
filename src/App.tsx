@@ -182,10 +182,16 @@ const downloadProjectFile = async (
   }
 };
 
+const normalizeOrder = (items: LayoutComponent[]): LayoutComponent[] => {
+  return items.map((item, index) => ({
+    ...item,
+    order: index,
+  }));
+};
+
 const removeComponentRecursive = (
   items: LayoutComponent[],
   id: string,
-  normalizeOrder = (items: LayoutComponent[]) => items,
 ): { items: LayoutComponent[]; removed: LayoutComponent | null } => {
   const directIndex = items.findIndex((item) => item.id === id);
 
@@ -206,7 +212,7 @@ const removeComponentRecursive = (
       continue;
     }
 
-    const result = removeComponentRecursive(item.children, id, normalizeOrder);
+    const result = removeComponentRecursive(item.children, id);
 
     if (result.removed) {
       const next = [...items];
@@ -269,6 +275,187 @@ const readAutoSaveData = (): AutoSaveData | null => {
 
     return null;
   }
+};
+
+const cloneComponent = (component: LayoutComponent): LayoutComponent => {
+  const newId = crypto.randomUUID();
+
+  if (component.type === "image") {
+    return {
+      ...component,
+      id: newId,
+
+      props: {
+        ...component.props,
+        urls: [...component.props.urls],
+      },
+
+      style: component.style
+        ? {
+            ...component.style,
+          }
+        : undefined,
+
+      contentStyle: component.contentStyle
+        ? {
+            ...component.contentStyle,
+          }
+        : undefined,
+
+      layout: component.layout
+        ? {
+            ...component.layout,
+          }
+        : undefined,
+    };
+  }
+
+  if (component.type === "container") {
+    return {
+      ...component,
+      id: newId,
+
+      props: {
+        ...component.props,
+      },
+
+      style: component.style
+        ? {
+            ...component.style,
+          }
+        : undefined,
+
+      contentStyle: component.contentStyle
+        ? {
+            ...component.contentStyle,
+          }
+        : undefined,
+
+      layout: component.layout
+        ? {
+            ...component.layout,
+          }
+        : undefined,
+
+      children: component.children.map((child) => cloneComponent(child)),
+    };
+  }
+
+  return {
+    ...component,
+    id: newId,
+
+    props: {
+      ...component.props,
+    },
+
+    style: component.style
+      ? {
+          ...component.style,
+        }
+      : undefined,
+
+    contentStyle: component.contentStyle
+      ? {
+          ...component.contentStyle,
+        }
+      : undefined,
+
+    layout: component.layout
+      ? {
+          ...component.layout,
+        }
+      : undefined,
+  } as LayoutComponent;
+};
+
+const insertComponentRecursive = (
+  items: LayoutComponent[],
+  parentId: string | null,
+  index: number,
+  component: LayoutComponent,
+): LayoutComponent[] => {
+  if (parentId === null) {
+    const next = [...items];
+    const safeIndex = Math.max(0, Math.min(index, next.length));
+
+    next.splice(safeIndex, 0, component);
+
+    return normalizeOrder(next);
+  }
+
+  return items.map((item) => {
+    if (item.type === "container" && item.id === parentId) {
+      const children = [...item.children];
+      const safeIndex = Math.max(0, Math.min(index, children.length));
+
+      children.splice(safeIndex, 0, component);
+
+      return {
+        ...item,
+        children: normalizeOrder(children),
+      };
+    }
+
+    if (item.type === "container") {
+      return {
+        ...item,
+        children: insertComponentRecursive(
+          item.children,
+          parentId,
+          index,
+          component,
+        ),
+      };
+    }
+
+    return item;
+  });
+};
+
+const findComponentLocation = (
+  items: LayoutComponent[],
+  id: string,
+  parentId: string | null = null,
+): { parentId: string | null; index: number } | null => {
+  for (let index = 0; index < items.length; index += 1) {
+    const item = items[index];
+
+    if (item.id === id) {
+      return { parentId, index };
+    }
+
+    if (item.type === "container") {
+      const found = findComponentLocation(item.children, id, item.id);
+
+      if (found) {
+        return found;
+      }
+    }
+  }
+
+  return null;
+};
+
+const findComponentRecursive = (
+  items: LayoutComponent[],
+  id: string,
+): LayoutComponent | undefined => {
+  for (const item of items) {
+    if (item.id === id) {
+      return item;
+    }
+
+    if (item.type === "container") {
+      const found = findComponentRecursive(item.children, id);
+
+      if (found) {
+        return found;
+      }
+    }
+  }
+
+  return undefined;
 };
 
 function App() {
@@ -391,6 +578,8 @@ function App() {
   const [autoSaveBaseline, setAutoSaveBaseline] = useState(() =>
     getAutoSaveSnapshot(history.present, projectCustomCss),
   );
+
+  const copiedComponentRef = useRef<LayoutComponent | null>(null);
 
   const historyActionRef = useRef<{
     active: boolean;
@@ -1254,13 +1443,6 @@ function App() {
     });
   };
 
-  const normalizeOrder = (items: LayoutComponent[]): LayoutComponent[] => {
-    return items.map((item, index) => ({
-      ...item,
-      order: index,
-    }));
-  };
-
   const validateComponent = (
     value: unknown,
     path = "components",
@@ -1459,50 +1641,150 @@ function App() {
     return null;
   };
 
-  const findComponentRecursive = (
-    items: LayoutComponent[],
-    id: string,
-  ): LayoutComponent | undefined => {
-    for (const item of items) {
-      if (item.id === id) {
-        return item;
+  useEffect(() => {
+    const handleClipboardShortcut = (event: KeyboardEvent) => {
+      const ctrlOrMeta = event.ctrlKey || event.metaKey;
+
+      if (!ctrlOrMeta) {
+        return;
       }
 
-      if (item.type === "container") {
-        const found = findComponentRecursive(item.children, id);
+      const key = event.key.toLowerCase();
 
-        if (found) {
-          return found;
+      if (key !== "c" && key !== "v") {
+        return;
+      }
+
+      /*
+       * input / textarea / Quill에서는
+       * 기존 텍스트 복사/붙여넣기 유지
+       */
+      const target = event.target as HTMLElement | null;
+
+      if (target) {
+        const tag = target.tagName.toLowerCase();
+
+        if (
+          tag === "input" ||
+          tag === "textarea" ||
+          tag === "select" ||
+          target.isContentEditable ||
+          !!target.closest(".ql-editor")
+        ) {
+          return;
         }
       }
-    }
 
-    return undefined;
-  };
-
-  const findComponentLocation = (
-    items: LayoutComponent[],
-    id: string,
-    parentId: string | null = null,
-  ): { parentId: string | null; index: number } | null => {
-    for (let index = 0; index < items.length; index += 1) {
-      const item = items[index];
-
-      if (item.id === id) {
-        return { parentId, index };
-      }
-
-      if (item.type === "container") {
-        const found = findComponentLocation(item.children, id, item.id);
-
-        if (found) {
-          return found;
+      /*
+       * =========================
+       * Ctrl / Cmd + C
+       * =========================
+       */
+      if (key === "c") {
+        if (!selectedComponentId) {
+          return;
         }
-      }
-    }
 
-    return null;
-  };
+        const component = findComponentRecursive(
+          history.present,
+          selectedComponentId,
+        );
+
+        if (!component) {
+          return;
+        }
+
+        event.preventDefault();
+
+        copiedComponentRef.current = structuredClone(component);
+
+        return;
+      }
+
+      /*
+       * =========================
+       * Ctrl / Cmd + V
+       * =========================
+       */
+      if (key === "v") {
+        const copied = copiedComponentRef.current;
+
+        if (!copied) {
+          return;
+        }
+
+        event.preventDefault();
+
+        const cloned = cloneComponent(copied);
+
+        /*
+         * 아무것도 선택 안 됨
+         * → root 마지막
+         */
+        if (!selectedComponentId) {
+          commitHistory((prev) => normalizeOrder([...prev, cloned]));
+
+          setSelectedComponentId(cloned.id);
+
+          return;
+        }
+
+        const selected = findComponentRecursive(
+          history.present,
+          selectedComponentId,
+        );
+
+        /*
+         * Container 선택
+         * → 내부 마지막
+         */
+        if (selected && selected.type === "container") {
+          commitHistory((prev) =>
+            insertComponentRecursive(
+              prev,
+              selected.id,
+              selected.children.length,
+              cloned,
+            ),
+          );
+
+          setSelectedComponentId(cloned.id);
+
+          return;
+        }
+
+        /*
+         * 일반 컴포넌트 선택
+         * → 현재 컴포넌트 바로 뒤
+         */
+        const location = findComponentLocation(
+          history.present,
+          selectedComponentId,
+        );
+
+        if (!location) {
+          return;
+        }
+
+        commitHistory((prev) =>
+          insertComponentRecursive(
+            prev,
+            location.parentId,
+            location.index + 1,
+            cloned,
+          ),
+        );
+
+        setSelectedComponentId(cloned.id);
+      }
+    };
+
+    window.addEventListener("keydown", handleClipboardShortcut);
+
+    return () => {
+      window.removeEventListener("keydown", handleClipboardShortcut);
+    };
+  }, [history.present, selectedComponentId, commitHistory]);
 
   const containsComponent = (
     component: LayoutComponent,
@@ -1519,50 +1801,6 @@ function App() {
     return component.children.some((child) =>
       containsComponent(child, targetId),
     );
-  };
-
-  const insertComponentRecursive = (
-    items: LayoutComponent[],
-    parentId: string | null,
-    index: number,
-    component: LayoutComponent,
-  ): LayoutComponent[] => {
-    if (parentId === null) {
-      const next = [...items];
-      const safeIndex = Math.max(0, Math.min(index, next.length));
-
-      next.splice(safeIndex, 0, component);
-
-      return normalizeOrder(next);
-    }
-
-    return items.map((item) => {
-      if (item.type === "container" && item.id === parentId) {
-        const children = [...item.children];
-        const safeIndex = Math.max(0, Math.min(index, children.length));
-
-        children.splice(safeIndex, 0, component);
-
-        return {
-          ...item,
-          children: normalizeOrder(children),
-        };
-      }
-
-      if (item.type === "container") {
-        return {
-          ...item,
-          children: insertComponentRecursive(
-            item.children,
-            parentId,
-            index,
-            component,
-          ),
-        };
-      }
-
-      return item;
-    });
   };
 
   const moveComponent = (
@@ -1604,11 +1842,7 @@ function App() {
     }
 
     commitHistory((prev) => {
-      const removedResult = removeComponentRecursive(
-        prev,
-        componentId,
-        normalizeOrder,
-      );
+      const removedResult = removeComponentRecursive(prev, componentId);
 
       if (!removedResult.removed) {
         return prev;
@@ -1623,28 +1857,16 @@ function App() {
     });
   };
 
-  const deleteSelectedComponent = useCallback(() => {
-    if (!selectedComponentId) {
-      return;
-    }
-
-    const targetId = selectedComponentId;
-
-    commitHistory((prev) => {
-      const result = removeComponentRecursive(prev, targetId, normalizeOrder);
-
-      return result.items;
-    });
-
-    setSelectedComponentId(null);
-  }, [selectedComponentId, commitHistory]);
-
   useEffect(() => {
     const handleDeleteKey = (event: KeyboardEvent) => {
       if (event.key !== "Delete" && event.key !== "Backspace") {
         return;
       }
 
+      /*
+       * input / textarea / Quill에서는
+       * 글자 삭제를 유지
+       */
       const target = event.target as HTMLElement | null;
 
       if (target) {
@@ -1671,7 +1893,22 @@ function App() {
         return;
       }
 
-      deleteSelectedComponent();
+      /*
+       * 현재 선택 ID를 고정
+       */
+      const targetId = selectedComponentId;
+
+      /*
+       * history를 거쳐 삭제
+       * → Ctrl+Z 복구 가능
+       */
+      commitHistory((prev) => {
+        const result = removeComponentRecursive(prev, targetId);
+
+        return result.items;
+      });
+
+      setSelectedComponentId(null);
     };
 
     window.addEventListener("keydown", handleDeleteKey);
@@ -1679,7 +1916,7 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handleDeleteKey);
     };
-  }, [selectedComponentId, deleteSelectedComponent]);
+  }, [selectedComponentId, commitHistory]);
 
   const handleDragStart = (
     e: React.DragEvent<HTMLElement>,
@@ -2086,98 +2323,6 @@ function App() {
     if (selectedComponentId === id) {
       setSelectedComponentId(null);
     }
-  };
-
-  const cloneComponent = (component: LayoutComponent): LayoutComponent => {
-    const newId = crypto.randomUUID();
-
-    if (component.type === "image") {
-      return {
-        ...component,
-        id: newId,
-
-        props: {
-          ...component.props,
-          urls: [...component.props.urls],
-        },
-
-        style: component.style
-          ? {
-              ...component.style,
-            }
-          : undefined,
-
-        contentStyle: component.contentStyle
-          ? {
-              ...component.contentStyle,
-            }
-          : undefined,
-
-        layout: component.layout
-          ? {
-              ...component.layout,
-            }
-          : undefined,
-      };
-    }
-
-    if (component.type === "container") {
-      return {
-        ...component,
-        id: newId,
-
-        props: {
-          ...component.props,
-        },
-
-        style: component.style
-          ? {
-              ...component.style,
-            }
-          : undefined,
-
-        contentStyle: component.contentStyle
-          ? {
-              ...component.contentStyle,
-            }
-          : undefined,
-
-        layout: component.layout
-          ? {
-              ...component.layout,
-            }
-          : undefined,
-
-        children: component.children.map((child) => cloneComponent(child)),
-      };
-    }
-
-    return {
-      ...component,
-      id: newId,
-
-      props: {
-        ...component.props,
-      },
-
-      style: component.style
-        ? {
-            ...component.style,
-          }
-        : undefined,
-
-      contentStyle: component.contentStyle
-        ? {
-            ...component.contentStyle,
-          }
-        : undefined,
-
-      layout: component.layout
-        ? {
-            ...component.layout,
-          }
-        : undefined,
-    } as LayoutComponent;
   };
 
   const copyComponent = (id: string) => {
