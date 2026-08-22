@@ -2110,34 +2110,6 @@ function LayoutEditor() {
     setActiveDropTarget(null);
   };
 
-  const handleDragOver = (
-    e: React.DragEvent<HTMLElement>,
-    parentId: string | null,
-    index: number,
-    area: "canvas" | "layer",
-  ) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    e.dataTransfer.dropEffect = "move";
-
-    if (!draggingIdRef.current) {
-      return;
-    }
-
-    if (
-      activeDropTarget?.parentId !== parentId ||
-      activeDropTarget?.index !== index ||
-      activeDropTarget?.area !== area
-    ) {
-      setActiveDropTarget({
-        parentId,
-        index,
-        area,
-      });
-    }
-  };
-
   const updateLayoutRecursive = (
     items: LayoutComponent[],
     id: string,
@@ -3794,23 +3766,57 @@ ${body}
         data-drop-parent={parentId ?? "root"}
         data-drop-index={index}
         onDragEnter={(e) => {
-          handleDragOver(e, parentId, index, "layer");
+          e.preventDefault();
+          e.stopPropagation();
+
+          setActiveDropTarget({
+            parentId,
+            index,
+            area: "layer",
+          });
         }}
         onDragOver={(e) => {
-          handleDragOver(e, parentId, index, "layer");
+          e.preventDefault();
+          e.stopPropagation();
+
+          e.dataTransfer.dropEffect = "move";
+
+          setActiveDropTarget({
+            parentId,
+            index,
+            area: "layer",
+          });
+        }}
+        onDragLeave={(e) => {
+          e.stopPropagation();
+
+          if (e.currentTarget.contains(e.relatedTarget as Node)) {
+            return;
+          }
+
+          setActiveDropTarget(null);
         }}
         onDrop={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
           handleDrop(e, parentId, index);
         }}
         style={{
           marginLeft: depth * 14,
 
-          height: isActive ? 16 : 8,
+          // 평소에도 PC 마우스가 잡을 수 있는 크기
+          height: isActive ? 18 : 10,
 
-          marginTop: 1,
-          marginBottom: 1,
+          marginTop: 2,
+          marginBottom: 2,
 
           borderRadius: 4,
+
+          position: "relative",
+          zIndex: 20,
+
+          pointerEvents: "auto",
 
           background: isActive ? "rgba(13, 110, 253, 0.18)" : "transparent",
 
