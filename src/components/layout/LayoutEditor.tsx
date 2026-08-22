@@ -731,6 +731,15 @@ function LayoutEditor() {
       return;
     }
 
+    if (
+      component.type === "scrollToTopButton" &&
+      hasComponentType(history.present, component.type)
+    ) {
+      alert("Scroll To Top Button은 한번만 등록 가능합니다.");
+
+      return;
+    }
+
     const alreadyExists = favoriteComponents.some(
       (favorite) => favorite.sourceComponentId === component.id,
     );
@@ -2522,9 +2531,7 @@ function LayoutEditor() {
           props: {
             title: newTitle.trim() || "↑",
 
-            disabled: false,
-
-            zIndex: 100,
+            disabled: false,            
 
             action: {
               type: "scrollToTop",
@@ -2538,6 +2545,7 @@ function LayoutEditor() {
             height: "50px",
             right: "10px",
             bottom: "10px",
+            zIndex: 1400,
           },
         };
 
@@ -2718,7 +2726,7 @@ function LayoutEditor() {
       newType === "scrollToTopButton" &&
       hasComponentType(history.present, "scrollToTopButton")
     ) {
-      alert("Scroll To Top Button은 이미 등록되어 있습니다.");
+      alert("Scroll To Top Button은 한번만 등록 가능합니다.");
 
       return;
     }
@@ -3434,7 +3442,7 @@ ${body}
               lineHeight: "1.5",
               textAlign: "center",
               cursor: "pointer",
-              userSelect: "none",
+              userSelect: "none",              
             }}
           >
             {component.props.title}
