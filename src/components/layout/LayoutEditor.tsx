@@ -2120,10 +2120,10 @@ function LayoutEditor() {
     e.stopPropagation();
 
     e.dataTransfer.dropEffect = "move";
-    
+
     if (!draggingIdRef.current) {
       return;
-    }    
+    }
 
     if (
       activeDropTarget?.parentId !== parentId ||
@@ -3667,29 +3667,61 @@ ${body}
         data-drop-parent={parentId ?? "root"}
         data-drop-index={index}
         onDragEnter={(e) => {
-          handleDragOver(e, parentId, index, "canvas");
+          e.preventDefault();
+          e.stopPropagation();
+
+          setActiveDropTarget({
+            parentId,
+            index,
+            area: "canvas",
+          });
         }}
         onDragOver={(e) => {
-          handleDragOver(e, parentId, index, "canvas");
+          // ★ PC Drop 허용
+          e.preventDefault();
+          e.stopPropagation();
+
+          e.dataTransfer.dropEffect = "move";
+
+          // ★ 일단 ref 검사 없이 바로 활성화
+          setActiveDropTarget({
+            parentId,
+            index,
+            area: "canvas",
+          });
+        }}
+        onDragLeave={(e) => {
+          e.stopPropagation();
+
+          // 자식 요소로 이동한 건 무시
+          if (e.currentTarget.contains(e.relatedTarget as Node)) {
+            return;
+          }
+
+          setActiveDropTarget(null);
         }}
         onDrop={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
           handleDrop(e, parentId, index);
         }}
         style={{
           display: "flex",
-
           flexDirection: isRow ? "column" : "row",
 
           alignItems: "center",
           justifyContent: "center",
 
-          gap: 8,
-
           minHeight: isRow ? undefined : 40,
-
           minWidth: isRow ? 40 : undefined,
 
           flexShrink: 0,
+
+          // ★ 중요
+          position: "relative",
+          zIndex: 20,
+          pointerEvents: "auto",
 
           borderRadius: 8,
 
@@ -3704,6 +3736,9 @@ ${body}
               flex: 1,
               height: 1,
               backgroundColor: "#dee2e6",
+
+              // ★ 자식이 drag target 먹지 않도록
+              pointerEvents: "none",
             }}
           />
         )}
@@ -3717,11 +3752,11 @@ ${body}
             minWidth: 30,
             padding: 0,
 
+            // 드래그 중에는 부모 DropZone이 이벤트 받도록
             pointerEvents: draggingId ? "none" : "auto",
           }}
           onClick={(e) => {
             e.stopPropagation();
-
             openCreateModal(parentId, index);
           }}
         >
@@ -3734,6 +3769,7 @@ ${body}
               flex: 1,
               height: 1,
               backgroundColor: "#dee2e6",
+              pointerEvents: "none",
             }}
           />
         )}
