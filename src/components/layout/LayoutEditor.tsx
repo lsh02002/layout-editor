@@ -2654,6 +2654,20 @@ function LayoutEditor() {
     setInsertTarget(null);
   };
 
+  const resetEditPanelToSelected = () => {
+    if (!selectedComponentId) {
+      return;
+    }
+
+    const component = findComponentRecursive(components, selectedComponentId);
+
+    if (!component) {
+      return;
+    }
+
+    loadComponentToEdit(component);
+  };
+
   const makeNewComponent = (): LayoutComponent => {
     const id = crypto.randomUUID();
 
@@ -6032,11 +6046,10 @@ ${body}
                 type="button"
                 className="btn btn-outline-secondary"
                 onClick={() => {
-                  setSelectedComponentId(null);
-                  setEditingComponentId(null);
+                  resetEditPanelToSelected();
                 }}
               >
-                선택 해제
+                초기화
               </button>
 
               <button
