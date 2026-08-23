@@ -15,8 +15,7 @@ type LayerPanelProps = {
   search: string;
   activeDropTarget: DropTarget;
   onSearchChange: (value: string) => void;
-  onClose: () => void;
-  onSelect: (componentId: string) => void;
+  onClose: () => void;  
   onEdit: (componentId: string) => void;
   onAddFavorite: () => void;
   onDragStart: (
@@ -117,8 +116,7 @@ export default function LayerPanel({
   search,
   activeDropTarget,
   onSearchChange,
-  onClose,
-  onSelect,
+  onClose,  
   onEdit,
   onAddFavorite,
   onDragStart,
@@ -207,7 +205,7 @@ export default function LayerPanel({
           return (
             <React.Fragment key={component.id}>
               <div
-                onClick={() => onSelect(component.id)}
+                onClick={() => onEdit(component.id)}
                 onDoubleClick={() => onEdit(component.id)}
                 style={{
                   marginLeft: depth * 14,

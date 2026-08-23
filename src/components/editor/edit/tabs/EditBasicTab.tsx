@@ -39,105 +39,124 @@ type Props = {
   setEditHeadingLevel: Dispatch<SetStateAction<HeadingLevel>>;
 };
 
-function EditBasicTab(props: Props) {
+function EditBasicTab({
+  editType,
+  editTitle,
+  setEditTitle,
+  editValue,
+  setEditValue,
+  editPlaceholder,
+  setEditPlaceholder,
+  editDirection,
+  setEditDirection,
+  editDisabled,
+  setEditDisabled,
+  editContentStyle,
+  editImageUrl,
+  setEditImageUrl,
+  editImagePreviewUrl,
+  setEditImagePreviewUrl,
+  editLinkType,
+  setEditLinkType,
+  editLinkNewWindow,
+  setEditLinkNewWindow,
+  editComponentName,
+  setEditComponentName,
+  editHeadingLevel,
+  setEditHeadingLevel,
+}: Props) {
   return (
     <>
       <div className="mb-3">
         <label className="form-label">타입</label>
-        <input
-          type="text"
-          className="form-control"
-          value={props.editType}
-          disabled
-        />
+        <input type="text" className="form-control" value={editType} disabled />
       </div>
 
-      {(props.editType === "button" ||
-        props.editType === "scrollToTopButton") && (
+      {(editType === "button" || editType === "scrollToTopButton") && (
         <EditButtonFields
-          componentName={props.editComponentName}
-          title={props.editTitle}
-          placeholder={props.editType === "scrollToTopButton" ? "↑" : "버튼"}
-          onComponentNameChange={props.setEditComponentName}
-          onTitleChange={props.setEditTitle}
+          componentName={editComponentName}
+          title={editTitle}
+          placeholder={editType === "scrollToTopButton" ? "↑" : "버튼"}
+          onComponentNameChange={setEditComponentName}
+          onTitleChange={setEditTitle}
         />
       )}
 
-      {props.editType === "heading" && (
+      {editType === "heading" && (
         <EditHeadingFields
-          value={props.editValue}
-          level={props.editHeadingLevel}
-          onValueChange={props.setEditValue}
-          onLevelChange={props.setEditHeadingLevel}
+          value={editValue}
+          level={editHeadingLevel}
+          onValueChange={setEditValue}
+          onLevelChange={setEditHeadingLevel}
         />
       )}
 
-      {props.editType === "textarea" && (
+      {editType === "textarea" && (
         <EditTextareaFields
-          componentName={props.editComponentName}
-          value={props.editValue}
-          placeholder={props.editPlaceholder}
-          contentStyle={props.editContentStyle}
-          onComponentNameChange={props.setEditComponentName}
-          onValueChange={props.setEditValue}
-          onPlaceholderChange={props.setEditPlaceholder}
+          componentName={editComponentName}
+          value={editValue}
+          placeholder={editPlaceholder}
+          contentStyle={editContentStyle}
+          onComponentNameChange={setEditComponentName}
+          onValueChange={setEditValue}
+          onPlaceholderChange={setEditPlaceholder}
         />
       )}
 
-      {props.editType === "quill" && (
+      {editType === "quill" && (
         <EditQuillFields
-          componentName={props.editComponentName}
-          value={props.editValue}
-          placeholder={props.editPlaceholder}
-          onComponentNameChange={props.setEditComponentName}
-          onValueChange={props.setEditValue}
-          onPlaceholderChange={props.setEditPlaceholder}
+          componentName={editComponentName}
+          value={editValue}
+          placeholder={editPlaceholder}
+          onComponentNameChange={setEditComponentName}
+          onValueChange={setEditValue}
+          onPlaceholderChange={setEditPlaceholder}
         />
       )}
 
-      {props.editType === "image" && (
+      {editType === "image" && (
         <EditImageFields
-          componentName={props.editComponentName}
-          imageUrl={props.editImageUrl}
-          previewUrl={props.editImagePreviewUrl}
-          onComponentNameChange={props.setEditComponentName}
-          onImageUrlChange={props.setEditImageUrl}
-          onPreviewUrlChange={props.setEditImagePreviewUrl}
+          componentName={editComponentName}
+          imageUrl={editImageUrl}
+          previewUrl={editImagePreviewUrl}
+          onComponentNameChange={setEditComponentName}
+          onImageUrlChange={setEditImageUrl}
+          onPreviewUrlChange={setEditImagePreviewUrl}
         />
       )}
 
-      {props.editType === "link" && (
+      {editType === "link" && (
         <EditLinkFields
-          componentName={props.editComponentName}
-          title={props.editTitle}
-          linkType={props.editLinkType}
-          value={props.editValue}
-          newWindow={props.editLinkNewWindow}
-          onComponentNameChange={props.setEditComponentName}
-          onTitleChange={props.setEditTitle}
-          onLinkTypeChange={props.setEditLinkType}
-          onValueChange={props.setEditValue}
-          onNewWindowChange={props.setEditLinkNewWindow}
+          componentName={editComponentName}
+          title={editTitle}
+          linkType={editLinkType}
+          value={editValue}
+          newWindow={editLinkNewWindow}
+          onComponentNameChange={setEditComponentName}
+          onTitleChange={setEditTitle}
+          onLinkTypeChange={setEditLinkType}
+          onValueChange={setEditValue}
+          onNewWindowChange={setEditLinkNewWindow}
         />
       )}
 
-      {props.editType === "container" && (
+      {editType === "container" && (
         <EditContainerFields
-          componentName={props.editComponentName}
-          direction={props.editDirection}
-          onComponentNameChange={props.setEditComponentName}
-          onDirectionChange={props.setEditDirection}
+          componentName={editComponentName}
+          direction={editDirection}
+          onComponentNameChange={setEditComponentName}
+          onDirectionChange={setEditDirection}
         />
       )}
 
-      {props.editType !== "container" && (
+      {editType !== "container" && (
         <div className="form-check mb-3">
           <input
             type="checkbox"
             className="form-check-input"
             id="editDisabled"
-            checked={props.editDisabled}
-            onChange={(event) => props.setEditDisabled(event.target.checked)}
+            checked={editDisabled}
+            onChange={(event) => setEditDisabled(event.target.checked)}
           />
           <label className="form-check-label" htmlFor="editDisabled">
             Disabled

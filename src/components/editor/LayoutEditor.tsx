@@ -280,7 +280,7 @@ function LayoutEditor() {
     createComponent,
     deleteComponent,
     copyComponent,
-    selectComponent,
+    // selectComponent,
     editComponent,
     resetEditPanelToSelected,
     saveEditedComponent,
@@ -362,7 +362,7 @@ function LayoutEditor() {
         activeDropTarget={activeDropTarget}
         onSearchChange={setLayerSearch}
         onClose={() => setShowLayerPanel(false)}
-        onSelect={selectComponent}
+        //onSelect={selectComponent}
         onEdit={editComponent}
         onAddFavorite={addSelectedComponentToFavorites}
         onDragStart={handleDragStart}

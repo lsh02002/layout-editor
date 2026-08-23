@@ -47,41 +47,59 @@ type Options = {
   editValues: EditValues;
 };
 
-export const useComponentActions = (options: Options) => {
+export const useComponentActions = ({
+  components,
+  selectedComponentId,
+  setSelectedComponentId,
+  showEditModal,
+  setShowEditModal,
+  setShowFavoritePanel,
+  setShowCreateModal,
+  insertTarget,
+  setInsertTarget,
+  newType,
+  resetCreateForm,
+  makeNewComponent,
+  loadComponentToEdit,
+  commitHistory,
+  setComponents,
+  setFavoriteComponents,
+  editValues,
+}: Options) => {
   const createActions = useCreateActions({
-    components: options.components,
-    insertTarget: options.insertTarget,
-    setInsertTarget: options.setInsertTarget,
-    setShowCreateModal: options.setShowCreateModal,
-    selectedComponentId: options.selectedComponentId,
-    setSelectedComponentId: options.setSelectedComponentId,
-    newType: options.newType,
-    resetCreateForm: options.resetCreateForm,
-    makeNewComponent: options.makeNewComponent,
-    commitHistory: options.commitHistory,
+    components,
+    insertTarget,
+    setInsertTarget,
+    setShowCreateModal,
+    selectedComponentId,
+    setSelectedComponentId,
+    newType,
+    resetCreateForm,
+    makeNewComponent,
+    commitHistory,
   });
 
   const crudActions = useCrudActions({
-    components: options.components,
-    selectedComponentId: options.selectedComponentId,
-    setSelectedComponentId: options.setSelectedComponentId,
-    commitHistory: options.commitHistory,
+    components,
+    selectedComponentId,
+    setSelectedComponentId,
+    commitHistory,
   });
 
   const selectionActions = useSelectionActions({
-    components: options.components,
-    selectedComponentId: options.selectedComponentId,
-    setSelectedComponentId: options.setSelectedComponentId,
-    showEditModal: options.showEditModal,
-    setShowEditModal: options.setShowEditModal,
-    setShowFavoritePanel: options.setShowFavoritePanel,
-    loadComponentToEdit: options.loadComponentToEdit,
+    components,
+    selectedComponentId,
+    setSelectedComponentId,
+    showEditModal,
+    setShowEditModal,
+    setShowFavoritePanel,
+    loadComponentToEdit,
   });
 
   const editActions = useEditSaveActions({
-    editValues: options.editValues,
-    setComponents: options.setComponents,
-    setFavoriteComponents: options.setFavoriteComponents,
+    editValues,
+    setComponents,
+    setFavoriteComponents,
   });
 
   return {

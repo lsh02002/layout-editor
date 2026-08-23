@@ -57,7 +57,11 @@ export default function CanvasComponentContent({ component }: Props) {
     case "quill":
       return (
         <div
-          style={{ ...component.contentStyle, wordBreak: "break-word" }}
+          style={{
+            ...component.contentStyle,
+            pointerEvents: "none",
+            wordBreak: "break-word",
+          }}
           dangerouslySetInnerHTML={{
             __html:
               component.props.value ||

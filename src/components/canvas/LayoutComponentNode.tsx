@@ -1,104 +1,155 @@
-import type { DragEvent, PointerEvent } from "react";
+import type { DragEvent, MouseEvent, PointerEvent } from "react";
+
 import DivBox from "../layout/DivBox";
+
 import type {
   ComponentLayout,
   ContainerDirection,
   LayoutComponent,
 } from "../../types/types";
+
 import CanvasComponentContent from "./CanvasComponentContent";
 import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import ComponentDragHandle from "./ComponentDragHandle";
 
 type Props = {
   component: LayoutComponent;
+
   selectedComponentId: string | null;
   draggingId: string | null;
   layerSearch: string;
+
   activeDropTarget: CanvasDropTarget | null;
+
   setActiveDropTarget: (target: CanvasDropTarget | null) => void;
+
   onLayoutChange: (id: string, layout: Partial<ComponentLayout>) => void;
+
   onEdit: (id: string) => void;
+
   onCopy: (id: string) => void;
+
   onDelete: (id: string) => void;
+
   onCreate: (parentId: string | null, index: number) => void;
+
   onDrop: (
     event: DragEvent<HTMLElement>,
     parentId: string | null,
     index: number,
   ) => void;
+
   onDragStart: (event: DragEvent<HTMLElement>, componentId: string) => void;
+
   onDragEnd: () => void;
+
   onPointerDragStart: (
     event: PointerEvent<HTMLElement>,
     componentId: string,
   ) => void;
+
   onPointerDragMove: (event: PointerEvent<HTMLElement>) => void;
+
   onPointerDragEnd: (event: PointerEvent<HTMLElement>) => void;
+
   onPointerDragCancel: () => void;
 };
 
-export default function LayoutComponentNode(props: Props) {
-  const { component } = props;
-  const isDragging = props.draggingId === component.id;
+export default function LayoutComponentNode({
+  component,
+  selectedComponentId,
+  draggingId,
+  layerSearch,
+  activeDropTarget,
+  setActiveDropTarget,
+  onLayoutChange,
+  onEdit,
+  onCopy,
+  onDelete,
+  onCreate,
+  onDrop,
+  onDragStart,
+  onDragEnd,
+  onPointerDragStart,
+  onPointerDragMove,
+  onPointerDragEnd,
+  onPointerDragCancel,
+}: Props) {
+  const isDragging = draggingId === component.id;
+
+  const isSelected = selectedComponentId === component.id;
+
+  const handleSelect = (event: MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+
+    if (isDragging) {
+      return;
+    }
+  };
 
   const dragHandle = (
     <ComponentDragHandle
       component={component}
-      draggingId={props.draggingId}
-      layerSearch={props.layerSearch}
-      onDragStart={props.onDragStart}
-      onDragEnd={props.onDragEnd}
-      onPointerDragStart={props.onPointerDragStart}
-      onPointerDragMove={props.onPointerDragMove}
-      onPointerDragEnd={props.onPointerDragEnd}
-      onPointerDragCancel={props.onPointerDragCancel}
+      draggingId={draggingId}
+      layerSearch={layerSearch}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onPointerDragStart={onPointerDragStart}
+      onPointerDragMove={onPointerDragMove}
+      onPointerDragEnd={onPointerDragEnd}
+      onPointerDragCancel={onPointerDragCancel}
     />
   );
 
-  const commonBoxProps = {
-    layout: component.layout,
-    onLayoutChange: (layout: Partial<ComponentLayout>) =>
-      props.onLayoutChange(component.id, layout),
-    onEdit: () => props.onEdit(component.id),
-    onCopy: () => props.onCopy(component.id),
-    onDelete: () => props.onDelete(component.id),
-  };
-
   if (component.type === "container") {
     const children = [...component.children].sort((a, b) => a.order - b.order);
+
     const direction: ContainerDirection = component.props.direction ?? "column";
+
     const isRow = direction === "row";
 
     return (
       <div
         data-component-id={component.id}
+        onClick={handleSelect}
         style={{
+          position: "relative",
+
           opacity: isDragging ? 0.45 : 1,
+
           transition: "opacity 100ms ease",
         }}
       >
         {dragHandle}
+
         <DivBox
-          {...commonBoxProps}
+          layout={component.layout}
+          onLayoutChange={(layout) => onLayoutChange(component.id, layout)}
+          onEdit={() => onEdit(component.id)}
+          onCopy={() => onCopy(component.id)}
+          onDelete={() => onDelete(component.id)}
           style={{
             ...component.style,
-            outline:
-              props.selectedComponentId === component.id
-                ? "2px solid #0d6efd"
-                : component.style?.outline,
-            outlineOffset:
-              props.selectedComponentId === component.id
-                ? 3
-                : component.style?.outlineOffset,
+
+            outline: isSelected
+              ? "2px solid #0d6efd"
+              : component.style?.outline,
+
+            outlineOffset: isSelected ? 3 : component.style?.outlineOffset,
           }}
         >
           <div
             style={{
               display: "flex",
+
               flexDirection: direction,
+
               gap: component.props.gap ?? 8,
+
               width: "100%",
+
               alignItems: isRow ? "stretch" : undefined,
+
               justifyContent: isRow ? "space-between" : undefined,
             }}
           >
@@ -106,11 +157,11 @@ export default function LayoutComponentNode(props: Props) {
               parentId={component.id}
               index={0}
               direction={direction}
-              draggingId={props.draggingId}
-              activeDropTarget={props.activeDropTarget}
-              setActiveDropTarget={props.setActiveDropTarget}
-              onDrop={props.onDrop}
-              onCreate={props.onCreate}
+              draggingId={draggingId}
+              activeDropTarget={activeDropTarget}
+              setActiveDropTarget={setActiveDropTarget}
+              onDrop={onDrop}
+              onCreate={onCreate}
             />
 
             {children.map((child, index) => (
@@ -122,21 +173,43 @@ export default function LayoutComponentNode(props: Props) {
                       ? undefined
                       : 1
                     : undefined,
+
                   width: isRow ? child.layout?.width : "100%",
+
                   minWidth: 0,
                 }}
               >
-                <LayoutComponentNode {...props} component={child} />
+                <LayoutComponentNode
+                  component={child}
+                  selectedComponentId={selectedComponentId}
+                  draggingId={draggingId}
+                  layerSearch={layerSearch}
+                  activeDropTarget={activeDropTarget}
+                  setActiveDropTarget={setActiveDropTarget}
+                  onLayoutChange={onLayoutChange}
+                  onEdit={onEdit}
+                  onCopy={onCopy}
+                  onDelete={onDelete}
+                  onCreate={onCreate}
+                  onDrop={onDrop}
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                  onPointerDragStart={onPointerDragStart}
+                  onPointerDragMove={onPointerDragMove}
+                  onPointerDragEnd={onPointerDragEnd}
+                  onPointerDragCancel={onPointerDragCancel}
+                />
+
                 {child.type !== "scrollToTopButton" && !isRow && (
                   <CanvasDropZone
                     parentId={component.id}
                     index={index + 1}
                     direction={direction}
-                    draggingId={props.draggingId}
-                    activeDropTarget={props.activeDropTarget}
-                    setActiveDropTarget={props.setActiveDropTarget}
-                    onDrop={props.onDrop}
-                    onCreate={props.onCreate}
+                    draggingId={draggingId}
+                    activeDropTarget={activeDropTarget}
+                    setActiveDropTarget={setActiveDropTarget}
+                    onDrop={onDrop}
+                    onCreate={onCreate}
                   />
                 )}
               </div>
@@ -147,11 +220,11 @@ export default function LayoutComponentNode(props: Props) {
                 parentId={component.id}
                 index={children.length}
                 direction={direction}
-                draggingId={props.draggingId}
-                activeDropTarget={props.activeDropTarget}
-                setActiveDropTarget={props.setActiveDropTarget}
-                onDrop={props.onDrop}
-                onCreate={props.onCreate}
+                draggingId={draggingId}
+                activeDropTarget={activeDropTarget}
+                setActiveDropTarget={setActiveDropTarget}
+                onDrop={onDrop}
+                onCreate={onCreate}
               />
             )}
           </div>
@@ -163,24 +236,29 @@ export default function LayoutComponentNode(props: Props) {
   return (
     <div
       data-component-id={component.id}
+      onClick={handleSelect}
       style={{
+        position: "relative",
+
         opacity: isDragging ? 0.45 : 1,
+
         transition: "opacity 100ms ease",
       }}
     >
       {dragHandle}
+
       <DivBox
-        {...commonBoxProps}
+        layout={component.layout}
+        onLayoutChange={(layout) => onLayoutChange(component.id, layout)}
+        onEdit={() => onEdit(component.id)}
+        onCopy={() => onCopy(component.id)}
+        onDelete={() => onDelete(component.id)}
         style={{
           ...component.style,
-          outline:
-            props.selectedComponentId === component.id
-              ? "2px solid #0d6efd"
-              : component.style?.outline,
-          outlineOffset:
-            props.selectedComponentId === component.id
-              ? "2px"
-              : component.style?.outlineOffset,
+
+          outline: isSelected ? "2px solid #0d6efd" : component.style?.outline,
+
+          outlineOffset: isSelected ? "2px" : component.style?.outlineOffset,
         }}
       >
         <CanvasComponentContent component={component} />

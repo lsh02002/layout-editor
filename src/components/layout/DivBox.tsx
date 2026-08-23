@@ -28,7 +28,6 @@ function DivBox({
   onDelete,
   className = "",
   style,
-  ...props
 }: DivBoxProps) {
   const [over, setOver] = useState(false);
 
@@ -72,7 +71,6 @@ function DivBox({
 
   return (
     <div
-      {...props}
       data-layout-box
       className={`d-inline-block ${className} bg-white`}
       style={{

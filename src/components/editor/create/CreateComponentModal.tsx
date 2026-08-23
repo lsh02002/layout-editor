@@ -44,8 +44,34 @@ type Props = {
   onCreate: () => void;
 };
 
-function CreateComponentModal(props: Props) {
-  if (!props.open) {
+function CreateComponentModal({
+  open,
+  newType,
+  setNewType,
+  newTitle,
+  setNewTitle,
+  newValue,
+  setNewValue,
+  newPlaceholder,
+  setNewPlaceholder,
+  newDirection,
+  setNewDirection,
+  newImagePreviewUrl,
+  setNewImagePreviewUrl,
+  newLinkType,
+  setNewLinkType,
+  newLinkNewWindow,
+  setNewLinkNewWindow,
+  newComponentName,
+  setNewComponentName,
+  newHeadingText,
+  setNewHeadingText,
+  newHeadingLevel,
+  setNewHeadingLevel,
+  onClose,
+  onCreate,
+}: Props) {
+  if (!open) {
     return null;
   }
 
@@ -64,11 +90,7 @@ function CreateComponentModal(props: Props) {
             <div className="modal-header">
               <h5 className="modal-title">컴포넌트 추가</h5>
 
-              <button
-                type="button"
-                className="btn-close"
-                onClick={props.onClose}
-              />
+              <button type="button" className="btn-close" onClick={onClose} />
             </div>
 
             <div className="modal-body">
@@ -77,9 +99,9 @@ function CreateComponentModal(props: Props) {
 
                 <select
                   className="form-select"
-                  value={props.newType}
+                  value={newType}
                   onChange={(event) =>
-                    props.setNewType(event.target.value as ComponentType)
+                    setNewType(event.target.value as ComponentType)
                   }
                 >
                   <option value="container">Container</option>
@@ -95,77 +117,76 @@ function CreateComponentModal(props: Props) {
                 </select>
               </div>
 
-              {(props.newType === "button" ||
-                props.newType === "scrollToTopButton") && (
+              {(newType === "button" || newType === "scrollToTopButton") && (
                 <ButtonFields
-                  componentName={props.newComponentName}
-                  title={props.newTitle}
-                  onComponentNameChange={props.setNewComponentName}
-                  onTitleChange={props.setNewTitle}
+                  componentName={newComponentName}
+                  title={newTitle}
+                  onComponentNameChange={setNewComponentName}
+                  onTitleChange={setNewTitle}
                 />
               )}
 
-              {props.newType === "heading" && (
+              {newType === "heading" && (
                 <HeadingFields
-                  text={props.newHeadingText}
-                  level={props.newHeadingLevel}
-                  onTextChange={props.setNewHeadingText}
-                  onLevelChange={props.setNewHeadingLevel}
+                  text={newHeadingText}
+                  level={newHeadingLevel}
+                  onTextChange={setNewHeadingText}
+                  onLevelChange={setNewHeadingLevel}
                 />
               )}
 
-              {props.newType === "textarea" && (
+              {newType === "textarea" && (
                 <TextareaFields
-                  componentName={props.newComponentName}
-                  value={props.newValue}
-                  placeholder={props.newPlaceholder}
-                  onComponentNameChange={props.setNewComponentName}
-                  onValueChange={props.setNewValue}
-                  onPlaceholderChange={props.setNewPlaceholder}
+                  componentName={newComponentName}
+                  value={newValue}
+                  placeholder={newPlaceholder}
+                  onComponentNameChange={setNewComponentName}
+                  onValueChange={setNewValue}
+                  onPlaceholderChange={setNewPlaceholder}
                 />
               )}
 
-              {props.newType === "quill" && (
+              {newType === "quill" && (
                 <QuillFields
-                  componentName={props.newComponentName}
-                  value={props.newValue}
-                  placeholder={props.newPlaceholder}
-                  onComponentNameChange={props.setNewComponentName}
-                  onValueChange={props.setNewValue}
-                  onPlaceholderChange={props.setNewPlaceholder}
+                  componentName={newComponentName}
+                  value={newValue}
+                  placeholder={newPlaceholder}
+                  onComponentNameChange={setNewComponentName}
+                  onValueChange={setNewValue}
+                  onPlaceholderChange={setNewPlaceholder}
                 />
               )}
 
-              {props.newType === "image" && (
+              {newType === "image" && (
                 <ImageFields
-                  componentName={props.newComponentName}
-                  previewUrl={props.newImagePreviewUrl}
-                  onComponentNameChange={props.setNewComponentName}
-                  onPreviewUrlChange={props.setNewImagePreviewUrl}
+                  componentName={newComponentName}
+                  previewUrl={newImagePreviewUrl}
+                  onComponentNameChange={setNewComponentName}
+                  onPreviewUrlChange={setNewImagePreviewUrl}
                 />
               )}
 
-              {props.newType === "link" && (
+              {newType === "link" && (
                 <LinkFields
-                  componentName={props.newComponentName}
-                  title={props.newTitle}
-                  linkType={props.newLinkType}
-                  value={props.newValue}
-                  newWindow={props.newLinkNewWindow}
-                  onComponentNameChange={props.setNewComponentName}
-                  onTitleChange={props.setNewTitle}
-                  onLinkTypeChange={props.setNewLinkType}
-                  onValueChange={props.setNewValue}
-                  onNewWindowChange={props.setNewLinkNewWindow}
+                  componentName={newComponentName}
+                  title={newTitle}
+                  linkType={newLinkType}
+                  value={newValue}
+                  newWindow={newLinkNewWindow}
+                  onComponentNameChange={setNewComponentName}
+                  onTitleChange={setNewTitle}
+                  onLinkTypeChange={setNewLinkType}
+                  onValueChange={setNewValue}
+                  onNewWindowChange={setNewLinkNewWindow}
                 />
               )}
 
-              {props.newType === "container" && (
+              {newType === "container" && (
                 <ContainerFields
-                  componentName={props.newComponentName}
-                  direction={props.newDirection}
-                  onComponentNameChange={props.setNewComponentName}
-                  onDirectionChange={props.setNewDirection}
+                  componentName={newComponentName}
+                  direction={newDirection}
+                  onComponentNameChange={setNewComponentName}
+                  onDirectionChange={setNewDirection}
                 />
               )}
             </div>
@@ -174,7 +195,7 @@ function CreateComponentModal(props: Props) {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={props.onClose}
+                onClick={onClose}
               >
                 취소
               </button>
@@ -182,7 +203,7 @@ function CreateComponentModal(props: Props) {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={props.onCreate}
+                onClick={onCreate}
               >
                 새로 만들기
               </button>
@@ -196,7 +217,7 @@ function CreateComponentModal(props: Props) {
         style={{
           zIndex: 1050,
         }}
-        onClick={props.onClose}
+        onClick={onClose}
       />
     </>
   );

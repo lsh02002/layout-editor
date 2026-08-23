@@ -28,13 +28,30 @@ type Props = {
   ) => void;
   onPointerDragMove: (event: PointerEvent<HTMLElement>) => void;
   onPointerDragEnd: (event: PointerEvent<HTMLElement>) => void;
-  onPointerDragCancel: () => void;
+  onPointerDragCancel: () => void;  
 };
 
-export default function BuilderCanvas(props: Props) {
-  const sortedComponents = [...props.components].sort(
-    (a, b) => a.order - b.order,
-  );
+export default function BuilderCanvas({
+  components,
+  selectedComponentId,
+  draggingId,
+  layerSearch,
+  activeDropTarget,
+  setActiveDropTarget,
+  onLayoutChange,
+  onEdit,
+  onCopy,
+  onDelete,
+  onCreate,
+  onDrop,
+  onDragStart,
+  onDragEnd,
+  onPointerDragStart,
+  onPointerDragMove,
+  onPointerDragEnd,
+  onPointerDragCancel,
+}: Props) {
+  const sortedComponents = [...components].sort((a, b) => a.order - b.order);
 
   return (
     <div
@@ -55,11 +72,11 @@ export default function BuilderCanvas(props: Props) {
         parentId={null}
         index={0}
         direction="column"
-        draggingId={props.draggingId}
-        activeDropTarget={props.activeDropTarget}
-        setActiveDropTarget={props.setActiveDropTarget}
-        onDrop={props.onDrop}
-        onCreate={props.onCreate}
+        draggingId={draggingId}
+        activeDropTarget={activeDropTarget}
+        setActiveDropTarget={setActiveDropTarget}
+        onDrop={onDrop}
+        onCreate={onCreate}
       />
 
       {sortedComponents.map((component, index) => (
@@ -68,17 +85,36 @@ export default function BuilderCanvas(props: Props) {
           data-component-id={component.id}
           style={{ position: "relative" }}
         >
-          <LayoutComponentNode {...props} component={component} />
+          <LayoutComponentNode
+            component={component}
+            selectedComponentId={selectedComponentId}
+            draggingId={draggingId}
+            layerSearch={layerSearch}
+            activeDropTarget={activeDropTarget}
+            setActiveDropTarget={setActiveDropTarget}
+            onLayoutChange={onLayoutChange}
+            onEdit={onEdit}
+            onCopy={onCopy}
+            onDelete={onDelete}
+            onCreate={onCreate}
+            onDrop={onDrop}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+            onPointerDragStart={onPointerDragStart}
+            onPointerDragMove={onPointerDragMove}
+            onPointerDragEnd={onPointerDragEnd}
+            onPointerDragCancel={onPointerDragCancel}            
+          />
           {component.type !== "scrollToTopButton" && (
             <CanvasDropZone
               parentId={null}
               index={index + 1}
               direction="column"
-              draggingId={props.draggingId}
-              activeDropTarget={props.activeDropTarget}
-              setActiveDropTarget={props.setActiveDropTarget}
-              onDrop={props.onDrop}
-              onCreate={props.onCreate}
+              draggingId={draggingId}
+              activeDropTarget={activeDropTarget}
+              setActiveDropTarget={setActiveDropTarget}
+              onDrop={onDrop}
+              onCreate={onCreate}
             />
           )}
         </div>
