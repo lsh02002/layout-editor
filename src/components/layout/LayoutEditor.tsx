@@ -509,7 +509,9 @@ function LayoutEditor() {
     2,
   );
 
-  const [showEditModal, setShowEditModal] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(
+    () => window.innerWidth > 767.98,
+  );
   const [editingComponentId, setEditingComponentId] = useState<string | null>(
     null,
   );
