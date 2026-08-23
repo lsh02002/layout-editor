@@ -2359,200 +2359,180 @@ function LayoutEditor() {
     selectComponent(id, true);
   };
 
+  const applyEditValuesToComponent = (
+    component: LayoutComponent,
+  ): LayoutComponent => {
+    switch (component.type) {
+      case "button":
+        return {
+          ...component,
+          name: editComponentName.trim() || component.name,
+          style: {
+            ...editStyle,
+          },
+          contentStyle: {
+            ...editContentStyle,
+          },
+          customCss: editCustomCss,
+          props: {
+            ...component.props,
+            title: editTitle.trim() || "버튼",
+            disabled: editDisabled,
+          },
+        };
+
+      case "heading":
+        return {
+          ...component,
+          name: editComponentName.trim() || component.name,
+          style: {
+            ...editStyle,
+          },
+          contentStyle: {
+            ...editContentStyle,
+          },
+          customCss: editCustomCss,
+          props: {
+            ...component.props,
+            text: editValue.trim() || "제목",
+            level: editHeadingLevel,
+          },
+        };
+
+      case "textarea":
+        return {
+          ...component,
+          name: editComponentName.trim() || component.name,
+          style: {
+            ...editStyle,
+          },
+          contentStyle: {
+            ...editContentStyle,
+          },
+          customCss: editCustomCss,
+          props: {
+            ...component.props,
+            value: editValue,
+            placeholder: editPlaceholder,
+            disabled: editDisabled,
+          },
+        };
+
+      case "quill":
+        return {
+          ...component,
+          name: editComponentName.trim() || component.name,
+          style: {
+            ...editStyle,
+          },
+          contentStyle: {
+            ...editContentStyle,
+          },
+          customCss: editCustomCss,
+          props: {
+            ...component.props,
+            value: editValue,
+            placeholder: editPlaceholder,
+            disabled: editDisabled,
+          },
+        };
+
+      case "container":
+        return {
+          ...component,
+          name: editComponentName.trim() || component.name,
+          style: {
+            ...editStyle,
+          },
+          contentStyle: {
+            ...editContentStyle,
+          },
+          customCss: editCustomCss,
+          props: {
+            ...component.props,
+            direction: editDirection,
+          },
+        };
+
+      case "image":
+        return {
+          ...component,
+          name: editComponentName.trim() || component.name,
+          style: {
+            ...editStyle,
+          },
+          contentStyle: {
+            ...editContentStyle,
+          },
+          customCss: editCustomCss,
+          props: {
+            ...component.props,
+            urls: editImageUrl.trim() ? [editImageUrl.trim()] : [],
+            maxCount: 1,
+            disabled: editDisabled,
+          },
+        };
+
+      case "link":
+        return {
+          ...component,
+          name: editComponentName.trim() || component.name,
+          style: {
+            ...editStyle,
+          },
+          contentStyle: {
+            ...editContentStyle,
+          },
+          customCss: editCustomCss,
+          props: {
+            ...component.props,
+            title: editTitle.trim() || "링크",
+            value: editValue.trim(),
+            linkType: editLinkType,
+            newWindow: editLinkType === "url" ? editLinkNewWindow : false,
+            disabled: editDisabled,
+          },
+        };
+
+      case "scrollToTopButton":
+        return {
+          ...component,
+          name: editComponentName.trim() || component.name,
+          style: {
+            ...editStyle,
+          },
+          contentStyle: {
+            ...editContentStyle,
+          },
+          customCss: editCustomCss,
+          props: {
+            ...component.props,
+            disabled: editDisabled,
+            action: {
+              type: "scrollToTop",
+              payload: component.props.action.payload ?? null,
+            },
+          },
+        };
+    }
+  };
+
   const saveEditedComponent = () => {
     if (!editingComponentId) {
       return;
     }
 
+    // 원본 Component 저장
     setComponents((prev) => {
       const recursiveUpdate = (items: LayoutComponent[]): LayoutComponent[] => {
         return items.map((component) => {
           if (component.id === editingComponentId) {
-            switch (component.type) {
-              case "button":
-                return {
-                  ...component,
-                  name: editComponentName.trim() || component.name,
-                  style: {
-                    ...editStyle,
-                  },
-                  contentStyle: {
-                    ...editContentStyle,
-                  },
-                  customCss: editCustomCss,
-                  props: {
-                    ...component.props,
-                    title: editTitle.trim() || "버튼",
-                    disabled: editDisabled,
-                  },
-                };
-
-              case "heading":
-                return {
-                  ...component,
-
-                  name: editComponentName.trim() || component.name,
-
-                  customCss: editCustomCss,
-
-                  style: {
-                    ...editStyle,
-                  },
-
-                  contentStyle: {
-                    ...editContentStyle,
-                  },
-
-                  props: {
-                    ...component.props,
-
-                    text: editValue.trim() || "제목",
-
-                    level: editHeadingLevel,
-                  },
-                };
-
-              case "textarea":
-                return {
-                  ...component,
-                  name: editComponentName.trim() || component.name,
-                  style: {
-                    ...editStyle,
-                  },
-                  contentStyle: {
-                    ...editContentStyle,
-                  },
-                  customCss: editCustomCss,
-                  props: {
-                    ...component.props,
-                    value: editValue,
-                    placeholder: editPlaceholder,
-                    disabled: editDisabled,
-                  },
-                };
-
-              case "quill":
-                return {
-                  ...component,
-                  name: editComponentName.trim() || component.name,
-                  style: {
-                    ...editStyle,
-                  },
-                  contentStyle: {
-                    ...editContentStyle,
-                  },
-                  customCss: editCustomCss,
-                  props: {
-                    ...component.props,
-                    value: editValue,
-                    placeholder: editPlaceholder,
-                    disabled: editDisabled,
-                  },
-                };
-
-              case "container":
-                return {
-                  ...component,
-                  name: editComponentName.trim() || component.name,
-                  style: {
-                    ...editStyle,
-                  },
-                  contentStyle: {
-                    ...editContentStyle,
-                  },
-                  customCss: editCustomCss,
-                  props: {
-                    ...component.props,
-                    direction: editDirection,
-                  },
-                };
-
-              case "image":
-                return {
-                  ...component,
-
-                  name: editComponentName.trim() || component.name,
-
-                  style: {
-                    ...editStyle,
-                  },
-
-                  contentStyle: {
-                    ...editContentStyle,
-                  },
-
-                  customCss: editCustomCss,
-
-                  props: {
-                    ...component.props,
-
-                    urls: editImageUrl.trim() ? [editImageUrl.trim()] : [],
-
-                    maxCount: 1,
-
-                    disabled: editDisabled,
-                  },
-                };
-
-              case "scrollToTopButton":
-                return {
-                  ...component,
-
-                  name: editComponentName.trim() || component.name,
-
-                  style: {
-                    ...editStyle,
-                  },
-                  contentStyle: {
-                    ...editContentStyle,
-                  },
-                  customCss: editCustomCss,
-                  props: {
-                    ...component.props,
-                    disabled: editDisabled,
-                    action: {
-                      type: "scrollToTop",
-                      payload: component.props.action.payload ?? null,
-                    },
-                  },
-                };
-
-              case "link":
-                return {
-                  ...component,
-
-                  name: editComponentName.trim() || component.name,
-
-                  style: {
-                    ...editStyle,
-                  },
-
-                  contentStyle: {
-                    ...editContentStyle,
-                  },
-
-                  customCss: editCustomCss,
-
-                  props: {
-                    ...component.props,
-
-                    title: editTitle.trim() || "링크",
-                    value: editValue.trim(),
-                    linkType: editLinkType,
-
-                    newWindow:
-                      editLinkType === "url" ? editLinkNewWindow : false,
-
-                    disabled: editDisabled,
-                  },
-                };
-            }
+            return applyEditValuesToComponent(component);
           }
 
           if (component.type === "container") {
             return {
               ...component,
-
               children: recursiveUpdate(component.children),
             };
           }
@@ -2564,7 +2544,26 @@ function LayoutEditor() {
       return recursiveUpdate(prev);
     });
 
-    // closeEditModal();
+    // ★ Favorite 복사본도 같이 저장
+    setFavoriteComponents((prev) =>
+      prev.map((favorite) => {
+        if (favorite.sourceComponentId !== editingComponentId) {
+          return favorite;
+        }
+
+        const updatedComponent = applyEditValuesToComponent(favorite.component);
+
+        return {
+          ...favorite,
+
+          // Favorite 표시 이름도 동기화
+          name: updatedComponent.name?.trim() || updatedComponent.type,
+
+          // Favorite Component도 동기화
+          component: updatedComponent,
+        };
+      }),
+    );
   };
 
   const deleteRecursive = (
@@ -6829,7 +6828,7 @@ ${body}
       </div>
       {renderAutoSaveRestoreModal()}
       {renderTemplateSaveModal()}
-      {renderProjectCssModal()}      
+      {renderProjectCssModal()}
       {renderCreateModal()}
       {renderEditModal()}
     </>
