@@ -4715,57 +4715,52 @@ ${body}
   };
 
   const renderFavoritePanel = () => {
-    if (!showFavoritePanel) {
-      return null;
-    }
-
     return (
-      <aside
-        className="editor-side-panel right"
-        style={{
-          display: showFavoritePanel ? "flex" : "none",
-
-          flexDirection: "column",
-        }}
-      >
+      <div className="editor-favorite-section">
         {/* HEADER */}
         <div
           className="
           d-flex
           align-items-center
           justify-content-between
-          border-bottom
           px-3
           py-2
         "
+          style={{
+            borderTop: "1px solid #e2e8f0",
+            borderBottom: "1px solid #e2e8f0",
+            background: "#f8fafc",
+          }}
         >
-          <strong>⭐ 즐겨찾기</strong>
+          <strong style={{ fontSize: 14 }}>
+            ⭐ 즐겨찾기
+            {favoriteComponents.length > 0 && (
+              <span className="ms-1">({favoriteComponents.length})</span>
+            )}
+          </strong>
 
-          <button
-            type="button"
-            className="btn btn-sm border-0"
-            onClick={() => setShowFavoritePanel(false)}
-          >
-            ×
-          </button>
+          {selectedComponentId && (
+            <button
+              type="button"
+              className="btn btn-outline-warning btn-sm"
+              onClick={addSelectedComponentToFavorites}
+            >
+              + 추가
+            </button>
+          )}
         </div>
 
         {/* LIST */}
         <div
           style={{
-            flex: 1,
-            overflowY: "auto",
             padding: 8,
           }}
         >
           {favoriteComponents.length === 0 ? (
             <div
-              className="
-              text-secondary
-              text-center
-            "
+              className="text-secondary text-center"
               style={{
-                padding: 20,
+                padding: "24px 12px",
                 fontSize: 13,
               }}
             >
@@ -4773,38 +4768,27 @@ ${body}
             </div>
           ) : (
             favoriteComponents.map((favorite) => (
-              <div
-                key={favorite.id}
-                className="
-                  border
-                  rounded
-                  p-2
-                  mb-2
-                "
-              >
+              <div key={favorite.id} className="border rounded p-2 mb-2">
                 <div
                   className="
-                    d-flex
-                    justify-content-between
-                    align-items-center
-                    mb-2
-                  "
+                  d-flex
+                  justify-content-between
+                  align-items-center
+                  gap-2
+                "
                 >
                   <div
                     style={{
                       minWidth: 0,
+                      flex: 1,
                     }}
                   >
                     <strong
                       style={{
                         display: "block",
-
                         overflow: "hidden",
-
                         whiteSpace: "nowrap",
-
                         textOverflow: "ellipsis",
-
                         fontSize: 13,
                       }}
                     >
@@ -4816,37 +4800,33 @@ ${body}
                     </small>
                   </div>
 
-                  <button
-                    type="button"
-                    className="
-                      btn
-                      btn-sm
-                      btn-outline-danger
-                    "
-                    onClick={() => removeFavoriteComponent(favorite.id)}
-                    title="즐겨찾기 삭제"
-                  >
-                    ×
-                  </button>
-                </div>
+                  <div className="d-flex gap-1">
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => {
+                        insertFavoriteComponent(favorite);
+                      }}
+                    >
+                      추가
+                    </button>
 
-                <button
-                  type="button"
-                  className="
-                    btn
-                    btn-sm
-                    btn-warning
-                    w-100
-                  "
-                  onClick={() => insertFavoriteComponent(favorite)}
-                >
-                  + 바로 추가
-                </button>
+                    <button
+                      type="button"
+                      className="btn btn-outline-danger btn-sm"
+                      onClick={() => {
+                        removeFavoriteComponent(favorite.id);
+                      }}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </div>
               </div>
             ))
           )}
         </div>
-      </aside>
+      </div>
     );
   };
 
@@ -6061,6 +6041,7 @@ ${body}
               </button>
             </div>
           )}
+          {renderFavoritePanel()}
         </aside>
       </>
     );
@@ -6252,17 +6233,6 @@ ${body}
             title="Ctrl + Y"
           >
             ↷ Redo
-          </button>
-
-          <button
-            type="button"
-            className="btn btn-outline-warning btn-sm"
-            onClick={() => setShowFavoritePanel((prev) => !prev)}
-          >
-            ⭐ 즐겨찾기
-            {favoriteComponents.length > 0 && (
-              <span className="ms-1">{favoriteComponents.length}</span>
-            )}
           </button>
         </div>
 
@@ -6495,7 +6465,7 @@ ${body}
         right: 0;
         bottom: 0;
 
-        width: 380px;
+        width: 400px;
         max-width: 100vw;
 
         display: flex;
@@ -6530,9 +6500,9 @@ ${body}
       }
 
       .editor-edit-panel-body {
-        flex: 1;
+        flex: 1 1 auto;
 
-        min-height: 0;
+        min-height: 180px;
 
         overflow-y: auto;
 
@@ -6540,17 +6510,27 @@ ${body}
       }
 
       .editor-edit-panel-footer {
+        flex-shrink: 0;
+
         display: flex;
 
         justify-content: flex-end;
 
         gap: 8px;
 
-        padding: 12px 16px;
-
-        background: #ffffff;
+        padding: 12px 16px;        
 
         border-top: 1px solid #e2e8f0;
+      }
+
+      .editor-favorite-section {
+        flex: 0 0 auto;
+
+        max-height: 35vh;
+
+        overflow-y: auto;
+
+        background: #ffffff;
       }
 
       .builder-preview {
@@ -6849,8 +6829,7 @@ ${body}
       </div>
       {renderAutoSaveRestoreModal()}
       {renderTemplateSaveModal()}
-      {renderProjectCssModal()}
-      {renderFavoritePanel()}
+      {renderProjectCssModal()}      
       {renderCreateModal()}
       {renderEditModal()}
     </>
