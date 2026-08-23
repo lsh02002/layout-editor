@@ -249,7 +249,7 @@ function EditComponentPanel({
           <div className="editor-edit-panel-footer">
             <button
               type="button"
-              className="btn btn-outline-secondary"
+              className="btn btn-outline-secondary btn-sm"
               onClick={() => {
                 resetEditPanelToSelected();
               }}
@@ -259,7 +259,7 @@ function EditComponentPanel({
 
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn btn-primary btn-sm"
               onClick={saveEditedComponent}
             >
               저장
