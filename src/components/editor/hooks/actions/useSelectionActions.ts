@@ -10,7 +10,6 @@ type Options = {
   components: LayoutComponent[];
   selectedComponentId: string | null;
   setSelectedComponentId: SelectionSetter;
-  showEditModal: boolean;
   setShowEditModal: BooleanSetter;
   setShowFavoritePanel: BooleanSetter;
   loadComponentToEdit: (component: LayoutComponent) => void;
@@ -20,7 +19,6 @@ export const useSelectionActions = ({
   components,
   selectedComponentId,
   setSelectedComponentId,
-  showEditModal,
   setShowEditModal,
   setShowFavoritePanel,
   loadComponentToEdit,
@@ -34,10 +32,7 @@ export const useSelectionActions = ({
       }
 
       setSelectedComponentId(id);
-
-      if (showEditModal || openEditPanel) {
-        loadComponentToEdit(component);
-      }
+      loadComponentToEdit(component);
 
       if (openEditPanel) {
         setShowFavoritePanel(false);
@@ -50,7 +45,6 @@ export const useSelectionActions = ({
       setSelectedComponentId,
       setShowEditModal,
       setShowFavoritePanel,
-      showEditModal,
     ],
   );
 

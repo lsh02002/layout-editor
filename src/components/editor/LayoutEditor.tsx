@@ -280,7 +280,6 @@ function LayoutEditor() {
     createComponent,
     deleteComponent,
     copyComponent,
-    // selectComponent,
     editComponent,
     resetEditPanelToSelected,
     saveEditedComponent,

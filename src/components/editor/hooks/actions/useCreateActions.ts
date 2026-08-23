@@ -20,38 +20,29 @@ type Options = {
   insertTarget: InsertTarget;
   setInsertTarget: InsertTargetSetter;
   setShowCreateModal: BooleanSetter;
+  setShowEditModal: BooleanSetter;
   selectedComponentId: string | null;
   setSelectedComponentId: SelectionSetter;
   newType: LayoutComponent["type"];
   resetCreateForm: () => void;
   makeNewComponent: () => LayoutComponent;
+  loadComponentToEdit: (component: LayoutComponent) => void;
   commitHistory: CommitHistory;
 };
 
 export const useCreateActions = ({
   components,
   insertTarget,
+  setSelectedComponentId,
   setInsertTarget,
   setShowCreateModal,
-  setSelectedComponentId,
+  setShowEditModal,
   newType,
   resetCreateForm,
   makeNewComponent,
+  loadComponentToEdit,
   commitHistory,
 }: Options) => {
-  const openCreateModal = useCallback(
-    (parentId: string | null, index: number) => {
-      setInsertTarget({
-        parentId,
-        index,
-      });
-
-      resetCreateForm();
-      setShowCreateModal(true);
-    },
-    [resetCreateForm, setInsertTarget, setShowCreateModal],
-  );
-
   const closeCreateModal = useCallback(() => {
     setShowCreateModal(false);
     setInsertTarget(null);
@@ -81,18 +72,38 @@ export const useCreateActions = ({
       ),
     );
 
+    closeCreateModal();
+
     setSelectedComponentId(newComponent.id);
 
-    closeCreateModal();
+    loadComponentToEdit(newComponent);
+
+    setShowEditModal(true);
   }, [
     closeCreateModal,
     commitHistory,
     components,
     insertTarget,
+    loadComponentToEdit,
     makeNewComponent,
     newType,
     setSelectedComponentId,
+    setShowEditModal,
   ]);
+
+  const openCreateModal = useCallback(
+    (parentId: string | null, index: number) => {
+      setInsertTarget({
+        parentId,
+        index,
+      });
+
+      resetCreateForm();
+
+      setShowCreateModal(true);
+    },
+    [resetCreateForm, setInsertTarget, setShowCreateModal],
+  );
 
   return {
     openCreateModal,

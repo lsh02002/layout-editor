@@ -28,7 +28,7 @@ type Props = {
   ) => void;
   onPointerDragMove: (event: PointerEvent<HTMLElement>) => void;
   onPointerDragEnd: (event: PointerEvent<HTMLElement>) => void;
-  onPointerDragCancel: () => void;  
+  onPointerDragCancel: () => void;
 };
 
 export default function BuilderCanvas({
@@ -103,7 +103,7 @@ export default function BuilderCanvas({
             onPointerDragStart={onPointerDragStart}
             onPointerDragMove={onPointerDragMove}
             onPointerDragEnd={onPointerDragEnd}
-            onPointerDragCancel={onPointerDragCancel}            
+            onPointerDragCancel={onPointerDragCancel}
           />
           {component.type !== "scrollToTopButton" && (
             <CanvasDropZone
