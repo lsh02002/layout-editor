@@ -2,7 +2,11 @@ import { useCallback } from "react";
 
 import type { LayoutComponent } from "../../../../types/types";
 
-import type { EditValues, FavoriteSetter, SetComponents } from "./types";
+import type {
+  EditValues,
+  FavoriteSetter,
+  SetComponents,
+} from "../../../../types/types";
 
 type Options = {
   editValues: EditValues;

@@ -10,7 +10,7 @@ import {
   removeComponentRecursive,
 } from "../../utils/componentTree";
 
-import type { CommitHistory, SelectionSetter } from "./types";
+import type { CommitHistory, SelectionSetter } from "../../../../types/types";
 
 type Options = {
   components: LayoutComponent[];

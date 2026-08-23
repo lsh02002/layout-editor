@@ -4,7 +4,7 @@ import type { LayoutComponent } from "../../../../types/types";
 
 import { findComponentRecursive } from "../../utils/componentTree";
 
-import type { BooleanSetter, SelectionSetter } from "./types";
+import type { BooleanSetter, SelectionSetter } from "../../../../types/types";
 
 type Options = {
   components: LayoutComponent[];

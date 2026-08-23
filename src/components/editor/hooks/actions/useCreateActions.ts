@@ -13,7 +13,7 @@ import type {
   InsertTarget,
   InsertTargetSetter,
   SelectionSetter,
-} from "./types";
+} from "../../../../types/types";
 
 type Options = {
   components: LayoutComponent[];

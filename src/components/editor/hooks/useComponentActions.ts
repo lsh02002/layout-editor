@@ -9,7 +9,7 @@ import type {
   InsertTargetSetter,
   SelectionSetter,
   SetComponents,
-} from "./actions/types";
+} from "../../../types/types";
 
 import { useCreateActions } from "./actions/useCreateActions";
 
