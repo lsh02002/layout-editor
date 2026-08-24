@@ -81,56 +81,164 @@ const styleToCss = (style?: CSSProperties) => {
 
 const componentToHtml = async (component: LayoutComponent): Promise<string> => {
   const wrapperStyle = styleToCss(component.style);
-
   const contentStyle = styleToCss(component.contentStyle);
+  const componentId = escapeAttribute(component.id);
+  const componentName = escapeAttribute(component.name ?? component.type);
+
+  const wrapperClass = [
+    "builder-component",
+    `builder-component-${component.type}`,
+  ].join(" ");
 
   switch (component.type) {
-    case "button":
-      return `<div data-component-id="${escapeAttribute(component.id)}" style="${escapeAttribute(wrapperStyle)}"><button type="button" style="${escapeAttribute(contentStyle)}">${escapeHtml(component.props.title)}</button></div>`;
+    case "button": {
+      const disabled = component.props.disabled ? " disabled" : "";
 
-    case "scrollToTopButton":
-      return `<button data-component-id="${escapeAttribute(component.id)}" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="${escapeAttribute(`${wrapperStyle};${contentStyle};display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;background-color:#6c757d;border:1px solid #6c757d;padding:0.375rem 0.75rem;font-size:1rem;line-height:1.5;text-align:center;cursor:pointer;user-select:none;`)}">${escapeHtml(component.props.title)}</button>`;
+      return `
+        <div
+          class="${wrapperClass}"
+          data-component-id="${componentId}"
+          data-component-type="button"
+          data-component-name="${componentName}"
+          style="${escapeAttribute(wrapperStyle)}"
+        >
+          <button
+            type="button"
+            class="builder-button"
+            style="${escapeAttribute(contentStyle)}"${disabled}
+          >
+            ${escapeHtml(component.props.title)}
+          </button>
+        </div>`;
+    }
+
+    case "scrollToTopButton": {
+      const disabled = component.props.disabled ? " disabled" : "";
+
+      return `
+        <div
+          class="${wrapperClass}"
+          data-component-id="${componentId}"
+          data-component-type="scrollToTopButton"
+          data-component-name="${componentName}"
+        >
+          <button
+            type="button"
+            class="builder-scroll-to-top-button"
+            aria-label="${escapeAttribute(component.props.title || "맨 위로 이동")}"
+            onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+            style="${escapeAttribute(
+              [
+                wrapperStyle,
+                contentStyle,
+                "display:flex",
+                "align-items:center",
+                "justify-content:center",
+                "border-radius:50%",
+                "color:#fff",
+                "background-color:#6c757d",
+                "border:1px solid #6c757d",
+                "padding:0.375rem 0.75rem",
+                "font-size:1rem",
+                "line-height:1.5",
+                "text-align:center",
+                "cursor:pointer",
+                "user-select:none",
+              ]
+                .filter(Boolean)
+                .join(";"),
+            )}"${disabled}
+          >
+            ${escapeHtml(component.props.title)}
+          </button>
+        </div>`;
+    }
 
     case "heading": {
       const tag = `h${component.props.level}`;
 
       return `
-<div
-  data-component-id="${escapeAttribute(component.id)}"
-  style="${escapeAttribute(wrapperStyle)}"
->
-  <${tag} style="${escapeAttribute(contentStyle)}">
-    ${escapeHtml(component.props.text)}
-  </${tag}>
-</div>`;
+        <div
+          class="${wrapperClass}"
+          data-component-id="${componentId}"
+          data-component-type="heading"
+          data-component-name="${componentName}"
+          style="${escapeAttribute(wrapperStyle)}"
+        >
+          <${tag}
+            class="builder-heading"
+            style="${escapeAttribute(contentStyle)}"
+          >
+            ${escapeHtml(component.props.text)}
+          </${tag}>
+        </div>`;
     }
 
     case "textarea": {
-      const text =
-        component.props.value ||
-        component.props.placeholder ||
-        "내용을 입력하세요.";
+      const text = component.props.value || component.props.placeholder || "";
 
-      return `<div data-component-id="${escapeAttribute(component.id)}" style="${escapeAttribute(wrapperStyle)}"><div style="${escapeAttribute(`white-space:pre-wrap;word-break:break-word;${contentStyle}`)}">${escapeHtml(text)}</div></div>`;
+      return `
+        <div
+          class="${wrapperClass}"
+          data-component-id="${componentId}"
+          data-component-type="textarea"
+          data-component-name="${componentName}"
+          style="${escapeAttribute(wrapperStyle)}"
+        >
+          <div
+            class="builder-text"
+            style="${escapeAttribute(
+              ["white-space:pre-wrap", "word-break:break-word", contentStyle]
+                .filter(Boolean)
+                .join(";"),
+            )}"
+          >
+            ${escapeHtml(text)}
+          </div>
+        </div>`;
     }
 
     case "quill": {
       const html =
         component.props.value ||
-        `<span style="color:#6c757d">${escapeHtml(component.props.placeholder || "본문을 입력하세요.")}</span>`;
+        (component.props.placeholder
+          ? `<p>${escapeHtml(component.props.placeholder)}</p>`
+          : "");
 
-      return `<div data-component-id="${escapeAttribute(component.id)}" style="${escapeAttribute(wrapperStyle)}"><div style="${escapeAttribute(`word-break:break-word;${contentStyle}`)}">${html}</div></div>`;
+      return `
+        <div
+          class="${wrapperClass}"
+          data-component-id="${componentId}"
+          data-component-type="quill"
+          data-component-name="${componentName}"
+          style="${escapeAttribute(wrapperStyle)}"
+        >
+          <div
+            class="builder-rich-text"
+            style="${escapeAttribute(
+              ["word-break:break-word", contentStyle].filter(Boolean).join(";"),
+            )}"
+          >
+            ${html}
+          </div>
+        </div>`;
     }
 
     case "image": {
       const originalUrl = component.props.urls?.[0] ?? "";
 
       if (!originalUrl) {
-        return `<div style="${escapeAttribute(wrapperStyle)}"></div>`;
+        return `
+          <div
+            class="${wrapperClass}"
+            data-component-id="${componentId}"
+            data-component-type="image"
+            data-component-name="${componentName}"
+            style="${escapeAttribute(wrapperStyle)}"
+          ></div>`;
       }
 
       let imageUrl = originalUrl;
-
       try {
         imageUrl = await compressImageUrl(originalUrl, 1600, 1600, 0.8);
       } catch (error) {
@@ -138,67 +246,84 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
       }
 
       return `
-<div
-  data-component-id="${escapeAttribute(component.id)}"
-  style="${escapeAttribute(wrapperStyle)}"
->
-  <img
-    src="${escapeAttribute(imageUrl)}"
-    alt=""
-    style="${escapeAttribute(`display:block;width:100%;height:auto;${contentStyle}`)}"
-  />
-</div>`;
+        <div
+          class="${wrapperClass}"
+          data-component-id="${componentId}"
+          data-component-type="image"
+          data-component-name="${componentName}"
+          style="${escapeAttribute(wrapperStyle)}"
+        >
+          <img
+            class="builder-image"
+            src="${escapeAttribute(imageUrl)}"
+            alt="${componentName}"
+            loading="lazy"
+            decoding="async"
+            style="${escapeAttribute(
+              ["display:block", "width:100%", "height:auto", contentStyle]
+                .filter(Boolean)
+                .join(";"),
+            )}"
+          />
+        </div>`;
     }
 
     case "container": {
       const direction = component.props.direction ?? "column";
-
       const gap = component.props.gap ?? 8;
-
       const children = (
         await Promise.all(
           [...component.children]
             .sort((a, b) => a.order - b.order)
             .map(componentToHtml),
         )
-      ).join("");
+      ).join("\n");
 
       return `
-<div
-  data-component-id="${escapeAttribute(component.id)}"
-  style="${escapeAttribute(`display:flex;flex-direction:${direction};gap:${gap}px;${wrapperStyle}`)}"
->
-  ${children}
-</div>`;
+        <div
+          class="${wrapperClass}"
+          data-component-id="${componentId}"
+          data-component-type="container"
+          data-component-name="${componentName}"
+          style="${escapeAttribute(
+            [
+              "display:flex",
+              `flex-direction:${direction}`,
+              `gap:${gap}px`,
+              wrapperStyle,
+            ]
+              .filter(Boolean)
+              .join(";"),
+          )}"
+        >
+          ${children}
+        </div>`;
     }
 
     case "link": {
       const href = getLinkHref(component);
-
       const title = component.props.title || component.props.value || "링크";
-
-      const target =
-        component.props.linkType === "url" && component.props.newWindow
-          ? ' target="_blank"'
-          : "";
-
-      const rel =
-        component.props.linkType === "url" && component.props.newWindow
-          ? ' rel="noopener noreferrer"'
-          : "";
+      const isExternal =
+        component.props.linkType === "url" && component.props.newWindow;
+      const target = isExternal ? ' target="_blank"' : "";
+      const rel = isExternal ? ' rel="noopener noreferrer"' : "";
 
       return `
-<div
-  data-component-id="${escapeAttribute(component.id)}"
-  style="${escapeAttribute(wrapperStyle)}"
->
-  <a
-    href="${escapeAttribute(href)}"${target}${rel}
-    style="${escapeAttribute(contentStyle)}"
-  >
-    ${escapeHtml(title)}
-  </a>
-</div>`;
+        <div
+          class="${wrapperClass}"
+          data-component-id="${componentId}"
+          data-component-type="link"
+          data-component-name="${componentName}"
+          style="${escapeAttribute(wrapperStyle)}"
+        >
+          <a
+            class="builder-link"
+            href="${escapeAttribute(href)}"${target}${rel}
+            style="${escapeAttribute(contentStyle)}"
+          >
+            ${escapeHtml(title)}
+          </a>
+        </div>`;
     }
   }
 };
@@ -243,9 +368,12 @@ export const buildHtmlDocument = async (
   </style>
   </head>
   <body>
-    <div class="builder-preview">
+    <main
+      id="page-root"
+      class="builder-preview"
+    >
       ${body}
-    </div>
+    </main>
   </body>
   </html>`;
 };
