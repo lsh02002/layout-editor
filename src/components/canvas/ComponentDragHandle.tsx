@@ -104,7 +104,10 @@ export default function ComponentDragHandle({
         background: isDragging ? "#0d6efd" : "rgba(255,255,255,.96)",
         color: isDragging ? "#fff" : "#64748b",
         fontWeight: 700,
-        position: "relative",
+        position: "absolute",
+        left: 0,
+        top: "-20px",
+        transform: "translateY(-50%)",
         zIndex: 50,
         transition: `
       opacity 120ms ease,

@@ -125,9 +125,7 @@ export default function LayoutComponentNode({
         onClick={handleSelect}
         style={{
           position: "relative",
-
           opacity: isDragging ? 0.45 : 1,
-
           transition: "opacity 100ms ease",
         }}
       >
@@ -155,15 +153,10 @@ export default function LayoutComponentNode({
           <div
             style={{
               display: "flex",
-
               flexDirection: direction,
-
               gap: component.props.gap ?? 8,
-
               width: "100%",
-
               alignItems: isRow ? "stretch" : undefined,
-
               justifyContent: isRow ? "space-between" : undefined,
             }}
           >
@@ -188,9 +181,7 @@ export default function LayoutComponentNode({
                       ? undefined
                       : 1
                     : undefined,
-
                   width: isRow ? child.layout?.width : "100%",
-
                   minWidth: 0,
                 }}
               >
@@ -257,9 +248,7 @@ export default function LayoutComponentNode({
       onClick={handleSelect}
       style={{
         position: "relative",
-
         opacity: isDragging ? 0.45 : 1,
-
         transition: "opacity 100ms ease",
       }}
     >
