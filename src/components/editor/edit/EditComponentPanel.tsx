@@ -109,6 +109,12 @@ function EditComponentPanel({
   insertFavoriteComponent,
   removeFavoriteComponent,
 }: Props) {
+  const tabMenus = [
+    { key: "basic", label: "기본 설정" },
+    { key: "style", label: "스타일" },
+    { key: "css", label: "Custom CSS" },
+  ];
+
   if (isMobile && !showEditModal) {
     return null;
   }
@@ -162,35 +168,17 @@ function EditComponentPanel({
         {/* TAB */}
         <div className="px-3 pt-3">
           <ul className="nav nav-tabs">
-            <li className="nav-item">
-              <button
-                type="button"
-                className={`nav-link ${editTab === "basic" ? "active" : ""}`}
-                onClick={() => setEditTab("basic")}
-              >
-                기본 설정
-              </button>
-            </li>
-
-            <li className="nav-item">
-              <button
-                type="button"
-                className={`nav-link ${editTab === "style" ? "active" : ""}`}
-                onClick={() => setEditTab("style")}
-              >
-                스타일
-              </button>
-            </li>
-
-            <li className="nav-item">
-              <button
-                type="button"
-                className={`nav-link ${editTab === "css" ? "active" : ""}`}
-                onClick={() => setEditTab("css")}
-              >
-                Custom CSS
-              </button>
-            </li>
+            {tabMenus.map(({ key, label }) => (
+              <li className="nav-item" key={key}>
+                <button
+                  type="button"
+                  className={`nav-link ${editTab === key ? "active" : ""}`}
+                  onClick={() => setEditTab(key as EditTab)}
+                >
+                  {label}
+                </button>
+              </li>
+            ))}
           </ul>
         </div>
 

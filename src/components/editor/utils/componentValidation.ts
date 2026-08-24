@@ -1,15 +1,5 @@
 import type { ComponentType } from "../../../types/types";
-
-const VALID_COMPONENT_TYPES = [
-  "button",
-  "heading",
-  "textarea",
-  "quill",
-  "image",
-  "link",
-  "container",
-  "scrollToTopButton",
-] as const;
+import { VALID_COMPONENT_TYPES } from "../../../types/types";
 
 export const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);

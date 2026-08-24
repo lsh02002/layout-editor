@@ -45,7 +45,7 @@ export default function ComponentDragHandle({
         onDragStart(event, component.id);
       }}
       onDragEnd={() => {
-        if (previewMode) {
+        if (dragDisabled) {
           return;
         }
         onDragEnd();
