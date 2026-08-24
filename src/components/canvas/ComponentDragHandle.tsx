@@ -2,6 +2,7 @@ import type { DragEvent, PointerEvent } from "react";
 import type { LayoutComponent } from "../../types/types";
 
 type Props = {
+  previewMode: boolean;
   component: LayoutComponent;
   draggingId: string | null;
   layerSearch: string;
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export default function ComponentDragHandle({
+  previewMode,
   component,
   draggingId,
   layerSearch,
@@ -28,7 +30,7 @@ export default function ComponentDragHandle({
   onPointerDragCancel,
 }: Props) {
   const isDragging = draggingId === component.id;
-  const dragDisabled = Boolean(layerSearch);
+  const dragDisabled = previewMode || Boolean(layerSearch);
 
   return (
     <button
@@ -42,19 +44,52 @@ export default function ComponentDragHandle({
         }
         onDragStart(event, component.id);
       }}
-      onDragEnd={onDragEnd}
-      onPointerDown={(event) => onPointerDragStart(event, component.id)}
-      onPointerMove={onPointerDragMove}
-      onPointerUp={onPointerDragEnd}
-      onPointerCancel={onPointerDragCancel}
+      onDragEnd={() => {
+        if (previewMode) {
+          return;
+        }
+        onDragEnd();
+      }}
+      onPointerDown={(event) => {
+        event.stopPropagation();
+        if (dragDisabled) {
+          return;
+        }
+        onPointerDragStart(event, component.id);
+      }}
+      onPointerMove={(event) => {
+        if (dragDisabled) {
+          return;
+        }
+        onPointerDragMove(event);
+      }}
+      onPointerUp={(event) => {
+        if (dragDisabled) {
+          return;
+        }
+        onPointerDragEnd(event);
+      }}
+      onPointerCancel={() => {
+        if (dragDisabled) {
+          return;
+        }
+        onPointerDragCancel();
+      }}
       onContextMenu={(event) => event.preventDefault()}
       onClick={(event) => event.stopPropagation()}
       style={{
-        cursor: dragDisabled ? "not-allowed" : isDragging ? "grabbing" : "grab",
-        opacity: dragDisabled ? 0.35 : 1,
+        cursor: previewMode
+          ? "default"
+          : dragDisabled
+            ? "not-allowed"
+            : isDragging
+              ? "grabbing"
+              : "grab",
+        opacity: previewMode ? 0 : dragDisabled ? 0.35 : 1,
+        pointerEvents: previewMode ? "none" : "auto",
         userSelect: "none",
         WebkitUserSelect: "none",
-        touchAction: "none",
+        touchAction: previewMode ? "auto" : "none",
         width: 36,
         height: 36,
         minWidth: 36,
@@ -71,8 +106,12 @@ export default function ComponentDragHandle({
         fontWeight: 700,
         position: "relative",
         zIndex: 50,
-        transition:
-          "background 120ms ease, color 120ms ease, box-shadow 120ms ease",
+        transition: `
+      opacity 120ms ease,
+      background 120ms ease,
+      color 120ms ease,
+      box-shadow 120ms ease
+    `,
       }}
       title="드래그하여 이동"
     >

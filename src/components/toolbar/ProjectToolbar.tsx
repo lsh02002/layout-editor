@@ -9,6 +9,7 @@ type ProjectToolbarProps = {
   hasUnsavedChanges: boolean;
   hasSelectedComponent: boolean;
   lastAutoSavedAt: string | null;
+  setSelectedComponentId: React.Dispatch<React.SetStateAction<string | null>>;
   setPreviewMode: React.Dispatch<React.SetStateAction<boolean>>;
   onSnapEnabledChange: (value: boolean) => void;
   onGridSizeChange: (value: number) => void;
@@ -32,6 +33,7 @@ export default function ProjectToolbar({
   hasUnsavedChanges,
   hasSelectedComponent,
   lastAutoSavedAt,
+  setSelectedComponentId,
   setPreviewMode,
   onSnapEnabledChange,
   onGridSizeChange,
@@ -58,7 +60,17 @@ export default function ProjectToolbar({
               ? "btn btn-primary btn-sm"
               : "btn btn-outline-primary btn-sm"
           }
-          onClick={() => setPreviewMode((prev) => !prev)}
+          onClick={() => {
+            setPreviewMode((prev) => {
+              const next = !prev;
+
+              if (next) {
+                setSelectedComponentId(null);
+              }
+
+              return next;
+            });
+          }}
         >
           <i className={previewMode ? "bi bi-pencil-square" : "bi bi-eye"} />{" "}
           {previewMode ? "편집 모드" : "미리보기"}

@@ -8,6 +8,7 @@ type DropTarget = {
 } | null;
 
 type LayerPanelProps = {
+  previewMode: boolean;
   visible: boolean;
   components: LayoutComponent[];
   selectedComponentId: string | null;
@@ -109,6 +110,7 @@ const getComponentDisplayName = (component: LayoutComponent) => {
 };
 
 export default function LayerPanel({
+  previewMode,
   visible,
   components,
   selectedComponentId,
@@ -205,8 +207,18 @@ export default function LayerPanel({
           return (
             <React.Fragment key={component.id}>
               <div
-                onClick={() => onEdit(component.id)}
-                onDoubleClick={() => onEdit(component.id)}
+                onClick={() => {
+                  if (previewMode) {
+                    return;
+                  }
+                  onEdit(component.id);
+                }}
+                onDoubleClick={() => {
+                  if (previewMode) {
+                    return;
+                  }
+                  onEdit(component.id);
+                }}
                 style={{
                   marginLeft: depth * 14,
                   padding: "6px 8px",
@@ -214,25 +226,32 @@ export default function LayerPanel({
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
-                  cursor: "pointer",
+                  cursor: previewMode ? "default" : "pointer",
                   userSelect: "none",
                   opacity: isDragging ? 0.4 : 1,
-                  background: isSelected
-                    ? "rgba(13, 110, 253, 0.12)"
-                    : "transparent",
-                  border: isSelected
-                    ? "1px solid rgba(13, 110, 253, 0.35)"
-                    : "1px solid transparent",
+                  background:
+                    !previewMode && isSelected
+                      ? "rgba(13, 110, 253, 0.12)"
+                      : "transparent",
+                  border:
+                    !previewMode && isSelected
+                      ? "1px solid rgba(13, 110, 253, 0.35)"
+                      : "1px solid transparent",
                 }}
               >
                 <button
                   type="button"
                   className="layer-drag-handle"
-                  draggable={!search}
+                  draggable={!previewMode && !search}
                   onDragStart={(event) => {
                     event.stopPropagation();
 
                     if (search) {
+                      event.preventDefault();
+                      return;
+                    }
+
+                    if (previewMode) {
                       event.preventDefault();
                       return;
                     }
@@ -242,11 +261,64 @@ export default function LayerPanel({
                   onDragEnd={onDragEnd}
                   onPointerDown={(event) => {
                     event.stopPropagation();
+
+                    if (search) {
+                      event.preventDefault();
+                      return;
+                    }
+
+                    if (previewMode) {
+                      event.preventDefault();
+                      return;
+                    }
+
                     onPointerDragStart(event, component.id);
                   }}
-                  onPointerMove={onPointerDragMove}
-                  onPointerUp={onPointerDragEnd}
-                  onPointerCancel={onPointerDragCancel}
+                  onPointerMove={(event) => {
+                    event.stopPropagation();
+
+                    if (search) {
+                      event.preventDefault();
+                      return;
+                    }
+
+                    if (previewMode) {
+                      event.preventDefault();
+                      return;
+                    }
+
+                    onPointerDragMove(event);
+                  }}
+                  onPointerUp={(event) => {
+                    event.stopPropagation();
+
+                    if (search) {
+                      event.preventDefault();
+                      return;
+                    }
+
+                    if (previewMode) {
+                      event.preventDefault();
+                      return;
+                    }
+
+                    onPointerDragEnd(event);
+                  }}
+                  onPointerCancel={(event) => {
+                    event.stopPropagation();
+
+                    if (search) {
+                      event.preventDefault();
+                      return;
+                    }
+
+                    if (previewMode) {
+                      event.preventDefault();
+                      return;
+                    }
+
+                    onPointerDragCancel();
+                  }}
                   onContextMenu={(event) => event.preventDefault()}
                   onClick={(event) => event.stopPropagation()}
                   style={{

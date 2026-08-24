@@ -94,17 +94,22 @@ export default function LayoutComponentNode({
   };
 
   const dragHandle = (
-    <ComponentDragHandle
-      component={component}
-      draggingId={draggingId}
-      layerSearch={layerSearch}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onPointerDragStart={onPointerDragStart}
-      onPointerDragMove={onPointerDragMove}
-      onPointerDragEnd={onPointerDragEnd}
-      onPointerDragCancel={onPointerDragCancel}
-    />
+    <>
+      {!previewMode && (
+        <ComponentDragHandle
+          previewMode={previewMode}
+          component={component}
+          draggingId={draggingId}
+          layerSearch={layerSearch}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          onPointerDragStart={onPointerDragStart}
+          onPointerDragMove={onPointerDragMove}
+          onPointerDragEnd={onPointerDragEnd}
+          onPointerDragCancel={onPointerDragCancel}
+        />
+      )}
+    </>
   );
 
   if (component.type === "container") {

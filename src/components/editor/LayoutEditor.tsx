@@ -355,6 +355,7 @@ function LayoutEditor() {
         />
       )}
       <LayerPanel
+        previewMode={previewMode}
         visible={showLayerPanel}
         components={filteredLayerComponents}
         selectedComponentId={selectedComponentId}
@@ -423,6 +424,7 @@ function LayoutEditor() {
           hasUnsavedChanges={hasUnsavedChanges}
           hasSelectedComponent={Boolean(selectedComponentId)}
           lastAutoSavedAt={lastAutoSavedAt}
+          setSelectedComponentId={setSelectedComponentId}
           setPreviewMode={setPreviewMode}
           onSnapEnabledChange={setSnapEnabled}
           onGridSizeChange={setGridSize}
