@@ -322,7 +322,7 @@ export default function LayerPanel({
                   onContextMenu={(event) => event.preventDefault()}
                   onClick={(event) => event.stopPropagation()}
                   style={{
-                    cursor: isDragging ? "grabbing" : "grab",
+                    cursor: previewMode ? "default" : "grab",
                     touchAction: "none",
                     userSelect: "none",
                     WebkitUserSelect: "none",
