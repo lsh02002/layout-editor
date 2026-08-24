@@ -115,11 +115,20 @@ function EditComponentPanel({
 
   return (
     <>
+      {isMobile && showEditModal && (
+        <div
+          className="modal-backdrop fade show"
+          style={{
+            zIndex: 1190,
+          }}
+          onClick={() => setShowEditModal(false)}
+        />
+      )}
       <aside
         className="editor-edit-panel"
         style={{
           display: "block",
-          zIndex: 1055,
+          zIndex: 1200,
         }}
         tabIndex={-1}
       >
