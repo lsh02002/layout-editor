@@ -4,7 +4,6 @@ import {
   type HTMLAttributes,
   type MouseEvent,
   type MouseEventHandler,
-  type PointerEvent,
   type ReactNode,
 } from "react";
 
@@ -103,22 +102,6 @@ function DivBox({
     [onEdit, previewMode],
   );
 
-  const handlePointerUp = useCallback(
-    (event: PointerEvent<HTMLDivElement>) => {
-      if (event.pointerType === "mouse") {
-        return;
-      }
-      event.stopPropagation();
-
-      if (!isOwnDivBox(event.target, event.currentTarget)) {
-        return;
-      }
-
-      onEdit?.();
-    },
-    [onEdit],
-  );
-
   return (
     <div
       data-layout-box
@@ -136,7 +119,6 @@ function DivBox({
         ...style,
       }}
       onDoubleClick={handleDoubleClick}
-      onPointerUp={handlePointerUp}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
