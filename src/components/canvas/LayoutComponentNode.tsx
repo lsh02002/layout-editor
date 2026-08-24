@@ -98,19 +98,20 @@ export default function LayoutComponentNode({
     zIndex: isAbsolute ? 10 : undefined,
   };
 
-  const dragHandleView = !previewMode ? (
-    <div
-      style={{
-        position: "absolute",
-        left: 0,
-        top: 0,
-        transform: "translate(-50%, -50%)",
-        zIndex: 120,
-      }}
-    >
-      {dragHandle}
-    </div>
-  ) : null;
+  const dragHandleView =
+    !previewMode && !isAbsolute ? (
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          transform: "translate(-50%, -50%)",
+          zIndex: 120,
+        }}
+      >
+        {dragHandle}
+      </div>
+    ) : null;
 
   if (component.type === "container") {
     const children = [...component.children].sort((a, b) => a.order - b.order);
