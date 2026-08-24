@@ -96,7 +96,7 @@ export default function CanvasDropZone({
           style={{
             flex: 1,
             height: 1,
-            backgroundColor: "#dee2e6",
+            backgroundColor: "rgb(235, 235, 235)",
             pointerEvents: "none",
           }}
         />
@@ -137,7 +137,7 @@ export default function CanvasDropZone({
           style={{
             flex: 1,
             height: 1,
-            backgroundColor: "#dee2e6",
+            backgroundColor: "rgb(235, 235, 235)",
             pointerEvents: "none",
           }}
         />
