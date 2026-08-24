@@ -112,8 +112,8 @@ export default function CanvasDropZone({
           padding: 0,
           border: "1px solid #cbd5e1",
           color: "#64748b",
-          opacity: draggingId ? 0 : 1,
-          visibility: draggingId ? "hidden" : "visible",
+          opacity: 1,
+          visibility: "visible",
           pointerEvents: draggingId ? "none" : "auto",
           transform: hovered || isActive ? "scale(1.08)" : "scale(1)",
           transition: `
