@@ -241,11 +241,13 @@ export const buildHtmlDocument = async (
 
     ${collectComponentCustomCss(components)}
   </style>
-</head>
-<body>
-${body}
-</body>
-</html>`;
+  </head>
+  <body>
+    <div class="builder-preview">
+      ${body}
+    </div>
+  </body>
+  </html>`;
 };
 
 export const downloadHtmlFile = async (
