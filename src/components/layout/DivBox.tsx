@@ -14,14 +14,12 @@ import type { ComponentLayout } from "../../types/types";
 interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   layout?: ComponentLayout;
-
   onLayoutChange?: (layout: Partial<ComponentLayout>) => void;
-
   onEdit?: () => void;
   onCopy?: () => void;
   onDelete?: () => void;
-
   previewMode?: boolean;
+  style?: React.CSSProperties;
 }
 
 function DivBox({
@@ -130,15 +128,11 @@ function DivBox({
           layout?.x !== undefined || layout?.y !== undefined
             ? "absolute"
             : "relative",
-
         left: layout?.x,
         top: layout?.y,
-
         width: layout?.width,
         height: layout?.height,
-
         outline: over ? "1px solid var(--bs-primary)" : "1px solid transparent",
-
         ...style,
       }}
       onDoubleClick={handleDoubleClick}

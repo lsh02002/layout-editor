@@ -2,7 +2,6 @@ import type { DragEvent, PointerEvent } from "react";
 import type { LayoutComponent } from "../../types/types";
 
 type Props = {
-  previewMode: boolean;
   component: LayoutComponent;
   draggingId: string | null;
   layerSearch: string;
@@ -18,7 +17,6 @@ type Props = {
 };
 
 export default function ComponentDragHandle({
-  previewMode,
   component,
   draggingId,
   layerSearch,
@@ -30,16 +28,17 @@ export default function ComponentDragHandle({
   onPointerDragCancel,
 }: Props) {
   const isDragging = draggingId === component.id;
-  const dragDisabled = previewMode || Boolean(layerSearch);
+  const dragDisabled = Boolean(layerSearch);
 
   return (
     <button
       className="component-drag-handle"
       type="button"
       draggable={!dragDisabled}
-      onDragStart={(event) => {
-        if (dragDisabled) {
-          event.preventDefault();
+      onDragStart={(event) => {        
+        event.stopPropagation();
+        
+        if (dragDisabled) {          
           return;
         }
         onDragStart(event, component.id);
@@ -52,7 +51,11 @@ export default function ComponentDragHandle({
       }}
       onPointerDown={(event) => {
         event.stopPropagation();
+
         if (dragDisabled) {
+          return;
+        }
+        if (event.pointerType === "mouse") {
           return;
         }
         onPointerDragStart(event, component.id);
@@ -61,10 +64,16 @@ export default function ComponentDragHandle({
         if (dragDisabled) {
           return;
         }
+        if (event.pointerType === "mouse") {
+          return;
+        }
         onPointerDragMove(event);
       }}
       onPointerUp={(event) => {
         if (dragDisabled) {
+          return;
+        }
+        if (event.pointerType === "mouse") {
           return;
         }
         onPointerDragEnd(event);
@@ -78,18 +87,12 @@ export default function ComponentDragHandle({
       onContextMenu={(event) => event.preventDefault()}
       onClick={(event) => event.stopPropagation()}
       style={{
-        cursor: previewMode
-          ? "default"
-          : dragDisabled
-            ? "not-allowed"
-            : isDragging
-              ? "grabbing"
-              : "grab",
-        opacity: previewMode ? 0 : dragDisabled ? 0.35 : 1,
-        pointerEvents: previewMode ? "none" : "auto",
+        cursor: dragDisabled ? "not-allowed" : isDragging ? "grabbing" : "grab",
+        opacity: dragDisabled ? 0.35 : 1,
+        pointerEvents: "auto",
         userSelect: "none",
         WebkitUserSelect: "none",
-        touchAction: previewMode ? "auto" : "none",
+        touchAction: "none",
         width: 36,
         height: 36,
         minWidth: 36,
