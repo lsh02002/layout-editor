@@ -69,6 +69,24 @@ function DivBox({
     [onDelete],
   );
 
+  const handleDoubleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const target = event.target as HTMLElement;
+
+      const closestDivBox = target.closest<HTMLElement>("[data-layout-box]");
+
+      if (closestDivBox !== event.currentTarget) {
+        return;
+      }
+
+      onEdit?.();
+    },
+    [onEdit],
+  );
+
   return (
     <div
       data-layout-box
@@ -89,6 +107,7 @@ function DivBox({
 
         ...style,
       }}
+      onDoubleClick={handleDoubleClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >

@@ -85,8 +85,6 @@ export default function LayoutComponentNode({
     if (isDragging) {
       return;
     }
-
-    onEdit(component.id);
   };
 
   const dragHandle = (
@@ -113,7 +111,7 @@ export default function LayoutComponentNode({
     return (
       <div
         data-component-id={component.id}
-        onDoubleClick={handleSelect}
+        onClick={handleSelect}
         style={{
           position: "relative",
 
