@@ -2,7 +2,9 @@ import {
   useCallback,
   useState,
   type HTMLAttributes,
+  type MouseEvent,
   type MouseEventHandler,
+  type PointerEvent,
   type ReactNode,
 } from "react";
 
@@ -33,11 +35,8 @@ function DivBox({
 
   const handleMouseMove: MouseEventHandler<HTMLDivElement> = (event) => {
     const target = event.target as HTMLElement;
-
-    // 현재 마우스 위치에서 가장 가까운 DivBox
     const closestDivBox = target.closest("[data-layout-box]");
 
-    // 가장 가까운 DivBox가 자기 자신일 때만 메뉴 표시
     setOver(closestDivBox === event.currentTarget);
   };
 
@@ -45,40 +44,69 @@ function DivBox({
     setOver(false);
   };
 
+  const isOwnDivBox = (
+    target: EventTarget | null,
+    currentTarget: HTMLElement,
+  ) => {
+    const element = target as HTMLElement | null;
+
+    if (!element) {
+      return false;
+    }
+
+    const closestDivBox = element.closest<HTMLElement>("[data-layout-box]");
+
+    return closestDivBox === currentTarget;
+  };
+
   const handleEdit = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
+    (event: MouseEvent<HTMLButtonElement>) => {      
       event.stopPropagation();
+
       onEdit?.();
     },
     [onEdit],
   );
 
   const handleCopy = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
+    (event: MouseEvent<HTMLButtonElement>) => {      
       event.stopPropagation();
+
       onCopy?.();
     },
     [onCopy],
   );
 
   const handleDelete = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
+    (event: MouseEvent<HTMLButtonElement>) => {      
       event.stopPropagation();
+
       onDelete?.();
     },
     [onDelete],
   );
 
   const handleDoubleClick = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      event.preventDefault();
+    (event: MouseEvent<HTMLDivElement>) => {
       event.stopPropagation();
 
-      const target = event.target as HTMLElement;
+      if (!isOwnDivBox(event.target, event.currentTarget)) {
+        return;
+      }
 
-      const closestDivBox = target.closest<HTMLElement>("[data-layout-box]");
+      onEdit?.();
+    },
+    [onEdit],
+  );
 
-      if (closestDivBox !== event.currentTarget) {
+  const handlePointerUp = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (event.pointerType === "mouse") {
+        return;
+      }
+      event.stopPropagation();
+
+      if (!isOwnDivBox(event.target, event.currentTarget)) {
         return;
       }
 
@@ -108,6 +136,7 @@ function DivBox({
         ...style,
       }}
       onDoubleClick={handleDoubleClick}
+      onPointerUp={handlePointerUp}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
