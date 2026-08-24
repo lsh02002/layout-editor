@@ -20,6 +20,8 @@ interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
   onEdit?: () => void;
   onCopy?: () => void;
   onDelete?: () => void;
+
+  previewMode?: boolean;
 }
 
 function DivBox({
@@ -30,6 +32,7 @@ function DivBox({
   onDelete,
   className = "",
   style,
+  previewMode = false,
 }: DivBoxProps) {
   const [over, setOver] = useState(false);
 
@@ -60,7 +63,7 @@ function DivBox({
   };
 
   const handleEdit = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {      
+    (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
 
       onEdit?.();
@@ -69,7 +72,7 @@ function DivBox({
   );
 
   const handleCopy = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {      
+    (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
 
       onCopy?.();
@@ -78,7 +81,7 @@ function DivBox({
   );
 
   const handleDelete = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {      
+    (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
 
       onDelete?.();
@@ -88,6 +91,9 @@ function DivBox({
 
   const handleDoubleClick = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
+      if (previewMode) {
+        return;
+      }
       event.stopPropagation();
 
       if (!isOwnDivBox(event.target, event.currentTarget)) {
@@ -96,7 +102,7 @@ function DivBox({
 
       onEdit?.();
     },
-    [onEdit],
+    [onEdit, previewMode],
   );
 
   const handlePointerUp = useCallback(
@@ -140,7 +146,7 @@ function DivBox({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      {over && (
+      {over && !previewMode && (
         <div
           className="position-absolute end-0 top-0 text-white"
           style={{

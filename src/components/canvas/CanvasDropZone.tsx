@@ -1,4 +1,4 @@
-import type { DragEvent } from "react";
+import { useState, type DragEvent } from "react";
 import type { ContainerDirection } from "../../types/types";
 
 export type CanvasDropTarget = {
@@ -8,6 +8,7 @@ export type CanvasDropTarget = {
 };
 
 type Props = {
+  previewMode: boolean;
   parentId: string | null;
   index: number;
   direction?: ContainerDirection;
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export default function CanvasDropZone({
+  previewMode = false,
   parentId,
   index,
   direction = "column",
@@ -32,6 +34,8 @@ export default function CanvasDropZone({
   onDrop,
   onCreate,
 }: Props) {
+  const [hovered, setHovered] = useState(false);
+
   const isRow = direction === "row";
   const isActive =
     activeDropTarget?.area === "canvas" &&
@@ -40,6 +44,10 @@ export default function CanvasDropZone({
 
   const activate = () =>
     setActiveDropTarget({ parentId, index, area: "canvas" });
+
+  if (previewMode) {
+    return null;
+  }
 
   return (
     <div
@@ -64,6 +72,8 @@ export default function CanvasDropZone({
         setActiveDropTarget(null);
       }}
       onDrop={(event) => onDrop(event, parentId, index)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         display: "flex",
         flexDirection: isRow ? "column" : "row",
@@ -102,9 +112,17 @@ export default function CanvasDropZone({
           padding: 0,
           border: "1px solid #cbd5e1",
           color: "#64748b",
-          opacity: draggingId ? 0.8 : 1,
+          opacity: draggingId ? 0 : 1,
+          visibility: draggingId ? "hidden" : "visible",
           pointerEvents: draggingId ? "none" : "auto",
-          transition: "opacity 120ms ease",
+          transform: hovered || isActive ? "scale(1.08)" : "scale(1)",
+          transition: `
+        opacity 120ms ease,
+        transform 120ms ease,
+        visibility 120ms ease
+      `,
+
+          zIndex: 10,
         }}
         onClick={(event) => {
           event.stopPropagation();

@@ -1,6 +1,7 @@
 import React from "react";
 
 type ProjectToolbarProps = {
+  previewMode: boolean;
   snapEnabled: boolean;
   gridSize: number;
   canUndo: boolean;
@@ -8,6 +9,7 @@ type ProjectToolbarProps = {
   hasUnsavedChanges: boolean;
   hasSelectedComponent: boolean;
   lastAutoSavedAt: string | null;
+  setPreviewMode: React.Dispatch<React.SetStateAction<boolean>>;
   onSnapEnabledChange: (value: boolean) => void;
   onGridSizeChange: (value: number) => void;
   onOpenProjectCss: () => void;
@@ -22,6 +24,7 @@ type ProjectToolbarProps = {
 };
 
 export default function ProjectToolbar({
+  previewMode,
   snapEnabled,
   gridSize,
   canUndo,
@@ -29,6 +32,7 @@ export default function ProjectToolbar({
   hasUnsavedChanges,
   hasSelectedComponent,
   lastAutoSavedAt,
+  setPreviewMode,
   onSnapEnabledChange,
   onGridSizeChange,
   onOpenProjectCss,
@@ -47,6 +51,17 @@ export default function ProjectToolbar({
       style={{ position: "sticky", top: 0, zIndex: 1000 }}
     >
       <div className="d-flex align-items-center gap-2 pe-2 border-end">
+        <button
+          type="button"
+          className={
+            previewMode
+              ? "btn btn-primary btn-sm"
+              : "btn btn-outline-primary btn-sm"
+          }
+          onClick={() => setPreviewMode((prev) => !prev)}
+        >
+          {previewMode ? "편집 모드" : "미리보기"}
+        </button>
         <div className="form-check mb-0">
           <input
             id="snap-enabled"

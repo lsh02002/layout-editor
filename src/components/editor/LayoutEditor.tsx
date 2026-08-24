@@ -29,6 +29,8 @@ import { data } from "../../data/data";
 import { useComponentActions } from "./hooks/useComponentActions";
 
 function LayoutEditor() {
+  const [previewMode, setPreviewMode] = useState(false);
+
   const {
     components,
     commitHistory,
@@ -413,6 +415,7 @@ function LayoutEditor() {
         }}
       >
         <ProjectToolbar
+          previewMode={previewMode}
           snapEnabled={snapEnabled}
           gridSize={gridSize}
           canUndo={canUndo}
@@ -420,6 +423,7 @@ function LayoutEditor() {
           hasUnsavedChanges={hasUnsavedChanges}
           hasSelectedComponent={Boolean(selectedComponentId)}
           lastAutoSavedAt={lastAutoSavedAt}
+          setPreviewMode={setPreviewMode}
           onSnapEnabledChange={setSnapEnabled}
           onGridSizeChange={setGridSize}
           onOpenProjectCss={openProjectCssModal}
@@ -434,11 +438,13 @@ function LayoutEditor() {
         />
 
         <BuilderCanvas
+          previewMode={previewMode}
           components={components}
           selectedComponentId={selectedComponentId}
           draggingId={draggingId}
           layerSearch={layerSearch}
           activeDropTarget={activeDropTarget}
+          setPreviewMode={setPreviewMode}
           setActiveDropTarget={setActiveDropTarget}
           onLayoutChange={updateLayout}
           onEdit={editComponent}

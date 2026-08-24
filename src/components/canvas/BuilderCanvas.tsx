@@ -4,11 +4,13 @@ import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import LayoutComponentNode from "./LayoutComponentNode";
 
 type Props = {
+  previewMode: boolean;
   components: LayoutComponent[];
   selectedComponentId: string | null;
   draggingId: string | null;
   layerSearch: string;
   activeDropTarget: CanvasDropTarget | null;
+  setPreviewMode: React.Dispatch<React.SetStateAction<boolean>>;
   setActiveDropTarget: (target: CanvasDropTarget | null) => void;
   onLayoutChange: (id: string, layout: Partial<ComponentLayout>) => void;
   onEdit: (id: string) => void;
@@ -32,6 +34,7 @@ type Props = {
 };
 
 export default function BuilderCanvas({
+  previewMode,
   components,
   selectedComponentId,
   draggingId,
@@ -69,6 +72,7 @@ export default function BuilderCanvas({
       }}
     >
       <CanvasDropZone
+        previewMode={previewMode}
         parentId={null}
         index={0}
         direction="column"
@@ -86,6 +90,7 @@ export default function BuilderCanvas({
           style={{ position: "relative" }}
         >
           <LayoutComponentNode
+            previewMode={previewMode}
             component={component}
             selectedComponentId={selectedComponentId}
             draggingId={draggingId}
@@ -107,6 +112,7 @@ export default function BuilderCanvas({
           />
           {component.type !== "scrollToTopButton" && (
             <CanvasDropZone
+              previewMode={previewMode}
               parentId={null}
               index={index + 1}
               direction="column"

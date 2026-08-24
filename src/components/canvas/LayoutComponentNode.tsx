@@ -13,6 +13,7 @@ import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import ComponentDragHandle from "./ComponentDragHandle";
 
 type Props = {
+  previewMode: boolean;
   component: LayoutComponent;
 
   selectedComponentId: string | null;
@@ -56,6 +57,7 @@ type Props = {
 };
 
 export default function LayoutComponentNode({
+  previewMode,
   component,
   selectedComponentId,
   draggingId,
@@ -80,6 +82,10 @@ export default function LayoutComponentNode({
   const isSelected = selectedComponentId === component.id;
 
   const handleSelect = (event: MouseEvent<HTMLElement>) => {
+    if (previewMode) {
+      return;
+    }
+
     event.stopPropagation();
 
     if (isDragging) {
@@ -120,9 +126,10 @@ export default function LayoutComponentNode({
           transition: "opacity 100ms ease",
         }}
       >
-        {dragHandle}
+        {!previewMode && dragHandle}
 
         <DivBox
+          previewMode={previewMode}
           layout={component.layout}
           onLayoutChange={(layout) => onLayoutChange(component.id, layout)}
           onEdit={() => onEdit(component.id)}
@@ -130,12 +137,14 @@ export default function LayoutComponentNode({
           onDelete={() => onDelete(component.id)}
           style={{
             ...component.style,
-
-            outline: isSelected
-              ? "2px solid #0d6efd"
-              : component.style?.outline,
-
-            outlineOffset: isSelected ? 3 : component.style?.outlineOffset,
+            outline:
+              !previewMode && isSelected
+                ? "2px solid #0d6efd"
+                : component.style?.outline,
+            outlineOffset:
+              !previewMode && isSelected
+                ? "2px"
+                : component.style?.outlineOffset,
           }}
         >
           <div
@@ -154,6 +163,7 @@ export default function LayoutComponentNode({
             }}
           >
             <CanvasDropZone
+              previewMode={previewMode}
               parentId={component.id}
               index={0}
               direction={direction}
@@ -180,6 +190,7 @@ export default function LayoutComponentNode({
                 }}
               >
                 <LayoutComponentNode
+                  previewMode={previewMode}
                   component={child}
                   selectedComponentId={selectedComponentId}
                   draggingId={draggingId}
@@ -202,6 +213,7 @@ export default function LayoutComponentNode({
 
                 {child.type !== "scrollToTopButton" && !isRow && (
                   <CanvasDropZone
+                    previewMode={previewMode}
                     parentId={component.id}
                     index={index + 1}
                     direction={direction}
@@ -217,6 +229,7 @@ export default function LayoutComponentNode({
 
             {isRow && (
               <CanvasDropZone
+                previewMode={previewMode}
                 parentId={component.id}
                 index={children.length}
                 direction={direction}
@@ -245,9 +258,10 @@ export default function LayoutComponentNode({
         transition: "opacity 100ms ease",
       }}
     >
-      {dragHandle}
+      {!previewMode && dragHandle}
 
       <DivBox
+        previewMode={previewMode}
         layout={component.layout}
         onLayoutChange={(layout) => onLayoutChange(component.id, layout)}
         onEdit={() => onEdit(component.id)}
@@ -255,10 +269,12 @@ export default function LayoutComponentNode({
         onDelete={() => onDelete(component.id)}
         style={{
           ...component.style,
-
-          outline: isSelected ? "2px solid #0d6efd" : component.style?.outline,
-
-          outlineOffset: isSelected ? "2px" : component.style?.outlineOffset,
+          outline:
+            !previewMode && isSelected
+              ? "2px solid #0d6efd"
+              : component.style?.outline,
+          outlineOffset:
+            !previewMode && isSelected ? "2px" : component.style?.outlineOffset,
         }}
       >
         <CanvasComponentContent component={component} />
