@@ -5,6 +5,7 @@ export type ContainerDirection = "row" | "column";
 export type LinkType = "url" | "tel" | "email";
 
 export interface ComponentLayout {
+  position?: "relative" | "absolute";
   width?: number | string;
   height?: number | string;
   x?: number;
@@ -196,6 +197,7 @@ export type EditValues = {
   editLinkNewWindow: boolean;
   editComponentName: string;
   editHeadingLevel: HeadingLevel;
+  editLayout: ComponentLayout;
 };
 
 export type SelectionSetter = Dispatch<SetStateAction<string | null>>;

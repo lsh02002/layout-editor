@@ -1,13 +1,10 @@
 import { useState, type DragEvent, type PointerEvent } from "react";
-
 import DivBox from "../layout/DivBox";
-
 import type {
   ComponentLayout,
   ContainerDirection,
   LayoutComponent,
 } from "../../types/types";
-
 import CanvasComponentContent from "./CanvasComponentContent";
 import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import ComponentDragHandle from "./ComponentDragHandle";
@@ -65,19 +62,18 @@ export default function LayoutComponentNode({
   const [isLocalDragging, setIsLocalDragging] = useState(false);
   const isDragging = isLocalDragging || draggingId === component.id;
   const isSelected = selectedComponentId === component.id;
+  const isAbsolute = component.layout?.position === "absolute";
 
   const handleNativeDragStart = (
     event: DragEvent<HTMLElement>,
     componentId: string,
   ) => {
     setIsLocalDragging(true);
-
     onDragStart(event, componentId);
   };
 
   const handleNativeDragEnd = () => {
     setIsLocalDragging(false);
-
     onDragEnd();
   };
 
@@ -95,20 +91,34 @@ export default function LayoutComponentNode({
     />
   );
 
+  const nodeStyle = {
+    position: isAbsolute ? ("absolute" as const) : ("relative" as const),
+    left: isAbsolute ? (component.layout?.x ?? 0) : undefined,
+    top: isAbsolute ? (component.layout?.y ?? 0) : undefined,
+    zIndex: isAbsolute ? 10 : undefined,
+  };
+
+  const dragHandleView = !previewMode ? (
+    <div
+      style={{
+        position: "absolute",
+        left: 0,
+        top: 0,
+        transform: "translate(-50%, -50%)",
+        zIndex: 120,
+      }}
+    >
+      {dragHandle}
+    </div>
+  ) : null;
+
   if (component.type === "container") {
     const children = [...component.children].sort((a, b) => a.order - b.order);
     const direction: ContainerDirection = component.props.direction ?? "column";
     const isRow = direction === "row";
 
     return (
-      <div
-        data-component-id={component.id}
-        style={{
-          position: "relative",
-        }}
-      >
-        {!previewMode && dragHandle}
-
+      <div data-component-id={component.id} style={nodeStyle}>
         <DivBox
           previewMode={previewMode}
           layout={component.layout}
@@ -130,8 +140,10 @@ export default function LayoutComponentNode({
                 : component.style?.outlineOffset,
           }}
         >
+          {dragHandleView}
           <div
             style={{
+              position: "relative",
               display: "flex",
               flexDirection: direction,
               gap: component.props.gap ?? 8,
@@ -151,58 +163,64 @@ export default function LayoutComponentNode({
               onDrop={onDrop}
               onCreate={onCreate}
             />
-
-            {children.map((child, index) => (
-              <div
-                key={child.id}
-                style={{
-                  flex: isRow
-                    ? child.layout?.width
-                      ? undefined
-                      : 1
-                    : undefined,
-                  width: isRow ? child.layout?.width : "100%",
-                  minWidth: 0,
-                }}
-              >
-                <LayoutComponentNode
-                  previewMode={previewMode}
-                  component={child}
-                  selectedComponentId={selectedComponentId}
-                  draggingId={draggingId}
-                  layerSearch={layerSearch}
-                  activeDropTarget={activeDropTarget}
-                  setActiveDropTarget={setActiveDropTarget}
-                  onLayoutChange={onLayoutChange}
-                  onEdit={onEdit}
-                  onCopy={onCopy}
-                  onDelete={onDelete}
-                  onCreate={onCreate}
-                  onDrop={onDrop}
-                  onDragStart={onDragStart}
-                  onDragEnd={onDragEnd}
-                  onPointerDragStart={onPointerDragStart}
-                  onPointerDragMove={onPointerDragMove}
-                  onPointerDragEnd={onPointerDragEnd}
-                  onPointerDragCancel={onPointerDragCancel}
-                />
-
-                {child.type !== "scrollToTopButton" && !isRow && (
-                  <CanvasDropZone
+            {children.map((child, index) => {
+              const childIsAbsolute = child.layout?.position === "absolute";
+              return (
+                <div
+                  key={child.id}
+                  style={
+                    childIsAbsolute
+                      ? { display: "contents" }
+                      : {
+                          flex: isRow
+                            ? child.layout?.width
+                              ? undefined
+                              : 1
+                            : undefined,
+                          width: isRow ? child.layout?.width : "100%",
+                          minWidth: 0,
+                        }
+                  }
+                >
+                  <LayoutComponentNode
                     previewMode={previewMode}
-                    parentId={component.id}
-                    index={index + 1}
-                    direction={direction}
+                    component={child}
+                    selectedComponentId={selectedComponentId}
                     draggingId={draggingId}
+                    layerSearch={layerSearch}
                     activeDropTarget={activeDropTarget}
                     setActiveDropTarget={setActiveDropTarget}
-                    onDrop={onDrop}
+                    onLayoutChange={onLayoutChange}
+                    onEdit={onEdit}
+                    onCopy={onCopy}
+                    onDelete={onDelete}
                     onCreate={onCreate}
+                    onDrop={onDrop}
+                    onDragStart={onDragStart}
+                    onDragEnd={onDragEnd}
+                    onPointerDragStart={onPointerDragStart}
+                    onPointerDragMove={onPointerDragMove}
+                    onPointerDragEnd={onPointerDragEnd}
+                    onPointerDragCancel={onPointerDragCancel}
                   />
-                )}
-              </div>
-            ))}
-
+                  {!childIsAbsolute &&
+                    child.type !== "scrollToTopButton" &&
+                    !isRow && (
+                      <CanvasDropZone
+                        previewMode={previewMode}
+                        parentId={component.id}
+                        index={index + 1}
+                        direction={direction}
+                        draggingId={draggingId}
+                        activeDropTarget={activeDropTarget}
+                        setActiveDropTarget={setActiveDropTarget}
+                        onDrop={onDrop}
+                        onCreate={onCreate}
+                      />
+                    )}
+                </div>
+              );
+            })}
             {isRow && (
               <CanvasDropZone
                 previewMode={previewMode}
@@ -223,14 +241,7 @@ export default function LayoutComponentNode({
   }
 
   return (
-    <div
-      data-component-id={component.id}
-      style={{
-        position: "relative",
-      }}
-    >
-      {!previewMode && dragHandle}
-
+    <div data-component-id={component.id} style={nodeStyle}>
       <DivBox
         previewMode={previewMode}
         layout={component.layout}
@@ -250,6 +261,7 @@ export default function LayoutComponentNode({
             !previewMode && isSelected ? "2px" : component.style?.outlineOffset,
         }}
       >
+        {dragHandleView}
         <CanvasComponentContent component={component} />
       </DivBox>
     </div>

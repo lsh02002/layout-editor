@@ -1,10 +1,14 @@
 import type { CSSProperties, Dispatch, SetStateAction } from "react";
+import type { ComponentLayout } from "../../../../types/types";
 
 type Props = {
   editStyle: CSSProperties;
   setEditStyle: Dispatch<SetStateAction<CSSProperties>>;
   editContentStyle: CSSProperties;
   setEditContentStyle: Dispatch<SetStateAction<CSSProperties>>;
+  editLayout: ComponentLayout;
+  setEditLayout: Dispatch<SetStateAction<ComponentLayout>>;
+  onLayoutChange: (layout: Partial<ComponentLayout>) => void;
 };
 
 function EditStyleTab({
@@ -12,6 +16,9 @@ function EditStyleTab({
   setEditStyle,
   editContentStyle,
   setEditContentStyle,
+  editLayout,
+  setEditLayout,
+  onLayoutChange,
 }: Props) {
   const updateStyle = (
     key: keyof CSSProperties,
@@ -177,6 +184,99 @@ function EditStyleTab({
           <option value="right">Right</option>
         </select>
       </div>
+
+      <div className="col-md-6">
+        <label className="form-label fw-semibold">위치 방식</label>
+
+        <select
+          className="form-select"
+          value={editLayout.position ?? "relative"}
+          onChange={(event) => {
+            const position = event.target.value as "relative" | "absolute";
+            const nextLayout: Partial<ComponentLayout> =
+              position === "absolute"
+                ? {
+                    position: "absolute",
+                    x: editLayout.x ?? 0,
+                    y: editLayout.y ?? 0,
+                  }
+                : {
+                    position: "relative",
+                    x: undefined,
+                    y: undefined,
+                  };
+
+            setEditLayout((prev) => ({
+              ...prev,
+              ...nextLayout,
+            }));
+            onLayoutChange(nextLayout);
+          }}
+        >
+          <option value="relative">일반 배치</option>
+          <option value="absolute">자유 배치</option>
+        </select>
+
+        <div className="form-text">
+          자유 배치를 선택하면 캔버스에서 원하는 위치로 이동할 수 있습니다.
+        </div>
+      </div>
+
+      {editLayout.position === "absolute" && (
+        <div className="row g-2 mb-3">
+          <div className="col-6">
+            <label className="form-label">X</label>
+
+            <div className="input-group">
+              <input
+                type="number"
+                className="form-control"
+                value={editLayout.x ?? 0}
+                onChange={(event) => {
+                  const x = Number(event.target.value) || 0;
+                  setEditLayout((prev) => ({
+                    ...prev,
+                    x,
+                  }));
+
+                  const y = Number(event.target.value) || 0;
+                  setEditLayout((prev) => ({
+                    ...prev,
+                    y,
+                  }));
+                  onLayoutChange({
+                    x,
+                    y,
+                  });
+                }}
+              />
+
+              <span className="input-group-text">px</span>
+            </div>
+          </div>
+
+          <div className="col-6">
+            <label className="form-label">Y</label>
+
+            <div className="input-group">
+              <input
+                type="number"
+                className="form-control"
+                value={editLayout.y ?? 0}
+                onChange={(event) => {
+                  setEditLayout({
+                    ...editLayout,
+
+                    y: Number(event.target.value) || 0,
+                  });
+                }}
+              />
+
+              <span className="input-group-text">px</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="col-12">
         <button

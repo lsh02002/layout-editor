@@ -1,6 +1,7 @@
 import type { CSSProperties, Dispatch, SetStateAction } from "react";
 
 import type {
+  ComponentLayout,
   ComponentType,
   FavoriteComponent,
   LinkType,
@@ -64,6 +65,11 @@ type Props = {
   addSelectedComponentToFavorites: () => void;
   insertFavoriteComponent: (favorite: FavoriteComponent) => void;
   removeFavoriteComponent: (favoriteId: string) => void;
+
+  editLayout: ComponentLayout;
+  setEditLayout: Dispatch<SetStateAction<ComponentLayout>>;
+
+  onLayoutChange: (id: string, layout: Partial<ComponentLayout>) => void;
 };
 
 function EditComponentPanel({
@@ -108,6 +114,9 @@ function EditComponentPanel({
   addSelectedComponentToFavorites,
   insertFavoriteComponent,
   removeFavoriteComponent,
+  editLayout,
+  setEditLayout,
+  onLayoutChange,
 }: Props) {
   const tabMenus = [
     { key: "basic", label: "기본 설정" },
@@ -231,6 +240,14 @@ function EditComponentPanel({
                   setEditStyle={setEditStyle}
                   editContentStyle={editContentStyle}
                   setEditContentStyle={setEditContentStyle}
+                  editLayout={editLayout}
+                  setEditLayout={setEditLayout}
+                  onLayoutChange={(layout) => {
+                    if (!selectedComponentId) {
+                      return;
+                    }
+                    onLayoutChange(selectedComponentId, layout);
+                  }}
                 />
               )}
 

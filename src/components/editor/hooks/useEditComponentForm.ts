@@ -1,9 +1,10 @@
 import { useCallback, useState, type CSSProperties } from "react";
 
-import type {
-  ComponentType,
-  LayoutComponent,
-  LinkType,
+import {
+  type ComponentLayout,
+  type ComponentType,
+  type LayoutComponent,
+  type LinkType,
 } from "../../../types/types";
 
 export type EditTab = "basic" | "style" | "css";
@@ -49,6 +50,10 @@ export const useEditComponentForm = () => {
     1 | 2 | 3 | 4 | 5 | 6
   >(2);
 
+  const [editLayout, setEditLayout] = useState<ComponentLayout>({
+    position: "relative",
+  });
+
   const loadComponentToEdit = useCallback((component: LayoutComponent) => {
     setEditingComponentId(component.id);
 
@@ -67,6 +72,18 @@ export const useEditComponentForm = () => {
     );
 
     setEditCustomCss(component.customCss ?? "");
+
+    setEditLayout({
+      position: component.layout?.position ?? "relative",
+
+      x: component.layout?.x,
+
+      y: component.layout?.y,
+
+      width: component.layout?.width,
+
+      height: component.layout?.height,
+    });
 
     setEditTab("basic");
 
@@ -196,5 +213,7 @@ export const useEditComponentForm = () => {
     editHeadingLevel,
     setEditHeadingLevel,
     loadComponentToEdit,
+    editLayout,
+    setEditLayout,
   };
 };

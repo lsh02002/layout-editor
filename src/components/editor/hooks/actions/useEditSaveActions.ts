@@ -35,10 +35,15 @@ export const useEditSaveActions = ({
         editLinkNewWindow,
         editComponentName,
         editHeadingLevel,
+        editLayout,
       } = editValues;
 
       const common = {
         name: editComponentName.trim() || component.name,
+        layout: {
+          ...component.layout,
+          ...editLayout,
+        },
         style: {
           ...editStyle,
         },

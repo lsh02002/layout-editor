@@ -109,6 +109,8 @@ function LayoutEditor() {
     editHeadingLevel,
     setEditHeadingLevel,
     loadComponentToEdit,
+    editLayout,
+    setEditLayout,
   } = useEditComponentForm();
 
   const [snapEnabled, setSnapEnabled] = useState(true);
@@ -266,14 +268,19 @@ function LayoutEditor() {
   });
 
   const updateLayout = (id: string, newLayout: Partial<ComponentLayout>) => {
-    // 그리드 스냅 적용
     const snappedLayout = snapLayout(newLayout);
 
     const updater = (prev: LayoutComponent[]) =>
       updateLayoutRecursive(prev, id, snappedLayout);
 
-    // 일반 단발 변경
     setComponents(updater);
+
+    if (selectedComponentId === id) {
+      setEditLayout((prev) => ({
+        ...prev,
+        ...snappedLayout,
+      }));
+    }
   };
 
   const {
@@ -317,6 +324,7 @@ function LayoutEditor() {
       editLinkNewWindow,
       editComponentName,
       editHeadingLevel,
+      editLayout,
     },
   });
 
@@ -586,6 +594,9 @@ function LayoutEditor() {
         addSelectedComponentToFavorites={addSelectedComponentToFavorites}
         insertFavoriteComponent={insertFavoriteComponent}
         removeFavoriteComponent={removeFavoriteComponent}
+        editLayout={editLayout}
+        setEditLayout={setEditLayout}
+        onLayoutChange={updateLayout}
       />
     </>
   );
