@@ -15,7 +15,7 @@ type LayerPanelProps = {
   search: string;
   activeDropTarget: DropTarget;
   onSearchChange: (value: string) => void;
-  onClose: () => void;  
+  onClose: () => void;
   onEdit: (componentId: string) => void;
   onAddFavorite: () => void;
   onDragStart: (
@@ -116,7 +116,7 @@ export default function LayerPanel({
   search,
   activeDropTarget,
   onSearchChange,
-  onClose,  
+  onClose,
   onEdit,
   onAddFavorite,
   onDragStart,
@@ -371,14 +371,7 @@ export default function LayerPanel({
       </div>
 
       {selectedComponentId && (
-        <div className="border-top p-2">
-          <button
-            type="button"
-            className="btn btn-primary btn-sm w-100"
-            onClick={() => onEdit(selectedComponentId)}
-          >
-            선택한 컴포넌트 편집
-          </button>
+        <div className="p-2">
           <button
             type="button"
             className="btn btn-outline-warning btn-sm w-100"
