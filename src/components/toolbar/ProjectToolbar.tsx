@@ -60,6 +60,7 @@ export default function ProjectToolbar({
           }
           onClick={() => setPreviewMode((prev) => !prev)}
         >
+          <i className={previewMode ? "bi bi-pencil-square" : "bi bi-eye"} />{" "}
           {previewMode ? "편집 모드" : "미리보기"}
         </button>
         <div className="form-check mb-0">
