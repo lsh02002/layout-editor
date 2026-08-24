@@ -94,7 +94,8 @@ function LayoutEditorStyles() {
 
         z-index: 1400;
 
-        overflow: hidden;
+        overflow-y: auto;
+        padding-bottom: 120px;
       }
 
       .editor-edit-panel-header {
