@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
   AUTOSAVE_KEY,
@@ -25,8 +25,12 @@ export const useAutoSave = ({
     readAutoSaveData(),
   );
 
-  const [autoSaveBaseline, setAutoSaveBaseline] = useState(() =>
+  const [autoSaveBaseline, setAutoSaveBaselineState] = useState(() =>
     getAutoSaveSnapshot(components, projectCustomCss),
+  );
+
+  const [hasUnsavedAutoSave, setHasUnsavedAutoSave] = useState(
+    () => restoreData !== null,
   );
 
   const showRestoreModal = restoreData !== null;
@@ -49,9 +53,9 @@ export const useAutoSave = ({
 
         localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
 
-        setAutoSaveBaseline(currentSnapshot);
-
+        setAutoSaveBaselineState(currentSnapshot);
         setLastAutoSavedAt(data.savedAt);
+        setHasUnsavedAutoSave(true);
       } catch (error) {
         console.error("자동 저장 실패:", error);
       }
@@ -62,27 +66,52 @@ export const useAutoSave = ({
     };
   }, [components, projectCustomCss, autoSaveBaseline, delay]);
 
-  const discardAutoSave = () => {
+  useEffect(() => {
+    if (!hasUnsavedAutoSave) {
+      return;
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [hasUnsavedAutoSave]);
+
+  const setAutoSaveBaseline = useCallback((snapshot: string) => {
+    setAutoSaveBaselineState(snapshot);
+    setHasUnsavedAutoSave(false);
+  }, []);
+
+  const discardAutoSave = useCallback(() => {
     localStorage.removeItem(AUTOSAVE_KEY);
 
     setRestoreData(null);
-  };
+    setHasUnsavedAutoSave(false);
+  }, []);
 
-  const consumeRestoreData = (data: AutoSaveData) => {
+  const consumeRestoreData = useCallback((data: AutoSaveData) => {
     localStorage.removeItem(AUTOSAVE_KEY);
 
-    setAutoSaveBaseline(
+    setAutoSaveBaselineState(
       getAutoSaveSnapshot(data.components, data.projectCustomCss ?? ""),
     );
 
     setRestoreData(null);
-  };
+    setHasUnsavedAutoSave(false);
+  }, []);
 
   return {
     lastAutoSavedAt,
     restoreData,
     showRestoreModal,
     autoSaveBaseline,
+    hasUnsavedAutoSave,
     setAutoSaveBaseline,
     discardAutoSave,
     consumeRestoreData,
