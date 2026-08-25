@@ -484,8 +484,7 @@ function LayoutEditor() {
           onPointerDragStart={handlePointerDragStart}
           onPointerDragMove={handlePointerDragMove}
           onPointerDragEnd={handlePointerDragEnd}
-          onPointerDragCancel={handlePointerDragCancel}
-          setSelectedComponentId={setSelectedComponentId}
+          onPointerDragCancel={handlePointerDragCancel}          
         />
       </div>
       <div className="editor-mobile-panel-buttons">

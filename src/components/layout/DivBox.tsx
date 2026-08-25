@@ -75,18 +75,19 @@ function DivBox({
     setOver(false);
   };
 
-  const handleDoubleClick = useCallback(
+  const handleClick = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
       if (previewMode) {
+        return;
+      }
+
+      if (!isOwnDivBox(event.target, event.currentTarget)) {
         return;
       }
 
       event.preventDefault();
       event.stopPropagation();
 
-      if (!isOwnDivBox(event.target, event.currentTarget)) {
-        return;
-      }
       onEdit?.();
     },
     [onEdit, previewMode],
@@ -233,8 +234,10 @@ function DivBox({
       if (!isOwnDivBox(event.target, event.currentTarget)) {
         return;
       }
+
+      onEdit?.();
     },
-    [previewMode],
+    [onEdit, previewMode],
   );
 
   return (
@@ -245,7 +248,7 @@ function DivBox({
         ${className}
         bg-white
       `}
-      onDoubleClick={handleDoubleClick}
+      onClick={handleClick}
       onPointerUp={handlePointerUp}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
