@@ -99,7 +99,7 @@ export default function LayoutComponentNode({
   };
 
   const dragHandleView =
-    !previewMode && !isAbsolute ? (
+    !previewMode && !isAbsolute && isSelected ? (
       <div
         style={{
           position: "absolute",
