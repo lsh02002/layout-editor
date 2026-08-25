@@ -23,13 +23,25 @@ import { collectComponentCustomCss } from "./utils/customCssUtils";
 import { downloadHtmlFile } from "./utils/htmlExport";
 import { updateLayoutRecursive } from "./utils/componentTree";
 import { filterLayerComponents } from "./utils/componentSearch";
-import { type ComponentLayout, type LayoutComponent } from "../../types/types";
+import {
+  type ComponentLayout,
+  type LayoutComponent,
+  type TemplateItem,
+} from "../../types/types";
 
 import { data } from "../../data/data";
 import { useComponentActions } from "./hooks/useComponentActions";
 
 function LayoutEditor() {
   const [previewMode, setPreviewMode] = useState(false);
+
+  const [templateFiles, setTemplateFiles] = useState<
+    { name: string; data: TemplateItem }[]
+  >([]);
+
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
+    null,
+  );
 
   const {
     components,
@@ -251,39 +263,6 @@ function LayoutEditor() {
   );
 
   const {
-    draggingId,
-    activeDropTarget,
-    setActiveDropTarget,
-    handleDragStart,
-    handleDragEnd,
-    handlePointerDragStart,
-    handlePointerDragMove,
-    handlePointerDragEnd,
-    handlePointerDragCancel,
-    handleDrop,
-  } = useComponentDragDrop({
-    components,
-    layerSearch,
-    commitHistory,
-  });
-
-  const updateLayout = (id: string, newLayout: Partial<ComponentLayout>) => {
-    const snappedLayout = snapLayout(newLayout);
-
-    const updater = (prev: LayoutComponent[]) =>
-      updateLayoutRecursive(prev, id, snappedLayout);
-
-    setComponents(updater);
-
-    if (selectedComponentId === id) {
-      setEditLayout((prev) => ({
-        ...prev,
-        ...snappedLayout,
-      }));
-    }
-  };
-
-  const {
     openCreateModal,
     closeCreateModal,
     createComponent,
@@ -292,6 +271,7 @@ function LayoutEditor() {
     editComponent,
     resetEditPanelToSelected,
     saveEditedComponent,
+    dropTemplate,
   } = useComponentActions({
     components,
     selectedComponentId,
@@ -309,6 +289,9 @@ function LayoutEditor() {
     commitHistory,
     setComponents,
     setFavoriteComponents,
+    templates: templateFiles.map((file) => file.data),
+    selectedTemplateId,
+    setSelectedTemplateId,
     editValues: {
       editingComponentId,
       editTitle,
@@ -327,6 +310,40 @@ function LayoutEditor() {
       editLayout,
     },
   });
+
+  const {
+    draggingId,
+    activeDropTarget,
+    setActiveDropTarget,
+    handleDragStart,
+    handleDragEnd,
+    handlePointerDragStart,
+    handlePointerDragMove,
+    handlePointerDragEnd,
+    handlePointerDragCancel,
+    handleDrop,
+  } = useComponentDragDrop({
+    components,
+    layerSearch,
+    dropTemplate,
+    commitHistory,
+  });
+
+  const updateLayout = (id: string, newLayout: Partial<ComponentLayout>) => {
+    const snappedLayout = snapLayout(newLayout);
+
+    const updater = (prev: LayoutComponent[]) =>
+      updateLayoutRecursive(prev, id, snappedLayout);
+
+    setComponents(updater);
+
+    if (selectedComponentId === id) {
+      setEditLayout((prev) => ({
+        ...prev,
+        ...snappedLayout,
+      }));
+    }
+  };
 
   const componentCustomCss = collectComponentCustomCss(components);
 
@@ -468,6 +485,7 @@ function LayoutEditor() {
           onPointerDragMove={handlePointerDragMove}
           onPointerDragEnd={handlePointerDragEnd}
           onPointerDragCancel={handlePointerDragCancel}
+          setSelectedComponentId={setSelectedComponentId}
         />
       </div>
       <div className="editor-mobile-panel-buttons">
@@ -483,25 +501,6 @@ function LayoutEditor() {
           }}
         >
           레이어
-        </button>
-
-        <button
-          type="button"
-          className="
-          btn
-          btn-warning
-          btn-sm
-        "
-          onClick={() => {
-            setShowLayerPanel(false);
-            setShowFavoritePanel((prev) => !prev);
-          }}
-          style={{
-            flex: 1,
-          }}
-        >
-          ⭐ 즐겨찾기
-          {favoriteComponents.length > 0 && <> ({favoriteComponents.length})</>}
         </button>
       </div>
       <AutoSaveRestoreModal
@@ -597,6 +596,10 @@ function LayoutEditor() {
         editLayout={editLayout}
         setEditLayout={setEditLayout}
         onLayoutChange={updateLayout}
+        templateFiles={templateFiles}
+        setTemplateFiles={setTemplateFiles}
+        selectedTemplateId={selectedTemplateId}
+        setSelectedTemplateId={setSelectedTemplateId}
       />
     </>
   );

@@ -13,6 +13,7 @@ type Props = {
   previewMode: boolean;
   component: LayoutComponent;
   selectedComponentId: string | null;
+  setSelectedComponentId: (id: string | null) => void;
   draggingId: string | null;
   layerSearch: string;
   activeDropTarget: CanvasDropTarget | null;
@@ -45,6 +46,7 @@ export default function LayoutComponentNode({
   draggingId,
   layerSearch,
   activeDropTarget,
+  setSelectedComponentId,
   setActiveDropTarget,
   onLayoutChange,
   onEdit,
@@ -63,6 +65,16 @@ export default function LayoutComponentNode({
   const isDragging = isLocalDragging || draggingId === component.id;
   const isSelected = selectedComponentId === component.id;
   const isAbsolute = component.layout?.position === "absolute";
+
+  const handleSelect = () => {
+    if (previewMode) {
+      return;
+    }
+    if (isDragging) {
+      return;
+    }
+    setSelectedComponentId(component.id);
+  };
 
   const handleNativeDragStart = (
     event: DragEvent<HTMLElement>,
@@ -119,7 +131,14 @@ export default function LayoutComponentNode({
     const isRow = direction === "row";
 
     return (
-      <div data-component-id={component.id} style={nodeStyle}>
+      <div
+        data-component-id={component.id}
+        style={nodeStyle}
+        onClick={(event) => {
+          event.stopPropagation();
+          handleSelect();
+        }}
+      >
         <DivBox
           previewMode={previewMode}
           layout={component.layout}
@@ -184,6 +203,7 @@ export default function LayoutComponentNode({
                   }
                 >
                   <LayoutComponentNode
+                    setSelectedComponentId={setSelectedComponentId}
                     previewMode={previewMode}
                     component={child}
                     selectedComponentId={selectedComponentId}
@@ -242,7 +262,14 @@ export default function LayoutComponentNode({
   }
 
   return (
-    <div data-component-id={component.id} style={nodeStyle}>
+    <div
+      data-component-id={component.id}
+      style={nodeStyle}
+      onClick={(event) => {
+        event.stopPropagation();
+        handleSelect();
+      }}
+    >
       <DivBox
         previewMode={previewMode}
         layout={component.layout}

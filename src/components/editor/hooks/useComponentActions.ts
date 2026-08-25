@@ -1,4 +1,4 @@
-import type { LayoutComponent } from "../../../types/types";
+import type { LayoutComponent, TemplateItem } from "../../../types/types";
 
 import type {
   BooleanSetter,
@@ -12,12 +12,10 @@ import type {
 } from "../../../types/types";
 
 import { useCreateActions } from "./actions/useCreateActions";
-
 import { useCrudActions } from "./actions/useCrudActions";
-
 import { useSelectionActions } from "./actions/useSelectionActions";
-
 import { useEditSaveActions } from "./actions/useEditSaveActions";
+import { useTemplateActions } from "./actions/useTemplateActions";
 
 type Options = {
   components: LayoutComponent[];
@@ -45,6 +43,10 @@ type Options = {
   setFavoriteComponents: FavoriteSetter;
 
   editValues: EditValues;
+
+  templates: TemplateItem[];
+  selectedTemplateId: string | null;
+  setSelectedTemplateId: (id: string | null) => void;
 };
 
 export const useComponentActions = ({
@@ -64,6 +66,9 @@ export const useComponentActions = ({
   setComponents,
   setFavoriteComponents,
   editValues,
+  templates,
+  selectedTemplateId,
+  setSelectedTemplateId,
 }: Options) => {
   const createActions = useCreateActions({
     components,
@@ -102,10 +107,18 @@ export const useComponentActions = ({
     setFavoriteComponents,
   });
 
+  const templateActions = useTemplateActions({
+    templates,
+    selectedTemplateId,
+    setSelectedTemplateId,
+    commitHistory,
+  });
+
   return {
     ...createActions,
     ...crudActions,
     ...selectionActions,
     ...editActions,
+    ...templateActions,
   };
 };

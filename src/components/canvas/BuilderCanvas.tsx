@@ -31,6 +31,7 @@ type Props = {
   onPointerDragMove: (event: PointerEvent<HTMLElement>) => void;
   onPointerDragEnd: (event: PointerEvent<HTMLElement>) => void;
   onPointerDragCancel: () => void;
+  setSelectedComponentId: (id: string | null) => void;
 };
 
 export default function BuilderCanvas({
@@ -53,6 +54,7 @@ export default function BuilderCanvas({
   onPointerDragMove,
   onPointerDragEnd,
   onPointerDragCancel,
+  setSelectedComponentId,
 }: Props) {
   const sortedComponents = [...components].sort((a, b) => a.order - b.order);
 
@@ -96,6 +98,7 @@ export default function BuilderCanvas({
             draggingId={draggingId}
             layerSearch={layerSearch}
             activeDropTarget={activeDropTarget}
+            setSelectedComponentId={setSelectedComponentId}
             setActiveDropTarget={setActiveDropTarget}
             onLayoutChange={onLayoutChange}
             onEdit={onEdit}

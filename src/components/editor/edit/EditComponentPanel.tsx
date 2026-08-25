@@ -5,6 +5,7 @@ import type {
   ComponentType,
   FavoriteComponent,
   LinkType,
+  TemplateItem,
 } from "../../../types/types";
 
 import FavoritePanel from "../../favorites/FavoritePanel";
@@ -70,6 +71,11 @@ type Props = {
   setEditLayout: Dispatch<SetStateAction<ComponentLayout>>;
 
   onLayoutChange: (id: string, layout: Partial<ComponentLayout>) => void;
+
+  templateFiles: { name: string; data: TemplateItem }[];
+  setTemplateFiles: (files: { name: string; data: TemplateItem }[]) => void;
+  selectedTemplateId: string | null;
+  setSelectedTemplateId: (id: string | null) => void;
 };
 
 function EditComponentPanel({
@@ -117,6 +123,10 @@ function EditComponentPanel({
   editLayout,
   setEditLayout,
   onLayoutChange,
+  templateFiles,
+  setTemplateFiles,
+  selectedTemplateId,
+  setSelectedTemplateId,
 }: Props) {
   const tabMenus = [
     { key: "basic", label: "기본 설정" },
@@ -286,6 +296,10 @@ function EditComponentPanel({
           onAddSelected={addSelectedComponentToFavorites}
           onInsert={insertFavoriteComponent}
           onRemove={removeFavoriteComponent}
+          templateFiles={templateFiles}
+          setTemplateFiles={setTemplateFiles}
+          selectedTemplateId={selectedTemplateId}
+          setSelectedTemplateId={setSelectedTemplateId}
         />
       </aside>
     </>

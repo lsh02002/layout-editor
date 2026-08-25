@@ -63,7 +63,13 @@ export default function CanvasDropZone({
       onDragOver={(event) => {
         event.preventDefault();
         event.stopPropagation();
-        event.dataTransfer.dropEffect = "move";
+
+        const templateData = event.dataTransfer.types.includes(
+          "application/x-pagebuilder-template",
+        );
+
+        event.dataTransfer.dropEffect = templateData ? "copy" : "move";
+
         activate();
       }}
       onDragLeave={(event) => {

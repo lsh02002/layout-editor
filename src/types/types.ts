@@ -151,6 +151,20 @@ export type TemplateFile =
       component: LayoutComponent;
     };
 
+export type TemplateItem = {
+  id: string;
+  name: string;
+  description?: string;
+  components: LayoutComponent[];
+  projectCustomCss?: string;
+  createdAt?: string;
+};
+
+export type TemplateDragData = {
+  type: "template";
+  templateId: string;
+};
+
 export type FavoriteComponent = {
   id: string;
   sourceComponentId: string;

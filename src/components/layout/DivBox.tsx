@@ -230,14 +230,11 @@ function DivBox({
       }
 
       event.stopPropagation();
-
       if (!isOwnDivBox(event.target, event.currentTarget)) {
         return;
       }
-
-      onEdit?.();
     },
-    [onEdit, previewMode],
+    [previewMode],
   );
 
   return (

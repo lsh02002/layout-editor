@@ -158,8 +158,15 @@ export default function LayerPanel({
         onDragOver={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          event.dataTransfer.dropEffect = "move";
-          onActiveDropTargetChange({ parentId, index, area: "layer" });
+          const isTemplate = event.dataTransfer.types.includes(
+            "application/x-pagebuilder-template",
+          );
+          event.dataTransfer.dropEffect = isTemplate ? "copy" : "move";
+          onActiveDropTargetChange({
+            parentId,
+            index,
+            area: "layer",
+          });
         }}
         onDragLeave={(event) => {
           event.stopPropagation();
@@ -170,7 +177,13 @@ export default function LayerPanel({
 
           onActiveDropTargetChange(null);
         }}
-        onDrop={(event) => onDrop(event, parentId, index)}
+        onDrop={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+
+          onDrop(event, parentId, index);
+          onActiveDropTargetChange(null);
+        }}
         style={{
           marginLeft: depth * 14,
           height: isActive ? 18 : 10,

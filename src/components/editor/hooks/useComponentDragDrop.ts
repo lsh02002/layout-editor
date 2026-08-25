@@ -1,4 +1,9 @@
-import { useRef, useState, type DragEvent, type PointerEvent } from "react";
+import {
+  useRef,
+  useState,
+  type DragEvent,
+  type PointerEvent,
+} from "react";
 
 import type { LayoutComponent } from "../../../types/types";
 
@@ -23,12 +28,18 @@ type CommitHistory = (
 type Options = {
   components: LayoutComponent[];
   layerSearch: string;
+  dropTemplate: (
+    event: DragEvent<HTMLElement>,
+    parentId: string | null,
+    index: number,
+  ) => boolean;
   commitHistory: CommitHistory;
 };
 
 export const useComponentDragDrop = ({
   components,
   layerSearch,
+  dropTemplate,
   commitHistory,
 }: Options) => {
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -236,7 +247,18 @@ export const useComponentDragDrop = ({
     event: DragEvent<HTMLElement>,
     parentId: string | null,
     index: number,
-  ) => {
+  ) => {    
+    const templateDropped = dropTemplate(event, parentId, index);
+
+    if (templateDropped) {
+      setActiveDropTarget(null);
+      return;
+    }
+
+    if (!draggingId) {
+      return;
+    }
+
     event.preventDefault();
     event.stopPropagation();
 
