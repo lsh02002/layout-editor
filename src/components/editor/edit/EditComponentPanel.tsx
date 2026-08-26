@@ -14,11 +14,11 @@ import type {
   TemplateItem,
 } from "../../../types/types";
 
-import FavoritePanel from "../../favorites/FavoritePanel";
 import type { EditTab } from "../hooks/useEditComponentForm";
 import EditBasicTab from "./tabs/EditBasicTab";
 import EditStyleTab from "./tabs/EditStyleTab";
 import EditCssTab from "./tabs/EditCssTab";
+import ComponentLibraryPanel from "../../librarypanel/ComponentLibraryPanel";
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -338,7 +338,7 @@ function EditComponentPanel({
                   setEditComponentName={setEditComponentName}
                   editHeadingLevel={editHeadingLevel}
                   setEditHeadingLevel={setEditHeadingLevel}
-                  onImmediateChange={onImmediateChange}                  
+                  onImmediateChange={onImmediateChange}
                 />
               )}
 
@@ -393,7 +393,7 @@ function EditComponentPanel({
           </button>
         </div>
 
-        <FavoritePanel
+        <ComponentLibraryPanel
           favorites={favoriteComponents}
           hasSelectedComponent={Boolean(selectedComponentId)}
           onAddSelected={addSelectedComponentToFavorites}
