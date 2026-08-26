@@ -329,13 +329,17 @@ function LayoutEditor() {
     commitHistory,
   });
 
-  const updateLayout = (id: string, newLayout: Partial<ComponentLayout>) => {
+  const updateLayout = (
+    id: string,
+    newLayout: Partial<ComponentLayout>,
+    recordHistory: boolean = true,
+  ) => {
     const snappedLayout = snapLayout(newLayout);
 
     const updater = (prev: LayoutComponent[]) =>
       updateLayoutRecursive(prev, id, snappedLayout);
 
-    setComponents(updater);
+    setComponents(updater, recordHistory);
 
     if (selectedComponentId === id) {
       setEditLayout((prev) => ({
@@ -484,7 +488,7 @@ function LayoutEditor() {
           onPointerDragStart={handlePointerDragStart}
           onPointerDragMove={handlePointerDragMove}
           onPointerDragEnd={handlePointerDragEnd}
-          onPointerDragCancel={handlePointerDragCancel}          
+          onPointerDragCancel={handlePointerDragCancel}
         />
       </div>
       <div className="editor-mobile-panel-buttons">

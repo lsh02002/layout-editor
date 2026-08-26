@@ -12,7 +12,11 @@ type Props = {
   activeDropTarget: CanvasDropTarget | null;
   setPreviewMode: React.Dispatch<React.SetStateAction<boolean>>;
   setActiveDropTarget: (target: CanvasDropTarget | null) => void;
-  onLayoutChange: (id: string, layout: Partial<ComponentLayout>) => void;
+  onLayoutChange: (
+    id: string,
+    layout: Partial<ComponentLayout>,
+    recordHistory?: boolean,
+  ) => void;
   onEdit: (id: string) => void;
   onCopy: (id: string) => void;
   onDelete: (id: string) => void;

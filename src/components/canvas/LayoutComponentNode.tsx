@@ -17,7 +17,11 @@ type Props = {
   layerSearch: string;
   activeDropTarget: CanvasDropTarget | null;
   setActiveDropTarget: (target: CanvasDropTarget | null) => void;
-  onLayoutChange: (id: string, layout: Partial<ComponentLayout>) => void;
+  onLayoutChange: (
+    id: string,
+    layout: Partial<ComponentLayout>,
+    recordHistory?: boolean,
+  ) => void;
   onEdit: (id: string) => void;
   onCopy: (id: string) => void;
   onDelete: (id: string) => void;
@@ -123,7 +127,9 @@ export default function LayoutComponentNode({
         <DivBox
           previewMode={previewMode}
           layout={component.layout}
-          onLayoutChange={(layout) => onLayoutChange(component.id, layout)}
+          onLayoutChange={(layout, recordHistory) =>
+            onLayoutChange(component.id, layout, recordHistory)
+          }
           onEdit={() => onEdit(component.id)}
           onCopy={() => onCopy(component.id)}
           onDelete={() => onDelete(component.id)}
@@ -246,7 +252,9 @@ export default function LayoutComponentNode({
       <DivBox
         previewMode={previewMode}
         layout={component.layout}
-        onLayoutChange={(layout) => onLayoutChange(component.id, layout)}
+        onLayoutChange={(layout, recordHistory) =>
+          onLayoutChange(component.id, layout, recordHistory)
+        }
         onEdit={() => onEdit(component.id)}
         onCopy={() => onCopy(component.id)}
         onDelete={() => onDelete(component.id)}

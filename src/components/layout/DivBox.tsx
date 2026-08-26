@@ -17,7 +17,10 @@ interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   previewMode?: boolean;
   layout?: ComponentLayout;
-  onLayoutChange?: (layout: Partial<ComponentLayout>) => void;
+  onLayoutChange?: (
+    layout: Partial<ComponentLayout>,
+    recordHistory?: boolean,
+  ) => void;
   onEdit?: () => void;
   onCopy?: () => void;
   onDelete?: () => void;
@@ -29,6 +32,8 @@ type PositionDragState = {
   startY: number;
   originalX: number;
   originalY: number;
+  currentX?: number;
+  currentY?: number;
 };
 
 function DivBox({
@@ -130,9 +135,6 @@ function DivBox({
     [onDelete, previewMode],
   );
 
-  /*
-   * 자유 위치 이동 시작
-   */
   const handlePositionPointerDown = useCallback(
     (event: PointerEvent<HTMLButtonElement>) => {
       if (previewMode || !isAbsolute || !onLayoutChange) {
@@ -144,12 +146,17 @@ function DivBox({
 
       event.currentTarget.setPointerCapture(event.pointerId);
 
+      const x = layout?.x ?? 0;
+      const y = layout?.y ?? 0;
+
       positionDragRef.current = {
         pointerId: event.pointerId,
         startX: event.clientX,
         startY: event.clientY,
-        originalX: layout?.x ?? 0,
-        originalY: layout?.y ?? 0,
+        originalX: x,
+        originalY: y,
+        currentX: x,
+        currentY: y,
       };
 
       setMoving(true);
@@ -161,11 +168,7 @@ function DivBox({
     (event: PointerEvent<HTMLButtonElement>) => {
       const drag = positionDragRef.current;
 
-      if (!drag || !onLayoutChange) {
-        return;
-      }
-
-      if (drag.pointerId !== event.pointerId) {
+      if (!drag || drag.pointerId !== event.pointerId) {
         return;
       }
 
@@ -175,10 +178,19 @@ function DivBox({
       const deltaX = event.clientX - drag.startX;
       const deltaY = event.clientY - drag.startY;
 
-      onLayoutChange({
-        x: drag.originalX + deltaX,
-        y: drag.originalY + deltaY,
-      });
+      const x = drag.originalX + deltaX;
+      const y = drag.originalY + deltaY;
+
+      drag.currentX = x;
+      drag.currentY = y;
+
+      onLayoutChange?.(
+        {
+          x,
+          y,
+        },
+        false,
+      );
     },
     [onLayoutChange],
   );
@@ -187,11 +199,7 @@ function DivBox({
     (event: PointerEvent<HTMLButtonElement>) => {
       const drag = positionDragRef.current;
 
-      if (!drag) {
-        return;
-      }
-
-      if (drag.pointerId !== event.pointerId) {
+      if (!drag || drag.pointerId !== event.pointerId) {
         return;
       }
 
@@ -202,22 +210,50 @@ function DivBox({
         event.currentTarget.releasePointerCapture(event.pointerId);
       }
 
-      positionDragRef.current = null;
+      onLayoutChange?.(
+        {
+          x: drag.originalX,
+          y: drag.originalY,
+        },
+        false,
+      );
 
+      onLayoutChange?.(
+        {
+          x: drag.currentX,
+          y: drag.currentY,
+        },
+        true,
+      );
+
+      positionDragRef.current = null;
       setMoving(false);
     },
-    [],
+    [onLayoutChange],
   );
 
   const handlePositionPointerCancel = useCallback(
     (event: PointerEvent<HTMLButtonElement>) => {
+      const drag = positionDragRef.current;
+
       event.stopPropagation();
 
-      positionDragRef.current = null;
+      if (!drag) {
+        return;
+      }
 
+      onLayoutChange?.(
+        {
+          x: drag.originalX,
+          y: drag.originalY,
+        },
+        false,
+      );
+
+      positionDragRef.current = null;
       setMoving(false);
     },
-    [],
+    [onLayoutChange],
   );
 
   const handlePointerUp = useCallback(
