@@ -103,6 +103,10 @@ export default function LayoutComponentNode({
     width: isAbsolute ? "max-content" : undefined,
     maxWidth: isAbsolute ? "none" : undefined,
 
+    ...(component.style?.border
+      ? { border: component.style.border }
+      : { border: "none" }),
+
     zIndex: isAbsolute ? 10 : undefined,
   };
 
