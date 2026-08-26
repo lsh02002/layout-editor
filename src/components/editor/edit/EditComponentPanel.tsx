@@ -360,6 +360,7 @@ function EditComponentPanel({
                   editContentStyle={editContentStyle}
                   setEditContentStyle={setEditContentStyle}
                   editLayout={editLayout}
+                  isContainer={editType === "container"}
                   setEditLayout={setEditLayout}
                   onLayoutChange={(layout) => {
                     if (!selectedComponentId) {

@@ -18,6 +18,10 @@ type Props = {
 
   onLayoutChange: (layout: Partial<ComponentLayout>) => void;
 
+  // 컨테이너면 배경 관련 스타일은 style에,
+  // 일반 컴포넌트면 contentStyle에 적용합니다.
+  isContainer: boolean;
+
   onApply: (
     target: StyleTarget,
     key: keyof CSSProperties,
@@ -33,6 +37,7 @@ function EditStyleTab({
   editLayout,
   setEditLayout,
   onLayoutChange,
+  isContainer = false,
   onApply,
 }: Props) {
   /*
@@ -62,6 +67,30 @@ function EditStyleTab({
       ...prev,
       [key]: value,
     }));
+  };
+
+  /*
+   * 배경 관련 스타일은 컨테이너 여부에 따라 저장 위치를 분기합니다.
+   * - 컨테이너: style
+   * - 일반 컴포넌트: contentStyle
+   */
+  const backgroundStyle = isContainer ? editStyle : editContentStyle;
+  const backgroundTarget: StyleTarget = isContainer ? "style" : "contentStyle";
+
+  const updateBackgroundStyle = (
+    key: keyof CSSProperties,
+    value: CSSProperties[keyof CSSProperties],
+  ) => {
+    if (isContainer) {
+      updateStyle(key, value);
+      return;
+    }
+
+    updateContentStyle(key, value);
+  };
+
+  const applyBackgroundStyle = (key: keyof CSSProperties) => {
+    onApply(backgroundTarget, key, backgroundStyle[key]);
   };
 
   return (
@@ -159,23 +188,17 @@ function EditStyleTab({
             type="color"
             className="form-control form-control-color"
             value={
-              typeof editContentStyle.backgroundColor === "string"
-                ? editContentStyle.backgroundColor
+              typeof backgroundStyle.backgroundColor === "string"
+                ? backgroundStyle.backgroundColor
                 : "#ffffff"
             }
             onChange={(event) =>
-              updateContentStyle("backgroundColor", event.target.value)
+              updateBackgroundStyle("backgroundColor", event.target.value)
             }
           />
 
           <ApplyButton
-            onClick={() =>
-              onApply(
-                "contentStyle",
-                "backgroundColor",
-                editContentStyle.backgroundColor,
-              )
-            }
+            onClick={() => applyBackgroundStyle("backgroundColor")}
           />
         </div>
       </div>
@@ -300,6 +323,115 @@ function EditStyleTab({
             onClick={() =>
               onApply("contentStyle", "textAlign", editContentStyle.textAlign)
             }
+          />
+        </div>
+      </div>
+
+      {/* 배경 이미지 */}
+      <div className="col-md-12">
+        <label className="form-label">
+          {isContainer ? "컨테이너 배경 이미지" : "배경 이미지"}
+        </label>
+
+        <div className="input-group input-group-sm">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="https://example.com/image.jpg"
+            value={
+              typeof backgroundStyle.backgroundImage === "string"
+                ? backgroundStyle.backgroundImage
+                    .replace(/^url\(["']?/, "")
+                    .replace(/["']?\)$/, "")
+                : ""
+            }
+            onChange={(event) => {
+              const value = event.target.value.trim();
+
+              updateBackgroundStyle(
+                "backgroundImage",
+                value ? `url("${value}")` : undefined,
+              );
+            }}
+          />
+
+          <ApplyButton
+            onClick={() => applyBackgroundStyle("backgroundImage")}
+          />
+        </div>
+      </div>
+
+      {/* 배경 이미지 크기 */}
+      <div className="col-md-6">
+        <label className="form-label">배경 크기</label>
+
+        <div className="input-group input-group-sm">
+          <select
+            className="form-select"
+            value={String(backgroundStyle.backgroundSize ?? "cover")}
+            onChange={(event) =>
+              updateBackgroundStyle("backgroundSize", event.target.value)
+            }
+          >
+            <option value="cover">Cover</option>
+            <option value="contain">Contain</option>
+            <option value="auto">Auto</option>
+            <option value="100% 100%">Stretch</option>
+          </select>
+
+          <ApplyButton onClick={() => applyBackgroundStyle("backgroundSize")} />
+        </div>
+      </div>
+
+      {/* 배경 위치 */}
+      <div className="col-md-6">
+        <label className="form-label">배경 위치</label>
+
+        <div className="input-group input-group-sm">
+          <select
+            className="form-select"
+            value={String(backgroundStyle.backgroundPosition ?? "center")}
+            onChange={(event) =>
+              updateBackgroundStyle("backgroundPosition", event.target.value)
+            }
+          >
+            <option value="center">Center</option>
+            <option value="top">Top</option>
+            <option value="bottom">Bottom</option>
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+            <option value="top left">Top Left</option>
+            <option value="top right">Top Right</option>
+            <option value="bottom left">Bottom Left</option>
+            <option value="bottom right">Bottom Right</option>
+          </select>
+
+          <ApplyButton
+            onClick={() => applyBackgroundStyle("backgroundPosition")}
+          />
+        </div>
+      </div>
+
+      {/* 배경 반복 */}
+      <div className="col-md-6">
+        <label className="form-label">배경 반복</label>
+
+        <div className="input-group input-group-sm">
+          <select
+            className="form-select"
+            value={String(backgroundStyle.backgroundRepeat ?? "no-repeat")}
+            onChange={(event) =>
+              updateBackgroundStyle("backgroundRepeat", event.target.value)
+            }
+          >
+            <option value="no-repeat">반복 안함</option>
+            <option value="repeat">반복</option>
+            <option value="repeat-x">가로 반복</option>
+            <option value="repeat-y">세로 반복</option>
+          </select>
+
+          <ApplyButton
+            onClick={() => applyBackgroundStyle("backgroundRepeat")}
           />
         </div>
       </div>

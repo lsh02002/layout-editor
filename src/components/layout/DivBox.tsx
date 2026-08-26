@@ -281,8 +281,7 @@ function DivBox({
       data-layout-box
       className={`
         d-inline-block
-        ${className}
-        bg-white
+        ${className}        
       `}
       onClick={handleClick}
       onPointerUp={handlePointerUp}
