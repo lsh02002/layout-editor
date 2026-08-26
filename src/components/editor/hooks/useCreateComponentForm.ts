@@ -196,7 +196,7 @@ export const useCreateComponentForm = () => {
             width: "100%",
             minHeight: 100,
             padding: 12,
-            border: "1px dashed #adb5bd",
+            // border: "1px dashed #adb5bd",
           },
           children: [],
         };

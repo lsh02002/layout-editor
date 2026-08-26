@@ -99,7 +99,7 @@ export default function LayoutComponentNode({
     position: isAbsolute ? ("absolute" as const) : ("relative" as const),
     left: isAbsolute ? (component.layout?.x ?? 0) : undefined,
     top: isAbsolute ? (component.layout?.y ?? 0) : undefined,
-    
+
     width: isAbsolute ? "max-content" : undefined,
     maxWidth: isAbsolute ? "none" : undefined,
 
@@ -139,6 +139,7 @@ export default function LayoutComponentNode({
           onDelete={() => onDelete(component.id)}
           style={{
             ...component.style,
+            border: !previewMode ? "1px dashed #adb5bd" : "none",
             opacity: isDragging ? 0.45 : (component.style?.opacity ?? 1),
             transition: "opacity 120ms ease",
             outline:

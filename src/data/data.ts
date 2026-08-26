@@ -14,7 +14,7 @@ export const data: LayoutComponent[] = [
     style: {
       width: "100%",
       padding: 16,
-      border: "1px solid #ddd",
+      // border: "1px solid #ddd",
     },
 
     children: [],
