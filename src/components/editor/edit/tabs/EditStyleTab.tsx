@@ -1,4 +1,5 @@
 import type { CSSProperties, Dispatch, SetStateAction } from "react";
+import ApplyButton from "./ApplyButton";
 
 import type { ComponentLayout } from "../../../../types/types";
 
@@ -16,29 +17,6 @@ type Props = {
 
   onSave: () => void;
 };
-
-/**
- * 저장 아이콘 버튼
- */
-function ApplyButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      className="btn btn-outline-primary"
-      onClick={onClick}
-      title="저장"
-      aria-label="저장"
-      style={{
-        width: 40,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <i className="bi bi-check-lg" />
-    </button>
-  );
-}
 
 function EditStyleTab({
   editStyle,

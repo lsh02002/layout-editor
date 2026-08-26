@@ -13,6 +13,7 @@ import EditImageFields from "../fields/EditImageFields";
 import EditLinkFields from "../fields/EditLinkFields";
 import EditQuillFields from "../fields/EditQuillFields";
 import EditTextareaFields from "../fields/EditTextareaFields";
+import ApplyButton from "./ApplyButton";
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -61,28 +62,6 @@ type Props = {
   // 텍스트 입력값 저장
   onSave: () => void;
 };
-
-function ApplyButton({ onClick }: { onClick: () => void }) {
-  return (
-    <div className="d-flex justify-content-end">
-      <button
-        type="button"
-        className="btn btn-outline-primary"
-        onClick={onClick}
-        title="적용"
-        aria-label="적용"
-        style={{
-          width: 40,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <i className="bi bi-check-lg" />
-      </button>
-    </div>
-  );
-}
 
 function EditBasicTab({
   editType,
@@ -337,7 +316,9 @@ function EditBasicTab({
           <label className="form-check-label" htmlFor="editDisabled">
             Disabled
           </label>
-          <ApplyButton onClick={onSave} />
+          <div className="d-flex justify-content-end">
+            <ApplyButton onClick={onSave} />
+          </div>
         </div>
       )}
     </>

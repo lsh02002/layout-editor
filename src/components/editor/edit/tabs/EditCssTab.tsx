@@ -1,30 +1,10 @@
+import ApplyButton from "./ApplyButton";
+
 type Props = {
   value: string;
   onValueChange: (value: string) => void;
   onApply: () => void;
 };
-
-function ApplyButton({ onClick }: { onClick: () => void }) {
-  return (
-    <div className="d-flex justify-content-end">
-      <button
-        type="button"
-        className="btn btn-outline-primary"
-        onClick={onClick}
-        title="적용"
-        aria-label="적용"
-        style={{
-          width: 40,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <i className="bi bi-check-lg" />
-      </button>
-    </div>
-  );
-}
 
 function EditCssTab({ value, onValueChange, onApply }: Props) {
   return (
@@ -58,7 +38,9 @@ function EditCssTab({ value, onValueChange, onApply }: Props) {
         반영됩니다.
       </div>
 
-      <ApplyButton onClick={onApply} />
+      <div className="d-flex justify-content-end">
+        <ApplyButton onClick={onApply} />
+      </div>
     </div>
   );
 }
