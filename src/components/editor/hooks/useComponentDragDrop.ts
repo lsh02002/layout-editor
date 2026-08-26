@@ -255,10 +255,6 @@ export const useComponentDragDrop = ({
       return;
     }
 
-    if (!draggingId) {
-      return;
-    }
-
     event.preventDefault();
     event.stopPropagation();
 
