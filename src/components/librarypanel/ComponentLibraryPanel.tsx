@@ -46,7 +46,7 @@ function ComponentLibraryPanel({
 
   return (
     <>
-      <div className="border-bottom px-2 pt-2">
+      <div className="p-2">
         <ul className="nav nav-tabs">
           <li className="nav-item">
             <button

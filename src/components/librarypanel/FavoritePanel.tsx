@@ -17,14 +17,7 @@ function FavoritePanel({
 }: Props) {
   return (
     <div className="editor-favorite-section">
-      <div
-        className="d-flex align-items-center justify-content-between px-3 py-2"
-        style={{
-          borderTop: "1px solid #e2e8f0",
-          borderBottom: "1px solid #e2e8f0",
-          background: "#f8fafc",
-        }}
-      >
+      <div className="d-flex align-items-center justify-content-between px-3 py-2">
         {hasSelectedComponent && (
           <div className="w-100 d-flex justify-content-end gap-2">
             <button

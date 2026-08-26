@@ -22,7 +22,7 @@ interface BaseComponent {
   customCss?: string;
 }
 
-interface ButtonComponent extends BaseComponent {
+export interface ButtonComponent extends BaseComponent {
   type: "button";
 
   props: {
