@@ -368,6 +368,7 @@ function EditComponentPanel({
                 <EditCssTab
                   value={editCustomCss}
                   onValueChange={setEditCustomCss}
+                  onApply={saveEditedComponent}
                 />
               )}
             </>
