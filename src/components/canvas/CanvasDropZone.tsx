@@ -134,6 +134,10 @@ export default function CanvasDropZone({
           event.stopPropagation();
           onCreate(parentId, index);
         }}
+        onPointerUp={(event) => {
+          event.stopPropagation();
+          onCreate(parentId, index);
+        }}
       >
         +
       </button>
