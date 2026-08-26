@@ -290,7 +290,8 @@ function DivBox({
       onMouseLeave={handleMouseLeave}
       style={{
         position: "relative",
-        width: layout?.width,
+        width: layout?.width ?? (isAbsolute ? "max-content" : undefined),
+        maxWidth: isAbsolute ? "none" : undefined,
         height: layout?.height,
         outline:
           !previewMode && over

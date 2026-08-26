@@ -99,6 +99,10 @@ export default function LayoutComponentNode({
     position: isAbsolute ? ("absolute" as const) : ("relative" as const),
     left: isAbsolute ? (component.layout?.x ?? 0) : undefined,
     top: isAbsolute ? (component.layout?.y ?? 0) : undefined,
+    
+    width: isAbsolute ? "max-content" : undefined,
+    maxWidth: isAbsolute ? "none" : undefined,
+
     zIndex: isAbsolute ? 10 : undefined,
   };
 
