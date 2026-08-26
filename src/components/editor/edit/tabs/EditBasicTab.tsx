@@ -13,7 +13,6 @@ import EditImageFields from "../fields/EditImageFields";
 import EditLinkFields from "../fields/EditLinkFields";
 import EditQuillFields from "../fields/EditQuillFields";
 import EditTextareaFields from "../fields/EditTextareaFields";
-import ApplyButton from "./ApplyButton";
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -58,9 +57,6 @@ type Props = {
   onImmediateChange: (
     updater: (component: LayoutComponent) => LayoutComponent,
   ) => void;
-
-  // 텍스트 입력값 저장
-  onSave: () => void;
 };
 
 function EditBasicTab({
@@ -102,8 +98,205 @@ function EditBasicTab({
   setEditHeadingLevel,
 
   onImmediateChange,
-  onSave,
 }: Props) {
+  const handleComponentNameChange = (name: string) => {
+    setEditComponentName(name);
+
+    onImmediateChange((component) => ({
+      ...component,
+      name,
+    }));
+  };
+
+  const handleTitleChange = (title: string) => {
+    setEditTitle(title);
+
+    onImmediateChange((component) => {
+      if (
+        component.type !== "button" &&
+        component.type !== "link" &&
+        component.type !== "scrollToTopButton"
+      ) {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          title,
+        },
+      } as LayoutComponent;
+    });
+  };
+
+  const handleValueChange = (value: string) => {
+    setEditValue(value);
+
+    onImmediateChange((component) => {
+      switch (component.type) {
+        case "heading":
+          return {
+            ...component,
+            props: {
+              ...component.props,
+              text: value,
+            },
+          };
+
+        case "textarea":
+        case "quill":
+          return {
+            ...component,
+            props: {
+              ...component.props,
+              value,
+            },
+          };
+
+        case "link":
+          return {
+            ...component,
+            props: {
+              ...component.props,
+              value,
+            },
+          };
+
+        default:
+          return component;
+      }
+    });
+  };
+
+  const handlePlaceholderChange = (placeholder: string) => {
+    setEditPlaceholder(placeholder);
+
+    onImmediateChange((component) => {
+      if (component.type !== "textarea" && component.type !== "quill") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          placeholder,
+        },
+      };
+    });
+  };
+
+  const handleImageUrlChange = (url: string) => {
+    setEditImageUrl(url);
+
+    onImmediateChange((component) => {
+      if (component.type !== "image") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          urls: url.trim() ? [url.trim()] : [],
+        },
+      };
+    });
+  };
+
+  const handleHeadingLevelChange = (level: HeadingLevel) => {
+    setEditHeadingLevel(level);
+
+    onImmediateChange((component) => {
+      if (component.type !== "heading") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          level,
+        },
+      };
+    });
+  };
+
+  const handleLinkTypeChange = (linkType: LinkType) => {
+    setEditLinkType(linkType);
+
+    if (linkType !== "url") {
+      setEditLinkNewWindow(false);
+    }
+
+    onImmediateChange((component) => {
+      if (component.type !== "link") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          linkType,
+          newWindow: linkType === "url" ? component.props.newWindow : false,
+        },
+      };
+    });
+  };
+
+  const handleLinkNewWindowChange = (newWindow: boolean) => {
+    setEditLinkNewWindow(newWindow);
+
+    onImmediateChange((component) => {
+      if (component.type !== "link") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          newWindow,
+        },
+      };
+    });
+  };
+
+  const handleDirectionChange = (direction: "row" | "column") => {
+    setEditDirection(direction);
+
+    onImmediateChange((component) => {
+      if (component.type !== "container") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          direction,
+        },
+      };
+    });
+  };
+
+  const handleDisabledChange = (disabled: boolean) => {
+    setEditDisabled(disabled);
+
+    onImmediateChange(
+      (component) =>
+        ({
+          ...component,
+          props: {
+            ...component.props,
+            disabled,
+          },
+        }) as LayoutComponent,
+    );
+  };
+
   return (
     <>
       {/* 타입 */}
@@ -120,8 +313,8 @@ function EditBasicTab({
             componentName={editComponentName}
             title={editTitle}
             placeholder={editType === "scrollToTopButton" ? "↑" : "버튼"}
-            onComponentNameChange={setEditComponentName}
-            onTitleChange={setEditTitle}
+            onComponentNameChange={handleComponentNameChange}
+            onTitleChange={handleTitleChange}
           />
         </div>
       )}
@@ -132,26 +325,8 @@ function EditBasicTab({
           <EditHeadingFields
             value={editValue}
             level={editHeadingLevel}
-            onValueChange={setEditValue}
-            onLevelChange={(level) => {
-              // 오른쪽 편집 state
-              setEditHeadingLevel(level);
-
-              // H1 ~ H6는 즉시 적용
-              onImmediateChange((component) => {
-                if (component.type !== "heading") {
-                  return component;
-                }
-
-                return {
-                  ...component,
-                  props: {
-                    ...component.props,
-                    level,
-                  },
-                };
-              });
-            }}
+            onValueChange={handleValueChange}
+            onLevelChange={handleHeadingLevelChange}
           />
         </div>
       )}
@@ -164,9 +339,9 @@ function EditBasicTab({
             value={editValue}
             placeholder={editPlaceholder}
             contentStyle={editContentStyle}
-            onComponentNameChange={setEditComponentName}
-            onValueChange={setEditValue}
-            onPlaceholderChange={setEditPlaceholder}
+            onComponentNameChange={handleComponentNameChange}
+            onValueChange={handleValueChange}
+            onPlaceholderChange={handlePlaceholderChange}
           />
         </div>
       )}
@@ -178,9 +353,9 @@ function EditBasicTab({
             componentName={editComponentName}
             value={editValue}
             placeholder={editPlaceholder}
-            onComponentNameChange={setEditComponentName}
-            onValueChange={setEditValue}
-            onPlaceholderChange={setEditPlaceholder}
+            onComponentNameChange={handleComponentNameChange}
+            onValueChange={handleValueChange}
+            onPlaceholderChange={handlePlaceholderChange}
           />
         </div>
       )}
@@ -192,8 +367,8 @@ function EditBasicTab({
             componentName={editComponentName}
             imageUrl={editImageUrl}
             previewUrl={editImagePreviewUrl}
-            onComponentNameChange={setEditComponentName}
-            onImageUrlChange={setEditImageUrl}
+            onComponentNameChange={handleComponentNameChange}
+            onImageUrlChange={handleImageUrlChange}
             onPreviewUrlChange={setEditImagePreviewUrl}
           />
         </div>
@@ -208,51 +383,11 @@ function EditBasicTab({
             linkType={editLinkType}
             value={editValue}
             newWindow={editLinkNewWindow}
-            onComponentNameChange={setEditComponentName}
-            onTitleChange={setEditTitle}
-            onValueChange={setEditValue}
-            onLinkTypeChange={(linkType) => {
-              setEditLinkType(linkType);
-
-              // link type은 즉시 적용
-              onImmediateChange((component) => {
-                if (component.type !== "link") {
-                  return component;
-                }
-
-                return {
-                  ...component,
-                  props: {
-                    ...component.props,
-                    linkType,
-                    newWindow:
-                      linkType === "url" ? component.props.newWindow : false,
-                  },
-                };
-              });
-
-              if (linkType !== "url") {
-                setEditLinkNewWindow(false);
-              }
-            }}
-            onNewWindowChange={(newWindow) => {
-              setEditLinkNewWindow(newWindow);
-
-              // 새창 여부 즉시 적용
-              onImmediateChange((component) => {
-                if (component.type !== "link") {
-                  return component;
-                }
-
-                return {
-                  ...component,
-                  props: {
-                    ...component.props,
-                    newWindow,
-                  },
-                };
-              });
-            }}
+            onComponentNameChange={handleComponentNameChange}
+            onTitleChange={handleTitleChange}
+            onValueChange={handleValueChange}
+            onLinkTypeChange={handleLinkTypeChange}
+            onNewWindowChange={handleLinkNewWindowChange}
           />
         </div>
       )}
@@ -263,25 +398,8 @@ function EditBasicTab({
           <EditContainerFields
             componentName={editComponentName}
             direction={editDirection}
-            onComponentNameChange={setEditComponentName}
-            onDirectionChange={(direction) => {
-              setEditDirection(direction);
-
-              // row / column 즉시 적용
-              onImmediateChange((component) => {
-                if (component.type !== "container") {
-                  return component;
-                }
-
-                return {
-                  ...component,
-                  props: {
-                    ...component.props,
-                    direction,
-                  },
-                };
-              });
-            }}
+            onComponentNameChange={handleComponentNameChange}
+            onDirectionChange={handleDirectionChange}
           />
         </div>
       )}
@@ -295,30 +413,13 @@ function EditBasicTab({
             id="editDisabled"
             checked={editDisabled}
             onChange={(event) => {
-              const checked = event.target.checked;
-
-              setEditDisabled(checked);
-
-              // 즉시 적용
-              onImmediateChange(
-                (component) =>
-                  ({
-                    ...component,
-                    props: {
-                      ...component.props,
-                      disabled: checked,
-                    },
-                  }) as LayoutComponent,
-              );
+              handleDisabledChange(event.target.checked);
             }}
           />
 
           <label className="form-check-label" htmlFor="editDisabled">
             Disabled
           </label>
-          <div className="d-flex justify-content-end">
-            <ApplyButton onClick={onSave} />
-          </div>
         </div>
       )}
     </>

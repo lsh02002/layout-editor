@@ -1,5 +1,3 @@
-import type { Dispatch, SetStateAction } from "react";
-
 import QuillEditorSimpleInput from "../../../form/QuillEditorSimpleInput";
 import EditComponentNameField from "./EditComponentNameField";
 
@@ -8,7 +6,7 @@ type Props = {
   value: string;
   placeholder: string;
   onComponentNameChange: (value: string) => void;
-  onValueChange: Dispatch<SetStateAction<string>>;
+  onValueChange: (value: string) => void;
   onPlaceholderChange: (value: string) => void;
 };
 

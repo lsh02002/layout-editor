@@ -338,8 +338,7 @@ function EditComponentPanel({
                   setEditComponentName={setEditComponentName}
                   editHeadingLevel={editHeadingLevel}
                   setEditHeadingLevel={setEditHeadingLevel}
-                  onImmediateChange={onImmediateChange}
-                  onSave={saveEditedComponent}
+                  onImmediateChange={onImmediateChange}                  
                 />
               )}
 
