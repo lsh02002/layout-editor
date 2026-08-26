@@ -1,9 +1,15 @@
-import type { CSSProperties, Dispatch, SetStateAction } from "react";
+import {
+  useEffect,
+  type CSSProperties,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
 import type {
   ComponentLayout,
   ComponentType,
   FavoriteComponent,
+  LayoutComponent,
   LinkType,
   TemplateItem,
 } from "../../../types/types";
@@ -20,24 +26,37 @@ type Props = {
   isMobile: boolean;
   showEditModal: boolean;
   setShowEditModal: Dispatch<SetStateAction<boolean>>;
+
   selectedComponentId: string | null;
 
+  /*
+   * Undo / Redo가 실행될 때만 변경되는 값
+   */
+  editorSyncKey: number;
+
   editType: ComponentType;
+
   editTitle: string;
   setEditTitle: Dispatch<SetStateAction<string>>;
+
   editValue: string;
   setEditValue: Dispatch<SetStateAction<string>>;
+
   editPlaceholder: string;
   setEditPlaceholder: Dispatch<SetStateAction<string>>;
+
   editDirection: "row" | "column";
   setEditDirection: Dispatch<SetStateAction<"row" | "column">>;
+
   editDisabled: boolean;
   setEditDisabled: Dispatch<SetStateAction<boolean>>;
 
   editStyle: CSSProperties;
   setEditStyle: Dispatch<SetStateAction<CSSProperties>>;
+
   editContentStyle: CSSProperties;
   setEditContentStyle: Dispatch<SetStateAction<CSSProperties>>;
+
   editCustomCss: string;
   setEditCustomCss: Dispatch<SetStateAction<string>>;
 
@@ -46,16 +65,19 @@ type Props = {
 
   editImageUrl: string;
   setEditImageUrl: Dispatch<SetStateAction<string>>;
+
   editImagePreviewUrl: string;
   setEditImagePreviewUrl: Dispatch<SetStateAction<string>>;
 
   editLinkType: LinkType;
   setEditLinkType: Dispatch<SetStateAction<LinkType>>;
+
   editLinkNewWindow: boolean;
   setEditLinkNewWindow: Dispatch<SetStateAction<boolean>>;
 
   editComponentName: string;
   setEditComponentName: Dispatch<SetStateAction<string>>;
+
   editHeadingLevel: HeadingLevel;
   setEditHeadingLevel: Dispatch<SetStateAction<HeadingLevel>>;
 
@@ -63,76 +85,148 @@ type Props = {
   saveEditedComponent: () => void;
 
   favoriteComponents: FavoriteComponent[];
+
   addSelectedComponentToFavorites: () => void;
+
   insertFavoriteComponent: (favorite: FavoriteComponent) => void;
+
   removeFavoriteComponent: (favoriteId: string) => void;
 
   editLayout: ComponentLayout;
+
   setEditLayout: Dispatch<SetStateAction<ComponentLayout>>;
 
   onLayoutChange: (id: string, layout: Partial<ComponentLayout>) => void;
 
-  templateFiles: { name: string; data: TemplateItem }[];
-  setTemplateFiles: (files: { name: string; data: TemplateItem }[]) => void;
+  templateFiles: {
+    name: string;
+    data: TemplateItem;
+  }[];
+
+  setTemplateFiles: (
+    files: {
+      name: string;
+      data: TemplateItem;
+    }[],
+  ) => void;
+
   selectedTemplateId: string | null;
+
   setSelectedTemplateId: (id: string | null) => void;
+
+  onImmediateChange: (
+    updater: (component: LayoutComponent) => LayoutComponent,
+  ) => void;
 };
 
 function EditComponentPanel({
   isMobile,
   showEditModal,
   setShowEditModal,
+
   selectedComponentId,
+  editorSyncKey,
+
   editType,
+
   editTitle,
   setEditTitle,
+
   editValue,
   setEditValue,
+
   editPlaceholder,
   setEditPlaceholder,
+
   editDirection,
   setEditDirection,
+
   editDisabled,
   setEditDisabled,
+
   editStyle,
   setEditStyle,
+
   editContentStyle,
   setEditContentStyle,
+
   editCustomCss,
   setEditCustomCss,
+
   editTab,
   setEditTab,
+
   editImageUrl,
   setEditImageUrl,
+
   editImagePreviewUrl,
   setEditImagePreviewUrl,
+
   editLinkType,
   setEditLinkType,
+
   editLinkNewWindow,
   setEditLinkNewWindow,
+
   editComponentName,
   setEditComponentName,
+
   editHeadingLevel,
   setEditHeadingLevel,
+
   resetEditPanelToSelected,
   saveEditedComponent,
+
   favoriteComponents,
   addSelectedComponentToFavorites,
   insertFavoriteComponent,
   removeFavoriteComponent,
+
   editLayout,
   setEditLayout,
+
   onLayoutChange,
+
   templateFiles,
   setTemplateFiles,
+
   selectedTemplateId,
   setSelectedTemplateId,
+
+  onImmediateChange,
 }: Props) {
   const tabMenus = [
-    { key: "basic", label: "기본 설정" },
-    { key: "style", label: "스타일" },
-    { key: "css", label: "Custom CSS" },
+    {
+      key: "basic",
+      label: "기본 설정",
+    },
+    {
+      key: "style",
+      label: "스타일",
+    },
+    {
+      key: "css",
+      label: "Custom CSS",
+    },
   ];
+
+  /*
+   * Undo / Redo 실행 후
+   * Canvas / Layer가 변경되었을 때
+   * 오른쪽 Editor도 현재 선택된 컴포넌트 기준으로 갱신.
+   *
+   * editorSyncKey는 Undo / Redo 할 때만 변경한다.
+   *
+   * 일반적인 onImmediateChange에서는 이 effect가
+   * 실행되지 않기 때문에 저장 전 입력값이 날아가지 않는다.
+   */
+  useEffect(() => {
+    if (!selectedComponentId) {
+      return;
+    }
+
+    resetEditPanelToSelected();
+  }, [editorSyncKey, resetEditPanelToSelected, selectedComponentId]);
 
   if (isMobile && !showEditModal) {
     return null;
@@ -149,6 +243,7 @@ function EditComponentPanel({
           onClick={() => setShowEditModal(false)}
         />
       )}
+
       <aside
         className="editor-edit-panel"
         style={{
@@ -174,6 +269,7 @@ function EditComponentPanel({
           </div>
         </div>
 
+        {/* 모바일 닫기 */}
         {isMobile && (
           <button
             type="button"
@@ -215,6 +311,7 @@ function EditComponentPanel({
             </div>
           ) : (
             <>
+              {/* 기본 설정 */}
               {editTab === "basic" && (
                 <EditBasicTab
                   editType={editType}
@@ -241,9 +338,12 @@ function EditComponentPanel({
                   setEditComponentName={setEditComponentName}
                   editHeadingLevel={editHeadingLevel}
                   setEditHeadingLevel={setEditHeadingLevel}
+                  onImmediateChange={onImmediateChange}
+                  onSave={saveEditedComponent}
                 />
               )}
 
+              {/* STYLE */}
               {editTab === "style" && (
                 <EditStyleTab
                   editStyle={editStyle}
@@ -256,40 +356,43 @@ function EditComponentPanel({
                     if (!selectedComponentId) {
                       return;
                     }
+
                     onLayoutChange(selectedComponentId, layout);
                   }}
+                  onSave={saveEditedComponent}
                 />
               )}
 
+              {/* CUSTOM CSS */}
               {editTab === "css" && (
-                <EditCssTab value={editCustomCss} onChange={setEditCustomCss} />
+                <EditCssTab
+                  value={editCustomCss}
+                  onValueChange={setEditCustomCss}
+                />
               )}
             </>
           )}
         </div>
+        {/* 스타일 초기화 */}
+        <div className="d-flex justify-content-end p-2">
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-sm"
+            onClick={() => {
+              setEditStyle({});
+              setEditContentStyle({});
 
-        {/* FOOTER */}
-        {selectedComponentId && (
-          <div className="editor-edit-panel-footer">
-            <button
-              type="button"
-              className="btn btn-outline-secondary btn-sm"
-              onClick={() => {
-                resetEditPanelToSelected();
-              }}
-            >
-              초기화
-            </button>
+              onImmediateChange((component) => ({
+                ...component,
+                style: {},
+                contentStyle: {},
+              }));
+            }}
+          >
+            스타일 초기화
+          </button>
+        </div>
 
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              onClick={saveEditedComponent}
-            >
-              저장
-            </button>
-          </div>
-        )}
         <FavoritePanel
           favorites={favoriteComponents}
           hasSelectedComponent={Boolean(selectedComponentId)}

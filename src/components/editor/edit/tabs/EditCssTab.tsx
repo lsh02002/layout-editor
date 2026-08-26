@@ -1,9 +1,9 @@
 type Props = {
   value: string;
-  onChange: (value: string) => void;
+  onValueChange: (value: string) => void;
 };
 
-function EditCssTab({ value, onChange }: Props) {
+function EditCssTab({ value, onValueChange }: Props) {
   return (
     <div>
       <label className="form-label">컴포넌트 Custom CSS</label>
@@ -12,7 +12,9 @@ function EditCssTab({ value, onChange }: Props) {
         className="form-control font-monospace"
         rows={14}
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => {
+          onValueChange(event.target.value);
+        }}
         placeholder={`& {
   background: #111;
   color: white;
@@ -28,7 +30,10 @@ function EditCssTab({ value, onChange }: Props) {
         spellCheck={false}
       />
 
-      <div className="form-text">&amp; 는 현재 컴포넌트를 의미합니다.</div>
+      <div className="form-text">
+        &amp; 는 현재 컴포넌트를 의미합니다. CSS는 적용 버튼을 눌러야
+        반영됩니다.
+      </div>
     </div>
   );
 }

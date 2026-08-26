@@ -234,7 +234,7 @@ export const CompleteArrayInput: React.FC<CompleteArrayInputPropsType> = ({
               minHeight: 0,
               marginBottom: 80,
               width: "100%",
-              scrollbarWidth: "thin",              
+              scrollbarWidth: "thin",
             }}
           >
             <div className="p-2">

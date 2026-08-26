@@ -1,18 +1,18 @@
 const TextInput = ({
   disabled,
-  name,  
+  name,
   data,
   setData,
 }: {
   disabled?: boolean;
-  name: string;  
+  name: string;
   data: string;
   setData: (v: string) => void;
 }) => {
   return (
     <div className="w-100 mb-3">
       <input
-        type="text"        
+        type="text"
         name={name}
         value={data}
         disabled={disabled}

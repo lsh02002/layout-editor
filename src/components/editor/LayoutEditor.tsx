@@ -43,6 +43,8 @@ function LayoutEditor() {
     null,
   );
 
+  const [editorSyncKey, setEditorSyncKey] = useState(0);
+
   const {
     components,
     commitHistory,
@@ -349,6 +351,40 @@ function LayoutEditor() {
     }
   };
 
+  const updateSelectedComponentImmediate = (
+    updater: (component: LayoutComponent) => LayoutComponent,
+  ) => {
+    if (!selectedComponentId) return;
+
+    const updateRecursive = (items: LayoutComponent[]): LayoutComponent[] =>
+      items.map((component) => {
+        if (component.id === selectedComponentId) {
+          return updater(component);
+        }
+
+        if (component.type === "container") {
+          return {
+            ...component,
+            children: updateRecursive(component.children),
+          };
+        }
+
+        return component;
+      });
+
+    setComponents(updateRecursive);
+  };
+
+  const handleUndo = () => {
+    undo();
+    setEditorSyncKey((prev) => prev + 1);
+  };
+
+  const handleRedo = () => {
+    redo();
+    setEditorSyncKey((prev) => prev + 1);
+  };
+
   const componentCustomCss = collectComponentCustomCss(components);
 
   const openProjectCssModal = () => {
@@ -458,8 +494,8 @@ function LayoutEditor() {
           onSnapEnabledChange={setSnapEnabled}
           onGridSizeChange={setGridSize}
           onOpenProjectCss={openProjectCssModal}
-          onUndo={undo}
-          onRedo={redo}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
           onSaveProject={saveProjectFile}
           onLoadProject={loadProjectFile}
           onDownloadHtml={downloadHtml}
@@ -603,6 +639,8 @@ function LayoutEditor() {
         setTemplateFiles={setTemplateFiles}
         selectedTemplateId={selectedTemplateId}
         setSelectedTemplateId={setSelectedTemplateId}
+        onImmediateChange={updateSelectedComponentImmediate}
+        editorSyncKey={editorSyncKey}
       />
     </>
   );
