@@ -82,7 +82,6 @@ type Props = {
   setEditHeadingLevel: Dispatch<SetStateAction<HeadingLevel>>;
 
   resetEditPanelToSelected: () => void;
-  saveEditedComponent: () => void;
 
   favoriteComponents: FavoriteComponent[];
 
@@ -117,6 +116,14 @@ type Props = {
   onImmediateChange: (
     updater: (component: LayoutComponent) => LayoutComponent,
   ) => void;
+
+  onStyleApply: (
+    target: "style" | "contentStyle",
+    key: keyof CSSProperties,
+    value: CSSProperties[keyof CSSProperties],
+  ) => void;
+
+  saveEditedComponent: () => void;
 };
 
 function EditComponentPanel({
@@ -175,7 +182,6 @@ function EditComponentPanel({
   setEditHeadingLevel,
 
   resetEditPanelToSelected,
-  saveEditedComponent,
 
   favoriteComponents,
   addSelectedComponentToFavorites,
@@ -194,6 +200,10 @@ function EditComponentPanel({
   setSelectedTemplateId,
 
   onImmediateChange,
+
+  onStyleApply,
+
+  saveEditedComponent,
 }: Props) {
   const tabMenus = [
     {
@@ -358,7 +368,7 @@ function EditComponentPanel({
 
                     onLayoutChange(selectedComponentId, layout);
                   }}
-                  onSave={saveEditedComponent}
+                  onApply={onStyleApply}
                 />
               )}
 

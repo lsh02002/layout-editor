@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 
 import BuilderCanvas from "../canvas/BuilderCanvas";
 import LayerPanel from "../layers/LayerPanel";
@@ -385,6 +385,54 @@ function LayoutEditor() {
     setEditorSyncKey((prev) => prev + 1);
   };
 
+  const handleStyleApply = (
+    target: "style" | "contentStyle",
+    key: keyof CSSProperties,
+    value: CSSProperties[keyof CSSProperties],
+  ) => {
+    if (!selectedComponentId) {
+      return;
+    }
+
+    setComponents((items) => {
+      const updateRecursive = (
+        components: LayoutComponent[],
+      ): LayoutComponent[] =>
+        components.map((component) => {
+          if (component.id === selectedComponentId) {
+            if (target === "style") {
+              return {
+                ...component,
+                style: {
+                  ...component.style,
+                  [key]: value,
+                },
+              };
+            }
+
+            return {
+              ...component,
+              contentStyle: {
+                ...component.contentStyle,
+                [key]: value,
+              },
+            };
+          }
+
+          if (component.type === "container") {
+            return {
+              ...component,
+              children: updateRecursive(component.children),
+            };
+          }
+
+          return component;
+        });
+
+      return updateRecursive(items);
+    });
+  };
+
   const componentCustomCss = collectComponentCustomCss(components);
 
   const openProjectCssModal = () => {
@@ -641,6 +689,7 @@ function LayoutEditor() {
         setSelectedTemplateId={setSelectedTemplateId}
         onImmediateChange={updateSelectedComponentImmediate}
         editorSyncKey={editorSyncKey}
+        onStyleApply={handleStyleApply}
       />
     </>
   );

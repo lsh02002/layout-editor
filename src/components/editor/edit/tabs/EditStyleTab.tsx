@@ -1,7 +1,10 @@
 import type { CSSProperties, Dispatch, SetStateAction } from "react";
+
 import ApplyButton from "./ApplyButton";
 
 import type { ComponentLayout } from "../../../../types/types";
+
+type StyleTarget = "style" | "contentStyle";
 
 type Props = {
   editStyle: CSSProperties;
@@ -15,7 +18,11 @@ type Props = {
 
   onLayoutChange: (layout: Partial<ComponentLayout>) => void;
 
-  onSave: () => void;
+  onApply: (
+    target: StyleTarget,
+    key: keyof CSSProperties,
+    value: CSSProperties[keyof CSSProperties],
+  ) => void;
 };
 
 function EditStyleTab({
@@ -26,13 +33,13 @@ function EditStyleTab({
   editLayout,
   setEditLayout,
   onLayoutChange,
-  onSave,
+  onApply,
 }: Props) {
-  /**
-   * 텍스트 입력 스타일
+  /*
+   * Style 입력값 변경
    *
-   * edit state만 변경하고
-   * 저장 버튼을 눌렀을 때 실제 반영
+   * 여기서는 오른쪽 에디터 state만 변경합니다.
+   * 실제 컴포넌트 반영은 해당 필드의 적용 버튼을 눌렀을 때 합니다.
    */
   const updateStyle = (
     key: keyof CSSProperties,
@@ -44,10 +51,8 @@ function EditStyleTab({
     }));
   };
 
-  /**
-   * 텍스트 입력 content style
-   *
-   * 저장 버튼을 눌러야 실제 반영
+  /*
+   * Content Style 입력값 변경
    */
   const updateContentStyle = (
     key: keyof CSSProperties,
@@ -76,7 +81,9 @@ function EditStyleTab({
             }
           />
 
-          <ApplyButton onClick={onSave} />
+          <ApplyButton
+            onClick={() => onApply("style", "width", editStyle.width)}
+          />
         </div>
       </div>
 
@@ -95,7 +102,9 @@ function EditStyleTab({
             }
           />
 
-          <ApplyButton onClick={onSave} />
+          <ApplyButton
+            onClick={() => onApply("style", "height", editStyle.height)}
+          />
         </div>
       </div>
 
@@ -114,7 +123,9 @@ function EditStyleTab({
             }
           />
 
-          <ApplyButton onClick={onSave} />
+          <ApplyButton
+            onClick={() => onApply("style", "margin", editStyle.margin)}
+          />
         </div>
       </div>
 
@@ -133,11 +144,13 @@ function EditStyleTab({
             }
           />
 
-          <ApplyButton onClick={onSave} />
+          <ApplyButton
+            onClick={() => onApply("style", "padding", editStyle.padding)}
+          />
         </div>
       </div>
 
-      {/* 배경색 - 즉시 반영 */}
+      {/* 배경색 */}
       <div className="col-md-6">
         <label className="form-label">배경색</label>
 
@@ -146,19 +159,28 @@ function EditStyleTab({
             type="color"
             className="form-control form-control-color"
             value={
-              typeof editStyle.backgroundColor === "string"
-                ? editStyle.backgroundColor
+              typeof editContentStyle.backgroundColor === "string"
+                ? editContentStyle.backgroundColor
                 : "#ffffff"
             }
             onChange={(event) =>
               updateContentStyle("backgroundColor", event.target.value)
             }
           />
-          <ApplyButton onClick={onSave} />
+
+          <ApplyButton
+            onClick={() =>
+              onApply(
+                "contentStyle",
+                "backgroundColor",
+                editContentStyle.backgroundColor,
+              )
+            }
+          />
         </div>
       </div>
 
-      {/* 글자색 - 즉시 반영 */}
+      {/* 글자색 */}
       <div className="col-md-6">
         <label className="form-label">글자색</label>
 
@@ -175,9 +197,15 @@ function EditStyleTab({
               updateContentStyle("color", event.target.value)
             }
           />
-          <ApplyButton onClick={onSave} />
+
+          <ApplyButton
+            onClick={() =>
+              onApply("contentStyle", "color", editContentStyle.color)
+            }
+          />
         </div>
       </div>
+
       {/* Border */}
       <div className="col-md-6">
         <label className="form-label">Border</label>
@@ -193,7 +221,9 @@ function EditStyleTab({
             }
           />
 
-          <ApplyButton onClick={onSave} />
+          <ApplyButton
+            onClick={() => onApply("style", "border", editStyle.border)}
+          />
         </div>
       </div>
 
@@ -212,7 +242,11 @@ function EditStyleTab({
             }
           />
 
-          <ApplyButton onClick={onSave} />
+          <ApplyButton
+            onClick={() =>
+              onApply("style", "borderRadius", editStyle.borderRadius)
+            }
+          />
         </div>
       </div>
 
@@ -231,11 +265,15 @@ function EditStyleTab({
             }
           />
 
-          <ApplyButton onClick={onSave} />
+          <ApplyButton
+            onClick={() =>
+              onApply("contentStyle", "fontSize", editContentStyle.fontSize)
+            }
+          />
         </div>
       </div>
 
-      {/* Text Align - 즉시 반영 */}
+      {/* Text Align */}
       <div className="col-md-6">
         <label className="form-label">Text Align</label>
 
@@ -253,14 +291,16 @@ function EditStyleTab({
             }}
           >
             <option value="">기본</option>
-
             <option value="left">Left</option>
-
             <option value="center">Center</option>
-
             <option value="right">Right</option>
           </select>
-          <ApplyButton onClick={onSave} />
+
+          <ApplyButton
+            onClick={() =>
+              onApply("contentStyle", "textAlign", editContentStyle.textAlign)
+            }
+          />
         </div>
       </div>
 
@@ -312,7 +352,7 @@ function EditStyleTab({
           <div className="col-md-6">
             <label className="form-label">X</label>
 
-            <div className="input-group-sm">
+            <div className="input-group input-group-sm">
               <input
                 type="number"
                 className="form-control"
