@@ -112,7 +112,7 @@ export default function LayoutComponentNode({
 
   const dragHandleLeft =
     renderedWidth > 0 && renderedWidth < 120
-      ? (renderedWidth > 0 && renderedWidth < 70 ? -70 : -30) -
+      ? (renderedWidth > 0 && renderedWidth < 70 ? -80 : -60) -
         (editToolbarVisible ? -10 : -25)
       : 0;
 
