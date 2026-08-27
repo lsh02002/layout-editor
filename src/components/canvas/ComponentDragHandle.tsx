@@ -1,19 +1,28 @@
-import type { DragEvent, PointerEvent } from "react";
+import { type DragEvent, type PointerEvent } from "react";
+
 import type { LayoutComponent } from "../../types/types";
 
 type Props = {
   component: LayoutComponent;
   draggingId: string | null;
   layerSearch: string;
+
   onDragStart: (event: DragEvent<HTMLElement>, componentId: string) => void;
+
   onDragEnd: () => void;
+
   onPointerDragStart: (
     event: PointerEvent<HTMLElement>,
     componentId: string,
   ) => void;
+
   onPointerDragMove: (event: PointerEvent<HTMLElement>) => void;
+
   onPointerDragEnd: (event: PointerEvent<HTMLElement>) => void;
+
   onPointerDragCancel: () => void;
+
+  dragHandleLeft?: number;
 };
 
 export default function ComponentDragHandle({
@@ -26,6 +35,7 @@ export default function ComponentDragHandle({
   onPointerDragMove,
   onPointerDragEnd,
   onPointerDragCancel,
+  dragHandleLeft,
 }: Props) {
   const isDragging = draggingId === component.id;
   const dragDisabled = Boolean(layerSearch);
@@ -35,18 +45,20 @@ export default function ComponentDragHandle({
       className="component-drag-handle"
       type="button"
       draggable={!dragDisabled}
-      onDragStart={(event) => {        
+      onDragStart={(event) => {
         event.stopPropagation();
-        
-        if (dragDisabled) {          
+
+        if (dragDisabled) {
           return;
         }
+
         onDragStart(event, component.id);
       }}
       onDragEnd={() => {
         if (dragDisabled) {
           return;
         }
+
         onDragEnd();
       }}
       onPointerDown={(event) => {
@@ -55,37 +67,48 @@ export default function ComponentDragHandle({
         if (dragDisabled) {
           return;
         }
+
         if (event.pointerType === "mouse") {
           return;
         }
+
         onPointerDragStart(event, component.id);
       }}
       onPointerMove={(event) => {
         if (dragDisabled) {
           return;
         }
+
         if (event.pointerType === "mouse") {
           return;
         }
+
         onPointerDragMove(event);
       }}
       onPointerUp={(event) => {
         if (dragDisabled) {
           return;
         }
+
         if (event.pointerType === "mouse") {
           return;
         }
+
         onPointerDragEnd(event);
       }}
       onPointerCancel={() => {
         if (dragDisabled) {
           return;
         }
+
         onPointerDragCancel();
       }}
-      onContextMenu={(event) => event.preventDefault()}
-      onClick={(event) => event.stopPropagation()}
+      onContextMenu={(event) => {
+        event.preventDefault();
+      }}
+      onClick={(event) => {
+        event.stopPropagation();
+      }}
       style={{
         cursor: dragDisabled ? "not-allowed" : isDragging ? "grabbing" : "grab",
         opacity: dragDisabled ? 0.35 : 1,
@@ -108,16 +131,17 @@ export default function ComponentDragHandle({
         color: isDragging ? "#fff" : "#64748b",
         fontWeight: 700,
         position: "absolute",
-        left: 0,
+        left: dragHandleLeft,
         top: "-20px",
         transform: "translateY(-50%)",
         zIndex: 50,
         transition: `
-      opacity 120ms ease,
-      background 120ms ease,
-      color 120ms ease,
-      box-shadow 120ms ease
-    `,
+          left 120ms ease,
+          opacity 120ms ease,
+          background 120ms ease,
+          color 120ms ease,
+          box-shadow 120ms ease
+        `,
       }}
       title="드래그하여 이동"
     >

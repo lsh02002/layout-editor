@@ -25,6 +25,7 @@ interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
   onEdit?: () => void;
   onCopy?: () => void;
   onDelete?: () => void;
+  onToolbarVisibleChange?: (visible: boolean) => void;
 }
 
 type PositionDragState = {
@@ -46,6 +47,7 @@ function DivBox({
   onEdit,
   onCopy,
   onDelete,
+  onToolbarVisibleChange,
   className = "",
   style,
 }: DivBoxProps) {
@@ -76,10 +78,12 @@ function DivBox({
     const target = event.target as HTMLElement;
     const closestDivBox = target.closest("[data-layout-box]");
     setOver(closestDivBox === event.currentTarget);
+    onToolbarVisibleChange?.(closestDivBox === event.currentTarget);
   };
 
   const handleMouseLeave: MouseEventHandler<HTMLDivElement> = () => {
     setOver(false);
+    onToolbarVisibleChange?.(false);
   };
 
   const handleClick = useCallback(

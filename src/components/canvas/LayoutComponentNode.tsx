@@ -1,4 +1,10 @@
-import { useState, type DragEvent, type PointerEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type DragEvent,
+  type PointerEvent,
+} from "react";
 import DivBox from "../layout/DivBox";
 import type {
   ComponentLayout,
@@ -66,9 +72,49 @@ export default function LayoutComponentNode({
   onPointerDragCancel,
 }: Props) {
   const [isLocalDragging, setIsLocalDragging] = useState(false);
+  const [renderedWidth, setRenderedWidth] = useState<number>(0);
+
+  const [editToolbarVisible, setEditToolbarVisible] = useState(false);
+
   const isDragging = isLocalDragging || draggingId === component.id;
   const isSelected = selectedComponentId === component.id;
   const isAbsolute = component.layout?.position === "absolute";
+
+  const componentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const element = componentRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const updateWidth = () => {
+      const rect = element.getBoundingClientRect();
+
+      setRenderedWidth(rect.width);
+    };
+
+    // 최초 측정
+    updateWidth();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateWidth();
+    });
+
+    // 실제 컴포넌트 wrapper를 관찰
+    resizeObserver.observe(element);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [component.id]);
+
+  const dragHandleLeft =
+    renderedWidth > 0 && renderedWidth < 120
+      ? (renderedWidth > 0 && renderedWidth < 70 ? -70 : -30) -
+        (editToolbarVisible ? -10 : -25)
+      : 0;
 
   const handleNativeDragStart = (
     event: DragEvent<HTMLElement>,
@@ -94,6 +140,7 @@ export default function LayoutComponentNode({
       onPointerDragMove={onPointerDragMove}
       onPointerDragEnd={onPointerDragEnd}
       onPointerDragCancel={onPointerDragCancel}
+      dragHandleLeft={dragHandleLeft}
     />
   );
 
@@ -133,7 +180,11 @@ export default function LayoutComponentNode({
     const isRow = direction === "row";
 
     return (
-      <div data-component-id={component.id} style={nodeStyle}>
+      <div
+        ref={componentRef}
+        data-component-id={component.id}
+        style={nodeStyle}
+      >
         <DivBox
           previewMode={previewMode}
           layout={component.layout}
@@ -144,6 +195,7 @@ export default function LayoutComponentNode({
           onEdit={() => onEdit(component.id)}
           onCopy={() => onCopy(component.id)}
           onDelete={() => onDelete(component.id)}
+          onToolbarVisibleChange={setEditToolbarVisible}
           style={{
             ...component.style,
             border: !previewMode ? "1px dashed #adb5bd" : "none",
@@ -261,7 +313,7 @@ export default function LayoutComponentNode({
   }
 
   return (
-    <div data-component-id={component.id} style={nodeStyle}>
+    <div ref={componentRef} data-component-id={component.id} style={nodeStyle}>
       <DivBox
         previewMode={previewMode}
         layout={component.layout}
@@ -272,6 +324,7 @@ export default function LayoutComponentNode({
         onEdit={() => onEdit(component.id)}
         onCopy={() => onCopy(component.id)}
         onDelete={() => onDelete(component.id)}
+        onToolbarVisibleChange={setEditToolbarVisible}
         style={{
           ...component.style,
           opacity: isDragging ? 0.45 : (component.style?.opacity ?? 1),

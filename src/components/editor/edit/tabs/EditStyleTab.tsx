@@ -105,13 +105,21 @@ function EditStyleTab({
             className="form-control"
             placeholder="100%, 500px, auto"
             value={String(editStyle.width ?? "")}
-            onChange={(event) =>
-              updateStyle("width", event.target.value || undefined)
-            }
+            onChange={(event) => {
+              updateStyle("width", event.target.value || undefined);
+
+              setEditLayout((prev) => ({
+                ...prev,
+                width: event.target.value || undefined,
+              }));
+            }}
           />
 
           <ApplyButton
-            onClick={() => onApply("style", "width", editStyle.width)}
+            onClick={() => {
+              onApply("style", "width", editStyle.width);
+              onLayoutChange({ width: editLayout.width });
+            }}
           />
         </div>
       </div>
