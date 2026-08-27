@@ -22,6 +22,7 @@ type Props = {
     layout: Partial<ComponentLayout>,
     recordHistory?: boolean,
   ) => void;
+  onSelect: (id: string) => void;
   onEdit: (id: string) => void;
   onCopy: (id: string) => void;
   onDelete: (id: string) => void;
@@ -51,6 +52,7 @@ export default function LayoutComponentNode({
   activeDropTarget,
   setActiveDropTarget,
   onLayoutChange,
+  onSelect,
   onEdit,
   onCopy,
   onDelete,
@@ -138,6 +140,7 @@ export default function LayoutComponentNode({
           onLayoutChange={(layout, recordHistory) =>
             onLayoutChange(component.id, layout, recordHistory)
           }
+          onSelect={() => onSelect(component.id)}
           onEdit={() => onEdit(component.id)}
           onCopy={() => onCopy(component.id)}
           onDelete={() => onDelete(component.id)}
@@ -207,6 +210,7 @@ export default function LayoutComponentNode({
                     activeDropTarget={activeDropTarget}
                     setActiveDropTarget={setActiveDropTarget}
                     onLayoutChange={onLayoutChange}
+                    onSelect={onSelect}
                     onEdit={onEdit}
                     onCopy={onCopy}
                     onDelete={onDelete}
@@ -264,6 +268,7 @@ export default function LayoutComponentNode({
         onLayoutChange={(layout, recordHistory) =>
           onLayoutChange(component.id, layout, recordHistory)
         }
+        onSelect={() => onSelect(component.id)}
         onEdit={() => onEdit(component.id)}
         onCopy={() => onCopy(component.id)}
         onDelete={() => onDelete(component.id)}

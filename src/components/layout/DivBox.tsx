@@ -21,6 +21,7 @@ interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
     layout: Partial<ComponentLayout>,
     recordHistory?: boolean,
   ) => void;
+  onSelect?: () => void;
   onEdit?: () => void;
   onCopy?: () => void;
   onDelete?: () => void;
@@ -41,6 +42,7 @@ function DivBox({
   previewMode = false,
   layout,
   onLayoutChange,
+  onSelect,
   onEdit,
   onCopy,
   onDelete,
@@ -93,9 +95,9 @@ function DivBox({
       event.preventDefault();
       event.stopPropagation();
 
-      onEdit?.();
+      onSelect?.();
     },
-    [onEdit, previewMode],
+    [onSelect, previewMode],
   );
 
   const handleEdit = useCallback(
@@ -271,9 +273,9 @@ function DivBox({
         return;
       }
 
-      onEdit?.();
+      onSelect?.();
     },
-    [onEdit, previewMode],
+    [onSelect, previewMode],
   );
 
   return (

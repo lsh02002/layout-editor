@@ -270,6 +270,7 @@ function LayoutEditor() {
     createComponent,
     deleteComponent,
     copyComponent,
+    selectComponent,
     editComponent,
     resetEditPanelToSelected,
     saveEditedComponent,
@@ -562,6 +563,7 @@ function LayoutEditor() {
           setPreviewMode={setPreviewMode}
           setActiveDropTarget={setActiveDropTarget}
           onLayoutChange={updateLayout}
+          onSelect={selectComponent}
           onEdit={editComponent}
           onCopy={copyComponent}
           onDelete={deleteComponent}

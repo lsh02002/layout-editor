@@ -17,6 +17,7 @@ type Props = {
     layout: Partial<ComponentLayout>,
     recordHistory?: boolean,
   ) => void;
+  onSelect: (id: string) => void;
   onEdit: (id: string) => void;
   onCopy: (id: string) => void;
   onDelete: (id: string) => void;
@@ -46,6 +47,7 @@ export default function BuilderCanvas({
   activeDropTarget,
   setActiveDropTarget,
   onLayoutChange,
+  onSelect,
   onEdit,
   onCopy,
   onDelete,
@@ -105,6 +107,7 @@ export default function BuilderCanvas({
               activeDropTarget={activeDropTarget}
               setActiveDropTarget={setActiveDropTarget}
               onLayoutChange={onLayoutChange}
+              onSelect={onSelect}
               onEdit={onEdit}
               onCopy={onCopy}
               onDelete={onDelete}
