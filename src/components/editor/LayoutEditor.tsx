@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 
 import BuilderCanvas from "../canvas/BuilderCanvas";
 import LayerPanel from "../layers/LayerPanel";
@@ -21,16 +21,12 @@ import { useProjectFiles } from "./hooks/useProjectFiles";
 import { sanitizeFileName, useTemplates } from "./hooks/useTemplates";
 import { collectComponentCustomCss } from "./utils/customCssUtils";
 import { downloadHtmlFile } from "./utils/htmlExport";
-import { updateLayoutRecursive } from "./utils/componentTree";
 import { filterLayerComponents } from "./utils/componentSearch";
-import {
-  type ComponentLayout,
-  type LayoutComponent,
-  type TemplateItem,
-} from "../../types/types";
+import { type TemplateItem } from "../../types/types";
 
 import { data } from "../../data/data";
 import { useComponentActions } from "./hooks/useComponentActions";
+import { useSnapLayout } from "./hooks/useSnapLayout";
 
 function LayoutEditor() {
   const [previewMode, setPreviewMode] = useState(false);
@@ -233,31 +229,10 @@ function LayoutEditor() {
     setSelectedComponentId,
   });
 
-  const snapNumber = (value: number, size: number) => {
-    return Math.round(value / size) * size;
-  };
-
-  const snapLayout = (
-    layout: Partial<ComponentLayout>,
-  ): Partial<ComponentLayout> => {
-    if (!snapEnabled) {
-      return layout;
-    }
-
-    const next = {
-      ...layout,
-    };
-
-    Object.entries(next).forEach(([key, value]) => {
-      if (typeof value !== "number") {
-        return;
-      }
-
-      (next as Record<string, unknown>)[key] = snapNumber(value, gridSize);
-    });
-
-    return next;
-  };
+  const { snapLayout } = useSnapLayout({
+    snapEnabled,
+    gridSize,
+  });
 
   const filteredLayerComponents = filterLayerComponents(
     components,
@@ -275,6 +250,9 @@ function LayoutEditor() {
     resetEditPanelToSelected,
     saveEditedComponent,
     dropTemplate,
+    updateLayout,
+    updateSelectedComponentImmediate,
+    handleStyleApply,
   } = useComponentActions({
     components,
     selectedComponentId,
@@ -295,6 +273,8 @@ function LayoutEditor() {
     templates: templateFiles.map((file) => file.data),
     selectedTemplateId,
     setSelectedTemplateId,
+    setEditLayout,
+    snapLayout,
     editValues: {
       editingComponentId,
       editTitle,
@@ -332,50 +312,6 @@ function LayoutEditor() {
     commitHistory,
   });
 
-  const updateLayout = (
-    id: string,
-    newLayout: Partial<ComponentLayout>,
-    recordHistory: boolean = true,
-  ) => {
-    const snappedLayout = snapLayout(newLayout);
-
-    const updater = (prev: LayoutComponent[]) =>
-      updateLayoutRecursive(prev, id, snappedLayout);
-
-    setComponents(updater, recordHistory);
-
-    if (selectedComponentId === id) {
-      setEditLayout((prev) => ({
-        ...prev,
-        ...snappedLayout,
-      }));
-    }
-  };
-
-  const updateSelectedComponentImmediate = (
-    updater: (component: LayoutComponent) => LayoutComponent,
-  ) => {
-    if (!selectedComponentId) return;
-
-    const updateRecursive = (items: LayoutComponent[]): LayoutComponent[] =>
-      items.map((component) => {
-        if (component.id === selectedComponentId) {
-          return updater(component);
-        }
-
-        if (component.type === "container") {
-          return {
-            ...component,
-            children: updateRecursive(component.children),
-          };
-        }
-
-        return component;
-      });
-
-    setComponents(updateRecursive);
-  };
-
   const handleUndo = () => {
     undo();
     setEditorSyncKey((prev) => prev + 1);
@@ -384,54 +320,6 @@ function LayoutEditor() {
   const handleRedo = () => {
     redo();
     setEditorSyncKey((prev) => prev + 1);
-  };
-
-  const handleStyleApply = (
-    target: "style" | "contentStyle",
-    key: keyof CSSProperties,
-    value: CSSProperties[keyof CSSProperties],
-  ) => {
-    if (!selectedComponentId) {
-      return;
-    }
-
-    setComponents((items) => {
-      const updateRecursive = (
-        components: LayoutComponent[],
-      ): LayoutComponent[] =>
-        components.map((component) => {
-          if (component.id === selectedComponentId) {
-            if (target === "style") {
-              return {
-                ...component,
-                style: {
-                  ...component.style,
-                  [key]: value,
-                },
-              };
-            }
-
-            return {
-              ...component,
-              contentStyle: {
-                ...component.contentStyle,
-                [key]: value,
-              },
-            };
-          }
-
-          if (component.type === "container") {
-            return {
-              ...component,
-              children: updateRecursive(component.children),
-            };
-          }
-
-          return component;
-        });
-
-      return updateRecursive(items);
-    });
   };
 
   const componentCustomCss = collectComponentCustomCss(components);

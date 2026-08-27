@@ -1,4 +1,8 @@
-import type { LayoutComponent, TemplateItem } from "../../../types/types";
+import type {
+  ComponentLayout,
+  LayoutComponent,
+  TemplateItem,
+} from "../../../types/types";
 
 import type {
   BooleanSetter,
@@ -16,6 +20,8 @@ import { useCrudActions } from "./actions/useCrudActions";
 import { useSelectionActions } from "./actions/useSelectionActions";
 import { useEditSaveActions } from "./actions/useEditSaveActions";
 import { useTemplateActions } from "./actions/useTemplateActions";
+import { useLayoutActions } from "./actions/useLayoutActions";
+import { useStyleActions } from "./actions/useStyleActions";
 
 type Options = {
   components: LayoutComponent[];
@@ -47,6 +53,9 @@ type Options = {
   templates: TemplateItem[];
   selectedTemplateId: string | null;
   setSelectedTemplateId: (id: string | null) => void;
+
+  setEditLayout: React.Dispatch<React.SetStateAction<Partial<ComponentLayout>>>;
+  snapLayout: (layout: Partial<ComponentLayout>) => Partial<ComponentLayout>;
 };
 
 export const useComponentActions = ({
@@ -69,6 +78,8 @@ export const useComponentActions = ({
   templates,
   selectedTemplateId,
   setSelectedTemplateId,
+  setEditLayout,
+  snapLayout,
 }: Options) => {
   const createActions = useCreateActions({
     components,
@@ -114,11 +125,25 @@ export const useComponentActions = ({
     commitHistory,
   });
 
+  const layoutActions = useLayoutActions({
+    selectedComponentId,
+    setComponents,
+    setEditLayout,
+    snapLayout,
+  });
+
+  const styleActions = useStyleActions({
+    selectedComponentId,
+    setComponents,
+  });
+
   return {
     ...createActions,
     ...crudActions,
     ...selectionActions,
     ...editActions,
+    ...layoutActions,
+    ...styleActions,
     ...templateActions,
   };
 };

@@ -185,8 +185,15 @@ export type CommitHistory = (
   updater: (prev: LayoutComponent[]) => LayoutComponent[],
 ) => void;
 
+// export type SetComponents = (
+//   updater: (prev: LayoutComponent[]) => LayoutComponent[],
+// ) => void;
+
 export type SetComponents = (
-  updater: (prev: LayoutComponent[]) => LayoutComponent[],
+  updater:
+    | LayoutComponent[]
+    | ((prev: LayoutComponent[]) => LayoutComponent[]),
+  recordHistory?: boolean,
 ) => void;
 
 export type InsertTarget = {
