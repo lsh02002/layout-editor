@@ -111,10 +111,11 @@ export default function LayoutComponentNode({
   }, [component.id]);
 
   const dragHandleLeft =
-    renderedWidth > 0 && renderedWidth < 120
-      ? (renderedWidth > 0 && renderedWidth < 70 ? -80 : -60) -
-        (editToolbarVisible ? -10 : -25)
-      : 0;
+    renderedWidth > 0 && renderedWidth < 120 && editToolbarVisible
+      ? renderedWidth < 70
+        ? -100
+        : -40
+      : -10;
 
   const handleNativeDragStart = (
     event: DragEvent<HTMLElement>,
