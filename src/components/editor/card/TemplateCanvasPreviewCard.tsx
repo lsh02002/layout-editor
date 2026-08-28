@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { LayoutComponent } from "../../../types/types";
 
 import CanvasComponentContent from "../../canvas/CanvasComponentContent";
@@ -6,7 +7,7 @@ type Props = {
   components: LayoutComponent[];
 };
 
-export default function TemplateCanvasPreviewCard({ components }: Props) {
+function TemplateCanvasPreviewCard({ components }: Props) {
   const safeComponents = Array.isArray(components) ? components : [];
 
   const renderComponent = (component: LayoutComponent): React.ReactNode => {
@@ -80,3 +81,4 @@ export default function TemplateCanvasPreviewCard({ components }: Props) {
     </div>
   );
 }
+export default memo(TemplateCanvasPreviewCard);

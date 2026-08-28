@@ -1,4 +1,4 @@
-import { useState, type DragEvent } from "react";
+import { memo, useState, type DragEvent } from "react";
 import type { ContainerDirection } from "../../types/types";
 
 export type CanvasDropTarget = {
@@ -23,7 +23,7 @@ type Props = {
   onCreate: (parentId: string | null, index: number) => void;
 };
 
-export default function CanvasDropZone({
+function CanvasDropZone({
   previewMode = false,
   parentId,
   index,
@@ -155,3 +155,5 @@ export default function CanvasDropZone({
     </div>
   );
 }
+
+export default memo(CanvasDropZone);

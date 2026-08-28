@@ -1,4 +1,4 @@
-import type { CSSProperties, JSX } from "react";
+import { memo, type CSSProperties, type JSX } from "react";
 import type { LayoutComponent } from "../../types/types";
 import { getLinkHref } from "../../utils/link";
 
@@ -6,7 +6,7 @@ type Props = {
   component: Exclude<LayoutComponent, { type: "container" }>;
 };
 
-export default function CanvasComponentContent({ component }: Props) {
+function CanvasComponentContent({ component }: Props) {
   switch (component.type) {
     case "button":
       return (
@@ -138,3 +138,5 @@ export default function CanvasComponentContent({ component }: Props) {
       );
   }
 }
+
+export default memo(CanvasComponentContent);

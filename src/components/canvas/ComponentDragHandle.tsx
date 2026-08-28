@@ -1,4 +1,4 @@
-import { type DragEvent, type PointerEvent } from "react";
+import { memo, type DragEvent, type PointerEvent } from "react";
 
 import type { LayoutComponent } from "../../types/types";
 
@@ -25,7 +25,7 @@ type Props = {
   dragHandleLeft?: number;
 };
 
-export default function ComponentDragHandle({
+function ComponentDragHandle({
   component,
   draggingId,
   layerSearch,
@@ -149,3 +149,5 @@ export default function ComponentDragHandle({
     </button>
   );
 }
+
+export default memo(ComponentDragHandle);

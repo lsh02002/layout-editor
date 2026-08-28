@@ -1,9 +1,11 @@
+import { memo } from "react";
+
 type Props = {
   favoriteCount: number;
   onToggleLayers: () => void;
   onToggleFavorites: () => void;
 };
-export function MobilePanelButtons({
+function MobilePanelButtons({
   favoriteCount,
   onToggleLayers,
   onToggleFavorites,
@@ -29,3 +31,5 @@ export function MobilePanelButtons({
     </div>
   );
 }
+
+export default memo(MobilePanelButtons);

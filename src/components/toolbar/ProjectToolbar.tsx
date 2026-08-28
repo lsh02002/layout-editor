@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import type { CanvasViewport } from "../../types/types";
 
 type ProjectToolbarProps = {
@@ -30,7 +30,7 @@ type ProjectToolbarProps = {
   onLoadTemplate: (event: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-export default function ProjectToolbar({
+function ProjectToolbar({
   previewMode,
   isMobile,
   canvasViewport,
@@ -285,3 +285,5 @@ export default function ProjectToolbar({
     </div>
   );
 }
+
+export default memo(ProjectToolbar);

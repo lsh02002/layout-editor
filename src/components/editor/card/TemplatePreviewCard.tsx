@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { TemplateItem } from "../../../types/types";
 import TemplateCanvasPreviewCard from "./TemplateCanvasPreviewCard";
 type Props = {
@@ -6,11 +7,7 @@ type Props = {
   onSelect?: () => void;
 };
 
-export default function TemplatePreviewCard({
-  template,
-  selected,
-  onSelect,
-}: Props) {
+function TemplatePreviewCard({ template, selected, onSelect }: Props) {
   return (
     <div
       draggable
@@ -84,3 +81,5 @@ export default function TemplatePreviewCard({
     </div>
   );
 }
+
+export default memo(TemplatePreviewCard);
