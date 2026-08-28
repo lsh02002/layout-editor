@@ -115,6 +115,24 @@ export interface ContainerComponent extends BaseComponent {
   children: LayoutComponent[];
 }
 
+export interface DividerComponent extends BaseComponent {
+  type: "divider";
+
+  props: {
+    thickness?: number;
+    color?: string;
+    lineStyle?: "solid" | "dashed" | "dotted";
+  };
+}
+
+export interface SpacerComponent extends BaseComponent {
+  type: "spacer";
+
+  props: {
+    height: number;
+  };
+}
+
 export type LayoutComponent =
   | ButtonComponent
   | ScrollToTopButtonComponent
@@ -123,6 +141,8 @@ export type LayoutComponent =
   | QuillComponent
   | ImageComponent
   | LinkComponent
+  | DividerComponent
+  | SpacerComponent
   | ContainerComponent;
 
 export interface HistoryState {
@@ -190,9 +210,7 @@ export type CommitHistory = (
 // ) => void;
 
 export type SetComponents = (
-  updater:
-    | LayoutComponent[]
-    | ((prev: LayoutComponent[]) => LayoutComponent[]),
+  updater: LayoutComponent[] | ((prev: LayoutComponent[]) => LayoutComponent[]),
   recordHistory?: boolean,
 ) => void;
 
@@ -219,6 +237,10 @@ export type EditValues = {
   editComponentName: string;
   editHeadingLevel: HeadingLevel;
   editLayout: ComponentLayout;
+  editDividerThickness: number;
+  editDividerColor: string;
+  editDividerLineStyle: "solid" | "dashed" | "dotted";
+  editSpacerHeight: number;
 };
 
 export type SelectionSetter = Dispatch<SetStateAction<string | null>>;
@@ -237,5 +259,7 @@ export const VALID_COMPONENT_TYPES = [
   "image",
   "link",
   "container",
+  "divider",
+  "spacer",
   "scrollToTopButton",
 ] as const satisfies readonly ComponentType[];

@@ -13,6 +13,7 @@ import ImageFields from "./fields/ImageFields";
 import LinkFields from "./fields/LinkFields";
 import QuillFields from "./fields/QuillFields";
 import TextareaFields from "./fields/TextareaFields";
+import ComponentNameField from "./fields/ComponentNameField";
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -114,6 +115,8 @@ function CreateComponentModal({
                   </option>
                   <option value="image">Image</option>
                   <option value="link">Link</option>
+                  <option value="divider">Divider</option>
+                  <option value="spacer">Spacer</option>
                 </select>
               </div>
 
@@ -178,6 +181,13 @@ function CreateComponentModal({
                   onLinkTypeChange={setNewLinkType}
                   onValueChange={setNewValue}
                   onNewWindowChange={setNewLinkNewWindow}
+                />
+              )}
+
+              {(newType === "divider" || newType === "spacer") && (
+                <ComponentNameField
+                  value={newComponentName}
+                  onChange={setNewComponentName}
                 />
               )}
 

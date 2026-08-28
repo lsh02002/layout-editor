@@ -121,6 +121,15 @@ function LayoutEditor() {
     loadComponentToEdit,
     editLayout,
     setEditLayout,
+    // Divider and Spacer specific states
+    editDividerThickness,
+    setEditDividerThickness,
+    editDividerColor,
+    setEditDividerColor,
+    editDividerLineStyle,
+    setEditDividerLineStyle,
+    editSpacerHeight,
+    setEditSpacerHeight,
   } = useEditComponentForm();
 
   const [snapEnabled, setSnapEnabled] = useState(true);
@@ -287,6 +296,10 @@ function LayoutEditor() {
       editLinkNewWindow,
       editComponentName,
       editHeadingLevel,
+      editDividerThickness,
+      editDividerColor,
+      editDividerLineStyle,
+      editSpacerHeight,
       editLayout,
     },
   });
@@ -557,6 +570,14 @@ function LayoutEditor() {
         setEditComponentName={setEditComponentName}
         editHeadingLevel={editHeadingLevel}
         setEditHeadingLevel={setEditHeadingLevel}
+        editDividerThickness={editDividerThickness}
+        setEditDividerThickness={setEditDividerThickness}
+        editDividerColor={editDividerColor}
+        setEditDividerColor={setEditDividerColor}
+        editDividerLineStyle={editDividerLineStyle}
+        setEditDividerLineStyle={setEditDividerLineStyle}
+        editSpacerHeight={editSpacerHeight}
+        setEditSpacerHeight={setEditSpacerHeight}
         resetEditPanelToSelected={resetEditPanelToSelected}
         saveEditedComponent={saveEditedComponent}
         favoriteComponents={favoriteComponents}

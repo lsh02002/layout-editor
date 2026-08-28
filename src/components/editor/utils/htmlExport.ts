@@ -268,6 +268,58 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
         </div>`;
     }
 
+    case "divider": {
+      const thickness = component.props.thickness ?? 1;
+      const color = component.props.color ?? "#dee2e6";
+      const lineStyle = component.props.lineStyle ?? "solid";
+
+      return `
+        <div
+          class="${wrapperClass}"
+          data-component-id="${componentId}"
+          data-component-type="divider"
+          data-component-name="${componentName}"
+          style="${escapeAttribute(wrapperStyle)}"
+        >
+          <hr
+            style="${escapeAttribute(
+              [
+                "width:100%",
+                "margin:0",
+                "border:0",
+                `border-top:${thickness}px ${lineStyle} ${color}`,
+                contentStyle,
+              ]
+                .filter(Boolean)
+                .join(";"),
+            )}"
+          />
+        </div>`;
+    }
+
+    case "spacer": {
+      const height = component.props.height ?? 32;
+
+      return `
+        <div
+          class="${wrapperClass}"
+          data-component-id="${componentId}"
+          data-component-type="spacer"
+          data-component-name="${componentName}"
+          style="${escapeAttribute(
+            [
+              wrapperStyle,
+              `height:${height}px`,
+              `min-height:${height}px`,
+              "width:100%",
+              contentStyle,
+            ]
+              .filter(Boolean)
+              .join(";"),
+          )}"
+        ></div>`;
+    }
+
     case "container": {
       const direction = component.props.direction ?? "column";
       const gap = component.props.gap ?? 8;

@@ -182,6 +182,36 @@ export const useCreateComponentForm = () => {
           },
         };
 
+      case "divider":
+        return {
+          id,
+          name: newComponentName.trim() || "Divider",
+          type: "divider",
+          order: 0,
+          props: {
+            thickness: 1,
+            color: "#dee2e6",
+            lineStyle: "solid",
+          },
+          style: {
+            width: "100%",
+          },
+        };
+
+      case "spacer":
+        return {
+          id,
+          name: newComponentName.trim() || "Spacer",
+          type: "spacer",
+          order: 0,
+          props: {
+            height: 32,
+          },
+          style: {
+            width: "100%",
+          },
+        };
+
       case "container":
         return {
           id,

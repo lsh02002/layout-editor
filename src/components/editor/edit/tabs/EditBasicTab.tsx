@@ -13,6 +13,8 @@ import EditImageFields from "../fields/EditImageFields";
 import EditLinkFields from "../fields/EditLinkFields";
 import EditQuillFields from "../fields/EditQuillFields";
 import EditTextareaFields from "../fields/EditTextareaFields";
+import EditDividerFields from "../fields/EditDividerFields";
+import EditSpacerFields from "../fields/EditSpacerFields";
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -57,6 +59,20 @@ type Props = {
   onImmediateChange: (
     updater: (component: LayoutComponent) => LayoutComponent,
   ) => void;
+
+  editDividerThickness: number;
+  setEditDividerThickness: Dispatch<SetStateAction<number>>;
+
+  editDividerColor: string;
+  setEditDividerColor: Dispatch<SetStateAction<string>>;
+
+  editDividerLineStyle: "solid" | "dashed" | "dotted";
+  setEditDividerLineStyle: Dispatch<
+    SetStateAction<"solid" | "dashed" | "dotted">
+  >;
+
+  editSpacerHeight: number;
+  setEditSpacerHeight: Dispatch<SetStateAction<number>>;
 };
 
 function EditBasicTab({
@@ -96,6 +112,18 @@ function EditBasicTab({
 
   editHeadingLevel,
   setEditHeadingLevel,
+
+  editDividerThickness,
+  setEditDividerThickness,
+
+  editDividerColor,
+  setEditDividerColor,
+
+  editDividerLineStyle,
+  setEditDividerLineStyle,
+
+  editSpacerHeight,
+  setEditSpacerHeight,
 
   onImmediateChange,
 }: Props) {
@@ -297,6 +325,80 @@ function EditBasicTab({
     );
   };
 
+  const handleDividerThicknessChange = (thickness: number) => {
+    setEditDividerThickness(thickness);
+
+    onImmediateChange((component) => {
+      if (component.type !== "divider") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          thickness,
+        },
+      };
+    });
+  };
+
+  const handleDividerColorChange = (color: string) => {
+    setEditDividerColor(color);
+
+    onImmediateChange((component) => {
+      if (component.type !== "divider") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          color,
+        },
+      };
+    });
+  };
+
+  const handleDividerLineStyleChange = (
+    lineStyle: "solid" | "dashed" | "dotted",
+  ) => {
+    setEditDividerLineStyle(lineStyle);
+
+    onImmediateChange((component) => {
+      if (component.type !== "divider") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          lineStyle,
+        },
+      };
+    });
+  };
+
+  const handleSpacerHeightChange = (height: number) => {
+    setEditSpacerHeight(height);
+
+    onImmediateChange((component) => {
+      if (component.type !== "spacer") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          height,
+        },
+      };
+    });
+  };
+
   return (
     <>
       {/* 타입 */}
@@ -392,6 +494,34 @@ function EditBasicTab({
         </div>
       )}
 
+      {/* Divider */}
+      {editType === "divider" && (
+        <div className="mb-3">
+          <EditDividerFields
+            componentName={editComponentName}
+            thickness={editDividerThickness}
+            color={editDividerColor}
+            lineStyle={editDividerLineStyle}
+            onComponentNameChange={handleComponentNameChange}
+            onThicknessChange={handleDividerThicknessChange}
+            onColorChange={handleDividerColorChange}
+            onLineStyleChange={handleDividerLineStyleChange}
+          />
+        </div>
+      )}
+
+      {/* Spacer */}
+      {editType === "spacer" && (
+        <div className="mb-3">
+          <EditSpacerFields
+            componentName={editComponentName}
+            height={editSpacerHeight}
+            onComponentNameChange={handleComponentNameChange}
+            onHeightChange={handleSpacerHeightChange}
+          />
+        </div>
+      )}
+
       {/* Container */}
       {editType === "container" && (
         <div className="mb-3">
@@ -405,23 +535,25 @@ function EditBasicTab({
       )}
 
       {/* Disabled */}
-      {editType !== "container" && (
-        <div className="form-check mb-3">
-          <input
-            type="checkbox"
-            className="form-check-input"
-            id="editDisabled"
-            checked={editDisabled}
-            onChange={(event) => {
-              handleDisabledChange(event.target.checked);
-            }}
-          />
+      {editType !== "container" &&
+        editType !== "divider" &&
+        editType !== "spacer" && (
+          <div className="form-check mb-3">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              id="editDisabled"
+              checked={editDisabled}
+              onChange={(event) => {
+                handleDisabledChange(event.target.checked);
+              }}
+            />
 
-          <label className="form-check-label" htmlFor="editDisabled">
-            Disabled
-          </label>
-        </div>
-      )}
+            <label className="form-check-label" htmlFor="editDisabled">
+              Disabled
+            </label>
+          </div>
+        )}
     </>
   );
 }

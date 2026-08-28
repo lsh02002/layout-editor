@@ -35,6 +35,11 @@ export const useEditSaveActions = ({
         editLinkNewWindow,
         editComponentName,
         editHeadingLevel,
+
+        editDividerThickness,
+        editDividerColor,
+        editDividerLineStyle,
+        editSpacerHeight,
         editLayout,
       } = editValues;
 
@@ -97,6 +102,28 @@ export const useEditSaveActions = ({
               value: editValue,
               placeholder: editPlaceholder,
               disabled: editDisabled,
+            },
+          };
+
+        case "divider":
+          return {
+            ...component,
+            ...common,
+            props: {
+              ...component.props,
+              thickness: editDividerThickness,
+              color: editDividerColor,
+              lineStyle: editDividerLineStyle,
+            },
+          };
+
+        case "spacer":
+          return {
+            ...component,
+            ...common,
+            props: {
+              ...component.props,
+              height: editSpacerHeight,
             },
           };
 

@@ -109,5 +109,32 @@ export default function CanvasComponentContent({ component }: Props) {
         </a>
       );
     }
+
+    case "divider":
+      return (
+        <hr
+          style={{
+            width: "100%",
+            margin: 0,
+            border: 0,
+            borderTop: `${component.props.thickness ?? 1}px ${
+              component.props.lineStyle ?? "solid"
+            } ${component.props.color ?? "#dee2e6"}`,
+            ...component.contentStyle,
+          }}
+        />
+      );
+
+    case "spacer":
+      return (
+        <div
+          style={{
+            width: "100%",
+            height: component.props.height ?? 32,
+            minHeight: component.props.height ?? 32,
+            ...component.contentStyle,
+          }}
+        />
+      );
   }
 }

@@ -81,6 +81,20 @@ type Props = {
   editHeadingLevel: HeadingLevel;
   setEditHeadingLevel: Dispatch<SetStateAction<HeadingLevel>>;
 
+  editDividerThickness: number;
+  setEditDividerThickness: Dispatch<SetStateAction<number>>;
+
+  editDividerColor: string;
+  setEditDividerColor: Dispatch<SetStateAction<string>>;
+
+  editDividerLineStyle: "solid" | "dashed" | "dotted";
+  setEditDividerLineStyle: Dispatch<
+    SetStateAction<"solid" | "dashed" | "dotted">
+  >;
+
+  editSpacerHeight: number;
+  setEditSpacerHeight: Dispatch<SetStateAction<number>>;
+
   resetEditPanelToSelected: () => void;
 
   favoriteComponents: FavoriteComponent[];
@@ -180,6 +194,18 @@ function EditComponentPanel({
 
   editHeadingLevel,
   setEditHeadingLevel,
+
+  editDividerThickness,
+  setEditDividerThickness,
+
+  editDividerColor,
+  setEditDividerColor,
+
+  editDividerLineStyle,
+  setEditDividerLineStyle,
+
+  editSpacerHeight,
+  setEditSpacerHeight,
 
   resetEditPanelToSelected,
 
@@ -348,6 +374,14 @@ function EditComponentPanel({
                   setEditComponentName={setEditComponentName}
                   editHeadingLevel={editHeadingLevel}
                   setEditHeadingLevel={setEditHeadingLevel}
+                  editDividerThickness={editDividerThickness}
+                  setEditDividerThickness={setEditDividerThickness}
+                  editDividerColor={editDividerColor}
+                  setEditDividerColor={setEditDividerColor}
+                  editDividerLineStyle={editDividerLineStyle}
+                  setEditDividerLineStyle={setEditDividerLineStyle}
+                  editSpacerHeight={editSpacerHeight}
+                  setEditSpacerHeight={setEditSpacerHeight}
                   onImmediateChange={onImmediateChange}
                 />
               )}

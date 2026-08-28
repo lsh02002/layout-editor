@@ -54,6 +54,16 @@ export const useEditComponentForm = () => {
     position: "relative",
   });
 
+  const [editDividerThickness, setEditDividerThickness] = useState(1);
+
+  const [editDividerColor, setEditDividerColor] = useState("#dee2e6");
+
+  const [editDividerLineStyle, setEditDividerLineStyle] = useState<
+    "solid" | "dashed" | "dotted"
+  >("solid");
+
+  const [editSpacerHeight, setEditSpacerHeight] = useState(32);
+
   const loadComponentToEdit = useCallback((component: LayoutComponent) => {
     setEditingComponentId(component.id);
 
@@ -99,6 +109,11 @@ export const useEditComponentForm = () => {
     setEditLinkType("url");
     setEditLinkNewWindow(false);
     setEditHeadingLevel(2);
+
+    setEditDividerThickness(1);
+    setEditDividerColor("#dee2e6");
+    setEditDividerLineStyle("solid");
+    setEditSpacerHeight(32);
 
     switch (component.type) {
       case "button": {
@@ -174,6 +189,30 @@ export const useEditComponentForm = () => {
         setEditLinkNewWindow(component.props.newWindow ?? false);
         break;
       }
+
+      case "divider": {
+        setEditTitle("");
+        setEditValue("");
+        setEditPlaceholder("");
+        setEditDirection("column");
+
+        setEditDividerThickness(component.props.thickness ?? 1);
+        setEditDividerColor(component.props.color ?? "#dee2e6");
+        setEditDividerLineStyle(component.props.lineStyle ?? "solid");
+
+        break;
+      }
+
+      case "spacer": {
+        setEditTitle("");
+        setEditValue("");
+        setEditPlaceholder("");
+        setEditDirection("column");
+
+        setEditSpacerHeight(component.props.height ?? 32);
+
+        break;
+      }
     }
   }, []);
 
@@ -215,5 +254,14 @@ export const useEditComponentForm = () => {
     loadComponentToEdit,
     editLayout,
     setEditLayout,
+    // Divider and Spacer specific states
+    editDividerThickness,
+    setEditDividerThickness,
+    editDividerColor,
+    setEditDividerColor,
+    editDividerLineStyle,
+    setEditDividerLineStyle,
+    editSpacerHeight,
+    setEditSpacerHeight,
   };
 };
