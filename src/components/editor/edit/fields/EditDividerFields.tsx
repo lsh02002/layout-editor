@@ -1,3 +1,4 @@
+import ApplyButton from "../tabs/ApplyButton";
 import EditComponentNameField from "./EditComponentNameField";
 
 type DividerLineStyle = "solid" | "dashed" | "dotted";
@@ -11,6 +12,7 @@ type Props = {
   onComponentNameChange: (value: string) => void;
   onThicknessChange: (value: number) => void;
   onColorChange: (value: string) => void;
+  onColorCommit: () => void;
   onLineStyleChange: (value: DividerLineStyle) => void;
 };
 
@@ -22,6 +24,7 @@ function EditDividerFields({
   onComponentNameChange,
   onThicknessChange,
   onColorChange,
+  onColorCommit,
   onLineStyleChange,
 }: Props) {
   return (
@@ -57,10 +60,15 @@ function EditDividerFields({
       <div className="mb-3">
         <label className="form-label">색상</label>
 
-        <div className="d-flex gap-2">
+        <div className="input-group input-group-sm">
           <input
             type="color"
             className="form-control form-control-color"
+            style={{
+              width: "56px",
+              minWidth: "56px",
+              flex: "0 0 56px",
+            }}
             value={color}
             onChange={(event) => onColorChange(event.target.value)}
           />
@@ -71,6 +79,8 @@ function EditDividerFields({
             value={color}
             onChange={(event) => onColorChange(event.target.value)}
           />
+
+          <ApplyButton onClick={onColorCommit} />
         </div>
       </div>
 

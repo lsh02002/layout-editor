@@ -345,9 +345,18 @@ function EditBasicTab({
 
   const handleDividerColorChange = (color: string) => {
     setEditDividerColor(color);
+  };
 
+  const handleDividerColorCommit = () => {
+    if (!/^#[0-9a-fA-F]{6}$/.test(editDividerColor)) {
+      return;
+    }
     onImmediateChange((component) => {
       if (component.type !== "divider") {
+        return component;
+      }
+
+      if (component.props.color === editDividerColor) {
         return component;
       }
 
@@ -355,7 +364,7 @@ function EditBasicTab({
         ...component,
         props: {
           ...component.props,
-          color,
+          color: editDividerColor,
         },
       };
     });
@@ -505,6 +514,7 @@ function EditBasicTab({
             onComponentNameChange={handleComponentNameChange}
             onThicknessChange={handleDividerThicknessChange}
             onColorChange={handleDividerColorChange}
+            onColorCommit={handleDividerColorCommit}
             onLineStyleChange={handleDividerLineStyleChange}
           />
         </div>
