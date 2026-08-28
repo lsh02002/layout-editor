@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+export type CanvasViewport = "desktop" | "tablet" | "mobile";
+
 import BuilderCanvas from "../canvas/BuilderCanvas";
 import LayerPanel from "../layers/LayerPanel";
 import ProjectToolbar from "../toolbar/ProjectToolbar";
@@ -30,6 +32,17 @@ import { useSnapLayout } from "./hooks/useSnapLayout";
 
 function LayoutEditor() {
   const [previewMode, setPreviewMode] = useState(false);
+
+  const [canvasViewport, setCanvasViewport] =
+    useState<CanvasViewport>("desktop");
+
+  const canvasWidthMap: Record<CanvasViewport, number> = {
+    desktop: 1100,
+    tablet: 768,
+    mobile: 390,
+  };
+
+  const canvasWidth = canvasWidthMap[canvasViewport];
 
   const [templateFiles, setTemplateFiles] = useState<
     { name: string; data: TemplateItem }[]
@@ -426,6 +439,9 @@ function LayoutEditor() {
       >
         <ProjectToolbar
           previewMode={previewMode}
+          isMobile={isMobile}
+          canvasViewport={canvasViewport}
+          onCanvasViewportChange={setCanvasViewport}
           snapEnabled={snapEnabled}
           gridSize={gridSize}
           canUndo={canUndo}
@@ -450,6 +466,7 @@ function LayoutEditor() {
 
         <BuilderCanvas
           previewMode={previewMode}
+          canvasWidth={canvasWidth}
           components={components}
           selectedComponentId={selectedComponentId}
           draggingId={draggingId}

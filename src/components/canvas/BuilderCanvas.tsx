@@ -5,6 +5,7 @@ import LayoutComponentNode from "./LayoutComponentNode";
 
 type Props = {
   previewMode: boolean;
+  canvasWidth: number;
   components: LayoutComponent[];
   selectedComponentId: string | null;
   draggingId: string | null;
@@ -40,6 +41,7 @@ type Props = {
 
 export default function BuilderCanvas({
   previewMode,
+  canvasWidth,
   components,
   selectedComponentId,
   draggingId,
@@ -67,7 +69,7 @@ export default function BuilderCanvas({
       className="builder-preview"
       style={{
         minHeight: 700,
-        maxWidth: 1100,
+        maxWidth: canvasWidth,
         width: "100%",
         margin: "0 auto",
         background: "#fff",

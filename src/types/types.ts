@@ -1,5 +1,7 @@
 import type { CSSProperties, Dispatch, SetStateAction } from "react";
 
+export type CanvasViewport = "desktop" | "tablet" | "mobile";
+
 export type ComponentType = LayoutComponent["type"];
 export type ContainerDirection = "row" | "column";
 export type LinkType = "url" | "tel" | "email";

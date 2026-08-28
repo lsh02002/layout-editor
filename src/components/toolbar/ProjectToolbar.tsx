@@ -1,7 +1,13 @@
 import React from "react";
+import type { CanvasViewport } from "../../components/editor/LayoutEditor";
 
 type ProjectToolbarProps = {
   previewMode: boolean;
+
+  isMobile: boolean;
+  canvasViewport: CanvasViewport;
+  onCanvasViewportChange: (viewport: CanvasViewport) => void;
+
   snapEnabled: boolean;
   gridSize: number;
   canUndo: boolean;
@@ -26,6 +32,9 @@ type ProjectToolbarProps = {
 
 export default function ProjectToolbar({
   previewMode,
+  isMobile,
+  canvasViewport,
+  onCanvasViewportChange,
   snapEnabled,
   gridSize,
   canUndo,
@@ -212,6 +221,48 @@ export default function ProjectToolbar({
         </label>
       </div>
 
+      {!isMobile && (
+        <div className="d-flex align-items-center gap-1 pe-2 border-end">
+          <button
+            type="button"
+            className={
+              canvasViewport === "desktop"
+                ? "btn btn-secondary btn-sm"
+                : "btn btn-outline-secondary btn-sm"
+            }
+            onClick={() => onCanvasViewportChange("desktop")}
+            title="Desktop - 1100px"
+          >
+            <i className="bi bi-display" />
+          </button>
+
+          <button
+            type="button"
+            className={
+              canvasViewport === "tablet"
+                ? "btn btn-secondary btn-sm"
+                : "btn btn-outline-secondary btn-sm"
+            }
+            onClick={() => onCanvasViewportChange("tablet")}
+            title="Tablet - 768px"
+          >
+            <i className="bi bi-tablet" />
+          </button>
+
+          <button
+            type="button"
+            className={
+              canvasViewport === "mobile"
+                ? "btn btn-secondary btn-sm"
+                : "btn btn-outline-secondary btn-sm"
+            }
+            onClick={() => onCanvasViewportChange("mobile")}
+            title="Mobile - 390px"
+          >
+            <i className="bi bi-phone" />
+          </button>
+        </div>
+      )}
       <div
         className="ms-auto d-flex align-items-center"
         style={{ minHeight: 31 }}
