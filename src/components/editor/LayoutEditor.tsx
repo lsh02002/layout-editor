@@ -5,7 +5,6 @@ import LayerPanel from "../layers/LayerPanel";
 import ProjectToolbar from "../toolbar/ProjectToolbar";
 import AutoSaveRestoreModal from "../modals/AutoSaveRestoreModal";
 import ProjectCssModal from "../modals/ProjectCssModal";
-import TemplateSaveModal from "../modals/TemplateSaveModal";
 import LayoutEditorStyles from "./styles/LayoutEditorStyles";
 import { useComponentHistory } from "./hooks/useComponentHistory";
 import { useComponentDragDrop } from "./hooks/useComponentDragDrop";
@@ -18,7 +17,7 @@ import EditComponentPanel from "./edit/EditComponentPanel";
 import { useFavoriteComponents } from "./hooks/useFavoriteComponents";
 import { useEditorShortcuts } from "./hooks/useEditorShortcuts";
 import { useProjectFiles } from "./hooks/useProjectFiles";
-import { sanitizeFileName, useTemplates } from "./hooks/useTemplates";
+import { useTemplates } from "./hooks/useTemplates";
 import { collectComponentCustomCss } from "./utils/customCssUtils";
 import { downloadHtmlFile } from "./utils/htmlExport";
 import { filterLayerComponents } from "./utils/componentSearch";
@@ -216,22 +215,13 @@ function LayoutEditor() {
       setAutoSaveBaseline,
     });
 
-  const {
-    showTemplateSaveModal,
-    setShowTemplateSaveModal,
-    templateSaveType,
-    templateFileName,
-    setTemplateFileName,
-    loadTemplateFile,
-    saveTemplateFromModal,
-    openProjectTemplateSaveModal,
-    openSelectedTemplateSaveModal,
-  } = useTemplates({
-    components,
-    selectedComponentId,
-    commitHistory,
-    setSelectedComponentId,
-  });
+  const { loadTemplateFile, saveProjectTemplate, saveSelectedTemplate } =
+    useTemplates({
+      components,
+      selectedComponentId,
+      commitHistory,
+      setSelectedComponentId,
+    });
 
   const { snapLayout } = useSnapLayout({
     snapEnabled,
@@ -486,8 +476,8 @@ function LayoutEditor() {
           onSaveProject={saveProjectFile}
           onLoadProject={loadProjectFile}
           onDownloadHtml={downloadHtml}
-          onOpenProjectTemplate={openProjectTemplateSaveModal}
-          onOpenSelectedTemplate={openSelectedTemplateSaveModal}
+          onOpenProjectTemplate={saveProjectTemplate}
+          onOpenSelectedTemplate={saveSelectedTemplate}
           onLoadTemplate={loadTemplateFile}
         />
 
@@ -536,15 +526,7 @@ function LayoutEditor() {
         onRestore={restoreAutoSave}
         onDiscard={discardAutoSave}
       />
-      <TemplateSaveModal
-        open={showTemplateSaveModal}
-        type={templateSaveType}
-        fileName={templateFileName}
-        sanitizedFileName={sanitizeFileName(templateFileName)}
-        onFileNameChange={setTemplateFileName}
-        onClose={() => setShowTemplateSaveModal(false)}
-        onSave={saveTemplateFromModal}
-      />
+
       <ProjectCssModal
         open={showProjectCssModal}
         value={projectCssDraft}

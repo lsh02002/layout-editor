@@ -26,6 +26,12 @@ type ProjectValidation =
       error: string;
     };
 
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
+const isTauri = (): boolean => {
+  return "__TAURI_INTERNALS__" in window;
+};
+
 const validateProjectFile = (value: unknown): ProjectValidation => {
   if (!isObject(value)) {
     return {
@@ -141,12 +147,52 @@ export const useProjectFiles = ({
 
   const hasUnsavedChanges = currentSnapshot !== lastSavedSnapshot;
 
+  const applyProjectText = useCallback(
+    (text: string) => {
+      if (!text.trim()) {
+        throw new Error("파일 내용이 비어 있습니다.");
+      }
+
+      let parsed: unknown;
+
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        throw new Error("JSON 형식이 깨져 있습니다.");
+      }
+
+      const validation = validateProjectFile(parsed);
+
+      if (!validation.valid) {
+        throw new Error(validation.error);
+      }
+
+      resetHistory(validation.components);
+
+      setProjectCustomCss(validation.projectCustomCss);
+
+      setLastSavedSnapshot(
+        JSON.stringify({
+          components: validation.components,
+          projectCustomCss: validation.projectCustomCss,
+        }),
+      );
+
+      setSelectedComponentId(null);
+    },
+    [resetHistory, setProjectCustomCss, setSelectedComponentId],
+  );
+
   const saveProjectFile = useCallback(async () => {
-    await downloadProjectFile(
+    const saved = await downloadProjectFile(
       components,
       projectCustomCss,
       setAutoSaveBaseline,
     );
+
+    if (!saved) {
+      return;
+    }
 
     setLastSavedSnapshot(
       JSON.stringify({
@@ -156,7 +202,7 @@ export const useProjectFiles = ({
     );
   }, [components, projectCustomCss, setAutoSaveBaseline]);
 
-  const loadProjectFile = useCallback(
+  const loadProjectFileWeb = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
 
@@ -166,14 +212,14 @@ export const useProjectFiles = ({
 
       if (!file.name.toLowerCase().endsWith(".json")) {
         alert("JSON 프로젝트 파일만 불러올 수 있습니다.");
+
         event.target.value = "";
         return;
       }
 
-      const MAX_FILE_SIZE = 50 * 1024 * 1024;
-
       if (file.size > MAX_FILE_SIZE) {
         alert("프로젝트 파일이 너무 큽니다.");
+
         event.target.value = "";
         return;
       }
@@ -184,36 +230,7 @@ export const useProjectFiles = ({
         try {
           const text = String(reader.result ?? "");
 
-          if (!text.trim()) {
-            throw new Error("파일 내용이 비어 있습니다.");
-          }
-
-          let parsed: unknown;
-
-          try {
-            parsed = JSON.parse(text);
-          } catch {
-            throw new Error("JSON 형식이 깨져 있습니다.");
-          }
-
-          const validation = validateProjectFile(parsed);
-
-          if (!validation.valid) {
-            throw new Error(validation.error);
-          }
-
-          resetHistory(validation.components);
-
-          setProjectCustomCss(validation.projectCustomCss);
-
-          setLastSavedSnapshot(
-            JSON.stringify({
-              components: validation.components,
-              projectCustomCss: validation.projectCustomCss,
-            }),
-          );
-
-          setSelectedComponentId(null);
+          applyProjectText(text);
         } catch (error) {
           console.error("프로젝트 불러오기 실패:", error);
 
@@ -228,13 +245,77 @@ export const useProjectFiles = ({
 
       reader.onerror = () => {
         alert("파일을 읽는 중 오류가 발생했습니다.");
+
         event.target.value = "";
       };
 
       reader.readAsText(file);
     },
-    [resetHistory, setProjectCustomCss, setSelectedComponentId],
+    [applyProjectText],
   );
+
+  const loadProjectFileTauri = useCallback(async () => {
+    try {
+      const { open } = await import("@tauri-apps/plugin-dialog");
+
+      const { readTextFile, stat } = await import("@tauri-apps/plugin-fs");
+
+      const filePath = await open({
+        title: "프로젝트 불러오기",
+        multiple: false,
+        directory: false,
+        filters: [
+          {
+            name: "Page Builder Project",
+            extensions: ["json"],
+          },
+        ],
+      });
+
+      if (!filePath) {
+        return;
+      }
+
+      const fileInfo = await stat(filePath);
+
+      if (fileInfo.size > MAX_FILE_SIZE) {
+        alert("프로젝트 파일이 너무 큽니다.");
+        return;
+      }
+
+      const text = await readTextFile(filePath);
+
+      applyProjectText(text);
+    } catch (error) {
+      console.error("프로젝트 불러오기 실패:", error);
+
+      const message =
+        error instanceof Error ? error.message : "알 수 없는 오류입니다.";
+
+      alert(`프로젝트 파일을 불러올 수 없습니다.\n\n${message}`);
+    }
+  }, [applyProjectText]);
+
+  const loadProjectFile = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      if (isTauri()) {
+        event.target.value = "";
+        void loadProjectFileTauri();
+        return;
+      }
+
+      loadProjectFileWeb(event);
+    },
+    [loadProjectFileTauri, loadProjectFileWeb],
+  );
+
+  const openProjectFile = useCallback(async () => {
+    if (!isTauri()) {
+      return;
+    }
+
+    await loadProjectFileTauri();
+  }, [loadProjectFileTauri]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -264,5 +345,6 @@ export const useProjectFiles = ({
     hasUnsavedChanges,
     saveProjectFile,
     loadProjectFile,
+    openProjectFile,
   };
 };

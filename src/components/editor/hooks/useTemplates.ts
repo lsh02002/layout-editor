@@ -1,4 +1,7 @@
-import { useCallback, useState, type ChangeEvent } from "react";
+import { useCallback, type ChangeEvent } from "react";
+
+import { open, save } from "@tauri-apps/plugin-dialog";
+import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 
 import type { LayoutComponent, TemplateFile } from "../../../types/types";
 
@@ -24,7 +27,36 @@ type Options = {
   setSelectedComponentId: (id: string | null) => void;
 };
 
-type TemplateSaveType = "project" | "component";
+type SaveFilePickerOptions = {
+  suggestedName?: string;
+
+  types?: Array<{
+    description?: string;
+    accept: Record<string, string[]>;
+  }>;
+};
+
+type FileSystemWritableFileStream = {
+  write(data: string | Blob | BufferSource): Promise<void>;
+
+  close(): Promise<void>;
+};
+
+type FileSystemFileHandle = {
+  createWritable(): Promise<FileSystemWritableFileStream>;
+};
+
+type WindowWithSaveFilePicker = Window & {
+  showSaveFilePicker?: (
+    options?: SaveFilePickerOptions,
+  ) => Promise<FileSystemFileHandle>;
+};
+
+const MAX_TEMPLATE_FILE_SIZE = 50 * 1024 * 1024;
+
+const isTauri = (): boolean => {
+  return "__TAURI_INTERNALS__" in window;
+};
 
 export const sanitizeFileName = (name: string) =>
   name
@@ -32,26 +64,105 @@ export const sanitizeFileName = (name: string) =>
     .replace(/[\\/:*?"<>|]/g, "_")
     .replace(/\s+/g, "-") || "template";
 
-const downloadTemplateFile = (data: TemplateFile, fileName: string) => {
+const downloadTemplateFileWeb = async (
+  data: TemplateFile,
+  fileName: string,
+): Promise<boolean> => {
   const json = JSON.stringify(data, null, 2);
 
-  const blob = new Blob([json], {
-    type: "application/json;charset=utf-8",
+  const safeFileName = `${fileName}.pbtpl`;
+
+  try {
+    const browserWindow = window as WindowWithSaveFilePicker;
+
+    if (typeof browserWindow.showSaveFilePicker === "function") {
+      const fileHandle = await browserWindow.showSaveFilePicker({
+        suggestedName: safeFileName,
+
+        types: [
+          {
+            description: "Page Builder Template",
+
+            accept: {
+              "application/json": [".pbtpl"],
+            },
+          },
+        ],
+      });
+
+      const writable = await fileHandle.createWritable();
+
+      await writable.write(json);
+      await writable.close();
+
+      return true;
+    }
+
+    const blob = new Blob([json], {
+      type: "application/json;charset=utf-8",
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = safeFileName;
+
+    document.body.appendChild(anchor);
+
+    anchor.click();
+    anchor.remove();
+
+    URL.revokeObjectURL(url);
+
+    return true;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      return false;
+    }
+
+    throw error;
+  }
+};
+
+const downloadTemplateFileTauri = async (
+  data: TemplateFile,
+  fileName: string,
+): Promise<boolean> => {
+  const json = JSON.stringify(data, null, 2);
+
+  const filePath = await save({
+    title: "템플릿 저장",
+
+    defaultPath: `${fileName}.pbtpl`,
+
+    filters: [
+      {
+        name: "Page Builder Template",
+        extensions: ["pbtpl"],
+      },
+    ],
   });
 
-  const url = URL.createObjectURL(blob);
+  if (!filePath) {
+    return false;
+  }
 
-  const anchor = document.createElement("a");
+  await writeTextFile(filePath, json);
 
-  anchor.href = url;
-  anchor.download = `${fileName}.pbtpl`;
+  return true;
+};
 
-  document.body.appendChild(anchor);
+const downloadTemplateFile = async (
+  data: TemplateFile,
+  fileName: string,
+): Promise<boolean> => {
+  if (isTauri()) {
+    return downloadTemplateFileTauri(data, fileName);
+  }
 
-  anchor.click();
-  anchor.remove();
-
-  URL.revokeObjectURL(url);
+  return downloadTemplateFileWeb(data, fileName);
 };
 
 const validateTemplateFile = (
@@ -139,24 +250,19 @@ export const useTemplates = ({
   commitHistory,
   setSelectedComponentId,
 }: Options) => {
-  const [showTemplateSaveModal, setShowTemplateSaveModal] = useState(false);
-
-  const [templateSaveType, setTemplateSaveType] =
-    useState<TemplateSaveType>("project");
-
-  const [templateFileName, setTemplateFileName] = useState("");
-
   const saveProjectAsTemplateFile = useCallback(
     async (templateName: string) => {
       const name = templateName.trim();
 
       if (!name) {
         alert("템플릿 이름을 입력해주세요.");
+
         return;
       }
 
       if (components.length === 0) {
         alert("저장할 컴포넌트가 없습니다.");
+
         return;
       }
 
@@ -171,9 +277,14 @@ export const useTemplates = ({
           components: savedComponents,
         };
 
-        downloadTemplateFile(template, sanitizeFileName(name));
+        const saved = await downloadTemplateFile(
+          template,
+          sanitizeFileName(name),
+        );
 
-        setShowTemplateSaveModal(false);
+        if (!saved) {
+          return;
+        }
       } catch (error) {
         console.error("프로젝트 템플릿 저장 실패:", error);
 
@@ -189,11 +300,13 @@ export const useTemplates = ({
 
       if (!name) {
         alert("템플릿 이름을 입력해주세요.");
+
         return;
       }
 
       if (!selectedComponentId) {
         alert("먼저 컴포넌트를 선택해주세요.");
+
         return;
       }
 
@@ -201,6 +314,7 @@ export const useTemplates = ({
 
       if (!component) {
         alert("선택한 컴포넌트를 찾을 수 없습니다.");
+
         return;
       }
 
@@ -215,9 +329,14 @@ export const useTemplates = ({
           component: savedComponent,
         };
 
-        downloadTemplateFile(template, sanitizeFileName(name));
+        const saved = await downloadTemplateFile(
+          template,
+          sanitizeFileName(name),
+        );
 
-        setShowTemplateSaveModal(false);
+        if (!saved) {
+          return;
+        }
       } catch (error) {
         console.error("컴포넌트 템플릿 저장 실패:", error);
 
@@ -248,6 +367,7 @@ export const useTemplates = ({
         commitHistory(() => normalizeOrder(cloned));
 
         setSelectedComponentId(null);
+
         return;
       }
 
@@ -271,6 +391,7 @@ export const useTemplates = ({
         commitHistory((prev) => normalizeOrder([...prev, cloned]));
 
         setSelectedComponentId(cloned.id);
+
         return;
       }
 
@@ -287,6 +408,7 @@ export const useTemplates = ({
         );
 
         setSelectedComponentId(cloned.id);
+
         return;
       }
 
@@ -297,7 +419,36 @@ export const useTemplates = ({
     [commitHistory, components, selectedComponentId, setSelectedComponentId],
   );
 
-  const loadTemplateFile = useCallback(
+  const applyTemplateText = useCallback(
+    (text: string) => {
+      if (!text.trim()) {
+        throw new Error("빈 템플릿 파일입니다.");
+      }
+
+      let parsed: unknown;
+
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        throw new Error("JSON 형식이 깨져 있습니다.");
+      }
+
+      const validation = validateTemplateFile(parsed);
+
+      if (!validation.valid) {
+        throw new Error(validation.error);
+      }
+
+      if (validation.template.templateType === "project") {
+        applyLoadedProjectTemplate(validation.template);
+      } else {
+        applyLoadedComponentTemplate(validation.template);
+      }
+    },
+    [applyLoadedComponentTemplate, applyLoadedProjectTemplate],
+  );
+
+  const loadTemplateFileWeb = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
 
@@ -311,6 +462,15 @@ export const useTemplates = ({
         alert("템플릿 파일만 불러올 수 있습니다.");
 
         event.target.value = "";
+
+        return;
+      }
+
+      if (file.size > MAX_TEMPLATE_FILE_SIZE) {
+        alert("템플릿 파일이 너무 큽니다.");
+
+        event.target.value = "";
+
         return;
       }
 
@@ -320,23 +480,7 @@ export const useTemplates = ({
         try {
           const text = String(reader.result ?? "");
 
-          if (!text.trim()) {
-            throw new Error("빈 템플릿 파일입니다.");
-          }
-
-          const parsed: unknown = JSON.parse(text);
-
-          const validation = validateTemplateFile(parsed);
-
-          if (!validation.valid) {
-            throw new Error(validation.error);
-          }
-
-          if (validation.template.templateType === "project") {
-            applyLoadedProjectTemplate(validation.template);
-          } else {
-            applyLoadedComponentTemplate(validation.template);
-          }
+          applyTemplateText(text);
         } catch (error) {
           console.error("템플릿 불러오기 실패:", error);
 
@@ -357,55 +501,97 @@ export const useTemplates = ({
 
       reader.readAsText(file);
     },
-    [applyLoadedComponentTemplate, applyLoadedProjectTemplate],
+    [applyTemplateText],
   );
 
-  const saveTemplateFromModal = useCallback(() => {
-    if (!templateFileName.trim()) {
-      alert("템플릿 이름을 입력해주세요.");
+  const loadTemplateFileTauri = useCallback(async () => {
+    try {
+      const filePath = await open({
+        title: "템플릿 불러오기",
+
+        multiple: false,
+        directory: false,
+
+        filters: [
+          {
+            name: "Page Builder Template",
+            extensions: ["pbtpl", "json"],
+          },
+        ],
+      });
+
+      if (!filePath) {
+        return;
+      }
+
+      const text = await readTextFile(filePath);
+
+      if (text.length > MAX_TEMPLATE_FILE_SIZE) {
+        alert("템플릿 파일이 너무 큽니다.");
+
+        return;
+      }
+
+      applyTemplateText(text);
+    } catch (error) {
+      console.error("템플릿 불러오기 실패:", error);
+
+      const message =
+        error instanceof Error ? error.message : "알 수 없는 오류입니다.";
+
+      alert(`템플릿을 불러올 수 없습니다.\n\n${message}`);
+    }
+  }, [applyTemplateText]);
+
+  const loadTemplateFile = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      if (isTauri()) {
+        event.target.value = "";
+
+        void loadTemplateFileTauri();
+
+        return;
+      }
+
+      loadTemplateFileWeb(event);
+    },
+    [loadTemplateFileTauri, loadTemplateFileWeb],
+  );
+
+  const openTemplateFile = useCallback(async () => {
+    if (!isTauri()) {
       return;
     }
 
-    if (templateSaveType === "project") {
-      void saveProjectAsTemplateFile(templateFileName);
+    await loadTemplateFileTauri();
+  }, [loadTemplateFileTauri]);
+
+  const saveProjectTemplate = useCallback(() => {
+    void saveProjectAsTemplateFile("새 프로젝트 템플릿");
+  }, [saveProjectAsTemplateFile]);
+
+  const saveSelectedTemplate = useCallback(() => {
+    if (!selectedComponentId) {
+      alert("먼저 컴포넌트를 선택해주세요.");
       return;
     }
 
-    void saveSelectedComponentAsTemplateFile(templateFileName);
-  }, [
-    saveProjectAsTemplateFile,
-    saveSelectedComponentAsTemplateFile,
-    templateFileName,
-    templateSaveType,
-  ]);
+    const component = findComponentRecursive(components, selectedComponentId);
 
-  const openProjectTemplateSaveModal = useCallback(() => {
-    setTemplateSaveType("project");
-    setTemplateFileName("새 프로젝트 템플릿");
-    setShowTemplateSaveModal(true);
-  }, []);
+    if (!component) {
+      alert("선택한 컴포넌트를 찾을 수 없습니다.");
+      return;
+    }
 
-  const openSelectedTemplateSaveModal = useCallback(() => {
-    setTemplateSaveType("component");
+    const templateName = component.name?.trim() || "새 컴포넌트 템플릿";
 
-    const component = selectedComponentId
-      ? findComponentRecursive(components, selectedComponentId)
-      : undefined;
-
-    setTemplateFileName(component?.name?.trim() || "새 컴포넌트 템플릿");
-
-    setShowTemplateSaveModal(true);
-  }, [components, selectedComponentId]);
+    void saveSelectedComponentAsTemplateFile(templateName);
+  }, [components, selectedComponentId, saveSelectedComponentAsTemplateFile]);
 
   return {
-    showTemplateSaveModal,
-    setShowTemplateSaveModal,
-    templateSaveType,
-    templateFileName,
-    setTemplateFileName,
     loadTemplateFile,
-    saveTemplateFromModal,
-    openProjectTemplateSaveModal,
-    openSelectedTemplateSaveModal,
+    openTemplateFile,
+    saveProjectTemplate,
+    saveSelectedTemplate,
   };
 };

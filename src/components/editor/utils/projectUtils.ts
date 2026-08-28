@@ -1,3 +1,6 @@
+import { save } from "@tauri-apps/plugin-dialog";
+import { writeTextFile } from "@tauri-apps/plugin-fs";
+
 import {
   AUTOSAVE_KEY,
   type AutoSaveData,
@@ -68,6 +71,7 @@ export const convertComponentsForSave = async (
             );
           } catch (error) {
             console.error("이미지 압축 실패:", error);
+
             exportImageUrl = component.props.urls?.[0] ?? "";
           }
         }
@@ -136,15 +140,117 @@ export const readAutoSaveData = (): AutoSaveData | null => {
     };
   } catch (error) {
     console.error("자동 저장본 읽기 실패:", error);
+
     return null;
   }
+};
+
+const isTauri = (): boolean => {
+  return "__TAURI_INTERNALS__" in window;
+};
+
+type SaveFilePickerOptions = {
+  suggestedName?: string;
+  types?: Array<{
+    description?: string;
+    accept: Record<string, string[]>;
+  }>;
+};
+
+type FileSystemWritableFileStream = {
+  write(data: string | Blob | BufferSource): Promise<void>;
+
+  close(): Promise<void>;
+};
+
+type FileSystemFileHandle = {
+  createWritable(): Promise<FileSystemWritableFileStream>;
+};
+
+type WindowWithSaveFilePicker = Window & {
+  showSaveFilePicker?: (
+    options?: SaveFilePickerOptions,
+  ) => Promise<FileSystemFileHandle>;
+};
+
+const downloadProjectFileWeb = async (json: string): Promise<boolean> => {
+  try {
+    const browserWindow = window as WindowWithSaveFilePicker;
+
+    if (typeof browserWindow.showSaveFilePicker === "function") {
+      const fileHandle = await browserWindow.showSaveFilePicker({
+        suggestedName: "page-builder-project.json",
+        types: [
+          {
+            description: "JSON Project File",
+            accept: {
+              "application/json": [".json"],
+            },
+          },
+        ],
+      });
+
+      const writable = await fileHandle.createWritable();
+
+      await writable.write(json);
+      await writable.close();
+
+      return true;
+    }
+
+    const blob = new Blob([json], {
+      type: "application/json;charset=utf-8",
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = "page-builder-project.json";
+
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    URL.revokeObjectURL(url);
+
+    return true;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      return false;
+    }
+
+    throw error;
+  }
+};
+
+const downloadProjectFileTauri = async (json: string): Promise<boolean> => {
+  const filePath = await save({
+    title: "프로젝트 저장",
+    defaultPath: "page-builder-project.json",
+    filters: [
+      {
+        name: "Page Builder Project",
+        extensions: ["json"],
+      },
+    ],
+  });
+
+  if (!filePath) {
+    return false;
+  }
+
+  await writeTextFile(filePath, json);
+
+  return true;
 };
 
 export const downloadProjectFile = async (
   components: LayoutComponent[],
   projectCustomCss: string,
   setAutoSaveBaseline: (value: string) => void,
-): Promise<void> => {
+): Promise<boolean> => {
   try {
     const savedComponents = await convertComponentsForSave(components);
 
@@ -157,27 +263,28 @@ export const downloadProjectFile = async (
 
     const json = JSON.stringify(projectData, null, 2);
 
-    const blob = new Blob([json], {
-      type: "application/json;charset=utf-8",
-    });
+    let saved = false;
 
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
+    if (isTauri()) {
+      saved = await downloadProjectFileTauri(json);
+    } else {
+      saved = await downloadProjectFileWeb(json);
+    }
 
-    anchor.href = url;
-    anchor.download = "page-builder-project.json";
+    if (!saved) {
+      return false;
+    }
 
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-
-    URL.revokeObjectURL(url);
     localStorage.removeItem(AUTOSAVE_KEY);
 
     setAutoSaveBaseline(getAutoSaveSnapshot(components, projectCustomCss));
+
+    return true;
   } catch (error) {
     console.error("프로젝트 저장 실패:", error);
+
     alert("프로젝트 저장 중 오류가 발생했습니다.");
+
     throw error;
   }
 };
