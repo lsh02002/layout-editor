@@ -134,13 +134,21 @@ function EditStyleTab({
             className="form-control"
             placeholder="200px, auto"
             value={String(editStyle.height ?? "")}
-            onChange={(event) =>
-              updateStyle("height", event.target.value || undefined)
-            }
+            onChange={(event) => {
+              updateStyle("height", event.target.value || undefined);
+
+              setEditLayout((prev) => ({
+                ...prev,
+                height: event.target.value || undefined,
+              }));
+            }}
           />
 
           <ApplyButton
-            onClick={() => onApply("style", "height", editStyle.height)}
+            onClick={() => {
+              onApply("style", "height", editStyle.height);
+              onLayoutChange({ height: editLayout.height });
+            }}
           />
         </div>
       </div>
