@@ -20,6 +20,7 @@ type Props = {
   component: LayoutComponent;
   selectedComponentId: string | null;
   draggingId: string | null;
+  droppedId: string | null;
   layerSearch: string;
   activeDropTarget: CanvasDropTarget | null;
   setActiveDropTarget: (target: CanvasDropTarget | null) => void;
@@ -54,6 +55,7 @@ export default function LayoutComponentNode({
   component,
   selectedComponentId,
   draggingId,
+  droppedId,
   layerSearch,
   activeDropTarget,
   setActiveDropTarget,
@@ -81,6 +83,8 @@ export default function LayoutComponentNode({
   const isAbsolute = component.layout?.position === "absolute";
 
   const componentRef = useRef<HTMLDivElement>(null);
+
+  const justDropped = !isAbsolute && droppedId === component.id;
 
   useEffect(() => {
     const element = componentRef.current;
@@ -158,6 +162,16 @@ export default function LayoutComponentNode({
       : { border: "none" }),
 
     zIndex: isAbsolute ? 10 : undefined,
+
+    transform: justDropped
+      ? "translateY(-6px) scale(1.015)"
+      : !isAbsolute
+        ? "translateY(0) scale(1)"
+        : undefined,
+
+    transition: !isAbsolute
+      ? "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)"
+      : undefined,
   };
 
   const dragHandleView =
@@ -259,6 +273,7 @@ export default function LayoutComponentNode({
                     component={child}
                     selectedComponentId={selectedComponentId}
                     draggingId={draggingId}
+                    droppedId={droppedId}
                     layerSearch={layerSearch}
                     activeDropTarget={activeDropTarget}
                     setActiveDropTarget={setActiveDropTarget}

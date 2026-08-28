@@ -1,4 +1,6 @@
 import {
+  useCallback,
+  useEffect,
   useRef,
   useState,
   type DragEvent,
@@ -44,6 +46,9 @@ export const useComponentDragDrop = ({
 }: Options) => {
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
+  const [droppedId, setDroppedId] = useState<string | null>(null);
+  const dropAnimationTimerRef = useRef<number | null>(null);
+
   const [activeDropTarget, setActiveDropTarget] = useState<DropTarget | null>(
     null,
   );
@@ -59,6 +64,27 @@ export const useComponentDragDrop = ({
     targetParentId: null,
     targetIndex: null,
   });
+
+  const triggerDropAnimation = useCallback((componentId: string) => {
+    setDroppedId(componentId);
+
+    if (dropAnimationTimerRef.current !== null) {
+      window.clearTimeout(dropAnimationTimerRef.current);
+    }
+
+    dropAnimationTimerRef.current = window.setTimeout(() => {
+      setDroppedId(null);
+      dropAnimationTimerRef.current = null;
+    }, 250);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (dropAnimationTimerRef.current !== null) {
+        window.clearTimeout(dropAnimationTimerRef.current);
+      }
+    };
+  }, []);
 
   const moveComponent = (
     componentId: string,
@@ -247,7 +273,7 @@ export const useComponentDragDrop = ({
     event: DragEvent<HTMLElement>,
     parentId: string | null,
     index: number,
-  ) => {    
+  ) => {
     const templateDropped = dropTemplate(event, parentId, index);
 
     if (templateDropped) {
@@ -267,6 +293,8 @@ export const useComponentDragDrop = ({
 
     moveComponent(draggedId, parentId, index);
 
+    triggerDropAnimation(draggedId);
+
     draggingIdRef.current = null;
     setDraggingId(null);
     setActiveDropTarget(null);
@@ -274,6 +302,7 @@ export const useComponentDragDrop = ({
 
   return {
     draggingId,
+    droppedId,
     activeDropTarget,
     setActiveDropTarget,
     moveComponent,
