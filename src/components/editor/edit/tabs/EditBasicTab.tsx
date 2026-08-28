@@ -546,6 +546,7 @@ function EditBasicTab({
 
       {/* Disabled */}
       {editType !== "container" &&
+        editType !== "heading" &&
         editType !== "divider" &&
         editType !== "spacer" && (
           <div className="form-check mb-3">
