@@ -12,12 +12,18 @@ type Options = {
   components: LayoutComponent[];
   projectCustomCss: string;
   delay?: number;
+  resetHistory: (components: LayoutComponent[]) => void;
+  setProjectCustomCss: (css: string) => void;
+  setSelectedComponentId: (id: string | null) => void;
 };
 
 export const useAutoSave = ({
   components,
   projectCustomCss,
   delay = 3000,
+  resetHistory,
+  setProjectCustomCss,
+  setSelectedComponentId,
 }: Options) => {
   const [lastAutoSavedAt, setLastAutoSavedAt] = useState<string | null>(null);
 
@@ -106,6 +112,31 @@ export const useAutoSave = ({
     setHasUnsavedAutoSave(false);
   }, []);
 
+  const restoreAutoSave = useCallback(() => {
+    if (!restoreData) {
+      return;
+    }
+
+    const restoredCss = restoreData.projectCustomCss ?? "";
+
+    resetHistory(restoreData.components);
+
+    setProjectCustomCss(restoredCss);
+
+    setSelectedComponentId(null);
+
+    consumeRestoreData({
+      ...restoreData,
+      projectCustomCss: restoredCss,
+    });
+  }, [
+    restoreData,
+    resetHistory,
+    setProjectCustomCss,
+    setSelectedComponentId,
+    consumeRestoreData,
+  ]);
+
   return {
     lastAutoSavedAt,
     restoreData,
@@ -115,5 +146,6 @@ export const useAutoSave = ({
     setAutoSaveBaseline,
     discardAutoSave,
     consumeRestoreData,
+    restoreAutoSave,
   };
 };

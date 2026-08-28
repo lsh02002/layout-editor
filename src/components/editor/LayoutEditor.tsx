@@ -175,32 +175,16 @@ function LayoutEditor() {
     showRestoreModal,
     setAutoSaveBaseline,
     discardAutoSave,
-    consumeRestoreData,
+    restoreAutoSave,
   } = useAutoSave({
     components,
     projectCustomCss,
+    resetHistory,
+    setProjectCustomCss,
+    setSelectedComponentId,
   });
 
   const isMobile = useMediaQuery("(max-width: 767.98px)");
-
-  const restoreAutoSave = () => {
-    if (!restoreData) {
-      return;
-    }
-
-    const restoredCss = restoreData.projectCustomCss ?? "";
-
-    resetHistory(restoreData.components);
-
-    setProjectCustomCss(restoredCss);
-
-    setSelectedComponentId(null);
-
-    consumeRestoreData({
-      ...restoreData,
-      projectCustomCss: restoredCss,
-    });
-  };
 
   const {
     favoriteComponents,
