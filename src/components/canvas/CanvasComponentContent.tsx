@@ -117,7 +117,7 @@ export default function CanvasComponentContent({ component }: Props) {
             width: "100%",
             margin: 0,
             border: 0,
-            borderTop: `${component.props.thickness ?? 1}px ${
+            borderTop: `${component.props.thickness ?? 3}px ${
               component.props.lineStyle ?? "solid"
             } ${component.props.color ?? "#dee2e6"}`,
             ...component.contentStyle,

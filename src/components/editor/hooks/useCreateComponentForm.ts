@@ -189,7 +189,7 @@ export const useCreateComponentForm = () => {
           type: "divider",
           order: 0,
           props: {
-            thickness: 1,
+            thickness: 3,
             color: "#dee2e6",
             lineStyle: "solid",
           },

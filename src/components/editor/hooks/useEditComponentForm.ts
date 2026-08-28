@@ -54,7 +54,7 @@ export const useEditComponentForm = () => {
     position: "relative",
   });
 
-  const [editDividerThickness, setEditDividerThickness] = useState(1);
+  const [editDividerThickness, setEditDividerThickness] = useState(3);
 
   const [editDividerColor, setEditDividerColor] = useState("#dee2e6");
 
@@ -110,7 +110,7 @@ export const useEditComponentForm = () => {
     setEditLinkNewWindow(false);
     setEditHeadingLevel(2);
 
-    setEditDividerThickness(1);
+    setEditDividerThickness(3);
     setEditDividerColor("#dee2e6");
     setEditDividerLineStyle("solid");
     setEditSpacerHeight(32);
@@ -196,7 +196,7 @@ export const useEditComponentForm = () => {
         setEditPlaceholder("");
         setEditDirection("column");
 
-        setEditDividerThickness(component.props.thickness ?? 1);
+        setEditDividerThickness(component.props.thickness ?? 3);
         setEditDividerColor(component.props.color ?? "#dee2e6");
         setEditDividerLineStyle(component.props.lineStyle ?? "solid");
 

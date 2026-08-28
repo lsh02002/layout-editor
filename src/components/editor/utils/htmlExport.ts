@@ -269,7 +269,7 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
     }
 
     case "divider": {
-      const thickness = component.props.thickness ?? 1;
+      const thickness = component.props.thickness ?? 3;
       const color = component.props.color ?? "#dee2e6";
       const lineStyle = component.props.lineStyle ?? "solid";
 
