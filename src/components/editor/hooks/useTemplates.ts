@@ -1,4 +1,4 @@
-import { useCallback, type ChangeEvent } from "react";
+import { useCallback, useRef, type ChangeEvent } from "react";
 
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
@@ -250,6 +250,8 @@ export const useTemplates = ({
   commitHistory,
   setSelectedComponentId,
 }: Options) => {
+  const isLoadingTemplateRef = useRef(false);
+
   const saveProjectAsTemplateFile = useCallback(
     async (templateName: string) => {
       const name = templateName.trim();
@@ -543,28 +545,26 @@ export const useTemplates = ({
     }
   }, [applyTemplateText]);
 
-  const loadTemplateFile = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      if (isTauri()) {
-        event.target.value = "";
-
-        void loadTemplateFileTauri();
-
-        return;
-      }
-
-      loadTemplateFileWeb(event);
-    },
-    [loadTemplateFileTauri, loadTemplateFileWeb],
-  );
-
   const openTemplateFile = useCallback(async () => {
-    if (!isTauri()) {
+    if (isLoadingTemplateRef.current) {
       return;
     }
 
-    await loadTemplateFileTauri();
+    isLoadingTemplateRef.current = true;
+
+    try {
+      await loadTemplateFileTauri();
+    } finally {
+      isLoadingTemplateRef.current = false;
+    }
   }, [loadTemplateFileTauri]);
+
+  const loadTemplateFile = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      loadTemplateFileWeb(event);
+    },
+    [loadTemplateFileWeb],
+  );
 
   const saveProjectTemplate = useCallback(() => {
     void saveProjectAsTemplateFile("새 프로젝트 템플릿");

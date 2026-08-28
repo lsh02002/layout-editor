@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from "react";
 
 import type { LayoutComponent } from "../../../types/types";
 
@@ -133,6 +139,8 @@ export const useProjectFiles = ({
   setSelectedComponentId,
   setAutoSaveBaseline,
 }: Options) => {
+  const isLoadingProjectRef = useRef(false);
+
   const [lastSavedSnapshot, setLastSavedSnapshot] = useState(() =>
     JSON.stringify({
       components,
@@ -296,26 +304,30 @@ export const useProjectFiles = ({
     }
   }, [applyProjectText]);
 
-  const loadProjectFile = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      if (isTauri()) {
-        event.target.value = "";
-        void loadProjectFileTauri();
-        return;
-      }
-
-      loadProjectFileWeb(event);
-    },
-    [loadProjectFileTauri, loadProjectFileWeb],
-  );
-
   const openProjectFile = useCallback(async () => {
     if (!isTauri()) {
       return;
     }
 
-    await loadProjectFileTauri();
+    if (isLoadingProjectRef.current) {
+      return;
+    }
+
+    isLoadingProjectRef.current = true;
+
+    try {
+      await loadProjectFileTauri();
+    } finally {
+      isLoadingProjectRef.current = false;
+    }
   }, [loadProjectFileTauri]);
+
+  const loadProjectFile = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      loadProjectFileWeb(event);
+    },
+    [loadProjectFileWeb],
+  );
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
