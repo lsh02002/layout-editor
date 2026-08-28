@@ -2,9 +2,9 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "layout-editor",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.seho.layout-editor",
   "build": {
-    "frontendDist": "../build",
+    "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
@@ -12,10 +12,9 @@
   "app": {
     "windows": [
       {
-        "title": "layout-editor",
-        "width": 800,
-        "height": 600,
-        "resizable": true,
+        "title": "layout-editor",        
+        "maximized": true,        
+        "decorations": true,
         "fullscreen": false,
         "dragDropEnabled": false
       }
