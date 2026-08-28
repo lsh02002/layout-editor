@@ -1,5 +1,7 @@
 import {
+  useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type DragEvent,
@@ -121,18 +123,18 @@ export default function LayoutComponentNode({
         : -40
       : -10;
 
-  const handleNativeDragStart = (
-    event: DragEvent<HTMLElement>,
-    componentId: string,
-  ) => {
-    setIsLocalDragging(true);
-    onDragStart(event, componentId);
-  };
+  const handleNativeDragStart = useCallback(
+    (event: DragEvent<HTMLElement>, componentId: string) => {
+      setIsLocalDragging(true);
+      onDragStart(event, componentId);
+    },
+    [onDragStart],
+  );
 
-  const handleNativeDragEnd = () => {
+  const handleNativeDragEnd = useCallback(() => {
     setIsLocalDragging(false);
     onDragEnd();
-  };
+  }, [onDragEnd]);
 
   const dragHandle = (
     <ComponentDragHandle
@@ -189,8 +191,19 @@ export default function LayoutComponentNode({
       </div>
     ) : null;
 
+  const containerChildren =
+    component.type === "container" ? component.children : null;
+
+  const sortedChildren = useMemo(() => {
+    if (!containerChildren) {
+      return [];
+    }
+
+    return [...containerChildren].sort((a, b) => a.order - b.order);
+  }, [containerChildren]);
+
   if (component.type === "container") {
-    const children = [...component.children].sort((a, b) => a.order - b.order);
+    const children = sortedChildren;
     const direction: ContainerDirection = component.props.direction ?? "column";
     const isRow = direction === "row";
 

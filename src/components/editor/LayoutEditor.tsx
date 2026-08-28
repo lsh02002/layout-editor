@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import BuilderCanvas from "../canvas/BuilderCanvas";
 import LayerPanel from "../layers/LayerPanel";
@@ -238,9 +238,59 @@ function LayoutEditor() {
     gridSize,
   });
 
-  const filteredLayerComponents = filterLayerComponents(
-    components,
-    layerSearch,
+  const filteredLayerComponents = useMemo(
+    () => filterLayerComponents(components, layerSearch),
+    [components, layerSearch],
+  );
+
+  const templates = useMemo(
+    () => templateFiles.map((file) => file.data),
+    [templateFiles],
+  );
+
+  const editValues = useMemo(
+    () => ({
+      editingComponentId,
+      editTitle,
+      editValue,
+      editPlaceholder,
+      editDirection,
+      editDisabled,
+      editStyle,
+      editContentStyle,
+      editCustomCss,
+      editImageUrl,
+      editLinkType,
+      editLinkNewWindow,
+      editComponentName,
+      editHeadingLevel,
+      editDividerThickness,
+      editDividerColor,
+      editDividerLineStyle,
+      editSpacerHeight,
+      editLayout,
+    }),
+    [
+      editingComponentId,
+      editTitle,
+      editValue,
+      editPlaceholder,
+      editDirection,
+      editDisabled,
+      editStyle,
+      editContentStyle,
+      editCustomCss,
+      editImageUrl,
+      editLinkType,
+      editLinkNewWindow,
+      editComponentName,
+      editHeadingLevel,
+      editDividerThickness,
+      editDividerColor,
+      editDividerLineStyle,
+      editSpacerHeight,
+      editLayout,
+    ],
   );
 
   const {
@@ -273,32 +323,12 @@ function LayoutEditor() {
     commitHistory,
     setComponents,
     setFavoriteComponents,
-    templates: templateFiles.map((file) => file.data),
+    templates,
     selectedTemplateId,
     setSelectedTemplateId,
     setEditLayout,
     snapLayout,
-    editValues: {
-      editingComponentId,
-      editTitle,
-      editValue,
-      editPlaceholder,
-      editDirection,
-      editDisabled,
-      editStyle,
-      editContentStyle,
-      editCustomCss,
-      editImageUrl,
-      editLinkType,
-      editLinkNewWindow,
-      editComponentName,
-      editHeadingLevel,
-      editDividerThickness,
-      editDividerColor,
-      editDividerLineStyle,
-      editSpacerHeight,
-      editLayout,
-    },
+    editValues,
   });
 
   const {
@@ -320,31 +350,43 @@ function LayoutEditor() {
     commitHistory,
   });
 
-  const handleUndo = () => {
+  const handleUndo = useCallback(() => {
     undo();
     setEditorSyncKey((prev) => prev + 1);
-  };
+  }, [undo]);
 
-  const handleRedo = () => {
+  const handleRedo = useCallback(() => {
     redo();
     setEditorSyncKey((prev) => prev + 1);
-  };
+  }, [redo]);
 
-  const componentCustomCss = collectComponentCustomCss(components);
+  const componentCustomCss = useMemo(
+    () => collectComponentCustomCss(components),
+    [components],
+  );
 
-  const openProjectCssModal = () => {
+  const openProjectCssModal = useCallback(() => {
     setProjectCssDraft(projectCustomCss);
-
     setShowProjectCssModal(true);
-  };
+  }, [projectCustomCss]);
 
-  const saveProjectCustomCss = () => {
+  const saveProjectCustomCss = useCallback(() => {
     setProjectCustomCss(projectCssDraft);
-
     setShowProjectCssModal(false);
-  };
+  }, [projectCssDraft]);
 
-  const downloadHtml = () => downloadHtmlFile(components, projectCustomCss);
+  const downloadHtml = useCallback(
+    () => downloadHtmlFile(components, projectCustomCss),
+    [components, projectCustomCss],
+  );
+
+  const openLayerPanel = useCallback(() => {
+    setShowLayerPanel(true);
+  }, []);
+
+  const closeLayerPanel = useCallback(() => {
+    setShowLayerPanel(false);
+  }, []);
 
   return (
     <>
@@ -358,7 +400,7 @@ function LayoutEditor() {
         <div
           className="editor-panel-backdrop"
           onClick={() => {
-            setShowLayerPanel(false);
+            closeLayerPanel();
           }}
         />
       )}
@@ -371,7 +413,7 @@ function LayoutEditor() {
         search={layerSearch}
         activeDropTarget={activeDropTarget}
         onSearchChange={setLayerSearch}
-        onClose={() => setShowLayerPanel(false)}
+        onClose={closeLayerPanel}
         //onSelect={selectComponent}
         onEdit={editComponent}
         onAddFavorite={addSelectedComponentToFavorites}
@@ -394,7 +436,7 @@ function LayoutEditor() {
           desktop-layer-open-button
         "
           onClick={() => {
-            setShowLayerPanel(true);
+            openLayerPanel();
           }}
           style={{
             position: "fixed",

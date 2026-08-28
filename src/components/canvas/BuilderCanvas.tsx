@@ -1,4 +1,4 @@
-import type { DragEvent, PointerEvent } from "react";
+import { useMemo, type DragEvent, type PointerEvent } from "react";
 import type { ComponentLayout, LayoutComponent } from "../../types/types";
 import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import LayoutComponentNode from "./LayoutComponentNode";
@@ -64,7 +64,10 @@ export default function BuilderCanvas({
   onPointerDragEnd,
   onPointerDragCancel,
 }: Props) {
-  const sortedComponents = [...components].sort((a, b) => a.order - b.order);
+  const sortedComponents = useMemo(
+    () => [...components].sort((a, b) => a.order - b.order),
+    [components],
+  );
 
   return (
     <div
