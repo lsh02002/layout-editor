@@ -82,68 +82,121 @@ export default function BuilderCanvas({
         borderRadius: 12,
         boxShadow: "0 8px 30px rgba(15, 23, 42, 0.08)",
         padding: 24,
+
+        boxSizing: "border-box",
       }}
     >
-      <CanvasDropZone
-        previewMode={previewMode}
-        parentId={null}
-        index={0}
-        direction="column"
-        draggingId={draggingId}
-        activeDropTarget={activeDropTarget}
-        setActiveDropTarget={setActiveDropTarget}
-        onDrop={onDrop}
-        onCreate={onCreate}
-      />
+      <div
+        className="builder-canvas-stage"
+        style={{
+          position: "relative",
 
-      {sortedComponents.map((component, index) => {
-        const isAbsolute = component.layout?.position === "absolute";
+          width: "100%",
 
-        return (
-          <div
-            key={component.id}
-            data-component-id={component.id}
-            style={{ position: "relative" }}
-          >
-            <LayoutComponentNode
-              previewMode={previewMode}
-              component={component}
-              selectedComponentId={selectedComponentId}
-              draggingId={draggingId}
-              droppedId={droppedId}
-              layerSearch={layerSearch}
-              activeDropTarget={activeDropTarget}
-              setActiveDropTarget={setActiveDropTarget}
-              onLayoutChange={onLayoutChange}
-              onSelect={onSelect}
-              onEdit={onEdit}
-              onCopy={onCopy}
-              onDelete={onDelete}
-              onCreate={onCreate}
-              onDrop={onDrop}
-              onDragStart={onDragStart}
-              onDragEnd={onDragEnd}
-              onPointerDragStart={onPointerDragStart}
-              onPointerDragMove={onPointerDragMove}
-              onPointerDragEnd={onPointerDragEnd}
-              onPointerDragCancel={onPointerDragCancel}
-            />
-            {!isAbsolute && component.type !== "scrollToTopButton" && (
-              <CanvasDropZone
+          minHeight: 652,
+
+          boxSizing: "border-box",
+        }}
+      >
+        <CanvasDropZone
+          previewMode={previewMode}
+          parentId={null}
+          index={0}
+          direction="column"
+          draggingId={draggingId}
+          activeDropTarget={activeDropTarget}
+          setActiveDropTarget={setActiveDropTarget}
+          onDrop={onDrop}
+          onCreate={onCreate}
+        />
+
+        {sortedComponents.map((component, index) => {
+          const isAbsolute = component.layout?.position === "absolute";
+
+          if (isAbsolute) {
+            return (
+              <div
+                key={component.id}
+                style={{
+                  display: "contents",
+                }}
+              >
+                <LayoutComponentNode
+                  previewMode={previewMode}
+                  component={component}
+                  selectedComponentId={selectedComponentId}
+                  draggingId={draggingId}
+                  droppedId={droppedId}
+                  layerSearch={layerSearch}
+                  activeDropTarget={activeDropTarget}
+                  setActiveDropTarget={setActiveDropTarget}
+                  onLayoutChange={onLayoutChange}
+                  onSelect={onSelect}
+                  onEdit={onEdit}
+                  onCopy={onCopy}
+                  onDelete={onDelete}
+                  onCreate={onCreate}
+                  onDrop={onDrop}
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                  onPointerDragStart={onPointerDragStart}
+                  onPointerDragMove={onPointerDragMove}
+                  onPointerDragEnd={onPointerDragEnd}
+                  onPointerDragCancel={onPointerDragCancel}
+                />
+              </div>
+            );
+          }
+
+          return (
+            <div
+              key={component.id}
+              data-component-id={component.id}
+              style={{
+                position: "relative",
+              }}
+            >
+              <LayoutComponentNode
                 previewMode={previewMode}
-                parentId={null}
-                index={index + 1}
-                direction="column"
+                component={component}
+                selectedComponentId={selectedComponentId}
                 draggingId={draggingId}
+                droppedId={droppedId}
+                layerSearch={layerSearch}
                 activeDropTarget={activeDropTarget}
                 setActiveDropTarget={setActiveDropTarget}
-                onDrop={onDrop}
+                onLayoutChange={onLayoutChange}
+                onSelect={onSelect}
+                onEdit={onEdit}
+                onCopy={onCopy}
+                onDelete={onDelete}
                 onCreate={onCreate}
+                onDrop={onDrop}
+                onDragStart={onDragStart}
+                onDragEnd={onDragEnd}
+                onPointerDragStart={onPointerDragStart}
+                onPointerDragMove={onPointerDragMove}
+                onPointerDragEnd={onPointerDragEnd}
+                onPointerDragCancel={onPointerDragCancel}
               />
-            )}
-          </div>
-        );
-      })}
+
+              {component.type !== "scrollToTopButton" && (
+                <CanvasDropZone
+                  previewMode={previewMode}
+                  parentId={null}
+                  index={index + 1}
+                  direction="column"
+                  draggingId={draggingId}
+                  activeDropTarget={activeDropTarget}
+                  setActiveDropTarget={setActiveDropTarget}
+                  onDrop={onDrop}
+                  onCreate={onCreate}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
