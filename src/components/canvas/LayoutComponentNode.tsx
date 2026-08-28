@@ -226,9 +226,7 @@ export default function LayoutComponentNode({
           onToolbarVisibleChange={setEditToolbarVisible}
           style={{
             ...component.style,
-            border: !previewMode
-              ? "1px dashed #adb5bd"
-              : "1px solid transparent",
+            border: !previewMode ? "1px dashed #adb5bd" : "none",
             opacity: isDragging ? 0.45 : (component.style?.opacity ?? 1),
             transition: "opacity 120ms ease",
             outline:
