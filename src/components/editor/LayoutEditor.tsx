@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-export type CanvasViewport = "desktop" | "tablet" | "mobile";
-
 import BuilderCanvas from "../canvas/BuilderCanvas";
 import LayerPanel from "../layers/LayerPanel";
 import ProjectToolbar from "../toolbar/ProjectToolbar";
@@ -29,6 +27,8 @@ import { type TemplateItem } from "../../types/types";
 import { data } from "../../data/data";
 import { useComponentActions } from "./hooks/useComponentActions";
 import { useSnapLayout } from "./hooks/useSnapLayout";
+
+import type { CanvasViewport } from "../../types/types";
 
 function LayoutEditor() {
   const [previewMode, setPreviewMode] = useState(false);

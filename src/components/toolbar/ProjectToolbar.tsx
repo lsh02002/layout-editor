@@ -1,5 +1,5 @@
 import React from "react";
-import type { CanvasViewport } from "../../components/editor/LayoutEditor";
+import type { CanvasViewport } from "../../types/types";
 
 type ProjectToolbarProps = {
   previewMode: boolean;
