@@ -11,7 +11,6 @@ type Options = {
   selectedComponentId: string | null;
   setSelectedComponentId: SelectionSetter;
   setShowEditModal: BooleanSetter;
-  setShowFavoritePanel: BooleanSetter;
   loadComponentToEdit: (component: LayoutComponent) => void;
 };
 
@@ -20,7 +19,6 @@ export const useSelectionActions = ({
   selectedComponentId,
   setSelectedComponentId,
   setShowEditModal,
-  setShowFavoritePanel,
   loadComponentToEdit,
 }: Options) => {
   const selectComponent = useCallback(
@@ -35,17 +33,10 @@ export const useSelectionActions = ({
       loadComponentToEdit(component);
 
       if (openEditPanel) {
-        setShowFavoritePanel(false);
         setShowEditModal(true);
       }
     },
-    [
-      components,
-      loadComponentToEdit,
-      setSelectedComponentId,
-      setShowEditModal,
-      setShowFavoritePanel,
-    ],
+    [components, loadComponentToEdit, setSelectedComponentId, setShowEditModal],
   );
 
   const editComponent = useCallback(

@@ -31,7 +31,6 @@ type Options = {
 
   showEditModal: boolean;
   setShowEditModal: BooleanSetter;
-  setShowFavoritePanel: BooleanSetter;
 
   setShowCreateModal: BooleanSetter;
   insertTarget: InsertTarget;
@@ -63,7 +62,6 @@ export const useComponentActions = ({
   selectedComponentId,
   setSelectedComponentId,
   setShowEditModal,
-  setShowFavoritePanel,
   setShowCreateModal,
   insertTarget,
   setInsertTarget,
@@ -108,7 +106,6 @@ export const useComponentActions = ({
     selectedComponentId,
     setSelectedComponentId,
     setShowEditModal,
-    setShowFavoritePanel,
     loadComponentToEdit,
   });
 

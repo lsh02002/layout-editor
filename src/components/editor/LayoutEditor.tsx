@@ -141,8 +141,6 @@ function LayoutEditor() {
 
   const [layerSearch, setLayerSearch] = useState("");
 
-  const [showFavoritePanel, setShowFavoritePanel] = useState(false);
-
   const [projectCustomCss, setProjectCustomCss] = useState("");
 
   const [showProjectCssModal, setShowProjectCssModal] = useState(false);
@@ -259,7 +257,6 @@ function LayoutEditor() {
     setSelectedComponentId,
     showEditModal,
     setShowEditModal,
-    setShowFavoritePanel,
     setShowCreateModal,
     insertTarget,
     setInsertTarget,
@@ -338,8 +335,6 @@ function LayoutEditor() {
 
   const downloadHtml = () => downloadHtmlFile(components, projectCustomCss);
 
-  const showAnySidePanel = showLayerPanel || showFavoritePanel;
-
   return (
     <>
       <LayoutEditorStyles />
@@ -347,12 +342,12 @@ function LayoutEditor() {
       <style>{projectCustomCss}</style>
       {/* 컴포넌트별 CSS */}
       <style>{componentCustomCss}</style>
-      {showAnySidePanel && (
+      {/* 모바일에서 레이어 패널이 열려있을 때, 뒤쪽 클릭 방지용 백드롭 */}
+      {isMobile && showLayerPanel && (
         <div
           className="editor-panel-backdrop"
           onClick={() => {
             setShowLayerPanel(false);
-            setShowFavoritePanel(false);
           }}
         />
       )}
@@ -388,7 +383,6 @@ function LayoutEditor() {
           desktop-layer-open-button
         "
           onClick={() => {
-            setShowFavoritePanel(false);
             setShowLayerPanel(true);
           }}
           style={{
@@ -414,7 +408,7 @@ function LayoutEditor() {
           padding: "20px 28px 48px",
 
           marginLeft: showLayerPanel ? 280 : 0,
-          marginRight: showEditModal ? 380 : showFavoritePanel ? 300 : 0,
+          marginRight: showEditModal ? 400 : 0,
         }}
       >
         <ProjectToolbar
@@ -470,7 +464,6 @@ function LayoutEditor() {
           type="button"
           className="btn btn-dark btn-sm"
           onClick={() => {
-            setShowFavoritePanel(false);
             setShowLayerPanel((prev) => !prev);
           }}
           style={{
