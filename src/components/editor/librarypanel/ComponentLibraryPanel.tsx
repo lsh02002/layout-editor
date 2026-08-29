@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import type { FavoriteComponent, TemplateItem } from "../../types/types";
+import type { FavoriteComponent, TemplateItem } from "../../../types/types";
 
 import FavoritePanel from "./FavoritePanel";
 import TemplatePreviewListPanel from "./TemplatePreviewListPanel";

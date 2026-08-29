@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import type { CanvasViewport } from "../../types/types";
+import type { CanvasViewport } from "../../../types/types";
 
 type ProjectToolbarProps = {
   previewMode: boolean;

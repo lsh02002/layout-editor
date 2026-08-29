@@ -1,4 +1,4 @@
-import type { FavoriteComponent } from "../../types/types";
+import type { FavoriteComponent } from "../../../types/types";
 
 type Props = {
   favorites: FavoriteComponent[];

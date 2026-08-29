@@ -18,7 +18,7 @@ import type { EditTab } from "../hooks/useEditComponentForm";
 import EditBasicTab from "./tabs/EditBasicTab";
 import EditStyleTab from "./tabs/EditStyleTab";
 import EditCssTab from "./tabs/EditCssTab";
-import ComponentLibraryPanel from "../../librarypanel/ComponentLibraryPanel";
+import ComponentLibraryPanel from "../librarypanel/ComponentLibraryPanel";
 import { useLogin } from "../../../context/usehooks";
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;

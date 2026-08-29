@@ -11,7 +11,7 @@ import {
 
 import EditMenuBox from "./EditMenuBox";
 
-import type { ComponentLayout } from "../../types/types";
+import type { ComponentLayout } from "../../../types/types";
 
 interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;

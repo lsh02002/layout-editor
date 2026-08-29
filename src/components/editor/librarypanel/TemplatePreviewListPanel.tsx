@@ -1,5 +1,5 @@
-import TemplatePreviewCard from "../editor/card/TemplatePreviewCard";
-import type { TemplateItem } from "../../types/types";
+import TemplatePreviewCard from "../card/TemplatePreviewCard";
+import type { TemplateItem } from "../../../types/types";
 import { useEffect } from "react";
 
 export default function TemplatePreviewListPanel({
@@ -21,7 +21,6 @@ export default function TemplatePreviewListPanel({
   selectedTemplateId: string | null;
   setSelectedTemplateId: (id: string | null) => void;
 }) {
-  
   useEffect(() => {
     const TEMPLATE_FOLDER = "/src/templates";
 

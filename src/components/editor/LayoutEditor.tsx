@@ -1,10 +1,10 @@
 import { useCallback, useMemo, useState } from "react";
 
 import BuilderCanvas from "../canvas/BuilderCanvas";
-import LayerPanel from "../layers/LayerPanel";
-import ProjectToolbar from "../toolbar/ProjectToolbar";
-import AutoSaveRestoreModal from "../modals/AutoSaveRestoreModal";
-import ProjectCssModal from "../modals/ProjectCssModal";
+import LayerPanel from "./layers/LayerPanel";
+import ProjectToolbar from "./toolbar/ProjectToolbar";
+import AutoSaveRestoreModal from "./modals/AutoSaveRestoreModal";
+import ProjectCssModal from "./modals/ProjectCssModal";
 import LayoutEditorStyles from "./styles/LayoutEditorStyles";
 import { useComponentHistory } from "./hooks/useComponentHistory";
 import { useComponentDragDrop } from "./hooks/useComponentDragDrop";

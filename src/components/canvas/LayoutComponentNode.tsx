@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import DivBox from "../layout/DivBox";
+import DivBox from "../editor/layout/DivBox";
 import type {
   ComponentLayout,
   ContainerDirection,

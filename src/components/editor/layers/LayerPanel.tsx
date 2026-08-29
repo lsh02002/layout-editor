@@ -1,6 +1,6 @@
 import React, { memo } from "react";
-import type { LayoutComponent } from "../../types/types";
-import { getComponentDisplayName } from "../editor/utils/componentDisplayName";
+import type { LayoutComponent } from "../../../types/types";
+import { getComponentDisplayName } from "../utils/componentDisplayName";
 
 type DropTarget = {
   parentId: string | null;

@@ -1,4 +1,4 @@
-import type { AutoSaveData } from "../../types/types";
+import type { AutoSaveData } from "../../../types/types";
 
 type Props = {
   data: AutoSaveData | null;
