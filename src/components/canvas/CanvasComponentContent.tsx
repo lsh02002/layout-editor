@@ -34,7 +34,11 @@ function CanvasComponentContent({ component }: Props) {
       );
 
     case "heading": {
-      const style: CSSProperties = { margin: 0, ...component.contentStyle };
+      const style: CSSProperties = {
+        margin: 0,        
+        ...component.contentStyle,
+        width: "100%",
+      };
       const Tag = `h${component.props.level}` as keyof JSX.IntrinsicElements;
       return <Tag style={style}>{component.props.text}</Tag>;
     }
