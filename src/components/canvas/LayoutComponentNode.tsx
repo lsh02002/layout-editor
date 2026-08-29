@@ -110,6 +110,10 @@ function LayoutComponentNode({
   const justDropped = !isAbsolute && droppedId === component.id;
 
   useEffect(() => {
+    if (!isSelected) {
+      return;
+    }
+
     const element = componentRef.current;
 
     if (!element) {
@@ -117,25 +121,19 @@ function LayoutComponentNode({
     }
 
     const updateWidth = () => {
-      const rect = element.getBoundingClientRect();
-
-      setRenderedWidth(rect.width);
+      setRenderedWidth(element.getBoundingClientRect().width);
     };
 
-    // 최초 측정
     updateWidth();
 
-    const resizeObserver = new ResizeObserver(() => {
-      updateWidth();
-    });
+    const observer = new ResizeObserver(updateWidth);
 
-    // 실제 컴포넌트 wrapper를 관찰
-    resizeObserver.observe(element);
+    observer.observe(element);
 
     return () => {
-      resizeObserver.disconnect();
+      observer.disconnect();
     };
-  }, [component.id]);
+  }, [isSelected]);
 
   const dragHandleLeft =
     renderedWidth > 0 && renderedWidth < 120 && editToolbarVisible
