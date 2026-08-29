@@ -305,7 +305,7 @@ function DivBox({
         outline:
           style?.outline ??
           (!previewMode && over
-            ? "1px solid var(--bs-success)"
+            ? "1px solid #6f42c1"
             : "1px solid transparent"),
         outlineOffset:
           style?.outlineOffset ?? (!previewMode && over ? "-1px" : undefined),
@@ -372,7 +372,7 @@ function DivBox({
           style={{
             top: 0,
             transform: "translateY(-100%)",
-            background: "var(--bs-success)",
+            background: "#6f42c1",
             padding: "2px 8px",
             borderRadius: "6px 6px 0 0",
             whiteSpace: "nowrap",
