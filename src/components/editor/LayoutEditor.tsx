@@ -116,8 +116,6 @@ function LayoutEditor() {
     setEditContentStyle,
     editCustomCss,
     setEditCustomCss,
-    editTab,
-    setEditTab,
     editImageUrl,
     setEditImageUrl,
     editImagePreviewUrl,
@@ -583,8 +581,6 @@ function LayoutEditor() {
         setEditContentStyle={setEditContentStyle}
         editCustomCss={editCustomCss}
         setEditCustomCss={setEditCustomCss}
-        editTab={editTab}
-        setEditTab={setEditTab}
         editImageUrl={editImageUrl}
         setEditImageUrl={setEditImageUrl}
         editImagePreviewUrl={editImagePreviewUrl}

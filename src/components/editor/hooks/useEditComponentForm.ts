@@ -34,8 +34,6 @@ export const useEditComponentForm = () => {
 
   const [editCustomCss, setEditCustomCss] = useState("");
 
-  const [editTab, setEditTab] = useState<EditTab>("basic");
-
   const [editImageUrl, setEditImageUrl] = useState("");
 
   const [editImagePreviewUrl, setEditImagePreviewUrl] = useState("");
@@ -94,8 +92,6 @@ export const useEditComponentForm = () => {
 
       height: component.layout?.height,
     });
-
-    setEditTab("basic");
 
     setEditDisabled(
       "disabled" in component.props
@@ -237,8 +233,6 @@ export const useEditComponentForm = () => {
     setEditContentStyle,
     editCustomCss,
     setEditCustomCss,
-    editTab,
-    setEditTab,
     editImageUrl,
     setEditImageUrl,
     editImagePreviewUrl,

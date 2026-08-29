@@ -19,6 +19,7 @@ import EditBasicTab from "./tabs/EditBasicTab";
 import EditStyleTab from "./tabs/EditStyleTab";
 import EditCssTab from "./tabs/EditCssTab";
 import ComponentLibraryPanel from "../../librarypanel/ComponentLibraryPanel";
+import { useLogin } from "../../../usehooks/usehooks";
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -60,8 +61,8 @@ type Props = {
   editCustomCss: string;
   setEditCustomCss: Dispatch<SetStateAction<string>>;
 
-  editTab: EditTab;
-  setEditTab: Dispatch<SetStateAction<EditTab>>;
+  // editTab: EditTab;
+  // setEditTab: Dispatch<SetStateAction<EditTab>>;
 
   editImageUrl: string;
   setEditImageUrl: Dispatch<SetStateAction<string>>;
@@ -174,8 +175,8 @@ function EditComponentPanel({
   editCustomCss,
   setEditCustomCss,
 
-  editTab,
-  setEditTab,
+  // editTab,
+  // setEditTab,
 
   editImageUrl,
   setEditImageUrl,
@@ -231,6 +232,8 @@ function EditComponentPanel({
 
   saveEditedComponent,
 }: Props) {
+  const { editTab, setEditTab } = useLogin();
+
   const tabMenus = [
     {
       key: "basic",
