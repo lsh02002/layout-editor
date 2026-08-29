@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useModalManager } from "../../usehooks/usehooks";
+import { useModalManager } from "../../context/usehooks";
 type Option = { id: string; name: string };
 
 export type CompleteArrayInputPropsType = {

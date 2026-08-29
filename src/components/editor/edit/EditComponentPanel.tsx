@@ -19,7 +19,7 @@ import EditBasicTab from "./tabs/EditBasicTab";
 import EditStyleTab from "./tabs/EditStyleTab";
 import EditCssTab from "./tabs/EditCssTab";
 import ComponentLibraryPanel from "../../librarypanel/ComponentLibraryPanel";
-import { useLogin } from "../../../usehooks/usehooks";
+import { useLogin } from "../../../context/usehooks";
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 

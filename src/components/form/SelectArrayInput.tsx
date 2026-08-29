@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useModalManager } from "../../usehooks/usehooks";
+import { useModalManager } from "../../context/usehooks";
 
 type Option = { label: string; value: string; disabled?: boolean };
 

@@ -1,4 +1,4 @@
-import { useModalManager } from "../../usehooks/usehooks";
+import { useModalManager } from "../../context/usehooks";
 // 경로는 프로젝트에 맞게 수정
 
 export type Option = {

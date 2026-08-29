@@ -4,7 +4,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { LoginContext } from "../usehooks/usehooks";
+import { LoginContext } from "./usehooks";
 import type { EditTab } from "../components/editor/hooks/useEditComponentForm";
 
 export type LoginContextValue = {

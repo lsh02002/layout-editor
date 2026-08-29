@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
-import { useModalManager } from "../../usehooks/usehooks";
+import { useModalManager } from "../../context/usehooks";
 
 const QuillEditorInput = ({
   disabled,

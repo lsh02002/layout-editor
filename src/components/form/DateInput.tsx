@@ -1,6 +1,6 @@
 import { type Dispatch, type SetStateAction } from "react";
 import Calendar from "react-calendar";
-import { useModalManager } from "../../usehooks/usehooks";
+import { useModalManager } from "../../context/usehooks";
 
 interface DateInputProps {
   disabled?: boolean;

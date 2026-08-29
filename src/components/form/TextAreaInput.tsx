@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useModalManager } from "../../usehooks/usehooks";
+import { useModalManager } from "../../context/usehooks";
 
 interface TextAreaInputProps {
   disabled?: boolean;

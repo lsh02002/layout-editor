@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
-import type { LoginContextValue } from "../context/LoginContext";
-import type { ModalManagerContextValue } from "../context/ModalContext";
+import type { LoginContextValue } from "./LoginContext";
+import type { ModalManagerContextValue } from "./ModalContext";
 
 export const LoginContext = createContext<LoginContextValue | undefined>(
   undefined,
@@ -13,9 +13,8 @@ export function useLogin() {
   return ctx;
 }
 
-export const ModalManagerContext = createContext<ModalManagerContextValue | null>(
-  null,
-);
+export const ModalManagerContext =
+  createContext<ModalManagerContextValue | null>(null);
 
 export function useModalManager() {
   const context = useContext(ModalManagerContext);

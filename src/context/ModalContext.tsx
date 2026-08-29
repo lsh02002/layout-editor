@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { ModalManagerContext } from "../usehooks/usehooks";
+import { ModalManagerContext } from "./usehooks";
 type ModalName = string;
 
 export type ModalManagerContextValue = {
