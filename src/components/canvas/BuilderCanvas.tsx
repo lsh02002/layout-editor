@@ -72,20 +72,7 @@ function BuilderCanvas({
   );
 
   return (
-    <div
-      className="builder-preview"
-      style={{
-        minHeight: 700,
-        maxWidth: canvasWidth,
-        width: "100%",
-        margin: "0 auto",
-        background: "#fff",
-        border: "1px solid #e2e8f0",
-        borderRadius: 12,
-        boxShadow: "0 8px 30px rgba(15, 23, 42, 0.08)",
-        padding: 24,
-      }}
-    >
+    <div className="builder-preview" style={{ maxWidth: canvasWidth }}>
       <CanvasDropZone
         previewMode={previewMode}
         parentId={null}
