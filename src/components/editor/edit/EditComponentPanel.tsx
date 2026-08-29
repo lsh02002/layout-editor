@@ -249,16 +249,6 @@ function EditComponentPanel({
     },
   ];
 
-  /*
-   * Undo / Redo 실행 후
-   * Canvas / Layer가 변경되었을 때
-   * 오른쪽 Editor도 현재 선택된 컴포넌트 기준으로 갱신.
-   *
-   * editorSyncKey는 Undo / Redo 할 때만 변경한다.
-   *
-   * 일반적인 onImmediateChange에서는 이 effect가
-   * 실행되지 않기 때문에 저장 전 입력값이 날아가지 않는다.
-   */
   useEffect(() => {
     if (!selectedComponentId) {
       return;
