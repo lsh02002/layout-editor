@@ -300,12 +300,15 @@ function DivBox({
         width: layout?.width ?? (isAbsolute ? "max-content" : undefined),
         maxWidth: isAbsolute ? "none" : undefined,
         height: layout?.height,
-        outline:
-          !previewMode && over
-            ? "1px solid var(--bs-primary)"
-            : "1px solid transparent",
         ...style,
         position: "relative",
+        outline:
+          style?.outline ??
+          (!previewMode && over
+            ? "1px solid var(--bs-success)"
+            : "1px solid transparent"),
+        outlineOffset:
+          style?.outlineOffset ?? (!previewMode && over ? "-1px" : undefined),
       }}
     >
       {!previewMode && isAbsolute && (
@@ -369,7 +372,7 @@ function DivBox({
           style={{
             top: 0,
             transform: "translateY(-100%)",
-            background: "var(--bs-primary)",
+            background: "var(--bs-success)",
             padding: "2px 8px",
             borderRadius: "6px 6px 0 0",
             whiteSpace: "nowrap",
