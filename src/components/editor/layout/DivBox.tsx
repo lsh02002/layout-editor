@@ -27,6 +27,7 @@ interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
   onCopy?: () => void;
   onDelete?: () => void;
   onToolbarVisibleChange?: (visible: boolean) => void;
+  snapLayout: (layout: Partial<ComponentLayout>) => Partial<ComponentLayout>;
 }
 
 type PositionDragState = {
@@ -35,8 +36,8 @@ type PositionDragState = {
   startY: number;
   originalX: number;
   originalY: number;
-  currentX?: number;
-  currentY?: number;
+  currentX: number;
+  currentY: number;
 };
 
 function DivBox({
@@ -50,12 +51,14 @@ function DivBox({
   onCopy,
   onDelete,
   onToolbarVisibleChange,
+  snapLayout,
   className = "",
   style,
 }: DivBoxProps) {
   const [over, setOver] = useState(false);
   const [moving, setMoving] = useState(false);
   const positionDragRef = useRef<PositionDragState | null>(null);
+  const positionElementRef = useRef<HTMLElement | null>(null);
   const isAbsolute = layout?.position === "absolute";
 
   const isOwnDivBox = (
@@ -157,6 +160,11 @@ function DivBox({
       const x = layout?.x ?? 0;
       const y = layout?.y ?? 0;
 
+      const layoutBox =
+        event.currentTarget.closest<HTMLElement>("[data-layout-box]");
+
+      positionElementRef.current = layoutBox?.parentElement ?? null;
+
       positionDragRef.current = {
         pointerId: event.pointerId,
         startX: event.clientX,
@@ -186,21 +194,31 @@ function DivBox({
       const deltaX = event.clientX - drag.startX;
       const deltaY = event.clientY - drag.startY;
 
-      const x = drag.originalX + deltaX;
-      const y = drag.originalY + deltaY;
+      const rawX = drag.originalX + deltaX;
+      const rawY = drag.originalY + deltaY;
+
+      const snapped = snapLayout({
+        x: rawX,
+        y: rawY,
+      }) ?? {
+        x: rawX,
+        y: rawY,
+      };
+
+      const x = typeof snapped.x === "number" ? snapped.x : rawX;
+      const y = typeof snapped.y === "number" ? snapped.y : rawY;
 
       drag.currentX = x;
       drag.currentY = y;
 
-      onLayoutChange?.(
-        {
-          x,
-          y,
-        },
-        false,
-      );
+      const element = positionElementRef.current;
+
+      if (element) {
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+      }
     },
-    [onLayoutChange],
+    [snapLayout],
   );
 
   const handlePositionPointerUp = useCallback(
@@ -220,14 +238,6 @@ function DivBox({
 
       onLayoutChange?.(
         {
-          x: drag.originalX,
-          y: drag.originalY,
-        },
-        false,
-      );
-
-      onLayoutChange?.(
-        {
           x: drag.currentX,
           y: drag.currentY,
         },
@@ -235,6 +245,7 @@ function DivBox({
       );
 
       positionDragRef.current = null;
+      positionElementRef.current = null;
       setMoving(false);
     },
     [onLayoutChange],
@@ -246,22 +257,26 @@ function DivBox({
 
       event.stopPropagation();
 
-      if (!drag) {
+      if (!drag || drag.pointerId !== event.pointerId) {
         return;
       }
 
-      onLayoutChange?.(
-        {
-          x: drag.originalX,
-          y: drag.originalY,
-        },
-        false,
-      );
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+
+      const element = positionElementRef.current;
+
+      if (element) {
+        element.style.left = `${drag.originalX}px`;
+        element.style.top = `${drag.originalY}px`;
+      }
 
       positionDragRef.current = null;
+      positionElementRef.current = null;
       setMoving(false);
     },
-    [onLayoutChange],
+    [],
   );
 
   const handlePointerUp = useCallback(

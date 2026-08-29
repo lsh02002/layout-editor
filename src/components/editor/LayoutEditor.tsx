@@ -519,6 +519,7 @@ function LayoutEditor() {
           onPointerDragMove={handlePointerDragMove}
           onPointerDragEnd={handlePointerDragEnd}
           onPointerDragCancel={handlePointerDragCancel}
+          snapLayout={snapLayout}
         />
       </div>
       <div className="editor-mobile-panel-buttons">

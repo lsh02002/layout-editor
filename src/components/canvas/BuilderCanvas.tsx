@@ -38,6 +38,7 @@ type Props = {
   onPointerDragMove: (event: PointerEvent<HTMLElement>) => void;
   onPointerDragEnd: (event: PointerEvent<HTMLElement>) => void;
   onPointerDragCancel: () => void;
+  snapLayout: (layout: Partial<ComponentLayout>) => Partial<ComponentLayout>;
 };
 
 function BuilderCanvas({
@@ -63,6 +64,7 @@ function BuilderCanvas({
   onPointerDragMove,
   onPointerDragEnd,
   onPointerDragCancel,
+  snapLayout,
 }: Props) {
   const sortedComponents = useMemo(
     () => [...components].sort((a, b) => a.order - b.order),
@@ -127,6 +129,7 @@ function BuilderCanvas({
               onPointerDragMove={onPointerDragMove}
               onPointerDragEnd={onPointerDragEnd}
               onPointerDragCancel={onPointerDragCancel}
+              snapLayout={snapLayout}
             />
             {!isAbsolute && component.type !== "scrollToTopButton" && (
               <CanvasDropZone

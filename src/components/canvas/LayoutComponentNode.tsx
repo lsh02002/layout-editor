@@ -53,6 +53,7 @@ type Props = {
   onPointerDragMove: (event: PointerEvent<HTMLElement>) => void;
   onPointerDragEnd: (event: PointerEvent<HTMLElement>) => void;
   onPointerDragCancel: () => void;
+  snapLayout: (layout: Partial<ComponentLayout>) => Partial<ComponentLayout>;
 };
 
 function LayoutComponentNode({
@@ -77,6 +78,7 @@ function LayoutComponentNode({
   onPointerDragMove,
   onPointerDragEnd,
   onPointerDragCancel,
+  snapLayout,
 }: Props) {
   const [isLocalDragging, setIsLocalDragging] = useState(false);
   const [renderedWidth, setRenderedWidth] = useState<number>(0);
@@ -242,6 +244,7 @@ function LayoutComponentNode({
           onCopy={() => onCopy(component.id)}
           onDelete={() => onDelete(component.id)}
           onToolbarVisibleChange={setEditToolbarVisible}
+          snapLayout={snapLayout}
           style={{
             ...component.style,
             border: !previewMode ? "1px dashed #adb5bd" : "none",
@@ -320,6 +323,7 @@ function LayoutComponentNode({
                     onPointerDragMove={onPointerDragMove}
                     onPointerDragEnd={onPointerDragEnd}
                     onPointerDragCancel={onPointerDragCancel}
+                    snapLayout={snapLayout}
                   />
                   {!childIsAbsolute &&
                     child.type !== "scrollToTopButton" &&
@@ -372,6 +376,7 @@ function LayoutComponentNode({
         onCopy={() => onCopy(component.id)}
         onDelete={() => onDelete(component.id)}
         onToolbarVisibleChange={setEditToolbarVisible}
+        snapLayout={snapLayout}
         style={{
           ...component.style,
           position: "relative",
