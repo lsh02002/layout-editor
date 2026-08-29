@@ -6,7 +6,9 @@ import {
   useState,
   type DragEvent,
   type PointerEvent,
+  type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import DivBox from "../layout/DivBox";
 import type {
   ComponentLayout,
@@ -84,6 +86,24 @@ export default function LayoutComponentNode({
   const isSelected = selectedComponentId === component.id;
   const isAbsolute = component.layout?.position === "absolute";
 
+  const positionParentId = component.layout?.positionParentId ?? null;
+  const positionParentElement =
+    isAbsolute && positionParentId
+      ? (Array.from(
+          document.querySelectorAll<HTMLElement>("[data-position-context-id]"),
+        ).find(
+          (element) => element.dataset.positionContextId === positionParentId,
+        ) ?? null)
+      : null;
+
+  const renderWithPositionParent = (node: ReactNode) => {
+    if (isAbsolute && positionParentId && positionParentElement) {
+      return createPortal(node, positionParentElement);
+    }
+
+    return node;
+  };
+
   const componentRef = useRef<HTMLDivElement>(null);
 
   const justDropped = !isAbsolute && droppedId === component.id;
@@ -155,15 +175,13 @@ export default function LayoutComponentNode({
     position: isAbsolute ? ("absolute" as const) : ("relative" as const),
     left: isAbsolute ? (component.layout?.x ?? 0) : undefined,
     top: isAbsolute ? (component.layout?.y ?? 0) : undefined,
-
+    zIndex: isAbsolute ? 1000 : undefined,
     width: isAbsolute ? "max-content" : undefined,
     maxWidth: isAbsolute ? "none" : undefined,
 
     ...(component.style?.border
       ? { border: component.style.border }
       : { border: "none" }),
-
-    zIndex: isAbsolute ? 10 : undefined,
 
     transform: justDropped
       ? "translateY(-6px) scale(1.015)"
@@ -207,7 +225,7 @@ export default function LayoutComponentNode({
     const direction: ContainerDirection = component.props.direction ?? "column";
     const isRow = direction === "row";
 
-    return (
+    return renderWithPositionParent(
       <div
         ref={componentRef}
         data-component-id={component.id}
@@ -215,6 +233,7 @@ export default function LayoutComponentNode({
       >
         <DivBox
           previewMode={previewMode}
+          positionContextId={component.id}
           layout={component.layout}
           onLayoutChange={(layout, recordHistory) =>
             onLayoutChange(component.id, layout, recordHistory)
@@ -242,7 +261,6 @@ export default function LayoutComponentNode({
           {dragHandleView}
           <div
             style={{
-              position: "relative",
               display: "flex",
               flexDirection: direction,
               gap: component.props.gap ?? 8,
@@ -337,14 +355,15 @@ export default function LayoutComponentNode({
             )}
           </div>
         </DivBox>
-      </div>
+      </div>,
     );
   }
 
-  return (
+  return renderWithPositionParent(
     <div ref={componentRef} data-component-id={component.id} style={nodeStyle}>
       <DivBox
         previewMode={previewMode}
+        positionContextId={component.id}
         layout={component.layout}
         onLayoutChange={(layout, recordHistory) =>
           onLayoutChange(component.id, layout, recordHistory)
@@ -356,6 +375,8 @@ export default function LayoutComponentNode({
         onToolbarVisibleChange={setEditToolbarVisible}
         style={{
           ...component.style,
+          position: "relative",
+          zIndex: isAbsolute ? (component.layout?.zIndex ?? 100) : 0,
           opacity: isDragging ? 0.45 : (component.style?.opacity ?? 1),
           transition: "opacity 120ms ease",
           outline:
@@ -369,6 +390,6 @@ export default function LayoutComponentNode({
         {dragHandleView}
         <CanvasComponentContent component={component} />
       </DivBox>
-    </div>
+    </div>,
   );
 }

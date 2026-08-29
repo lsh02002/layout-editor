@@ -139,6 +139,14 @@ type Props = {
   ) => void;
 
   saveEditedComponent: () => void;
+
+  positionParentOptions: {
+    id: string;
+    label: string;
+    disabled?: boolean;
+  }[];
+
+  onPositionParentChange: (parentId: string | null) => void;
 };
 
 function EditComponentPanel({
@@ -231,6 +239,9 @@ function EditComponentPanel({
   onStyleApply,
 
   saveEditedComponent,
+
+  positionParentOptions,
+  onPositionParentChange,
 }: Props) {
   const { editTab, setEditTab } = useLogin();
 
@@ -397,6 +408,8 @@ function EditComponentPanel({
                     onLayoutChange(selectedComponentId, layout);
                   }}
                   onApply={onStyleApply}
+                  positionParentOptions={positionParentOptions}
+                  onPositionParentChange={onPositionParentChange}
                 />
               )}
 

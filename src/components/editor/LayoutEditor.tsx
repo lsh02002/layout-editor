@@ -27,7 +27,13 @@ import { data } from "../../data/data";
 import { useComponentActions } from "./hooks/useComponentActions";
 import { useSnapLayout } from "./hooks/useSnapLayout";
 
-import type { CanvasViewport } from "../../types/types";
+import type { LayoutComponent, CanvasViewport } from "../../types/types";
+
+import {
+  containsComponent,
+  findComponentRecursive,
+} from "../../utils/componentTree";
+import { getComponentDisplayName } from "./utils/componentDisplayName";
 
 function LayoutEditor() {
   const [previewMode, setPreviewMode] = useState(false);
@@ -376,6 +382,64 @@ function LayoutEditor() {
     setShowLayerPanel(false);
   }, []);
 
+  const positionParentOptions = useMemo(() => {
+    if (!selectedComponentId) {
+      return [];
+    }
+
+    const selected = findComponentRecursive(components, selectedComponentId);
+
+    if (!selected) {
+      return [];
+    }
+
+    const result: {
+      id: string;
+      label: string;
+      disabled?: boolean;
+    }[] = [];
+
+    const walk = (items: LayoutComponent[], depth = 0) => {
+      items.forEach((component) => {
+        if (!containsComponent(selected, component.id)) {
+          result.push({
+            id: component.id,
+            label: `${"　".repeat(depth)}${getComponentDisplayName(component)}`,
+            disabled: component.type === "container",
+          });
+        }
+
+        if (component.type === "container") {
+          walk(component.children, depth + 1);
+        }
+      });
+    };
+
+    walk(components);
+
+    return result;
+  }, [components, selectedComponentId]);
+
+  const handlePositionParentChange = useCallback(
+    (positionParentId: string | null) => {
+      if (!selectedComponentId) {
+        return;
+      }
+
+      const nextLayout = {
+        positionParentId,
+      };
+
+      setEditLayout((prev) => ({
+        ...prev,
+        ...nextLayout,
+      }));
+
+      updateLayout(selectedComponentId, nextLayout);
+    },
+    [selectedComponentId, setEditLayout, updateLayout],
+  );
+
   return (
     <>
       <LayoutEditorStyles />
@@ -617,6 +681,8 @@ function LayoutEditor() {
         onImmediateChange={updateSelectedComponentImmediate}
         editorSyncKey={editorSyncKey}
         onStyleApply={handleStyleApply}
+        positionParentOptions={positionParentOptions}
+        onPositionParentChange={handlePositionParentChange}
       />
     </>
   );

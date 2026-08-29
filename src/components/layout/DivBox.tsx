@@ -17,6 +17,7 @@ interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   previewMode?: boolean;
   layout?: ComponentLayout;
+  positionContextId?: string | null;
   onLayoutChange?: (
     layout: Partial<ComponentLayout>,
     recordHistory?: boolean,
@@ -42,6 +43,7 @@ function DivBox({
   children,
   previewMode = false,
   layout,
+  positionContextId,
   onLayoutChange,
   onSelect,
   onEdit,
@@ -285,6 +287,7 @@ function DivBox({
   return (
     <div
       data-layout-box
+      data-position-context-id={positionContextId}
       className={`
         d-inline-block
         ${className}        
@@ -294,7 +297,6 @@ function DivBox({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
-        position: "relative",
         width: layout?.width ?? (isAbsolute ? "max-content" : undefined),
         maxWidth: isAbsolute ? "none" : undefined,
         height: layout?.height,
@@ -303,6 +305,7 @@ function DivBox({
             ? "1px solid var(--bs-primary)"
             : "1px solid transparent",
         ...style,
+        position: "relative",
       }}
     >
       {!previewMode && isAbsolute && (

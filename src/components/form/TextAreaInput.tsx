@@ -69,7 +69,7 @@ const TextAreaInput = ({
             className="position-fixed top-0 start-0 w-100 h-100"
             style={{
               backgroundColor: "rgba(0, 0, 0, 0.4)",
-              zIndex: 9998,
+              zIndex: 100,
             }}
             onClick={closeEditor}
           />
@@ -78,7 +78,7 @@ const TextAreaInput = ({
             className="position-fixed top-50 start-50 translate-middle bg-white rounded shadow p-4"
             style={{
               width: "min(90vw, 700px)",
-              zIndex: 9999,
+              zIndex: 100,
             }}
           >
             <div className="d-flex justify-content-between align-items-center mb-3">

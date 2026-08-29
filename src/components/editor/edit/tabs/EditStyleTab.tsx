@@ -27,6 +27,14 @@ type Props = {
     key: keyof CSSProperties,
     value: CSSProperties[keyof CSSProperties],
   ) => void;
+
+  positionParentOptions: {
+    id: string;
+    label: string;
+    disabled?: boolean;
+  }[];
+
+  onPositionParentChange: (parentId: string | null) => void;
 };
 
 function EditStyleTab({
@@ -39,6 +47,8 @@ function EditStyleTab({
   onLayoutChange,
   isContainer = false,
   onApply,
+  positionParentOptions,
+  onPositionParentChange,
 }: Props) {
   /*
    * Style 입력값 변경
@@ -429,7 +439,7 @@ function EditStyleTab({
       </div>
 
       {/* 배경 반복 */}
-      <div className="col-md-6">
+      <div className="col-md-12">
         <label className="form-label">배경 반복</label>
 
         <div className="input-group input-group-sm">
@@ -496,6 +506,50 @@ function EditStyleTab({
       {/* Absolute 좌표 */}
       {editLayout.position === "absolute" && (
         <>
+          <div className="col-6">
+            <label className="form-label">기준 컴포넌트</label>
+
+            <select
+              className="form-select form-select-sm"
+              value={editLayout.positionParentId ?? ""}
+              style={{
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+              onChange={(event) => {
+                const value = event.target.value || null;
+
+                setEditLayout((prev) => ({
+                  ...prev,
+                  positionParentId: value,
+                }));
+
+                onPositionParentChange(value);
+              }}
+            >
+              {positionParentOptions.map((component) => {
+                const maxLength = 18;
+
+                const label =
+                  component.label.length > maxLength
+                    ? `${component.label.slice(0, maxLength)}...`
+                    : component.label;
+
+                return (
+                  <option
+                    key={component.id}
+                    value={component.id}
+                    title={component.label}
+                    disabled={component.disabled}
+                  >
+                    {label}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+
           {/* X - 즉시 반영 */}
           <div className="col-md-6">
             <label className="form-label">X</label>

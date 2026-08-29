@@ -12,6 +12,8 @@ export interface ComponentLayout {
   height?: number | string;
   x?: number;
   y?: number;
+  positionParentId?: string | null;
+  zIndex?: number;
 }
 
 interface BaseComponent {
