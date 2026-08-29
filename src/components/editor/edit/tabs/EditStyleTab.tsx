@@ -548,59 +548,59 @@ function EditStyleTab({
                 );
               })}
             </select>
-          </div>
 
-          {/* X - 즉시 반영 */}
-          <div className="col-md-6">
-            <label className="form-label">X</label>
+            {/* X - 즉시 반영 */}
+            <div className="row-md-2">
+              <label className="form-label">X</label>
 
-            <div className="input-group input-group-sm">
-              <input
-                type="number"
-                className="form-control"
-                value={editLayout.x ?? 0}
-                onChange={(event) => {
-                  const x = Number(event.target.value) || 0;
+              <div className="input-group input-group-sm">
+                <input
+                  type="number"
+                  className="form-control"
+                  value={editLayout.x ?? 0}
+                  onChange={(event) => {
+                    const x = Number(event.target.value) || 0;
 
-                  setEditLayout((prev) => ({
-                    ...prev,
-                    x,
-                  }));
+                    setEditLayout((prev) => ({
+                      ...prev,
+                      x,
+                    }));
 
-                  onLayoutChange({
-                    x,
-                  });
-                }}
-              />
+                    onLayoutChange({
+                      x,
+                    });
+                  }}
+                />
 
-              <span className="input-group-text">px</span>
+                <span className="input-group-text">px</span>
+              </div>
             </div>
-          </div>
 
-          {/* Y - 즉시 반영 */}
-          <div className="col-md-6">
-            <label className="form-label">Y</label>
+            {/* Y - 즉시 반영 */}
+            <div className="row-md-2">
+              <label className="form-label">Y</label>
 
-            <div className="input-group input-group-sm">
-              <input
-                type="number"
-                className="form-control"
-                value={editLayout.y ?? 0}
-                onChange={(event) => {
-                  const y = Number(event.target.value) || 0;
+              <div className="input-group input-group-sm">
+                <input
+                  type="number"
+                  className="form-control"
+                  value={editLayout.y ?? 0}
+                  onChange={(event) => {
+                    const y = Number(event.target.value) || 0;
 
-                  setEditLayout((prev) => ({
-                    ...prev,
-                    y,
-                  }));
+                    setEditLayout((prev) => ({
+                      ...prev,
+                      y,
+                    }));
 
-                  onLayoutChange({
-                    y,
-                  });
-                }}
-              />
+                    onLayoutChange({
+                      y,
+                    });
+                  }}
+                />
 
-              <span className="input-group-text">px</span>
+                <span className="input-group-text">px</span>
+              </div>
             </div>
           </div>
         </>
