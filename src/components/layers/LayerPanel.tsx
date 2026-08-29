@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import type { LayoutComponent } from "../../types/types";
 import { getComponentDisplayName } from "../editor/utils/componentDisplayName";
 
@@ -72,7 +72,7 @@ const highlightSearchText = (text: string, keyword: string) => {
   });
 };
 
-export default function LayerPanel({
+function LayerPanel({
   previewMode,
   visible,
   components,
@@ -432,3 +432,5 @@ export default function LayerPanel({
     </aside>
   );
 }
+
+export default memo(LayerPanel);

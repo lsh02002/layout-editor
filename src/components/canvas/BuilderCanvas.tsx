@@ -1,4 +1,4 @@
-import { useMemo, type DragEvent, type PointerEvent } from "react";
+import { memo, useMemo, type DragEvent, type PointerEvent } from "react";
 import type { ComponentLayout, LayoutComponent } from "../../types/types";
 import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import LayoutComponentNode from "./LayoutComponentNode";
@@ -40,7 +40,7 @@ type Props = {
   onPointerDragCancel: () => void;
 };
 
-export default function BuilderCanvas({
+function BuilderCanvas({
   previewMode,
   canvasWidth,
   components,
@@ -147,3 +147,5 @@ export default function BuilderCanvas({
     </div>
   );
 }
+
+export default memo(BuilderCanvas);

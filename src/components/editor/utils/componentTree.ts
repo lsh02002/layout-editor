@@ -229,9 +229,13 @@ export const updateLayoutRecursive = (
   items: LayoutComponent[],
   id: string,
   newLayout: Partial<ComponentLayout>,
-): LayoutComponent[] =>
-  items.map((item) => {
+): LayoutComponent[] => {
+  let changed = false;
+
+  const nextItems = items.map((item) => {
     if (item.id === id) {
+      changed = true;
+
       return {
         ...item,
         layout: {
@@ -242,11 +246,20 @@ export const updateLayoutRecursive = (
     }
 
     if (item.type === "container") {
-      return {
-        ...item,
-        children: updateLayoutRecursive(item.children, id, newLayout),
-      };
+      const nextChildren = updateLayoutRecursive(item.children, id, newLayout);
+
+      if (nextChildren !== item.children) {
+        changed = true;
+
+        return {
+          ...item,
+          children: nextChildren,
+        };
+      }
     }
 
     return item;
   });
+
+  return changed ? nextItems : items;
+};

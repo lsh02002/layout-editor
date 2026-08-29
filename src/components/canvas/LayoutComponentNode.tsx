@@ -1,4 +1,5 @@
 import {
+  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -54,7 +55,7 @@ type Props = {
   onPointerDragCancel: () => void;
 };
 
-export default function LayoutComponentNode({
+function LayoutComponentNode({
   previewMode,
   component,
   selectedComponentId,
@@ -393,3 +394,5 @@ export default function LayoutComponentNode({
     </div>,
   );
 }
+
+export default memo(LayoutComponentNode);
