@@ -17,6 +17,7 @@ type Options = {
   selectedComponentId: string | null;
   setSelectedComponentId: SelectionSetter;
   commitHistory: CommitHistory;
+  resetEditForm: () => void;
 };
 
 export const useCrudActions = ({
@@ -24,6 +25,7 @@ export const useCrudActions = ({
   selectedComponentId,
   setSelectedComponentId,
   commitHistory,
+  resetEditForm,
 }: Options) => {
   const deleteComponent = useCallback(
     (id: string) => {
@@ -31,9 +33,10 @@ export const useCrudActions = ({
 
       if (selectedComponentId === id) {
         setSelectedComponentId(null);
+        resetEditForm();
       }
     },
-    [commitHistory, selectedComponentId, setSelectedComponentId],
+    [commitHistory, selectedComponentId, setSelectedComponentId, resetEditForm],
   );
 
   const copyComponent = useCallback(

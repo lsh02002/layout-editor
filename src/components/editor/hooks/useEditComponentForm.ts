@@ -209,6 +209,32 @@ export const useEditComponentForm = () => {
     }
   }, []);
 
+  const resetEditForm = useCallback(() => {
+    setEditingComponentId(null);
+    setEditType("textarea");
+    setEditTitle("");
+    setEditValue("");
+    setEditPlaceholder("");
+    setEditDirection("column");
+    setEditDisabled(false);
+    setEditStyle({});
+    setEditContentStyle({});
+    setEditCustomCss("");
+    setEditImageUrl("");
+    setEditImagePreviewUrl("");
+    setEditLinkType("url");
+    setEditLinkNewWindow(false);
+    setEditComponentName("");
+    setEditHeadingLevel(2);
+    setEditLayout({
+      position: "relative",
+    });
+    setEditDividerThickness(3);
+    setEditDividerColor("#dee2e6");
+    setEditDividerLineStyle("solid");
+    setEditSpacerHeight(32);
+  }, []);
+
   return {
     editingComponentId,
     setEditingComponentId,
@@ -254,5 +280,6 @@ export const useEditComponentForm = () => {
     setEditDividerLineStyle,
     editSpacerHeight,
     setEditSpacerHeight,
+    resetEditForm,
   };
 };

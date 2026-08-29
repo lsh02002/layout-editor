@@ -54,17 +54,6 @@ function LayoutEditor() {
 
   const [editorSyncKey, setEditorSyncKey] = useState(0);
 
-  const {
-    components,
-    commitHistory,
-    setComponents,
-    resetHistory,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-  } = useComponentHistory(data);
-
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const {
@@ -141,6 +130,7 @@ function LayoutEditor() {
     setEditDividerLineStyle,
     editSpacerHeight,
     setEditSpacerHeight,
+    resetEditForm,
   } = useEditComponentForm();
 
   const [snapEnabled, setSnapEnabled] = useState(true);
@@ -166,6 +156,22 @@ function LayoutEditor() {
   const [showProjectCssModal, setShowProjectCssModal] = useState(false);
 
   const [projectCssDraft, setProjectCssDraft] = useState("");
+
+  const {
+    components,
+    commitHistory,
+    setComponents,
+    resetHistory,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useComponentHistory({
+    initialComponents: data,
+    selectedComponentId,
+    setSelectedComponentId,
+    resetEditForm,
+  });
 
   const {
     lastAutoSavedAt,
@@ -318,6 +324,7 @@ function LayoutEditor() {
     setEditLayout,
     snapLayout,
     editValues,
+    resetEditForm,
   });
 
   const {

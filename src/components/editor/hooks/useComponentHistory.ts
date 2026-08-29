@@ -5,15 +5,49 @@ import type {
   HistoryState,
   LayoutComponent,
 } from "../../../types/types";
+import { findComponentRecursive } from "../utils/componentTree";
 
 type HistoryUpdater = (prev: LayoutComponent[]) => LayoutComponent[];
 
-export const useComponentHistory = (initialComponents: LayoutComponent[]) => {
+type Options = {
+  selectedComponentId: string | null;
+  setSelectedComponentId: (id: string | null) => void;
+  resetEditForm: () => void;
+  initialComponents: LayoutComponent[];
+};
+
+export const useComponentHistory = ({
+  initialComponents,
+  selectedComponentId,
+  setSelectedComponentId,
+  resetEditForm,
+}: Options) => {
   const [history, setHistory] = useState<HistoryState>(() => ({
     past: [],
     present: initialComponents,
     future: [],
   }));
+
+  const syncSelection = useCallback(
+    (nextComponents: LayoutComponent[]) => {
+      if (!selectedComponentId) {
+        return;
+      }
+
+      const exists = findComponentRecursive(
+        nextComponents,
+        selectedComponentId,
+      );
+
+      if (exists) {
+        return;
+      }
+
+      setSelectedComponentId(null);
+      resetEditForm();
+    },
+    [selectedComponentId, setSelectedComponentId, resetEditForm],
+  );
 
   const commitHistory = useCallback((updater: HistoryUpdater) => {
     setHistory((prev) => {
@@ -59,36 +93,36 @@ export const useComponentHistory = (initialComponents: LayoutComponent[]) => {
   }, []);
 
   const undo = useCallback(() => {
-    setHistory((prev) => {
-      if (prev.past.length === 0) {
-        return prev;
-      }
+    if (history.past.length === 0) {
+      return;
+    }
 
-      const previous = prev.past[prev.past.length - 1];
+    const previous = history.past[history.past.length - 1];
 
-      return {
-        past: prev.past.slice(0, -1),
-        present: previous,
-        future: [prev.present, ...prev.future],
-      };
+    syncSelection(previous);
+
+    setHistory({
+      past: history.past.slice(0, -1),
+      present: previous,
+      future: [history.present, ...history.future],
     });
-  }, []);
+  }, [history, syncSelection]);
 
   const redo = useCallback(() => {
-    setHistory((prev) => {
-      if (prev.future.length === 0) {
-        return prev;
-      }
+    if (history.future.length === 0) {
+      return;
+    }
 
-      const next = prev.future[0];
+    const next = history.future[0];
 
-      return {
-        past: [...prev.past, prev.present],
-        present: next,
-        future: prev.future.slice(1),
-      };
+    syncSelection(next);
+
+    setHistory({
+      past: [...history.past, history.present],
+      present: next,
+      future: history.future.slice(1),
     });
-  }, []);
+  }, [history, syncSelection]);
 
   const canUndo = history.past.length > 0;
   const canRedo = history.future.length > 0;

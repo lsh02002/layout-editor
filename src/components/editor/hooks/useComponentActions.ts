@@ -55,6 +55,8 @@ type Options = {
 
   setEditLayout: React.Dispatch<React.SetStateAction<Partial<ComponentLayout>>>;
   snapLayout: (layout: Partial<ComponentLayout>) => Partial<ComponentLayout>;
+
+  resetEditForm: () => void;
 };
 
 export const useComponentActions = ({
@@ -78,6 +80,7 @@ export const useComponentActions = ({
   setSelectedTemplateId,
   setEditLayout,
   snapLayout,
+  resetEditForm,
 }: Options) => {
   const createActions = useCreateActions({
     components,
@@ -99,6 +102,7 @@ export const useComponentActions = ({
     selectedComponentId,
     setSelectedComponentId,
     commitHistory,
+    resetEditForm,
   });
 
   const selectionActions = useSelectionActions({
