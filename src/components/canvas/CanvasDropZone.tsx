@@ -53,7 +53,9 @@ function CanvasDropZone({
     const types = event.dataTransfer.types;
     const isTemplate = types.includes("application/x-pagebuilder-template");
     const isNewComponent = types.includes("application/x-component-type");
-    const isExistingComponent = Boolean(draggingId);
+    const isExistingComponent = types.includes(
+      "application/x-layout-component-id",
+    );
     return isTemplate || isNewComponent || isExistingComponent;
   };
 

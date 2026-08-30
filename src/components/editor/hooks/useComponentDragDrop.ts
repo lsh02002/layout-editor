@@ -147,6 +147,12 @@ export const useComponentDragDrop = ({
     setDraggingId(componentId);
 
     event.dataTransfer.effectAllowed = "move";
+
+    event.dataTransfer.setData(
+      "application/x-layout-component-id",
+      componentId,
+    );
+
     event.dataTransfer.setData("text/plain", componentId);
   };
 
@@ -307,7 +313,9 @@ export const useComponentDragDrop = ({
 
     // 3. 기존 컴포넌트 이동
     const draggedId =
-      event.dataTransfer.getData("text/plain") || draggingIdRef.current;
+      event.dataTransfer.getData("application/x-layout-component-id") ||
+      event.dataTransfer.getData("text/plain") ||
+      draggingIdRef.current;
 
     if (!draggedId) {
       setActiveDropTarget(null);
