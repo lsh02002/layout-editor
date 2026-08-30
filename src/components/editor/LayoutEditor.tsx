@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 
 import BuilderCanvas from "../canvas/BuilderCanvas";
-import LayerPanel from "./layers/LayerPanel";
+import LayerPanel from "./layerpanel/LayerPanel";
 import ProjectToolbar from "./toolbar/ProjectToolbar";
 import AutoSaveRestoreModal from "./modals/AutoSaveRestoreModal";
 import ProjectCssModal from "./modals/ProjectCssModal";
