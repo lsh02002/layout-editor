@@ -494,11 +494,7 @@ function LayoutEditor() {
             }}
           >
             {leftPanelTab === "components" ? (
-              <ComponentPanel
-                onCreate={(type) => {
-                  openCreateModal(null, components.length, type);
-                }}
-              />
+              <ComponentPanel />
             ) : (
               <div
                 style={{

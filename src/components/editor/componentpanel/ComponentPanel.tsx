@@ -1,9 +1,5 @@
 import type { ComponentType } from "../../../types/types";
 
-type ComponentPanelProps = {
-  onCreate: (type: ComponentType) => void;
-};
-
 const COMPONENTS: {
   type: ComponentType;
   label: string;
@@ -61,7 +57,7 @@ const COMPONENTS: {
   },
 ];
 
-function ComponentPanel({ onCreate }: ComponentPanelProps) {
+function ComponentPanel() {
   return (
     <div
       style={{
@@ -117,8 +113,7 @@ function ComponentPanel({ onCreate }: ComponentPanelProps) {
                   "application/x-component-type",
                   component.type,
                 );
-              }}
-              onClick={() => onCreate(component.type)}
+              }}              
               className="btn btn-light border text-start"
               style={{
                 minHeight: 82,
