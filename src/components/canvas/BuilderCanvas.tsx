@@ -72,7 +72,17 @@ function BuilderCanvas({
   );
 
   return (
-    <div className="builder-preview" style={{ maxWidth: canvasWidth }}>
+    <div
+      className="builder-preview"
+      style={{ maxWidth: canvasWidth }}
+      onDragStart={(event) => {
+        const target = event.target as HTMLElement;
+        const draggableElement = target.closest('[draggable="true"]');
+        if (!draggableElement) {
+          event.preventDefault();
+        }
+      }}
+    >
       <CanvasDropZone
         previewMode={previewMode}
         parentId={null}

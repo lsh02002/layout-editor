@@ -49,6 +49,14 @@ function CanvasDropZone({
     return null;
   }
 
+  const isValidDrag = (event: DragEvent<HTMLElement>) => {
+    const types = event.dataTransfer.types;
+    const isTemplate = types.includes("application/x-pagebuilder-template");
+    const isNewComponent = types.includes("application/x-component-type");
+    const isExistingComponent = Boolean(draggingId);
+    return isTemplate || isNewComponent || isExistingComponent;
+  };
+
   return (
     <div
       data-drop-zone="true"
@@ -56,14 +64,24 @@ function CanvasDropZone({
       data-drop-parent={parentId ?? "root"}
       data-drop-index={index}
       onDragEnter={(event) => {
+        if (!isValidDrag(event)) {
+          setActiveDropTarget(null);
+          return;
+        }
+
         event.preventDefault();
         event.stopPropagation();
         activate();
       }}
       onDragOver={(event) => {
+        if (!isValidDrag(event)) {
+          setActiveDropTarget(null);
+          return;
+        }
+
         event.preventDefault();
         event.stopPropagation();
-
+        activate();
         const isTemplate = event.dataTransfer.types.includes(
           "application/x-pagebuilder-template",
         );
