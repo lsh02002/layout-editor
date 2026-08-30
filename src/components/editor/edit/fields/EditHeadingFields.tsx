@@ -1,4 +1,4 @@
-type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+import type { HeadingLevel } from "../../../../types/types";
 
 type Props = {
   value: string;

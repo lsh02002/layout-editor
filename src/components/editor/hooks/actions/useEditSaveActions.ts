@@ -7,6 +7,7 @@ import type {
   FavoriteSetter,
   SetComponents,
 } from "../../../../types/types";
+import { updateComponentRecursive } from "../../utils/componentTree";
 
 type Options = {
   editValues: EditValues;
@@ -188,23 +189,13 @@ export const useEditSaveActions = ({
       return;
     }
 
-    const updateRecursive = (items: LayoutComponent[]): LayoutComponent[] =>
-      items.map((component) => {
-        if (component.id === editingComponentId) {
-          return applyEditValuesToComponent(component);
-        }
-
-        if (component.type === "container") {
-          return {
-            ...component,
-            children: updateRecursive(component.children),
-          };
-        }
-
-        return component;
-      });
-
-    setComponents(updateRecursive);
+    setComponents((items) =>
+      updateComponentRecursive(
+        items,
+        editingComponentId,
+        applyEditValuesToComponent,
+      ),
+    );
 
     setFavoriteComponents((prev) =>
       prev.map((favorite) => {

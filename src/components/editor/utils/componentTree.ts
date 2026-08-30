@@ -263,3 +263,24 @@ export const updateLayoutRecursive = (
 
   return changed ? nextItems : items;
 };
+
+export const updateComponentRecursive = (
+  items: LayoutComponent[],
+  id: string,
+  updater: (component: LayoutComponent) => LayoutComponent,
+): LayoutComponent[] => {
+  return items.map((component) => {
+    if (component.id === id) {
+      return updater(component);
+    }
+
+    if (component.type === "container") {
+      return {
+        ...component,
+        children: updateComponentRecursive(component.children, id, updater),
+      };
+    }
+
+    return component;
+  });
+};

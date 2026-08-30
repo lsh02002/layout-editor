@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import type { LayoutComponent } from "../../../types/types";
+import type { LayoutComponent, CommitHistory } from "../../../types/types";
 
 import {
   cloneComponent,
@@ -10,10 +10,6 @@ import {
   normalizeOrder,
   removeComponentRecursive,
 } from "../utils/componentTree";
-
-type CommitHistory = (
-  updater: (prev: LayoutComponent[]) => LayoutComponent[],
-) => void;
 
 type Options = {
   components: LayoutComponent[];

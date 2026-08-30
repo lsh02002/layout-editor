@@ -8,7 +8,10 @@ import type {
   SetComponents,
 } from "../../../../types/types";
 
-import { updateLayoutRecursive } from "../../utils/componentTree";
+import {
+  updateLayoutRecursive,
+  updateComponentRecursive,
+} from "../../utils/componentTree";
 
 type Options = {
   selectedComponentId: string | null;
@@ -44,25 +47,13 @@ export const useLayoutActions = ({
 
   const updateSelectedComponentImmediate = useCallback(
     (updater: (component: LayoutComponent) => LayoutComponent) => {
-      if (!selectedComponentId) return;
+      if (!selectedComponentId) {
+        return;
+      }
 
-      const updateRecursive = (items: LayoutComponent[]): LayoutComponent[] =>
-        items.map((component) => {
-          if (component.id === selectedComponentId) {
-            return updater(component);
-          }
-
-          if (component.type === "container") {
-            return {
-              ...component,
-              children: updateRecursive(component.children),
-            };
-          }
-
-          return component;
-        });
-
-      setComponents(updateRecursive);
+      setComponents((items) =>
+        updateComponentRecursive(items, selectedComponentId, updater),
+      );
     },
     [selectedComponentId, setComponents],
   );

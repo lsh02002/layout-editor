@@ -5,11 +5,9 @@ import {
   useState,
   type ChangeEvent,
 } from "react";
-
+import { isTauri } from "../utils/projectUtils";
 import type { LayoutComponent } from "../../../types/types";
-
 import { isObject, validateComponent } from "../utils/componentValidation";
-
 import { downloadProjectFile } from "../utils/projectUtils";
 
 type Options = {
@@ -33,10 +31,6 @@ type ProjectValidation =
     };
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
-
-const isTauri = (): boolean => {
-  return "__TAURI_INTERNALS__" in window;
-};
 
 const validateProjectFile = (value: unknown): ProjectValidation => {
   if (!isObject(value)) {

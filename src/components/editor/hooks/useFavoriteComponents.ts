@@ -1,6 +1,9 @@
 import { useCallback, useState } from "react";
-
-import type { FavoriteComponent, LayoutComponent } from "../../../types/types";
+import type {
+  FavoriteComponent,
+  LayoutComponent,
+  CommitHistory,
+} from "../../../types/types";
 
 import {
   cloneComponent,
@@ -10,10 +13,6 @@ import {
   insertComponentRecursive,
   normalizeOrder,
 } from "../utils/componentTree";
-
-type CommitHistory = (
-  updater: (prev: LayoutComponent[]) => LayoutComponent[],
-) => void;
 
 type Options = {
   components: LayoutComponent[];

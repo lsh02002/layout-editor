@@ -4,6 +4,7 @@ import type {
   ComponentType,
   LayoutComponent,
   LinkType,
+  HeadingLevel,
 } from "../../../../types/types";
 
 import EditButtonFields from "../fields/EditButtonFields";
@@ -15,8 +16,6 @@ import EditQuillFields from "../fields/EditQuillFields";
 import EditTextareaFields from "../fields/EditTextareaFields";
 import EditDividerFields from "../fields/EditDividerFields";
 import EditSpacerFields from "../fields/EditSpacerFields";
-
-type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 type Props = {
   editType: ComponentType;

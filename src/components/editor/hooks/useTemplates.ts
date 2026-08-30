@@ -1,24 +1,20 @@
 import { useCallback, useRef, type ChangeEvent } from "react";
-
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
-
-import type { LayoutComponent, TemplateFile } from "../../../types/types";
-
+import type {
+  LayoutComponent,
+  TemplateFile,
+  CommitHistory,
+} from "../../../types/types";
 import {
   cloneComponent,
   findComponentRecursive,
   insertComponentRecursive,
   normalizeOrder,
 } from "../utils/componentTree";
-
 import { isObject, validateComponent } from "../utils/componentValidation";
-
 import { convertComponentsForSave } from "../utils/projectUtils";
-
-type CommitHistory = (
-  updater: (prev: LayoutComponent[]) => LayoutComponent[],
-) => void;
+import { isTauri } from "../utils/projectUtils";
 
 type Options = {
   components: LayoutComponent[];
@@ -53,10 +49,6 @@ type WindowWithSaveFilePicker = Window & {
 };
 
 const MAX_TEMPLATE_FILE_SIZE = 50 * 1024 * 1024;
-
-const isTauri = (): boolean => {
-  return "__TAURI_INTERNALS__" in window;
-};
 
 export const sanitizeFileName = (name: string) =>
   name

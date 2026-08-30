@@ -1,7 +1,8 @@
 import { useCallback } from "react";
 import type { CSSProperties } from "react";
 
-import type { LayoutComponent, SetComponents } from "../../../../types/types";
+import type { SetComponents } from "../../../../types/types";
+import { updateComponentRecursive } from "../../utils/componentTree";
 
 type Options = {
   selectedComponentId: string | null;
@@ -22,31 +23,15 @@ export const useStyleActions = ({
         return;
       }
 
-      const updateRecursive = (
-        components: LayoutComponent[],
-      ): LayoutComponent[] =>
-        components.map((component) => {
-          if (component.id === selectedComponentId) {
-            return {
-              ...component,
-              [target]: {
-                ...component[target],
-                [key]: value,
-              },
-            };
-          }
-
-          if (component.type === "container") {
-            return {
-              ...component,
-              children: updateRecursive(component.children),
-            };
-          }
-
-          return component;
-        });
-
-      setComponents((items) => updateRecursive(items));
+      setComponents((items) =>
+        updateComponentRecursive(items, selectedComponentId, (component) => ({
+          ...component,
+          [target]: {
+            ...component[target],
+            [key]: value,
+          },
+        })),
+      );
     },
     [selectedComponentId, setComponents],
   );

@@ -4,6 +4,7 @@ import type {
   ComponentType,
   ContainerDirection,
   LinkType,
+  HeadingLevel,
 } from "../../../types/types";
 
 import ButtonFields from "./fields/ButtonFields";
@@ -14,8 +15,6 @@ import LinkFields from "./fields/LinkFields";
 import QuillFields from "./fields/QuillFields";
 import TextareaFields from "./fields/TextareaFields";
 import ComponentNameField from "./fields/ComponentNameField";
-
-type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 type Props = {
   open: boolean;

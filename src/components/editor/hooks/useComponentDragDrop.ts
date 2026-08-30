@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import type { ComponentType, LayoutComponent } from "../../../types/types";
+import type { CommitHistory } from "../../../types/types";
 
 import {
   containsComponent,
@@ -22,10 +23,6 @@ type DropTarget = {
   index: number;
   area: "canvas" | "layer";
 };
-
-type CommitHistory = (
-  updater: (prev: LayoutComponent[]) => LayoutComponent[],
-) => void;
 
 type Options = {
   components: LayoutComponent[];
