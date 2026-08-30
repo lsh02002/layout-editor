@@ -1,8 +1,9 @@
 import { useCallback, useState, type CSSProperties } from "react";
-
+import type { ContainerAlignItems } from "../../../types/types";
 import {
   type ComponentLayout,
   type ComponentType,
+  type ContainerJustifyContent,
   type LayoutComponent,
   type LinkType,
 } from "../../../types/types";
@@ -61,6 +62,15 @@ export const useEditComponentForm = () => {
   >("solid");
 
   const [editSpacerHeight, setEditSpacerHeight] = useState(32);
+
+  const [editContainerGap, setEditContainerGap] = useState(16);
+  const [editContainerJustifyContent, setEditContainerJustifyContent] =
+    useState<ContainerJustifyContent>("space-between");
+  const [editContainerAlignItems, setEditContainerAlignItems] =
+    useState<ContainerAlignItems>("stretch");
+  const [editContainerMaxWidth, setEditContainerMaxWidth] = useState<
+    number | undefined
+  >(undefined);
 
   const loadComponentToEdit = useCallback((component: LayoutComponent) => {
     setEditingComponentId(component.id);
@@ -147,6 +157,12 @@ export const useEditComponentForm = () => {
         setEditValue("");
         setEditPlaceholder("");
         setEditDirection(component.props.direction ?? "column");
+        setEditContainerGap(component.props.gap ?? 8);
+        setEditContainerJustifyContent(
+          component.props.justifyContent ?? "space-between",
+        );
+        setEditContainerAlignItems(component.props.alignItems ?? "stretch");
+        setEditContainerMaxWidth(component.props.maxWidth);
         break;
       }
 
@@ -233,6 +249,12 @@ export const useEditComponentForm = () => {
     setEditDividerColor("#dee2e6");
     setEditDividerLineStyle("solid");
     setEditSpacerHeight(32);
+
+    setEditDirection("column");
+    setEditContainerGap(16);
+    setEditContainerJustifyContent("space-between");
+    setEditContainerAlignItems("stretch");
+    setEditContainerMaxWidth(undefined);
   }, []);
 
   return {
@@ -280,6 +302,16 @@ export const useEditComponentForm = () => {
     setEditDividerLineStyle,
     editSpacerHeight,
     setEditSpacerHeight,
+
+    editContainerGap,
+    setEditContainerGap,
+    editContainerJustifyContent,
+    setEditContainerJustifyContent,
+    editContainerAlignItems,
+    setEditContainerAlignItems,
+    editContainerMaxWidth,
+    setEditContainerMaxWidth,
+
     resetEditForm,
   };
 };

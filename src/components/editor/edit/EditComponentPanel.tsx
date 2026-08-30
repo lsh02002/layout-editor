@@ -13,6 +13,8 @@ import type {
   LinkType,
   TemplateItem,
   HeadingLevel,
+  ContainerAlignItems,
+  ContainerJustifyContent,
 } from "../../../types/types";
 
 import type { EditTab } from "../hooks/useEditComponentForm";
@@ -94,6 +96,17 @@ type Props = {
 
   editSpacerHeight: number;
   setEditSpacerHeight: Dispatch<SetStateAction<number>>;
+
+  editContainerGap: number;
+  setEditContainerGap: Dispatch<SetStateAction<number>>;
+  editContainerJustifyContent: ContainerJustifyContent;
+  setEditContainerJustifyContent: Dispatch<
+    SetStateAction<ContainerJustifyContent>
+  >;
+  editContainerAlignItems: ContainerAlignItems;
+  setEditContainerAlignItems: Dispatch<SetStateAction<ContainerAlignItems>>;
+  editContainerMaxWidth: number | undefined;
+  setEditContainerMaxWidth: Dispatch<SetStateAction<number | undefined>>;
 
   resetEditPanelToSelected: () => void;
 
@@ -214,6 +227,15 @@ function EditComponentPanel({
 
   editSpacerHeight,
   setEditSpacerHeight,
+
+  editContainerGap,
+  setEditContainerGap,
+  editContainerJustifyContent,
+  setEditContainerJustifyContent,
+  editContainerAlignItems,
+  setEditContainerAlignItems,
+  editContainerMaxWidth,
+  setEditContainerMaxWidth,
 
   resetEditPanelToSelected,
 
@@ -385,6 +407,18 @@ function EditComponentPanel({
                   setEditDividerLineStyle={setEditDividerLineStyle}
                   editSpacerHeight={editSpacerHeight}
                   setEditSpacerHeight={setEditSpacerHeight}
+
+                  editContainerGap={editContainerGap}
+                  setEditContainerGap={setEditContainerGap}
+                  editContainerJustifyContent={editContainerJustifyContent}
+                  setEditContainerJustifyContent={
+                    setEditContainerJustifyContent
+                  }
+                  editContainerAlignItems={editContainerAlignItems}
+                  setEditContainerAlignItems={setEditContainerAlignItems}
+                  editContainerMaxWidth={editContainerMaxWidth}
+                  setEditContainerMaxWidth={setEditContainerMaxWidth}
+                  
                   onImmediateChange={onImmediateChange}
                 />
               )}

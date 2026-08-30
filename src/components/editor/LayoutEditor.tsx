@@ -132,6 +132,16 @@ function LayoutEditor() {
     setEditDividerLineStyle,
     editSpacerHeight,
     setEditSpacerHeight,
+
+    editContainerGap,
+    setEditContainerGap,
+    editContainerJustifyContent,
+    setEditContainerJustifyContent,
+    editContainerAlignItems,
+    setEditContainerAlignItems,
+    editContainerMaxWidth,
+    setEditContainerMaxWidth,
+
     resetEditForm,
   } = useEditComponentForm();
 
@@ -267,6 +277,12 @@ function LayoutEditor() {
       editDividerColor,
       editDividerLineStyle,
       editSpacerHeight,
+
+      editContainerGap,
+      editContainerJustifyContent,
+      editContainerAlignItems,
+      editContainerMaxWidth,
+
       editLayout,
     }),
     [
@@ -288,6 +304,12 @@ function LayoutEditor() {
       editDividerColor,
       editDividerLineStyle,
       editSpacerHeight,
+
+      editContainerGap,
+      editContainerJustifyContent,
+      editContainerAlignItems,
+      editContainerMaxWidth,
+
       editLayout,
     ],
   );
@@ -736,6 +758,15 @@ function LayoutEditor() {
         setEditDividerLineStyle={setEditDividerLineStyle}
         editSpacerHeight={editSpacerHeight}
         setEditSpacerHeight={setEditSpacerHeight}
+        /* Container specific props */
+        editContainerGap={editContainerGap}
+        setEditContainerGap={setEditContainerGap}
+        editContainerJustifyContent={editContainerJustifyContent}
+        setEditContainerJustifyContent={setEditContainerJustifyContent}
+        editContainerAlignItems={editContainerAlignItems}
+        setEditContainerAlignItems={setEditContainerAlignItems}
+        editContainerMaxWidth={editContainerMaxWidth}
+        setEditContainerMaxWidth={setEditContainerMaxWidth}
         resetEditPanelToSelected={resetEditPanelToSelected}
         saveEditedComponent={saveEditedComponent}
         favoriteComponents={favoriteComponents}

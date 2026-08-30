@@ -267,8 +267,12 @@ function LayoutComponentNode({
               flexDirection: direction,
               gap: component.props.gap ?? 8,
               width: "100%",
-              alignItems: isRow ? "stretch" : undefined,
-              justifyContent: isRow ? "space-between" : undefined,
+              maxWidth: component.props.maxWidth
+                ? `${component.props.maxWidth}px`
+                : undefined,
+              marginInline: component.props.maxWidth ? "auto" : undefined,
+              justifyContent: component.props.justifyContent ?? "space-between",
+              alignItems: component.props.alignItems ?? "stretch",
             }}
           >
             <CanvasDropZone
@@ -284,19 +288,32 @@ function LayoutComponentNode({
             />
             {children.map((child, index) => {
               const childIsAbsolute = child.layout?.position === "absolute";
+              const childWidth = child.layout?.width;
+              const shouldFillRow =
+                child.type === "image" ||
+                child.type === "textarea" ||
+                child.type === "quill" ||
+                child.type === "divider";
+
               return (
                 <div
                   key={child.id}
                   style={
                     childIsAbsolute
-                      ? { display: "contents" }
+                      ? {
+                          display: "contents",
+                        }
                       : {
+                          width: isRow
+                            ? (childWidth ?? (shouldFillRow ? "100%" : "auto"))
+                            : "100%",
                           flex: isRow
-                            ? child.layout?.width
-                              ? undefined
-                              : 1
+                            ? childWidth
+                              ? "0 0 auto"
+                              : shouldFillRow
+                                ? "1 1 0"
+                                : "0 0 auto"
                             : undefined,
-                          width: isRow ? child.layout?.width : "100%",
                           minWidth: 0,
                         }
                   }

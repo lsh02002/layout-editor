@@ -5,6 +5,8 @@ import type {
   LayoutComponent,
   LinkType,
   HeadingLevel,
+  ContainerJustifyContent,
+  ContainerAlignItems,
 } from "../../../../types/types";
 
 import EditButtonFields from "../fields/EditButtonFields";
@@ -72,6 +74,17 @@ type Props = {
 
   editSpacerHeight: number;
   setEditSpacerHeight: Dispatch<SetStateAction<number>>;
+
+  editContainerGap: number;
+  setEditContainerGap: Dispatch<SetStateAction<number>>;
+  editContainerJustifyContent: ContainerJustifyContent;
+  setEditContainerJustifyContent: Dispatch<
+    SetStateAction<ContainerJustifyContent>
+  >;
+  editContainerAlignItems: ContainerAlignItems;
+  setEditContainerAlignItems: Dispatch<SetStateAction<ContainerAlignItems>>;
+  editContainerMaxWidth: number | undefined;
+  setEditContainerMaxWidth: Dispatch<SetStateAction<number | undefined>>;
 };
 
 function EditBasicTab({
@@ -123,6 +136,15 @@ function EditBasicTab({
 
   editSpacerHeight,
   setEditSpacerHeight,
+
+  editContainerGap,
+  setEditContainerGap,
+  editContainerJustifyContent,
+  setEditContainerJustifyContent,
+  editContainerAlignItems,
+  setEditContainerAlignItems,
+  editContainerMaxWidth,
+  setEditContainerMaxWidth,
 
   onImmediateChange,
 }: Props) {
@@ -407,6 +429,81 @@ function EditBasicTab({
     });
   };
 
+  const handleContainerGapChange = (gap: number) => {
+    setEditContainerGap(gap);
+
+    onImmediateChange((component) => {
+      if (component.type !== "container") {
+        return component;
+      }
+
+      return {
+        ...component,
+
+        props: {
+          ...component.props,
+          gap,
+        },
+      };
+    });
+  };
+
+  const handleContainerJustifyChange = (
+    justifyContent: ContainerJustifyContent,
+  ) => {
+    setEditContainerJustifyContent(justifyContent);
+    onImmediateChange((component) => {
+      if (component.type !== "container") {
+        return component;
+      }
+
+      return {
+        ...component,
+
+        props: {
+          ...component.props,
+          justifyContent,
+        },
+      };
+    });
+  };
+
+  const handleContainerAlignChange = (alignItems: ContainerAlignItems) => {
+    setEditContainerAlignItems(alignItems);
+    onImmediateChange((component) => {
+      if (component.type !== "container") {
+        return component;
+      }
+
+      return {
+        ...component,
+
+        props: {
+          ...component.props,
+          alignItems,
+        },
+      };
+    });
+  };
+
+  const handleContainerMaxWidthChange = (maxWidth: number | undefined) => {
+    setEditContainerMaxWidth(maxWidth);
+    onImmediateChange((component) => {
+      if (component.type !== "container") {
+        return component;
+      }
+
+      return {
+        ...component,
+
+        props: {
+          ...component.props,
+          maxWidth,
+        },
+      };
+    });
+  };
+
   return (
     <>
       {/* 타입 */}
@@ -537,8 +634,16 @@ function EditBasicTab({
           <EditContainerFields
             componentName={editComponentName}
             direction={editDirection}
+            gap={editContainerGap}
+            justifyContent={editContainerJustifyContent}
+            alignItems={editContainerAlignItems}
+            maxWidth={editContainerMaxWidth}
             onComponentNameChange={handleComponentNameChange}
             onDirectionChange={handleDirectionChange}
+            onGapChange={handleContainerGapChange}
+            onJustifyContentChange={handleContainerJustifyChange}
+            onAlignItemsChange={handleContainerAlignChange}
+            onMaxWidthChange={handleContainerMaxWidthChange}
           />
         </div>
       )}

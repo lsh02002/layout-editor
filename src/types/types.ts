@@ -17,6 +17,18 @@ export interface ComponentLayout {
   zIndex?: number;
 }
 
+export type ContainerJustifyContent =
+  | "flex-start"
+  | "center"
+  | "flex-end"
+  | "space-between";
+
+export type ContainerAlignItems =
+  | "stretch"
+  | "flex-start"
+  | "center"
+  | "flex-end";
+
 interface BaseComponent {
   id: string;
   name?: string;
@@ -115,6 +127,9 @@ export interface ContainerComponent extends BaseComponent {
   props: {
     direction?: "row" | "column";
     gap?: number;
+    justifyContent?: ContainerJustifyContent;
+    alignItems?: ContainerAlignItems;
+    maxWidth?: number;
   };
 
   children: LayoutComponent[];
@@ -246,14 +261,15 @@ export type EditValues = {
   editDividerColor: string;
   editDividerLineStyle: "solid" | "dashed" | "dotted";
   editSpacerHeight: number;
+  editContainerGap: number;
+  editContainerJustifyContent: ContainerJustifyContent;
+  editContainerAlignItems: ContainerAlignItems;
+  editContainerMaxWidth: number | undefined;
 };
 
 export type SelectionSetter = Dispatch<SetStateAction<string | null>>;
-
 export type BooleanSetter = Dispatch<SetStateAction<boolean>>;
-
 export type InsertTargetSetter = Dispatch<SetStateAction<InsertTarget>>;
-
 export type FavoriteSetter = Dispatch<SetStateAction<FavoriteComponent[]>>;
 
 export const VALID_COMPONENT_TYPES = [

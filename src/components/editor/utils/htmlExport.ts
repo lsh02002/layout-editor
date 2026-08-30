@@ -323,6 +323,9 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
     case "container": {
       const direction = component.props.direction ?? "column";
       const gap = component.props.gap ?? 8;
+      const justifyContent = component.props.justifyContent ?? "space-between";
+      const alignItems = component.props.alignItems ?? "stretch";
+      const maxWidth = component.props.maxWidth;
       const children = (
         await Promise.all(
           [...component.children]
@@ -342,6 +345,11 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
               "display:flex",
               `flex-direction:${direction}`,
               `gap:${gap}px`,
+              `justify-content:${justifyContent}`,
+              `align-items:${alignItems}`,
+              maxWidth ? `max-width:${maxWidth}px` : "",
+              maxWidth ? "margin-left:auto" : "",
+              maxWidth ? "margin-right:auto" : "",
               wrapperStyle,
             ]
               .filter(Boolean)

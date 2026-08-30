@@ -41,6 +41,12 @@ export const useEditSaveActions = ({
         editDividerColor,
         editDividerLineStyle,
         editSpacerHeight,
+
+        editContainerGap,
+        editContainerJustifyContent,
+        editContainerAlignItems,
+        editContainerMaxWidth,
+
         editLayout,
       } = editValues;
 
@@ -135,6 +141,10 @@ export const useEditSaveActions = ({
             props: {
               ...component.props,
               direction: editDirection,
+              gap: editContainerGap,
+              justifyContent: editContainerJustifyContent,
+              alignItems: editContainerAlignItems,
+              maxWidth: editContainerMaxWidth,
             },
           };
 

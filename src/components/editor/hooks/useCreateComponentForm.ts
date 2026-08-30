@@ -221,6 +221,9 @@ export const useCreateComponentForm = () => {
           props: {
             direction: newDirection,
             gap: 8,
+            justifyContent: "space-between",
+            alignItems: "stretch",
+            maxWidth: undefined,
           },
           style: {
             width: "100%",
@@ -421,6 +424,9 @@ export const useCreateComponentForm = () => {
           props: {
             direction: "column",
             gap: 8,
+            justifyContent: "space-between",
+            alignItems: "stretch",
+            maxWidth: undefined,
           },
           style: {
             width: "100%",
