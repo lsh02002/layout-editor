@@ -1,4 +1,4 @@
-import ApplyButton from "./ApplyButton";
+import ApplyButton from "../fields/ApplyButton";
 
 type Props = {
   value: string;

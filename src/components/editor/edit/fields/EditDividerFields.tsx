@@ -1,4 +1,4 @@
-import ApplyButton from "../tabs/ApplyButton";
+import ApplyButton from "./ApplyButton";
 import EditComponentNameField from "./EditComponentNameField";
 
 type DividerLineStyle = "solid" | "dashed" | "dotted";

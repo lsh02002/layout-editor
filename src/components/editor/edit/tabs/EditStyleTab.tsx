@@ -1,6 +1,6 @@
 import type { CSSProperties, Dispatch, SetStateAction } from "react";
 
-import ApplyButton from "./ApplyButton";
+import ApplyButton from "../fields/ApplyButton";
 
 import type { ComponentLayout } from "../../../../types/types";
 
