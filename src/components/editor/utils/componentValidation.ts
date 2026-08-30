@@ -1,208 +1,222 @@
-import type { ComponentType } from "../../../types/types";
-import { VALID_COMPONENT_TYPES } from "../../../types/types";
+import { z } from "zod";
+
+const baseComponentSchema = z.object({
+  id: z.string().trim().min(1, "id가 올바르지 않습니다."),
+  name: z.string().trim().min(1, "name이 올바르지 않습니다.").optional(),
+  customCss: z.string().optional(),
+
+  order: z.number().finite("order가 올바르지 않습니다."),
+
+  style: z.record(z.string(), z.unknown()).optional(),
+  contentStyle: z.record(z.string(), z.unknown()).optional(),
+  layout: z.record(z.string(), z.unknown()).optional(),
+});
+
+const disabledSchema = z.object({
+  disabled: z.boolean().optional(),
+});
+
+/**
+ * Button
+ */
+const buttonSchema = baseComponentSchema.extend({
+  type: z.literal("button"),
+
+  props: disabledSchema.extend({
+    title: z.string({
+      error: "button.title이 올바르지 않습니다.",
+    }),
+  }),
+});
+
+/**
+ * Scroll To Top Button
+ */
+const scrollToTopButtonSchema = baseComponentSchema.extend({
+  type: z.literal("scrollToTopButton"),
+
+  props: disabledSchema.extend({
+    title: z.string({
+      error: "scrollToTopButton.title이 올바르지 않습니다.",
+    }),
+  }),
+});
+
+/**
+ * Heading
+ */
+const headingSchema = baseComponentSchema.extend({
+  type: z.literal("heading"),
+
+  props: disabledSchema.extend({
+    text: z.string({
+      error: "heading.text가 올바르지 않습니다.",
+    }),
+
+    level: z.union([
+      z.literal(1),
+      z.literal(2),
+      z.literal(3),
+      z.literal(4),
+      z.literal(5),
+      z.literal(6),
+    ]),
+  }),
+});
+
+/**
+ * Textarea
+ */
+const textareaSchema = baseComponentSchema.extend({
+  type: z.literal("textarea"),
+
+  props: disabledSchema.extend({
+    value: z.string({
+      error: "textarea.value가 올바르지 않습니다.",
+    }),
+
+    placeholder: z.string().optional(),
+
+    rows: z.number().optional(),
+  }),
+});
+
+/**
+ * Quill
+ */
+const quillSchema = baseComponentSchema.extend({
+  type: z.literal("quill"),
+
+  props: disabledSchema.extend({
+    value: z.string({
+      error: "quill.value가 올바르지 않습니다.",
+    }),
+
+    placeholder: z.string().optional(),
+  }),
+});
+
+/**
+ * Image
+ */
+const imageSchema = baseComponentSchema.extend({
+  type: z.literal("image"),
+
+  props: disabledSchema.extend({
+    urls: z
+      .array(z.string(), {
+        error: "image.urls가 배열이 아닙니다.",
+      })
+      .max(1, "이미지 컴포넌트에는 이미지 1개만 허용됩니다."),
+  }),
+});
+
+/**
+ * Link
+ */
+const linkSchema = baseComponentSchema.extend({
+  type: z.literal("link"),
+
+  props: disabledSchema.extend({
+    title: z.string({
+      error: "link.title이 올바르지 않습니다.",
+    }),
+
+    value: z.string({
+      error: "link.value가 올바르지 않습니다.",
+    }),
+
+    linkType: z.enum(["url", "tel", "email"], {
+      error: "link.linkType이 올바르지 않습니다.",
+    }),
+
+    newWindow: z.boolean().optional(),
+  }),
+});
+
+/**
+ * Container는 자기 자신을 children으로 가질 수 있기 때문에
+ * recursive schema가 필요함.
+ */
+
+type ComponentSchema =
+  | z.infer<typeof buttonSchema>
+  | z.infer<typeof scrollToTopButtonSchema>
+  | z.infer<typeof headingSchema>
+  | z.infer<typeof textareaSchema>
+  | z.infer<typeof quillSchema>
+  | z.infer<typeof imageSchema>
+  | z.infer<typeof linkSchema>
+  | {
+      id: string;
+      name?: string;
+      customCss?: string;
+      order: number;
+      type: "container";
+      props: {
+        direction: "row" | "column";
+        disabled?: boolean;
+      };
+      style?: Record<string, unknown>;
+      contentStyle?: Record<string, unknown>;
+      layout?: Record<string, unknown>;
+      children: ComponentSchema[];
+    };
+
+const componentSchema: z.ZodType<ComponentSchema> = z.lazy(() =>
+  z.discriminatedUnion("type", [
+    buttonSchema,
+    scrollToTopButtonSchema,
+    headingSchema,
+    textareaSchema,
+    quillSchema,
+    imageSchema,
+    linkSchema,
+
+    baseComponentSchema.extend({
+      type: z.literal("container"),
+
+      props: disabledSchema.extend({
+        direction: z.enum(["row", "column"], {
+          error: "container.direction이 올바르지 않습니다.",
+        }),
+      }),
+
+      children: z.array(componentSchema, {
+        error: "container.children이 배열이 아닙니다.",
+      }),
+    }),
+  ]),
+);
 
 export const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
-
-export const isValidComponentType = (value: unknown): value is ComponentType =>
-  typeof value === "string" &&
-  VALID_COMPONENT_TYPES.includes(
-    value as (typeof VALID_COMPONENT_TYPES)[number],
-  );
 
 export const validateComponent = (
   value: unknown,
   path = "components",
 ): string | null => {
-  if (!isObject(value)) {
+  const result = componentSchema.safeParse(value);
+
+  if (result.success) {
+    return null;
+  }
+
+  const issue = result.error.issues[0];
+
+  if (!issue) {
     return `${path}: 컴포넌트 형식이 올바르지 않습니다.`;
   }
 
-  if (typeof value.id !== "string" || value.id.trim() === "") {
-    return `${path}: id가 올바르지 않습니다.`;
-  }
+  const issuePath =
+    issue.path.length > 0
+      ? `.${issue.path
+          .map((key) => (typeof key === "number" ? `[${key}]` : String(key)))
+          .join(".")
+          .replace(/\.\[/g, "[")}`
+      : "";
 
-  if (
-    value.name !== undefined &&
-    (typeof value.name !== "string" || value.name.trim() === "")
-  ) {
-    return `${path}: name이 올바르지 않습니다.`;
-  }
-
-  if (value.customCss !== undefined && typeof value.customCss !== "string") {
-    return `${path}: customCss가 올바르지 않습니다.`;
-  }
-
-  if (!isValidComponentType(value.type)) {
-    return `${path}: 지원하지 않는 component type입니다. (${String(
-      value.type,
-    )})`;
-  }
-
-  if (typeof value.order !== "number" || !Number.isFinite(value.order)) {
-    return `${path}: order가 올바르지 않습니다.`;
-  }
-
-  if (!isObject(value.props)) {
-    return `${path}: props가 올바르지 않습니다.`;
-  }
-
-  if (value.style !== undefined && !isObject(value.style)) {
-    return `${path}: style이 올바르지 않습니다.`;
-  }
-
-  if (value.contentStyle !== undefined && !isObject(value.contentStyle)) {
-    return `${path}: contentStyle이 올바르지 않습니다.`;
-  }
-
-  if (value.layout !== undefined && !isObject(value.layout)) {
-    return `${path}: layout이 올바르지 않습니다.`;
-  }
-
-  const props = value.props;
-
-  switch (value.type) {
-    case "button": {
-      if (typeof props.title !== "string") {
-        return `${path}: button.title이 올바르지 않습니다.`;
-      }
-      break;
-    }
-
-    case "scrollToTopButton": {
-      if (typeof props.title !== "string") {
-        return `${path}: scrollToTopButton.title이 올바르지 않습니다.`;
-      }
-      break;
-    }
-
-    case "heading": {
-      if (typeof props.text !== "string") {
-        return `${path}: heading.text가 올바르지 않습니다.`;
-      }
-
-      if (
-        props.level !== 1 &&
-        props.level !== 2 &&
-        props.level !== 3 &&
-        props.level !== 4 &&
-        props.level !== 5 &&
-        props.level !== 6
-      ) {
-        return `${path}: heading.level이 올바르지 않습니다.`;
-      }
-
-      break;
-    }
-
-    case "textarea": {
-      if (typeof props.value !== "string") {
-        return `${path}: textarea.value가 올바르지 않습니다.`;
-      }
-
-      if (
-        props.placeholder !== undefined &&
-        typeof props.placeholder !== "string"
-      ) {
-        return `${path}: textarea.placeholder가 올바르지 않습니다.`;
-      }
-
-      if (props.rows !== undefined && typeof props.rows !== "number") {
-        return `${path}: textarea.rows가 올바르지 않습니다.`;
-      }
-
-      break;
-    }
-
-    case "quill": {
-      if (typeof props.value !== "string") {
-        return `${path}: quill.value가 올바르지 않습니다.`;
-      }
-
-      if (
-        props.placeholder !== undefined &&
-        typeof props.placeholder !== "string"
-      ) {
-        return `${path}: quill.placeholder가 올바르지 않습니다.`;
-      }
-
-      break;
-    }
-
-    case "image": {
-      if (!Array.isArray(props.urls)) {
-        return `${path}: image.urls가 배열이 아닙니다.`;
-      }
-
-      if (props.urls.some((url) => typeof url !== "string")) {
-        return `${path}: image.urls에 잘못된 값이 있습니다.`;
-      }
-
-      if (props.urls.length > 1) {
-        return `${path}: 이미지 컴포넌트에는 이미지 1개만 허용됩니다.`;
-      }
-
-      break;
-    }
-
-    case "link": {
-      if (typeof props.title !== "string") {
-        return `${path}: link.title이 올바르지 않습니다.`;
-      }
-
-      if (typeof props.value !== "string") {
-        return `${path}: link.value가 올바르지 않습니다.`;
-      }
-
-      if (
-        props.linkType !== "url" &&
-        props.linkType !== "tel" &&
-        props.linkType !== "email"
-      ) {
-        return `${path}: link.linkType이 올바르지 않습니다.`;
-      }
-
-      if (
-        props.newWindow !== undefined &&
-        typeof props.newWindow !== "boolean"
-      ) {
-        return `${path}: link.newWindow 값이 올바르지 않습니다.`;
-      }
-
-      break;
-    }
-
-    case "container": {
-      if (props.direction !== "row" && props.direction !== "column") {
-        return `${path}: container.direction이 올바르지 않습니다.`;
-      }
-
-      if (!Array.isArray(value.children)) {
-        return `${path}: container.children이 배열이 아닙니다.`;
-      }
-
-      for (let index = 0; index < value.children.length; index += 1) {
-        const error = validateComponent(
-          value.children[index],
-          `${path}.children[${index}]`,
-        );
-
-        if (error) {
-          return error;
-        }
-      }
-
-      break;
-    }
-  }
-
-  if (
-    "disabled" in props &&
-    props.disabled !== undefined &&
-    typeof props.disabled !== "boolean"
-  ) {
-    return `${path}: disabled 값이 올바르지 않습니다.`;
-  }
-
-  return null;
+  return `${path}${issuePath}: ${issue.message}`;
 };
+
+export { componentSchema };
