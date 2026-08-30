@@ -423,6 +423,10 @@ function LayoutEditor() {
     setShowProjectCssModal(true);
   }, [projectCustomCss]);
 
+  const closeProjectCssModal = useCallback(() => {
+    setShowProjectCssModal(false);
+  }, []);
+
   const saveProjectCustomCss = useCallback(() => {
     setProjectCustomCss(projectCssDraft);
     setShowProjectCssModal(false);
@@ -706,7 +710,7 @@ function LayoutEditor() {
         open={showProjectCssModal}
         value={projectCssDraft}
         onChange={setProjectCssDraft}
-        onClose={() => setShowProjectCssModal(false)}
+        onClose={closeProjectCssModal}
         onSave={saveProjectCustomCss}
       />
       <CreateComponentModal

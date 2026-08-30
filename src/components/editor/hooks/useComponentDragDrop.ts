@@ -87,172 +87,194 @@ export const useComponentDragDrop = ({
     };
   }, []);
 
-  const moveComponent = (
-    componentId: string,
-    targetParentId: string | null,
-    targetIndex: number,
-  ) => {
-    const sourceLocation = findComponentLocation(components, componentId);
+  const moveComponent = useCallback(
+    (
+      componentId: string,
+      targetParentId: string | null,
+      targetIndex: number,
+    ) => {
+      const sourceLocation = findComponentLocation(components, componentId);
 
-    const draggedComponent = findComponentRecursive(components, componentId);
+      const draggedComponent = findComponentRecursive(components, componentId);
 
-    if (!sourceLocation || !draggedComponent) {
-      return;
-    }
-
-    if (
-      targetParentId !== null &&
-      containsComponent(draggedComponent, targetParentId)
-    ) {
-      return;
-    }
-
-    let adjustedTargetIndex = targetIndex;
-
-    if (
-      sourceLocation.parentId === targetParentId &&
-      sourceLocation.index < targetIndex
-    ) {
-      adjustedTargetIndex -= 1;
-    }
-
-    if (
-      sourceLocation.parentId === targetParentId &&
-      sourceLocation.index === adjustedTargetIndex
-    ) {
-      return;
-    }
-
-    commitHistory((prev) => {
-      const removedResult = removeComponentRecursive(prev, componentId);
-
-      if (!removedResult.removed) {
-        return prev;
+      if (!sourceLocation || !draggedComponent) {
+        return;
       }
 
-      return insertComponentRecursive(
-        removedResult.items,
-        targetParentId,
-        adjustedTargetIndex,
-        removedResult.removed,
+      if (
+        targetParentId !== null &&
+        containsComponent(draggedComponent, targetParentId)
+      ) {
+        return;
+      }
+
+      let adjustedTargetIndex = targetIndex;
+
+      if (
+        sourceLocation.parentId === targetParentId &&
+        sourceLocation.index < targetIndex
+      ) {
+        adjustedTargetIndex -= 1;
+      }
+
+      if (
+        sourceLocation.parentId === targetParentId &&
+        sourceLocation.index === adjustedTargetIndex
+      ) {
+        return;
+      }
+
+      commitHistory((prev) => {
+        const removedResult = removeComponentRecursive(prev, componentId);
+
+        if (!removedResult.removed) {
+          return prev;
+        }
+
+        return insertComponentRecursive(
+          removedResult.items,
+          targetParentId,
+          adjustedTargetIndex,
+          removedResult.removed,
+        );
+      });
+    },
+    [components, commitHistory],
+  );
+
+  const handleDragStart = useCallback(
+    (event: DragEvent<HTMLElement>, componentId: string) => {
+      draggingIdRef.current = componentId;
+      setDraggingId(componentId);
+
+      event.dataTransfer.effectAllowed = "move";
+
+      event.dataTransfer.setData(
+        "application/x-layout-component-id",
+        componentId,
       );
-    });
-  };
 
-  const handleDragStart = (
-    event: DragEvent<HTMLElement>,
-    componentId: string,
-  ) => {
-    draggingIdRef.current = componentId;
-    setDraggingId(componentId);
+      event.dataTransfer.setData("text/plain", componentId);
+    },
+    [],
+  );
 
-    event.dataTransfer.effectAllowed = "move";
-
-    event.dataTransfer.setData(
-      "application/x-layout-component-id",
-      componentId,
-    );
-
-    event.dataTransfer.setData("text/plain", componentId);
-  };
-
-  const handleDragEnd = () => {
+  const handleDragEnd = useCallback(() => {
     draggingIdRef.current = null;
     setDraggingId(null);
     setActiveDropTarget(null);
-  };
+  }, []);
 
-  const handlePointerDragStart = (
-    event: PointerEvent<HTMLElement>,
-    componentId: string,
-  ) => {
-    if (layerSearch) {
-      return;
-    }
+  const handlePointerDragStart = useCallback(
+    (event: PointerEvent<HTMLElement>, componentId: string) => {
+      if (layerSearch) {
+        return;
+      }
 
-    if (event.pointerType === "mouse") {
-      return;
-    }
+      if (event.pointerType === "mouse") {
+        return;
+      }
 
-    event.preventDefault();
-    event.stopPropagation();
+      event.preventDefault();
+      event.stopPropagation();
 
-    event.currentTarget.setPointerCapture(event.pointerId);
+      event.currentTarget.setPointerCapture(event.pointerId);
 
-    pointerDragRef.current = {
-      componentId,
-      targetParentId: null,
-      targetIndex: null,
-    };
+      pointerDragRef.current = {
+        componentId,
+        targetParentId: null,
+        targetIndex: null,
+      };
 
-    setDraggingId(componentId);
-  };
+      setDraggingId(componentId);
+    },
+    [layerSearch],
+  );
 
-  const handlePointerDragMove = (event: PointerEvent<HTMLElement>) => {
-    const componentId = pointerDragRef.current.componentId;
+  const handlePointerDragMove = useCallback(
+    (event: PointerEvent<HTMLElement>) => {
+      const componentId = pointerDragRef.current.componentId;
 
-    if (!componentId) {
-      return;
-    }
+      if (!componentId) {
+        return;
+      }
 
-    if (event.pointerType === "mouse") {
-      return;
-    }
+      if (event.pointerType === "mouse") {
+        return;
+      }
 
-    event.preventDefault();
+      event.preventDefault();
 
-    const element = document.elementFromPoint(event.clientX, event.clientY);
+      const element = document.elementFromPoint(event.clientX, event.clientY);
 
-    const dropZone = element?.closest<HTMLElement>('[data-drop-zone="true"]');
+      const dropZone = element?.closest<HTMLElement>('[data-drop-zone="true"]');
 
-    if (!dropZone) {
-      pointerDragRef.current.targetParentId = null;
-      pointerDragRef.current.targetIndex = null;
+      if (!dropZone) {
+        pointerDragRef.current.targetParentId = null;
+        pointerDragRef.current.targetIndex = null;
 
+        setActiveDropTarget(null);
+        return;
+      }
+
+      const parentValue = dropZone.dataset.dropParent;
+
+      const indexValue = dropZone.dataset.dropIndex;
+
+      const area = dropZone.dataset.dropArea === "layer" ? "layer" : "canvas";
+
+      if (indexValue === undefined) {
+        return;
+      }
+
+      const parentId = parentValue === "root" ? null : (parentValue ?? null);
+
+      const index = Number(indexValue);
+
+      if (!Number.isFinite(index)) {
+        return;
+      }
+
+      pointerDragRef.current.targetParentId = parentId;
+
+      pointerDragRef.current.targetIndex = index;
+
+      setActiveDropTarget({
+        parentId,
+        index,
+        area,
+      });
+    },
+    [],
+  );
+
+  const handlePointerDragEnd = useCallback(
+    (event: PointerEvent<HTMLElement>) => {
+      if (event.pointerType === "mouse") {
+        return;
+      }
+
+      const { componentId, targetParentId, targetIndex } =
+        pointerDragRef.current;
+
+      if (componentId && targetIndex !== null) {
+        moveComponent(componentId, targetParentId, targetIndex);
+      }
+
+      pointerDragRef.current = {
+        componentId: null,
+        targetParentId: null,
+        targetIndex: null,
+      };
+
+      draggingIdRef.current = null;
+      setDraggingId(null);
       setActiveDropTarget(null);
-      return;
-    }
+    },
+    [moveComponent],
+  );
 
-    const parentValue = dropZone.dataset.dropParent;
-
-    const indexValue = dropZone.dataset.dropIndex;
-
-    const area = dropZone.dataset.dropArea === "layer" ? "layer" : "canvas";
-
-    if (indexValue === undefined) {
-      return;
-    }
-
-    const parentId = parentValue === "root" ? null : (parentValue ?? null);
-
-    const index = Number(indexValue);
-
-    if (!Number.isFinite(index)) {
-      return;
-    }
-
-    pointerDragRef.current.targetParentId = parentId;
-
-    pointerDragRef.current.targetIndex = index;
-
-    setActiveDropTarget({
-      parentId,
-      index,
-      area,
-    });
-  };
-
-  const handlePointerDragEnd = (event: PointerEvent<HTMLElement>) => {
-    if (event.pointerType === "mouse") {
-      return;
-    }
-
-    const { componentId, targetParentId, targetIndex } = pointerDragRef.current;
-
-    if (componentId && targetIndex !== null) {
-      moveComponent(componentId, targetParentId, targetIndex);
-    }
-
+  const handlePointerDragCancel = useCallback(() => {
     pointerDragRef.current = {
       componentId: null,
       targetParentId: null,
@@ -262,75 +284,69 @@ export const useComponentDragDrop = ({
     draggingIdRef.current = null;
     setDraggingId(null);
     setActiveDropTarget(null);
-  };
+  }, []);
 
-  const handlePointerDragCancel = () => {
-    pointerDragRef.current = {
-      componentId: null,
-      targetParentId: null,
-      targetIndex: null,
-    };
+  const handleDrop = useCallback(
+    (event: DragEvent<HTMLElement>, parentId: string | null, index: number) => {
+      event.preventDefault();
+      event.stopPropagation();
 
-    draggingIdRef.current = null;
-    setDraggingId(null);
-    setActiveDropTarget(null);
-  };
+      // 1. ComponentPanel에서 새 컴포넌트 드롭
+      const componentType = event.dataTransfer.getData(
+        "application/x-component-type",
+      ) as ComponentType;
 
-  const handleDrop = (
-    event: DragEvent<HTMLElement>,
-    parentId: string | null,
-    index: number,
-  ) => {
-    event.preventDefault();
-    event.stopPropagation();
+      if (componentType) {
+        const newComponent = makeComponentByType(componentType);
 
-    // 1. ComponentPanel에서 새 컴포넌트 드롭
-    const componentType = event.dataTransfer.getData(
-      "application/x-component-type",
-    ) as ComponentType;
+        commitHistory((prev) =>
+          insertComponentRecursive(prev, parentId, index, newComponent),
+        );
 
-    if (componentType) {
-      const newComponent = makeComponentByType(componentType);
+        setSelectedComponentId(newComponent.id);
+        triggerDropAnimation(newComponent.id);
+        setActiveDropTarget(null);
 
-      commitHistory((prev) =>
-        insertComponentRecursive(prev, parentId, index, newComponent),
-      );
+        return;
+      }
 
-      setSelectedComponentId(newComponent.id);
-      triggerDropAnimation(newComponent.id);
+      // 2. 템플릿 드롭
+      const templateDropped = dropTemplate(event, parentId, index);
+
+      if (templateDropped) {
+        setActiveDropTarget(null);
+        return;
+      }
+
+      // 3. 기존 컴포넌트 이동
+      const draggedId =
+        event.dataTransfer.getData("application/x-layout-component-id") ||
+        event.dataTransfer.getData("text/plain") ||
+        draggingIdRef.current;
+
+      if (!draggedId) {
+        setActiveDropTarget(null);
+        return;
+      }
+
+      moveComponent(draggedId, parentId, index);
+
+      triggerDropAnimation(draggedId);
+
+      draggingIdRef.current = null;
+
+      setDraggingId(null);
       setActiveDropTarget(null);
-
-      return;
-    }
-
-    // 2. 템플릿 드롭
-    const templateDropped = dropTemplate(event, parentId, index);
-
-    if (templateDropped) {
-      setActiveDropTarget(null);
-      return;
-    }
-
-    // 3. 기존 컴포넌트 이동
-    const draggedId =
-      event.dataTransfer.getData("application/x-layout-component-id") ||
-      event.dataTransfer.getData("text/plain") ||
-      draggingIdRef.current;
-
-    if (!draggedId) {
-      setActiveDropTarget(null);
-      return;
-    }
-
-    moveComponent(draggedId, parentId, index);
-
-    triggerDropAnimation(draggedId);
-
-    draggingIdRef.current = null;
-
-    setDraggingId(null);
-    setActiveDropTarget(null);
-  };
+    },
+    [
+      commitHistory,
+      dropTemplate,
+      makeComponentByType,
+      moveComponent,
+      setSelectedComponentId,
+      triggerDropAnimation,
+    ],
+  );
 
   return {
     draggingId,

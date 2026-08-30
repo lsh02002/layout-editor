@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 
 import type { FavoriteComponent, TemplateItem } from "../../../types/types";
 
@@ -94,4 +94,4 @@ function ComponentLibraryPanel({
   );
 }
 
-export default ComponentLibraryPanel;
+export default memo(ComponentLibraryPanel);

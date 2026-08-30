@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { FavoriteComponent } from "../../../types/types";
 
 type Props = {
@@ -95,4 +96,4 @@ function FavoritePanel({
   );
 }
 
-export default FavoritePanel;
+export default memo(FavoritePanel);

@@ -1,8 +1,8 @@
 import TemplatePreviewCard from "../card/TemplatePreviewCard";
 import type { TemplateItem } from "../../../types/types";
-import { useEffect } from "react";
+import { useEffect, memo } from "react";
 
-export default function TemplatePreviewListPanel({
+function TemplatePreviewListPanel({
   templateFiles,
   setTemplateFiles,
   selectedTemplateId,
@@ -96,3 +96,5 @@ export default function TemplatePreviewListPanel({
     </div>
   );
 }
+
+export default memo(TemplatePreviewListPanel);
