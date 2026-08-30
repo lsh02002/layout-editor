@@ -1,6 +1,7 @@
 import type { CSSProperties, Dispatch, SetStateAction } from "react";
 
 export type CanvasViewport = "desktop" | "tablet" | "mobile";
+export type LeftPanelTab = "components" | "layers";
 
 export type ComponentType = LayoutComponent["type"];
 export type ContainerDirection = "row" | "column";

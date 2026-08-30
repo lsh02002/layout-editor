@@ -7,7 +7,7 @@ import {
   type PointerEvent,
 } from "react";
 
-import type { LayoutComponent } from "../../../types/types";
+import type { ComponentType, LayoutComponent } from "../../../types/types";
 
 import {
   containsComponent,
@@ -36,6 +36,8 @@ type Options = {
     index: number,
   ) => boolean;
   commitHistory: CommitHistory;
+  makeComponentByType: (type: ComponentType) => LayoutComponent;
+  setSelectedComponentId: (id: string | null) => void;
 };
 
 export const useComponentDragDrop = ({
@@ -43,6 +45,8 @@ export const useComponentDragDrop = ({
   layerSearch,
   dropTemplate,
   commitHistory,
+  makeComponentByType,
+  setSelectedComponentId,
 }: Options) => {
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
@@ -274,6 +278,29 @@ export const useComponentDragDrop = ({
     parentId: string | null,
     index: number,
   ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // 1. ComponentPanel에서 새 컴포넌트 드롭
+    const componentType = event.dataTransfer.getData(
+      "application/x-component-type",
+    ) as ComponentType;
+
+    if (componentType) {
+      const newComponent = makeComponentByType(componentType);
+
+      commitHistory((prev) =>
+        insertComponentRecursive(prev, parentId, index, newComponent),
+      );
+
+      setSelectedComponentId(newComponent.id);
+      triggerDropAnimation(newComponent.id);
+      setActiveDropTarget(null);
+
+      return;
+    }
+
+    // 2. 템플릿 드롭
     const templateDropped = dropTemplate(event, parentId, index);
 
     if (templateDropped) {
@@ -281,13 +308,12 @@ export const useComponentDragDrop = ({
       return;
     }
 
-    event.preventDefault();
-    event.stopPropagation();
-
+    // 3. 기존 컴포넌트 이동
     const draggedId =
       event.dataTransfer.getData("text/plain") || draggingIdRef.current;
 
     if (!draggedId) {
+      setActiveDropTarget(null);
       return;
     }
 
@@ -296,6 +322,7 @@ export const useComponentDragDrop = ({
     triggerDropAnimation(draggedId);
 
     draggingIdRef.current = null;
+
     setDraggingId(null);
     setActiveDropTarget(null);
   };

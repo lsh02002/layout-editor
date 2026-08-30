@@ -64,11 +64,16 @@ function CanvasDropZone({
         event.preventDefault();
         event.stopPropagation();
 
-        const templateData = event.dataTransfer.types.includes(
+        const isTemplate = event.dataTransfer.types.includes(
           "application/x-pagebuilder-template",
         );
 
-        event.dataTransfer.dropEffect = templateData ? "copy" : "move";
+        const isNewComponent = event.dataTransfer.types.includes(
+          "application/x-component-type",
+        );
+
+        event.dataTransfer.dropEffect =
+          isTemplate || isNewComponent ? "copy" : "move";
 
         activate();
       }}

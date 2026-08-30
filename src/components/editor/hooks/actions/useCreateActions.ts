@@ -24,6 +24,7 @@ type Options = {
   selectedComponentId: string | null;
   setSelectedComponentId: SelectionSetter;
   newType: LayoutComponent["type"];
+  setNewType: (type: LayoutComponent["type"]) => void;
   resetCreateForm: () => void;
   makeNewComponent: () => LayoutComponent;
   loadComponentToEdit: (component: LayoutComponent) => void;
@@ -38,6 +39,7 @@ export const useCreateActions = ({
   setShowCreateModal,
   setShowEditModal,
   newType,
+  setNewType,
   resetCreateForm,
   makeNewComponent,
   loadComponentToEdit,
@@ -92,7 +94,11 @@ export const useCreateActions = ({
   ]);
 
   const openCreateModal = useCallback(
-    (parentId: string | null, index: number) => {
+    (
+      parentId: string | null,
+      index: number,
+      type?: LayoutComponent["type"],
+    ) => {
       setInsertTarget({
         parentId,
         index,
@@ -100,9 +106,13 @@ export const useCreateActions = ({
 
       resetCreateForm();
 
+      if (type) {
+        setNewType(type);
+      }
+
       setShowCreateModal(true);
     },
-    [resetCreateForm, setInsertTarget, setShowCreateModal],
+    [resetCreateForm, setInsertTarget, setShowCreateModal, setNewType],
   );
 
   return {

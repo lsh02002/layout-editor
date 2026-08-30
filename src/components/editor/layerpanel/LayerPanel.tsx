@@ -17,7 +17,6 @@ type LayerPanelProps = {
   search: string;
   activeDropTarget: DropTarget;
   onSearchChange: (value: string) => void;
-  onClose: () => void;
   onEdit: (componentId: string) => void;
   onAddFavorite: () => void;
   onDragStart: (
@@ -81,7 +80,6 @@ function LayerPanel({
   search,
   activeDropTarget,
   onSearchChange,
-  onClose,
   onEdit,
   onAddFavorite,
   onDragStart,
@@ -370,16 +368,14 @@ function LayerPanel({
         }
       }}
       onDrop={(event) => event.preventDefault()}
-      className="editor-side-panel left"
-      style={{ display: "flex", flexDirection: "column" }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        height: "100%",
+        minHeight: 0,
+      }}
     >
-      <div className="d-flex align-items-center justify-content-between border-bottom px-3 py-2">
-        <strong>레이어</strong>
-        <button type="button" className="btn btn-sm border-0" onClick={onClose}>
-          ×
-        </button>
-      </div>
-
       <div className="p-2 border-bottom">
         <div className="input-group input-group-sm">
           <span className="input-group-text">🔍</span>

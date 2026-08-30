@@ -37,6 +37,7 @@ type Options = {
   setInsertTarget: InsertTargetSetter;
 
   newType: LayoutComponent["type"];
+  setNewType: (type: LayoutComponent["type"]) => void;
   resetCreateForm: () => void;
   makeNewComponent: () => LayoutComponent;
 
@@ -68,6 +69,7 @@ export const useComponentActions = ({
   insertTarget,
   setInsertTarget,
   newType,
+  setNewType,
   resetCreateForm,
   makeNewComponent,
   loadComponentToEdit,
@@ -91,6 +93,7 @@ export const useComponentActions = ({
     setShowCreateModal,
     setShowEditModal,
     newType,
+    setNewType,
     resetCreateForm,
     makeNewComponent,
     loadComponentToEdit,

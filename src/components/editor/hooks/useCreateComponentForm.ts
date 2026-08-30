@@ -245,6 +245,193 @@ export const useCreateComponentForm = () => {
     newHeadingLevel,
   ]);
 
+  const makeComponentByType = (type: ComponentType): LayoutComponent => {
+    const id = crypto.randomUUID();
+
+    switch (type) {
+      case "button":
+        return {
+          id,
+          name: "Button",
+          type: "button",
+          order: 0,
+          props: {
+            title: "버튼",
+            disabled: false,
+            action: {
+              type: "none",
+              payload: null,
+            },
+          },
+          style: {
+            width: "100%",
+          },
+        };
+
+      case "scrollToTopButton":
+        return {
+          id,
+          name: "ScrollToTopButton",
+          type: "scrollToTopButton",
+          order: 0,
+          props: {
+            title: "↑",
+            disabled: false,
+            action: {
+              type: "scrollToTop",
+              payload: null,
+            },
+          },
+          style: {
+            position: "fixed",
+            width: "50px",
+            height: "50px",
+            right: "10px",
+            bottom: "10px",
+            zIndex: 1400,
+          },
+        };
+
+      case "heading":
+        return {
+          id,
+          name: "제목",
+          type: "heading",
+          order: 0,
+          props: {
+            text: "제목을 입력하세요",
+            level: 2,
+          },
+          style: {
+            width: "100%",
+          },
+          contentStyle: {
+            margin: 0,
+          },
+        };
+
+      case "textarea":
+        return {
+          id,
+          name: "Textarea",
+          type: "textarea",
+          order: 0,
+          props: {
+            value: "",
+            rows: 3,
+            placeholder: "내용을 입력하세요.",
+            disabled: false,
+          },
+          style: {
+            width: "100%",
+          },
+        };
+
+      case "quill":
+        return {
+          id,
+          name: "RichText",
+          type: "quill",
+          order: 0,
+          props: {
+            value: "",
+            placeholder: "본문을 입력하세요.",
+            disabled: false,
+          },
+          style: {
+            width: "100%",
+          },
+        };
+
+      case "image":
+        return {
+          id,
+          name: "Image",
+          type: "image",
+          order: 0,
+          props: {
+            urls: [],
+            maxCount: 1,
+            disabled: false,
+          },
+          style: {
+            width: "100%",
+          },
+        };
+
+      case "link":
+        return {
+          id,
+          name: "Link",
+          type: "link",
+          order: 0,
+          props: {
+            title: "링크",
+            linkType: "url",
+            value: "",
+            newWindow: false,
+            disabled: false,
+          },
+          style: {
+            width: "100%",
+          },
+          contentStyle: {
+            color: "#0d6efd",
+            textDecoration: "underline",
+            cursor: "pointer",
+          },
+        };
+
+      case "divider":
+        return {
+          id,
+          name: "Divider",
+          type: "divider",
+          order: 0,
+          props: {
+            thickness: 3,
+            color: "#dee2e6",
+            lineStyle: "solid",
+          },
+          style: {
+            width: "100%",
+          },
+        };
+
+      case "spacer":
+        return {
+          id,
+          name: "Spacer",
+          type: "spacer",
+          order: 0,
+          props: {
+            height: 32,
+          },
+          style: {
+            width: "100%",
+          },
+        };
+
+      case "container":
+        return {
+          id,
+          name: "Container",
+          type: "container",
+          order: 0,
+          props: {
+            direction: "column",
+            gap: 8,
+          },
+          style: {
+            width: "100%",
+            minHeight: 100,
+            padding: 12,
+          },
+          children: [],
+        };
+    }
+  };
+
   return {
     newType,
     setNewType,
@@ -270,5 +457,6 @@ export const useCreateComponentForm = () => {
     setNewHeadingLevel,
     resetCreateForm,
     makeNewComponent,
+    makeComponentByType,
   };
 };

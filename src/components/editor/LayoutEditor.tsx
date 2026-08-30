@@ -27,8 +27,9 @@ import { data } from "../../data/data";
 import { useComponentActions } from "./hooks/useComponentActions";
 import { useSnapLayout } from "./hooks/useSnapLayout";
 
-import type { CanvasViewport } from "../../types/types";
+import type { CanvasViewport, LeftPanelTab } from "../../types/types";
 import { usePositionParent } from "./hooks/usePositionParent";
+import ComponentPanel from "./componentpanel/ComponentPanel";
 
 function LayoutEditor() {
   const [previewMode, setPreviewMode] = useState(false);
@@ -81,6 +82,7 @@ function LayoutEditor() {
     setNewHeadingLevel,
     resetCreateForm,
     makeNewComponent,
+    makeComponentByType,
   } = useCreateComponentForm();
 
   const [showEditModal, setShowEditModal] = useState(
@@ -140,6 +142,8 @@ function LayoutEditor() {
     parentId: string | null;
     index: number;
   } | null>(null);
+
+  const [leftPanelTab, setLeftPanelTab] = useState<LeftPanelTab>("layers");
 
   const [showLayerPanel, setShowLayerPanel] = useState(
     () => window.innerWidth > 768,
@@ -312,6 +316,7 @@ function LayoutEditor() {
     insertTarget,
     setInsertTarget,
     newType,
+    setNewType,
     resetCreateForm,
     makeNewComponent,
     loadComponentToEdit,
@@ -344,6 +349,8 @@ function LayoutEditor() {
     layerSearch,
     dropTemplate,
     commitHistory,
+    makeComponentByType,
+    setSelectedComponentId,
   });
 
   const { positionParentOptions, handlePositionParentChange } =
@@ -408,28 +415,123 @@ function LayoutEditor() {
           }}
         />
       )}
-      <LayerPanel
-        previewMode={previewMode}
-        visible={showLayerPanel}
-        components={filteredLayerComponents}
-        selectedComponentId={selectedComponentId}
-        draggingId={draggingId}
-        search={layerSearch}
-        activeDropTarget={activeDropTarget}
-        onSearchChange={setLayerSearch}
-        onClose={closeLayerPanel}
-        //onSelect={selectComponent}
-        onEdit={editComponent}
-        onAddFavorite={addSelectedComponentToFavorites}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onPointerDragStart={handlePointerDragStart}
-        onPointerDragMove={handlePointerDragMove}
-        onPointerDragEnd={handlePointerDragEnd}
-        onPointerDragCancel={handlePointerDragCancel}
-        onDrop={handleDrop}
-        onActiveDropTargetChange={setActiveDropTarget}
-      />
+      {showLayerPanel && (
+        <aside
+          className="editor-left-panel"
+          style={{
+            position: "fixed",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 280,
+            zIndex: 1200,
+            background: "#fff",
+            borderRight: "1px solid #dee2e6",
+            marginTop: 30,
+
+            display: "flex",
+            flexDirection: "column",
+
+            // 중요
+            height: "100vh",
+            overflow: "hidden",
+          }}
+        >
+          {/* 탭 영역 */}
+          <div
+            className="editor-left-panel-tabs"
+            style={{
+              display: "flex",
+              gap: 4,
+              padding: 8,
+              borderBottom: "1px solid #dee2e6",
+              flexShrink: 0,
+              background: "#fff",
+              position: "relative",
+              zIndex: 10,
+            }}
+          >
+            <button
+              type="button"
+              className={`btn btn-sm ${
+                leftPanelTab === "layers" ? "btn-dark" : "btn-outline-secondary"
+              }`}
+              style={{ flex: 1 }}
+              onClick={() => setLeftPanelTab("layers")}
+            >
+              레이어
+            </button>
+
+            <button
+              type="button"
+              className={`btn btn-sm ${
+                leftPanelTab === "components"
+                  ? "btn-dark"
+                  : "btn-outline-secondary"
+              }`}
+              style={{ flex: 1 }}
+              onClick={() => setLeftPanelTab("components")}
+            >
+              새 컴포넌트
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-secondary"
+              onClick={closeLayerPanel}
+            >
+              ×
+            </button>
+          </div>
+
+          {/* 탭 콘텐츠 */}
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflow: "auto",
+              position: "relative",
+            }}
+          >
+            {leftPanelTab === "components" ? (
+              <ComponentPanel
+                onCreate={(type) => {
+                  openCreateModal(null, components.length, type);
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  position: "relative",
+                  width: "100%",
+                  height: "100%",
+                }}
+              >
+                <LayerPanel
+                  previewMode={previewMode}
+                  visible
+                  components={filteredLayerComponents}
+                  selectedComponentId={selectedComponentId}
+                  draggingId={draggingId}
+                  search={layerSearch}
+                  activeDropTarget={activeDropTarget}
+                  onSearchChange={setLayerSearch}
+                  onEdit={editComponent}
+                  onAddFavorite={addSelectedComponentToFavorites}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                  onPointerDragStart={handlePointerDragStart}
+                  onPointerDragMove={handlePointerDragMove}
+                  onPointerDragEnd={handlePointerDragEnd}
+                  onPointerDragCancel={handlePointerDragCancel}
+                  onDrop={handleDrop}
+                  onActiveDropTargetChange={setActiveDropTarget}
+                />
+              </div>
+            )}
+          </div>
+        </aside>
+      )}
       {!showLayerPanel && (
         <button
           type="button"
@@ -440,6 +542,7 @@ function LayoutEditor() {
           desktop-layer-open-button
         "
           onClick={() => {
+            setLeftPanelTab("components");
             openLayerPanel();
           }}
           style={{
@@ -451,7 +554,7 @@ function LayoutEditor() {
             zIndex: 1100,
           }}
         >
-          레이어
+          패널
         </button>
       )}
       <div
@@ -525,13 +628,32 @@ function LayoutEditor() {
       <div className="editor-mobile-panel-buttons">
         <button
           type="button"
-          className="btn btn-dark btn-sm"
+          className={`btn btn-sm ${
+            showLayerPanel && leftPanelTab === "components"
+              ? "btn-dark"
+              : "btn-outline-dark"
+          }`}
           onClick={() => {
-            setShowLayerPanel((prev) => !prev);
+            setLeftPanelTab("components");
+            setShowLayerPanel(true);
           }}
-          style={{
-            flex: 1,
+          style={{ flex: 1 }}
+        >
+          컴포넌트
+        </button>
+
+        <button
+          type="button"
+          className={`btn btn-sm ${
+            showLayerPanel && leftPanelTab === "layers"
+              ? "btn-dark"
+              : "btn-outline-dark"
+          }`}
+          onClick={() => {
+            setLeftPanelTab("layers");
+            setShowLayerPanel(true);
           }}
+          style={{ flex: 1 }}
         >
           레이어
         </button>
