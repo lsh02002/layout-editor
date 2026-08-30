@@ -159,6 +159,15 @@ type Props = {
   }[];
 
   onPositionParentChange: (parentId: string | null) => void;
+
+  editVideoControls: boolean;
+  setEditVideoControls: Dispatch<SetStateAction<boolean>>;
+  editVideoAutoplay: boolean;
+  setEditVideoAutoplay: Dispatch<SetStateAction<boolean>>;
+  editVideoMuted: boolean;
+  setEditVideoMuted: Dispatch<SetStateAction<boolean>>;
+  editVideoLoop: boolean;
+  setEditVideoLoop: Dispatch<SetStateAction<boolean>>;
 };
 
 function EditComponentPanel({
@@ -263,6 +272,15 @@ function EditComponentPanel({
 
   positionParentOptions,
   onPositionParentChange,
+
+  editVideoControls,
+  setEditVideoControls,
+  editVideoAutoplay,
+  setEditVideoAutoplay,
+  editVideoMuted,
+  setEditVideoMuted,
+  editVideoLoop,
+  setEditVideoLoop,
 }: Props) {
   const { editTab, setEditTab } = useLogin();
 
@@ -407,7 +425,6 @@ function EditComponentPanel({
                   setEditDividerLineStyle={setEditDividerLineStyle}
                   editSpacerHeight={editSpacerHeight}
                   setEditSpacerHeight={setEditSpacerHeight}
-
                   editContainerGap={editContainerGap}
                   setEditContainerGap={setEditContainerGap}
                   editContainerJustifyContent={editContainerJustifyContent}
@@ -418,7 +435,14 @@ function EditComponentPanel({
                   setEditContainerAlignItems={setEditContainerAlignItems}
                   editContainerMaxWidth={editContainerMaxWidth}
                   setEditContainerMaxWidth={setEditContainerMaxWidth}
-                  
+                  editVideoControls={editVideoControls}
+                  setEditVideoControls={setEditVideoControls}
+                  editVideoAutoplay={editVideoAutoplay}
+                  setEditVideoAutoplay={setEditVideoAutoplay}
+                  editVideoMuted={editVideoMuted}
+                  setEditVideoMuted={setEditVideoMuted}
+                  editVideoLoop={editVideoLoop}
+                  setEditVideoLoop={setEditVideoLoop}
                   onImmediateChange={onImmediateChange}
                 />
               )}

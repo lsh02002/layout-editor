@@ -18,6 +18,7 @@ import EditQuillFields from "../fields/EditQuillFields";
 import EditTextareaFields from "../fields/EditTextareaFields";
 import EditDividerFields from "../fields/EditDividerFields";
 import EditSpacerFields from "../fields/EditSpacerFields";
+import EditVideoFields from "../fields/EditVideoFields";
 
 type Props = {
   editType: ComponentType;
@@ -85,6 +86,15 @@ type Props = {
   setEditContainerAlignItems: Dispatch<SetStateAction<ContainerAlignItems>>;
   editContainerMaxWidth: number | undefined;
   setEditContainerMaxWidth: Dispatch<SetStateAction<number | undefined>>;
+
+  editVideoControls: boolean;
+  setEditVideoControls: Dispatch<SetStateAction<boolean>>;
+  editVideoAutoplay: boolean;
+  setEditVideoAutoplay: Dispatch<SetStateAction<boolean>>;
+  editVideoMuted: boolean;
+  setEditVideoMuted: Dispatch<SetStateAction<boolean>>;
+  editVideoLoop: boolean;
+  setEditVideoLoop: Dispatch<SetStateAction<boolean>>;
 };
 
 function EditBasicTab({
@@ -145,6 +155,15 @@ function EditBasicTab({
   setEditContainerAlignItems,
   editContainerMaxWidth,
   setEditContainerMaxWidth,
+
+  editVideoControls,
+  setEditVideoControls,
+  editVideoAutoplay,
+  setEditVideoAutoplay,
+  editVideoMuted,
+  setEditVideoMuted,
+  editVideoLoop,
+  setEditVideoLoop,
 
   onImmediateChange,
 }: Props) {
@@ -209,6 +228,15 @@ function EditBasicTab({
             props: {
               ...component.props,
               value,
+            },
+          };
+
+        case "video":
+          return {
+            ...component,
+            props: {
+              ...component.props,
+              src: value,
             },
           };
 
@@ -504,6 +532,83 @@ function EditBasicTab({
     });
   };
 
+  const handleVideoControlsChange = (controls: boolean) => {
+    setEditVideoControls(controls);
+
+    onImmediateChange((component) => {
+      if (component.type !== "video") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          controls,
+        },
+      };
+    });
+  };
+
+  const handleVideoAutoplayChange = (autoplay: boolean) => {
+    setEditVideoAutoplay(autoplay);
+
+    if (autoplay) {
+      setEditVideoMuted(true);
+    }
+
+    onImmediateChange((component) => {
+      if (component.type !== "video") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          autoplay,
+          muted: autoplay ? true : component.props.muted,
+        },
+      };
+    });
+  };
+
+  const handleVideoMutedChange = (muted: boolean) => {
+    setEditVideoMuted(muted);
+
+    onImmediateChange((component) => {
+      if (component.type !== "video") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          muted,
+        },
+      };
+    });
+  };
+
+  const handleVideoLoopChange = (loop: boolean) => {
+    setEditVideoLoop(loop);
+
+    onImmediateChange((component) => {
+      if (component.type !== "video") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          loop,
+        },
+      };
+    });
+  };
+
   return (
     <>
       {/* 타입 */}
@@ -577,6 +682,25 @@ function EditBasicTab({
             onComponentNameChange={handleComponentNameChange}
             onImageUrlChange={handleImageUrlChange}
             onPreviewUrlChange={setEditImagePreviewUrl}
+          />
+        </div>
+      )}
+
+      {editType === "video" && (
+        <div className="mb-3">
+          <EditVideoFields
+            componentName={editComponentName}
+            src={editValue}
+            controls={editVideoControls}
+            autoplay={editVideoAutoplay}
+            muted={editVideoMuted}
+            loop={editVideoLoop}
+            onComponentNameChange={handleComponentNameChange}
+            onSrcChange={handleValueChange}
+            onControlsChange={handleVideoControlsChange}
+            onAutoplayChange={handleVideoAutoplayChange}
+            onMutedChange={handleVideoMutedChange}
+            onLoopChange={handleVideoLoopChange}
           />
         </div>
       )}

@@ -111,6 +111,18 @@ const imageSchema = baseComponentSchema.extend({
   }),
 });
 
+const videoSchema = baseComponentSchema.extend({
+  type: z.literal("video"),
+
+  props: z.object({
+    src: z.string(),
+    controls: z.boolean().optional(),
+    autoplay: z.boolean().optional(),
+    muted: z.boolean().optional(),
+    loop: z.boolean().optional(),
+  }),
+});
+
 /**
  * Link
  */
@@ -121,23 +133,33 @@ const linkSchema = baseComponentSchema.extend({
     title: z.string({
       error: "link.title이 올바르지 않습니다.",
     }),
-
     value: z.string({
       error: "link.value가 올바르지 않습니다.",
     }),
-
     linkType: z.enum(["url", "tel", "email"], {
       error: "link.linkType이 올바르지 않습니다.",
     }),
-
     newWindow: z.boolean().optional(),
   }),
 });
 
-/**
- * Container는 자기 자신을 children으로 가질 수 있기 때문에
- * recursive schema가 필요함.
- */
+const dividerSchema = baseComponentSchema.extend({
+  type: z.literal("divider"),
+
+  props: z.object({
+    thickness: z.number().optional(),
+    color: z.string().optional(),
+    lineStyle: z.enum(["solid", "dashed", "dotted"]).optional(),
+  }),
+});
+
+const spacerSchema = baseComponentSchema.extend({
+  type: z.literal("spacer"),
+
+  props: z.object({
+    height: z.number(),
+  }),
+});
 
 type ComponentSchema =
   | z.infer<typeof buttonSchema>
@@ -146,20 +168,30 @@ type ComponentSchema =
   | z.infer<typeof textareaSchema>
   | z.infer<typeof quillSchema>
   | z.infer<typeof imageSchema>
+  | z.infer<typeof videoSchema>
   | z.infer<typeof linkSchema>
+  | z.infer<typeof dividerSchema>
+  | z.infer<typeof spacerSchema>
   | {
       id: string;
       name?: string;
       customCss?: string;
       order: number;
       type: "container";
+
       props: {
-        direction: "row" | "column";
+        direction?: "row" | "column";
+        gap?: number;
+        justifyContent?: "flex-start" | "center" | "flex-end" | "space-between";
+        alignItems?: "stretch" | "flex-start" | "center" | "flex-end";
+        maxWidth?: number;
         disabled?: boolean;
       };
+
       style?: Record<string, unknown>;
       contentStyle?: Record<string, unknown>;
       layout?: Record<string, unknown>;
+
       children: ComponentSchema[];
     };
 
@@ -171,15 +203,36 @@ const componentSchema: z.ZodType<ComponentSchema> = z.lazy(() =>
     textareaSchema,
     quillSchema,
     imageSchema,
+    videoSchema,
     linkSchema,
+    dividerSchema,
+    spacerSchema,
 
     baseComponentSchema.extend({
       type: z.literal("container"),
 
       props: disabledSchema.extend({
-        direction: z.enum(["row", "column"], {
-          error: "container.direction이 올바르지 않습니다.",
-        }),
+        direction: z
+          .enum(["row", "column"], {
+            error: "container.direction이 올바르지 않습니다.",
+          })
+          .optional(),
+        gap: z.number().finite("container.gap이 올바르지 않습니다.").optional(),
+        justifyContent: z
+          .enum(["flex-start", "center", "flex-end", "space-between"], {
+            error: "container.justifyContent가 올바르지 않습니다.",
+          })
+          .optional(),
+        alignItems: z
+          .enum(["stretch", "flex-start", "center", "flex-end"], {
+            error: "container.alignItems가 올바르지 않습니다.",
+          })
+          .optional(),
+        maxWidth: z
+          .number()
+          .finite("container.maxWidth가 올바르지 않습니다.")
+          .positive("container.maxWidth는 0보다 커야 합니다.")
+          .optional(),
       }),
 
       children: z.array(componentSchema, {

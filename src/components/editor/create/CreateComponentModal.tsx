@@ -113,6 +113,7 @@ function CreateComponentModal({
                     Scroll To Top Button
                   </option>
                   <option value="image">Image</option>
+                  <option value="video">Video</option>
                   <option value="link">Link</option>
                   <option value="divider">Divider</option>
                   <option value="spacer">Spacer</option>
@@ -166,6 +167,27 @@ function CreateComponentModal({
                   onComponentNameChange={setNewComponentName}
                   onPreviewUrlChange={setNewImagePreviewUrl}
                 />
+              )}
+
+              {newType === "video" && (
+                <>
+                  <ComponentNameField
+                    value={newComponentName}
+                    onChange={setNewComponentName}
+                  />
+
+                  <div className="mb-3">
+                    <label className="form-label">동영상 URL</label>
+
+                    <input
+                      type="url"
+                      className="form-control"
+                      value={newValue}
+                      placeholder="https://example.com/video.mp4"
+                      onChange={(event) => setNewValue(event.target.value)}
+                    />
+                  </div>
+                </>
               )}
 
               {newType === "link" && (

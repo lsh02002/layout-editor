@@ -268,6 +268,41 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
         </div>`;
     }
 
+    case "video": {
+      const src = component.props.src ?? "";
+      if (!src) {
+        return "";
+      }
+      const controls = component.props.controls ?? true;
+      const autoplay = component.props.autoplay ?? false;
+      const muted = component.props.muted ?? false;
+      const loop = component.props.loop ?? false;
+      return `
+        <div
+          class="${wrapperClass}"
+          data-component-id="${componentId}"
+          data-component-type="video"
+          data-component-name="${componentName}"
+          style="${escapeAttribute(wrapperStyle)}"
+        >
+          <video
+            class="builder-video"
+            src="${escapeAttribute(src)}"
+            ${controls ? "controls" : ""}
+            ${autoplay ? "autoplay" : ""}
+            ${muted ? "muted" : ""}
+            ${loop ? "loop" : ""}
+            playsinline
+            preload="metadata"
+            style="${escapeAttribute(
+              ["display:block", "width:100%", "height:auto", contentStyle]
+                .filter(Boolean)
+                .join(";"),
+            )}"
+          ></video>
+        </div>`;
+    }
+
     case "divider": {
       const thickness = component.props.thickness ?? 3;
       const color = component.props.color ?? "#dee2e6";

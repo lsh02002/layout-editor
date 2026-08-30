@@ -47,6 +47,11 @@ export const useEditSaveActions = ({
         editContainerAlignItems,
         editContainerMaxWidth,
 
+        editVideoControls,
+        editVideoAutoplay,
+        editVideoMuted,
+        editVideoLoop,
+
         editLayout,
       } = editValues;
 
@@ -157,6 +162,20 @@ export const useEditSaveActions = ({
               urls: editImageUrl.trim() ? [editImageUrl.trim()] : [],
               maxCount: 1,
               disabled: editDisabled,
+            },
+          };
+
+        case "video":
+          return {
+            ...component,
+            ...common,
+            props: {
+              ...component.props,
+              src: editValue.trim(),
+              controls: editVideoControls,
+              autoplay: editVideoAutoplay,
+              muted: editVideoMuted,
+              loop: editVideoLoop,
             },
           };
 

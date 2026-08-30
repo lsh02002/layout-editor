@@ -142,6 +142,16 @@ function LayoutEditor() {
     editContainerMaxWidth,
     setEditContainerMaxWidth,
 
+    // Video
+    editVideoControls,
+    setEditVideoControls,
+    editVideoAutoplay,
+    setEditVideoAutoplay,
+    editVideoMuted,
+    setEditVideoMuted,
+    editVideoLoop,
+    setEditVideoLoop,
+
     resetEditForm,
   } = useEditComponentForm();
 
@@ -283,6 +293,11 @@ function LayoutEditor() {
       editContainerAlignItems,
       editContainerMaxWidth,
 
+      editVideoControls,
+      editVideoAutoplay,
+      editVideoMuted,
+      editVideoLoop,
+
       editLayout,
     }),
     [
@@ -309,6 +324,11 @@ function LayoutEditor() {
       editContainerJustifyContent,
       editContainerAlignItems,
       editContainerMaxWidth,
+
+      editVideoControls,
+      editVideoAutoplay,
+      editVideoMuted,
+      editVideoLoop,
 
       editLayout,
     ],
@@ -785,6 +805,14 @@ function LayoutEditor() {
         onStyleApply={handleStyleApply}
         positionParentOptions={positionParentOptions}
         onPositionParentChange={handlePositionParentChange}
+        editVideoControls={editVideoControls}
+        setEditVideoControls={setEditVideoControls}
+        editVideoAutoplay={editVideoAutoplay}
+        setEditVideoAutoplay={setEditVideoAutoplay}
+        editVideoMuted={editVideoMuted}
+        setEditVideoMuted={setEditVideoMuted}
+        editVideoLoop={editVideoLoop}
+        setEditVideoLoop={setEditVideoLoop}
       />
     </>
   );

@@ -41,6 +41,11 @@ const COMPONENTS: {
     description: "이미지",
   },
   {
+    type: "video",
+    label: "Video",
+    description: "동영상",
+  },
+  {
     type: "link",
     label: "Link",
     description: "링크",
@@ -113,7 +118,7 @@ function ComponentPanel() {
                   "application/x-component-type",
                   component.type,
                 );
-              }}              
+              }}
               className="btn btn-light border text-start"
               style={{
                 minHeight: 82,

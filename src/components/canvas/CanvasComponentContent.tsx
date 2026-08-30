@@ -35,7 +35,7 @@ function CanvasComponentContent({ component }: Props) {
 
     case "heading": {
       const style: CSSProperties = {
-        margin: 0,        
+        margin: 0,
         ...component.contentStyle,
         width: "100%",
       };
@@ -89,6 +89,42 @@ function CanvasComponentContent({ component }: Props) {
             <div className="text-secondary">이미지 없음</div>
           )}
         </div>
+      );
+    }
+
+    case "video": {
+      const src = component.props.src;
+
+      if (!src) {
+        return (
+          <div
+            className="text-secondary border rounded d-flex align-items-center justify-content-center"
+            style={{
+              width: "100%",
+              minHeight: 180,
+              ...component.contentStyle,
+            }}
+          >
+            동영상 없음
+          </div>
+        );
+      }
+
+      return (
+        <video
+          src={src}
+          controls={component.props.controls ?? true}
+          autoPlay={component.props.autoplay ?? false}
+          muted={component.props.muted ?? false}
+          loop={component.props.loop ?? false}
+          playsInline
+          style={{
+            display: "block",
+            width: "100%",
+            height: "auto",
+            ...component.contentStyle,
+          }}
+        />
       );
     }
 

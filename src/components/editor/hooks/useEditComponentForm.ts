@@ -72,6 +72,11 @@ export const useEditComponentForm = () => {
     number | undefined
   >(undefined);
 
+  const [editVideoControls, setEditVideoControls] = useState(true);
+  const [editVideoAutoplay, setEditVideoAutoplay] = useState(false);
+  const [editVideoMuted, setEditVideoMuted] = useState(false);
+  const [editVideoLoop, setEditVideoLoop] = useState(false);
+
   const loadComponentToEdit = useCallback((component: LayoutComponent) => {
     setEditingComponentId(component.id);
 
@@ -179,6 +184,18 @@ export const useEditComponentForm = () => {
         break;
       }
 
+      case "video": {
+        setEditTitle("");
+        setEditValue(component.props.src ?? "");
+        setEditPlaceholder("");
+        setEditDirection("column");
+        setEditVideoControls(component.props.controls ?? true);
+        setEditVideoAutoplay(component.props.autoplay ?? false);
+        setEditVideoMuted(component.props.muted ?? false);
+        setEditVideoLoop(component.props.loop ?? false);
+        break;
+      }
+
       case "scrollToTopButton": {
         setEditTitle(component.props.title ?? "");
         setEditValue("");
@@ -255,6 +272,11 @@ export const useEditComponentForm = () => {
     setEditContainerJustifyContent("space-between");
     setEditContainerAlignItems("stretch");
     setEditContainerMaxWidth(undefined);
+
+    setEditVideoControls(true);
+    setEditVideoAutoplay(false);
+    setEditVideoMuted(false);
+    setEditVideoLoop(false);
   }, []);
 
   return {
@@ -311,6 +333,15 @@ export const useEditComponentForm = () => {
     setEditContainerAlignItems,
     editContainerMaxWidth,
     setEditContainerMaxWidth,
+
+    editVideoControls,
+    setEditVideoControls,
+    editVideoAutoplay,
+    setEditVideoAutoplay,
+    editVideoMuted,
+    setEditVideoMuted,
+    editVideoLoop,
+    setEditVideoLoop,
 
     resetEditForm,
   };

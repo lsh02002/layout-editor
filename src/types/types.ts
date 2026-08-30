@@ -152,6 +152,17 @@ export interface SpacerComponent extends BaseComponent {
     height: number;
   };
 }
+export interface VideoComponent extends BaseComponent {
+  type: "video";
+
+  props: {
+    src: string;
+    controls?: boolean;
+    autoplay?: boolean;
+    muted?: boolean;
+    loop?: boolean;
+  };
+}
 
 export type LayoutComponent =
   | ButtonComponent
@@ -163,6 +174,7 @@ export type LayoutComponent =
   | LinkComponent
   | DividerComponent
   | SpacerComponent
+  | VideoComponent
   | ContainerComponent;
 
 export interface HistoryState {
@@ -265,6 +277,10 @@ export type EditValues = {
   editContainerJustifyContent: ContainerJustifyContent;
   editContainerAlignItems: ContainerAlignItems;
   editContainerMaxWidth: number | undefined;
+  editVideoControls: boolean;
+  editVideoAutoplay: boolean;
+  editVideoMuted: boolean;
+  editVideoLoop: boolean;
 };
 
 export type SelectionSetter = Dispatch<SetStateAction<string | null>>;
@@ -278,6 +294,7 @@ export const VALID_COMPONENT_TYPES = [
   "textarea",
   "quill",
   "image",
+  "video",
   "link",
   "container",
   "divider",

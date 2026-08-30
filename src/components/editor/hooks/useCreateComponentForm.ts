@@ -159,6 +159,28 @@ export const useCreateComponentForm = () => {
           },
         };
 
+      case "video":
+        return {
+          id,
+          name: newComponentName.trim() || "Video",
+          type: "video",
+          order: 0,
+          props: {
+            src: newValue.trim(),
+            controls: true,
+            autoplay: false,
+            muted: false,
+            loop: false,
+          },
+          style: {
+            width: "100%",
+          },
+          contentStyle: {
+            width: "100%",
+            borderRadius: 8,
+          },
+        };
+
       case "link":
         return {
           id,
@@ -359,6 +381,28 @@ export const useCreateComponentForm = () => {
           },
           style: {
             width: "100%",
+          },
+        };
+
+      case "video":
+        return {
+          id,
+          name: "Video",
+          type: "video",
+          order: 0,
+          props: {
+            src: "",
+            controls: true,
+            autoplay: false,
+            muted: false,
+            loop: false,
+          },
+          style: {
+            width: "100%",
+          },
+          contentStyle: {
+            width: "100%",
+            borderRadius: 8,
           },
         };
 
