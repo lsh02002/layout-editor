@@ -288,7 +288,6 @@ function LayoutComponentNode({
             />
             {children.map((child, index) => {
               const childIsAbsolute = child.layout?.position === "absolute";
-              const childWidth = child.layout?.width;
               const shouldFillRow =
                 child.type === "image" ||
                 child.type === "textarea" ||
@@ -296,6 +295,7 @@ function LayoutComponentNode({
                 child.type === "heading" ||
                 child.type === "spacer" ||
                 child.type === "divider";
+              const explicitLayoutWidth = child.layout?.width;
 
               return (
                 <div
@@ -307,16 +307,20 @@ function LayoutComponentNode({
                         }
                       : {
                           width: isRow
-                            ? (childWidth ?? (shouldFillRow ? "100%" : "auto"))
+                            ? (explicitLayoutWidth ??
+                              (shouldFillRow ? 0 : "auto"))
                             : "100%",
+
                           flex: isRow
-                            ? childWidth
+                            ? explicitLayoutWidth
                               ? "0 0 auto"
                               : shouldFillRow
                                 ? "1 1 0"
                                 : "0 0 auto"
                             : undefined,
+
                           minWidth: 0,
+                          maxWidth: "100%",
                         }
                   }
                 >
