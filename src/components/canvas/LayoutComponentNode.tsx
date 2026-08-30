@@ -293,6 +293,8 @@ function LayoutComponentNode({
                 child.type === "image" ||
                 child.type === "textarea" ||
                 child.type === "quill" ||
+                child.type === "heading" ||
+                child.type === "spacer" ||
                 child.type === "divider";
 
               return (
