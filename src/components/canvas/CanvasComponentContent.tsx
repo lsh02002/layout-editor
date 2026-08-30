@@ -1,6 +1,6 @@
 import { memo, type CSSProperties, type JSX } from "react";
 import type { LayoutComponent } from "../../types/types";
-import { getLinkHref } from "../../utils/link";
+import { getLinkHref } from "../editor/utils/linkUtils";
 
 type Props = {
   component: Exclude<LayoutComponent, { type: "container" }>;
