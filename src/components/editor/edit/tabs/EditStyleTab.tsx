@@ -55,19 +55,14 @@ function EditStyleTab({
   positionParentOptions,
   onPositionParentChange,
 }: Props) {
-  const [widthApplied, setWidthApplied] = useState(
-    editLayout.widthMode === "fixed",
-  );
+  const [widthApplied, setWidthApplied] = useState(false);
+  const [heightApplied, setHeightApplied] = useState(false);
 
-  const [heightApplied, setHeightApplied] = useState(
-    editLayout.heightMode === "fixed",
-  );
-  /*
-   * Style 입력값 변경
-   *
-   * 여기서는 오른쪽 에디터 state만 변경합니다.
-   * 실제 컴포넌트 반영은 해당 필드의 적용 버튼을 눌렀을 때 합니다.
-   */
+  const hideResizeMessage = () => {
+    setWidthApplied(false);
+    setHeightApplied(false);
+  };
+
   const updateStyle = (
     key: keyof CSSProperties,
     value: CSSProperties[keyof CSSProperties],
@@ -78,9 +73,6 @@ function EditStyleTab({
     }));
   };
 
-  /*
-   * Content Style 입력값 변경
-   */
   const updateContentStyle = (
     key: keyof CSSProperties,
     value: CSSProperties[keyof CSSProperties],
@@ -91,11 +83,6 @@ function EditStyleTab({
     }));
   };
 
-  /*
-   * 배경 관련 스타일은 컨테이너 여부에 따라 저장 위치를 분기합니다.
-   * - 컨테이너: style
-   * - 일반 컴포넌트: contentStyle
-   */
   const backgroundStyle = isContainer ? editStyle : editContentStyle;
   const backgroundTarget: StyleTarget = isContainer ? "style" : "contentStyle";
 
@@ -120,12 +107,13 @@ function EditStyleTab({
       {/* Width */}
       <div className="col-md-6">
         <label className="form-label">Width</label>
-
         <div className="input-group input-group-sm">
           <select
             className="form-select"
             value={editLayout.widthMode ?? "auto"}
             onChange={(event) => {
+              hideResizeMessage();
+
               const widthMode = event.target.value as "auto" | "fill" | "fixed";
 
               setEditLayout((prev) => ({
@@ -146,6 +134,8 @@ function EditStyleTab({
               className="form-control"
               value={Number(editLayout.width ?? 300)}
               onChange={(event) => {
+                hideResizeMessage();
+
                 setEditLayout((prev) => ({
                   ...prev,
                   width: Number(event.target.value),
@@ -164,6 +154,7 @@ function EditStyleTab({
                     : undefined,
               });
 
+              setHeightApplied(false);
               setWidthApplied(editLayout.widthMode === "fixed");
             }}
           />
@@ -174,7 +165,6 @@ function EditStyleTab({
           </div>
         )}
       </div>
-
       {/* Height */}
       <div className="col-md-6">
         <label className="form-label">Height</label>
@@ -184,6 +174,8 @@ function EditStyleTab({
             className="form-select"
             value={editLayout.heightMode ?? "auto"}
             onChange={(event) => {
+              hideResizeMessage();
+
               const heightMode = event.target.value as
                 | "auto"
                 | "fill"
@@ -208,6 +200,8 @@ function EditStyleTab({
               className="form-control"
               value={Number(editLayout.height ?? 100)}
               onChange={(event) => {
+                hideResizeMessage();
+
                 setEditLayout((prev) => ({
                   ...prev,
                   height: Number(event.target.value),
@@ -226,17 +220,18 @@ function EditStyleTab({
                     : undefined,
               });
 
+              setWidthApplied(false);
               setHeightApplied(editLayout.heightMode === "fixed");
             }}
           />
         </div>
+
         {heightApplied && (
           <div className="form-text">
             지금 박스 위아래 부분 드래그해서 높이 변경할 수 있음!
           </div>
         )}
       </div>
-
       {/* Margin */}
       <div className="col-md-6">
         <label className="form-label">Margin</label>
@@ -247,9 +242,11 @@ function EditStyleTab({
             className="form-control"
             placeholder="16px"
             value={String(editStyle.margin ?? "")}
-            onChange={(event) =>
-              updateStyle("margin", event.target.value || undefined)
-            }
+            onChange={(event) => {
+              hideResizeMessage();
+
+              updateStyle("margin", event.target.value || undefined);
+            }}
           />
 
           <ApplyButton
@@ -257,7 +254,6 @@ function EditStyleTab({
           />
         </div>
       </div>
-
       {/* Padding */}
       <div className="col-md-6">
         <label className="form-label">Padding</label>
@@ -268,9 +264,11 @@ function EditStyleTab({
             className="form-control"
             placeholder="16px"
             value={String(editStyle.padding ?? "")}
-            onChange={(event) =>
-              updateStyle("padding", event.target.value || undefined)
-            }
+            onChange={(event) => {
+              hideResizeMessage();
+
+              updateStyle("padding", event.target.value || undefined);
+            }}
           />
 
           <ApplyButton
@@ -278,7 +276,6 @@ function EditStyleTab({
           />
         </div>
       </div>
-
       {/* 배경색 */}
       <div className="col-md-6">
         <label className="form-label">배경색</label>
@@ -292,9 +289,11 @@ function EditStyleTab({
                 ? backgroundStyle.backgroundColor
                 : "#ffffff"
             }
-            onChange={(event) =>
-              updateBackgroundStyle("backgroundColor", event.target.value)
-            }
+            onChange={(event) => {
+              hideResizeMessage();
+
+              updateBackgroundStyle("backgroundColor", event.target.value);
+            }}
           />
 
           <ApplyButton
@@ -302,7 +301,6 @@ function EditStyleTab({
           />
         </div>
       </div>
-
       {/* 글자색 */}
       <div className="col-md-6">
         <label className="form-label">글자색</label>
@@ -316,9 +314,11 @@ function EditStyleTab({
                 ? editContentStyle.color
                 : "#000000"
             }
-            onChange={(event) =>
-              updateContentStyle("color", event.target.value)
-            }
+            onChange={(event) => {
+              hideResizeMessage();
+
+              updateContentStyle("color", event.target.value);
+            }}
           />
 
           <ApplyButton
@@ -328,7 +328,6 @@ function EditStyleTab({
           />
         </div>
       </div>
-
       {/* Border */}
       <div className="col-md-6">
         <label className="form-label">Border</label>
@@ -339,9 +338,11 @@ function EditStyleTab({
             className="form-control"
             placeholder="1px solid #ddd"
             value={String(editStyle.border ?? "")}
-            onChange={(event) =>
-              updateStyle("border", event.target.value || undefined)
-            }
+            onChange={(event) => {
+              hideResizeMessage();
+
+              updateStyle("border", event.target.value || undefined);
+            }}
           />
 
           <ApplyButton
@@ -349,7 +350,6 @@ function EditStyleTab({
           />
         </div>
       </div>
-
       {/* Border Radius */}
       <div className="col-md-6">
         <label className="form-label">Border Radius</label>
@@ -360,9 +360,11 @@ function EditStyleTab({
             className="form-control"
             placeholder="8px"
             value={String(editStyle.borderRadius ?? "")}
-            onChange={(event) =>
-              updateStyle("borderRadius", event.target.value || undefined)
-            }
+            onChange={(event) => {
+              hideResizeMessage();
+
+              updateStyle("borderRadius", event.target.value || undefined);
+            }}
           />
 
           <ApplyButton
@@ -372,7 +374,6 @@ function EditStyleTab({
           />
         </div>
       </div>
-
       {/* Font Size */}
       <div className="col-md-6">
         <label className="form-label">Font Size</label>
@@ -383,9 +384,11 @@ function EditStyleTab({
             className="form-control"
             placeholder="16px"
             value={String(editContentStyle.fontSize ?? "")}
-            onChange={(event) =>
-              updateContentStyle("fontSize", event.target.value || undefined)
-            }
+            onChange={(event) => {
+              hideResizeMessage();
+
+              updateContentStyle("fontSize", event.target.value || undefined);
+            }}
           />
 
           <ApplyButton
@@ -395,7 +398,6 @@ function EditStyleTab({
           />
         </div>
       </div>
-
       {/* Text Align */}
       <div className="col-md-6">
         <label className="form-label">Text Align</label>
@@ -405,6 +407,8 @@ function EditStyleTab({
             className="form-select"
             value={String(editContentStyle.textAlign ?? "")}
             onChange={(event) => {
+              hideResizeMessage();
+
               const textAlign =
                 event.target.value === ""
                   ? undefined
@@ -426,7 +430,6 @@ function EditStyleTab({
           />
         </div>
       </div>
-
       {/* 배경 이미지 */}
       <div className="col-md-12">
         <label className="form-label">
@@ -446,6 +449,8 @@ function EditStyleTab({
                 : ""
             }
             onChange={(event) => {
+              hideResizeMessage();
+
               const value = event.target.value.trim();
 
               updateBackgroundStyle(
@@ -460,7 +465,6 @@ function EditStyleTab({
           />
         </div>
       </div>
-
       {/* 배경 이미지 크기 */}
       <div className="col-md-6">
         <label className="form-label">배경 크기</label>
@@ -469,9 +473,11 @@ function EditStyleTab({
           <select
             className="form-select"
             value={String(backgroundStyle.backgroundSize ?? "cover")}
-            onChange={(event) =>
-              updateBackgroundStyle("backgroundSize", event.target.value)
-            }
+            onChange={(event) => {
+              hideResizeMessage();
+
+              updateBackgroundStyle("backgroundSize", event.target.value);
+            }}
           >
             <option value="cover">Cover</option>
             <option value="contain">Contain</option>
@@ -482,7 +488,6 @@ function EditStyleTab({
           <ApplyButton onClick={() => applyBackgroundStyle("backgroundSize")} />
         </div>
       </div>
-
       {/* 배경 위치 */}
       <div className="col-md-6">
         <label className="form-label">배경 위치</label>
@@ -491,9 +496,11 @@ function EditStyleTab({
           <select
             className="form-select"
             value={String(backgroundStyle.backgroundPosition ?? "center")}
-            onChange={(event) =>
-              updateBackgroundStyle("backgroundPosition", event.target.value)
-            }
+            onChange={(event) => {
+              hideResizeMessage();
+
+              updateBackgroundStyle("backgroundPosition", event.target.value);
+            }}
           >
             <option value="center">Center</option>
             <option value="top">Top</option>
@@ -511,7 +518,6 @@ function EditStyleTab({
           />
         </div>
       </div>
-
       {/* 배경 반복 */}
       <div className="col-md-12">
         <label className="form-label">배경 반복</label>
@@ -520,9 +526,11 @@ function EditStyleTab({
           <select
             className="form-select"
             value={String(backgroundStyle.backgroundRepeat ?? "no-repeat")}
-            onChange={(event) =>
-              updateBackgroundStyle("backgroundRepeat", event.target.value)
-            }
+            onChange={(event) => {
+              hideResizeMessage();
+
+              updateBackgroundStyle("backgroundRepeat", event.target.value);
+            }}
           >
             <option value="no-repeat">반복 안함</option>
             <option value="repeat">반복</option>
@@ -535,7 +543,6 @@ function EditStyleTab({
           />
         </div>
       </div>
-
       {/* 위치 방식 - 즉시 반영 */}
       <div className="col-md-6">
         <label className="form-label fw-semibold">위치 방식</label>
@@ -544,6 +551,8 @@ function EditStyleTab({
           className="form-select form-select-sm"
           value={editLayout.position ?? "relative"}
           onChange={(event) => {
+            hideResizeMessage();
+
             const position = event.target.value as "relative" | "absolute";
 
             const nextLayout: Partial<ComponentLayout> =
@@ -576,7 +585,6 @@ function EditStyleTab({
           자유 배치를 선택하면 캔버스에서 원하는 위치로 이동할 수 있습니다.
         </div>
       </div>
-
       {/* Absolute 좌표 */}
       {editLayout.position === "absolute" && (
         <>
@@ -592,6 +600,8 @@ function EditStyleTab({
                 textOverflow: "ellipsis",
               }}
               onChange={(event) => {
+                hideResizeMessage();
+
                 const value = event.target.value || null;
 
                 setEditLayout((prev) => ({
@@ -633,6 +643,8 @@ function EditStyleTab({
                   className="form-control"
                   value={editLayout.x ?? 0}
                   onChange={(event) => {
+                    hideResizeMessage();
+
                     const x = Number(event.target.value) || 0;
 
                     setEditLayout((prev) => ({
@@ -660,6 +672,8 @@ function EditStyleTab({
                   className="form-control"
                   value={editLayout.y ?? 0}
                   onChange={(event) => {
+                    hideResizeMessage();
+
                     const y = Number(event.target.value) || 0;
 
                     setEditLayout((prev) => ({
