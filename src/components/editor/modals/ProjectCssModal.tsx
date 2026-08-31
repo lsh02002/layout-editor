@@ -1,3 +1,5 @@
+import CssEditor from "../utils/cssEditor";
+
 type Props = {
   open: boolean;
   value: string;
@@ -26,18 +28,12 @@ function ProjectCssModal({ open, value, onChange, onClose, onSave }: Props) {
             </div>
 
             <div className="modal-body">
-              <textarea
-                className="form-control font-monospace"
-                rows={20}
-                spellCheck={false}
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
+              <CssEditor
+                data={value}
+                setData={onChange}
+                height="350px"
                 placeholder={`.builder-preview {
   background: #f8f9fa;
-}
-
-.builder-preview button {
-  border-radius: 20px;
 }`}
               />
             </div>

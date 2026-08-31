@@ -1,3 +1,4 @@
+import CssEditor from "../../utils/cssEditor";
 import ApplyButton from "../fields/ApplyButton";
 
 type Props = {
@@ -11,26 +12,21 @@ function EditCssTab({ value, onValueChange, onApply }: Props) {
     <div>
       <label className="form-label">컴포넌트 Custom CSS</label>
 
-      <textarea
-        className="form-control font-monospace"
-        rows={14}
-        value={value}
-        onChange={(event) => {
-          onValueChange(event.target.value);
-        }}
+      <CssEditor
+        data={value}
+        setData={onValueChange}        
         placeholder={`& {
-          background: #111;
-          color: white;
-        }
+    background: #111;
+    color: white;
+  }
 
-        &:hover {
-          opacity: 0.9;
-        }
+  &:hover {
+    opacity: 0.9;
+  }
 
-        & button {
-          border-radius: 20px;
-        }`}
-        spellCheck={false}
+  & button {
+    border-radius: 20px;
+  }`}
       />
 
       <div className="form-text mb-3">
