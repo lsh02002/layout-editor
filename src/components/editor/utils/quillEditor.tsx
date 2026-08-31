@@ -2,7 +2,7 @@ import React, { useRef, useState, useMemo, useEffect } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 
-const QuillEditorSimpleInput = ({
+const QuillEditor = ({
   disabled,
   data,
   setData,
@@ -18,7 +18,7 @@ const QuillEditorSimpleInput = ({
   rows?: number;
 }) => {
   const [isEmpty, setIsEmpty] = useState(true);
-  
+
   const quillRef = useRef<ReactQuill | null>(null);
   const lastSelectionRef = useRef<{ index: number; length: number } | null>(
     null,
@@ -133,7 +133,7 @@ const QuillEditorSimpleInput = ({
   );
 };
 
-export default QuillEditorSimpleInput;
+export default QuillEditor;
 
 const quillStyles = `
 .quill-editor-bootstrap {

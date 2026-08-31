@@ -1,4 +1,4 @@
-import QuillEditorSimpleInput from "../../../form/QuillEditorSimpleInput";
+import QuillEditor from "../../utils/quillEditor";
 import EditComponentNameField from "./EditComponentNameField";
 
 type Props = {
@@ -28,7 +28,7 @@ function EditQuillFields({
       <div className="mb-3">
         <label className="form-label">내용</label>
 
-        <QuillEditorSimpleInput data={value} setData={onValueChange} />
+        <QuillEditor data={value} setData={onValueChange} />
       </div>
 
       <div className="mb-3">

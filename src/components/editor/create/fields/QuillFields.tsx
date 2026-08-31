@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 
-import QuillEditorSimpleInput from "../../../form/QuillEditorSimpleInput";
+import QuillEditorSimpleInput from "../../utils/quillEditor";
 import ComponentNameField from "./ComponentNameField";
 
 type Props = {
