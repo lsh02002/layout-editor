@@ -107,6 +107,7 @@ function EditStyleTab({
       {/* Width */}
       <div className="col-md-6">
         <label className="form-label">Width</label>
+
         <div className="input-group input-group-sm">
           <select
             className="form-select"
@@ -116,11 +117,24 @@ function EditStyleTab({
 
               const widthMode = event.target.value as "auto" | "fill" | "fixed";
 
+              const width =
+                widthMode === "fixed"
+                  ? (editLayout.width ?? 300)
+                  : editLayout.width;
+
               setEditLayout((prev) => ({
                 ...prev,
                 widthMode,
-                width: widthMode === "fixed" ? (prev.width ?? 300) : prev.width,
+                width,
               }));
+
+              // Fixed 모드 선택 즉시 리사이즈 가능하게 함
+              onLayoutChange({
+                widthMode,
+                width: widthMode === "fixed" ? width : undefined,
+              });
+
+              setWidthApplied(widthMode === "fixed");
             }}
           >
             <option value="auto">Auto</option>
@@ -134,8 +148,6 @@ function EditStyleTab({
               className="form-control"
               value={Number(editLayout.width ?? 300)}
               onChange={(event) => {
-                hideResizeMessage();
-
                 setEditLayout((prev) => ({
                   ...prev,
                   width: Number(event.target.value),
@@ -153,18 +165,17 @@ function EditStyleTab({
                     ? editLayout.width
                     : undefined,
               });
-
-              setHeightApplied(false);
-              setWidthApplied(editLayout.widthMode === "fixed");
             }}
           />
         </div>
+
         {widthApplied && (
           <div className="form-text">
-            지금 박스 왼쪽 오른쪽 드래그해서 너비 변경할 수 있음!
+            지금 박스 왼쪽 오른쪽 드래그해서 너비 변경할 수 있음!{" "}
           </div>
         )}
       </div>
+
       {/* Height */}
       <div className="col-md-6">
         <label className="form-label">Height</label>
@@ -181,12 +192,24 @@ function EditStyleTab({
                 | "fill"
                 | "fixed";
 
+              const height =
+                heightMode === "fixed"
+                  ? (editLayout.height ?? 100)
+                  : editLayout.height;
+
               setEditLayout((prev) => ({
                 ...prev,
                 heightMode,
-                height:
-                  heightMode === "fixed" ? (prev.height ?? 100) : prev.height,
+                height,
               }));
+
+              // Fixed 모드 선택 즉시 리사이즈 가능하게 함
+              onLayoutChange({
+                heightMode,
+                height: heightMode === "fixed" ? height : undefined,
+              });
+
+              setHeightApplied(heightMode === "fixed");
             }}
           >
             <option value="auto">Auto</option>
@@ -200,8 +223,6 @@ function EditStyleTab({
               className="form-control"
               value={Number(editLayout.height ?? 100)}
               onChange={(event) => {
-                hideResizeMessage();
-
                 setEditLayout((prev) => ({
                   ...prev,
                   height: Number(event.target.value),
@@ -219,9 +240,6 @@ function EditStyleTab({
                     ? editLayout.height
                     : undefined,
               });
-
-              setWidthApplied(false);
-              setHeightApplied(editLayout.heightMode === "fixed");
             }}
           />
         </div>
@@ -232,6 +250,7 @@ function EditStyleTab({
           </div>
         )}
       </div>
+
       {/* Margin */}
       <div className="col-md-6">
         <label className="form-label">Margin</label>
