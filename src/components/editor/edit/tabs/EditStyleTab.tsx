@@ -128,7 +128,6 @@ function EditStyleTab({
                 width,
               }));
 
-              // Fixed 모드 선택 즉시 리사이즈 가능하게 함
               onLayoutChange({
                 widthMode,
                 width: widthMode === "fixed" ? width : undefined,
@@ -148,30 +147,25 @@ function EditStyleTab({
               className="form-control"
               value={Number(editLayout.width ?? 300)}
               onChange={(event) => {
+                const width = Number(event.target.value);
+
                 setEditLayout((prev) => ({
                   ...prev,
-                  width: Number(event.target.value),
+                  width,
                 }));
+
+                onLayoutChange({
+                  widthMode: "fixed",
+                  width,
+                });
               }}
             />
           )}
-
-          <ApplyButton
-            onClick={() => {
-              onLayoutChange({
-                widthMode: editLayout.widthMode ?? "auto",
-                width:
-                  editLayout.widthMode === "fixed"
-                    ? editLayout.width
-                    : undefined,
-              });
-            }}
-          />
         </div>
 
         {widthApplied && (
           <div className="form-text">
-            지금 박스 왼쪽 오른쪽 드래그해서 너비 변경할 수 있음!{" "}
+            지금 박스 왼쪽 오른쪽 드래그해서 너비 변경할 수 있음!
           </div>
         )}
       </div>
@@ -203,7 +197,6 @@ function EditStyleTab({
                 height,
               }));
 
-              // Fixed 모드 선택 즉시 리사이즈 가능하게 함
               onLayoutChange({
                 heightMode,
                 height: heightMode === "fixed" ? height : undefined,
@@ -223,25 +216,20 @@ function EditStyleTab({
               className="form-control"
               value={Number(editLayout.height ?? 100)}
               onChange={(event) => {
+                const height = Number(event.target.value);
+
                 setEditLayout((prev) => ({
                   ...prev,
-                  height: Number(event.target.value),
+                  height,
                 }));
+
+                onLayoutChange({
+                  heightMode: "fixed",
+                  height,
+                });
               }}
             />
           )}
-
-          <ApplyButton
-            onClick={() => {
-              onLayoutChange({
-                heightMode: editLayout.heightMode ?? "auto",
-                height:
-                  editLayout.heightMode === "fixed"
-                    ? editLayout.height
-                    : undefined,
-              });
-            }}
-          />
         </div>
 
         {heightApplied && (
