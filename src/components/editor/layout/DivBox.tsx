@@ -17,6 +17,7 @@ import { resolveHeight, resolveWidth } from "../utils/layoutSize";
 interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   previewMode?: boolean;
+  isSelected?: boolean;
   layout?: ComponentLayout;
   positionContextId?: string | null;
   onLayoutChange?: (
@@ -41,10 +42,36 @@ type PositionDragState = {
   currentY: number;
 };
 
+type ResizeDirection =
+  | "left"
+  | "right"
+  | "top"
+  | "bottom"
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right";
+
+type ResizeDragState = {
+  pointerId: number;
+  direction: ResizeDirection;
+  startX: number;
+  startY: number;
+  originalWidth: number;
+  originalHeight: number;
+  originalX: number;
+  originalY: number;
+  currentWidth: number;
+  currentHeight: number;
+  currentX: number;
+  currentY: number;
+};
+
 function DivBox({
   children,
   previewMode = false,
   layout,
+  isSelected,
   positionContextId,
   onLayoutChange,
   onSelect,
@@ -60,6 +87,13 @@ function DivBox({
   const [moving, setMoving] = useState(false);
   const positionDragRef = useRef<PositionDragState | null>(null);
   const positionElementRef = useRef<HTMLElement | null>(null);
+
+  const resizeDragRef = useRef<ResizeDragState | null>(null);
+  const resizeElementRef = useRef<HTMLElement | null>(null);
+
+  const canResizeWidth = layout?.widthMode === "fixed";
+  const canResizeHeight = layout?.heightMode === "fixed";
+
   const isAbsolute = layout?.position === "absolute";
 
   const isOwnDivBox = (
@@ -280,6 +314,261 @@ function DivBox({
     [],
   );
 
+  const handleResizePointerDown = useCallback(
+    (event: PointerEvent<HTMLDivElement>, direction: ResizeDirection) => {
+      if (previewMode || !onLayoutChange) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const layoutBox =
+        event.currentTarget.closest<HTMLElement>("[data-layout-box]");
+
+      if (!layoutBox) {
+        return;
+      }
+
+      const rect = layoutBox.getBoundingClientRect();
+
+      event.currentTarget.setPointerCapture(event.pointerId);
+
+      resizeElementRef.current = layoutBox;
+
+      resizeDragRef.current = {
+        pointerId: event.pointerId,
+        direction,
+        startX: event.clientX,
+        startY: event.clientY,
+        originalWidth: rect.width,
+        originalHeight: rect.height,
+        originalX: layout?.x ?? 0,
+        originalY: layout?.y ?? 0,
+        currentWidth: rect.width,
+        currentHeight: rect.height,
+        currentX: layout?.x ?? 0,
+        currentY: layout?.y ?? 0,
+      };
+    },
+    [layout?.x, layout?.y, onLayoutChange, previewMode],
+  );
+
+  const handleResizePointerMove = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      const drag = resizeDragRef.current;
+
+      if (!drag || drag.pointerId !== event.pointerId) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const deltaX = event.clientX - drag.startX;
+      const deltaY = event.clientY - drag.startY;
+
+      const resizeLeft =
+        drag.direction === "left" ||
+        drag.direction === "top-left" ||
+        drag.direction === "bottom-left";
+
+      const resizeRight =
+        drag.direction === "right" ||
+        drag.direction === "top-right" ||
+        drag.direction === "bottom-right";
+
+      const resizeTop =
+        drag.direction === "top" ||
+        drag.direction === "top-left" ||
+        drag.direction === "top-right";
+
+      const resizeBottom =
+        drag.direction === "bottom" ||
+        drag.direction === "bottom-left" ||
+        drag.direction === "bottom-right";
+
+      let width = drag.originalWidth;
+      let height = drag.originalHeight;
+
+      if (resizeLeft) {
+        width = Math.max(20, Math.round(drag.originalWidth - deltaX));
+      }
+
+      if (resizeRight) {
+        width = Math.max(20, Math.round(drag.originalWidth + deltaX));
+      }
+
+      if (resizeTop) {
+        height = Math.max(20, Math.round(drag.originalHeight - deltaY));
+      }
+
+      if (resizeBottom) {
+        height = Math.max(20, Math.round(drag.originalHeight + deltaY));
+      }
+
+      let nextLayout: Partial<ComponentLayout> = {};
+
+      if (resizeLeft || resizeRight) {
+        nextLayout.width = width;
+      }
+
+      if (resizeTop || resizeBottom) {
+        nextLayout.height = height;
+      }
+
+      // absolute 컴포넌트는 왼쪽/위쪽 리사이즈 시
+      // 반대편 위치를 고정하기 위해 x/y도 이동
+      if (isAbsolute && resizeLeft) {
+        nextLayout.x = drag.originalX + (drag.originalWidth - width);
+      }
+
+      if (isAbsolute && resizeTop) {
+        nextLayout.y = drag.originalY + (drag.originalHeight - height);
+      }
+
+      nextLayout = snapLayout(nextLayout) ?? nextLayout;
+
+      if (typeof nextLayout.width === "number") {
+        drag.currentWidth = nextLayout.width;
+      }
+
+      if (typeof nextLayout.height === "number") {
+        drag.currentHeight = nextLayout.height;
+      }
+
+      if (typeof nextLayout.x === "number") {
+        drag.currentX = nextLayout.x;
+      }
+
+      if (typeof nextLayout.y === "number") {
+        drag.currentY = nextLayout.y;
+      }
+
+      // 드래그 중 실시간 렌더링
+      onLayoutChange?.(nextLayout, false);
+    },
+    [isAbsolute, onLayoutChange, snapLayout],
+  );
+
+  const handleResizePointerUp = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      const drag = resizeDragRef.current;
+
+      if (!drag || drag.pointerId !== event.pointerId) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+
+      const nextLayout: Partial<ComponentLayout> = {};
+
+      const resizeLeft =
+        drag.direction === "left" ||
+        drag.direction === "top-left" ||
+        drag.direction === "bottom-left";
+
+      const resizeRight =
+        drag.direction === "right" ||
+        drag.direction === "top-right" ||
+        drag.direction === "bottom-right";
+
+      const resizeTop =
+        drag.direction === "top" ||
+        drag.direction === "top-left" ||
+        drag.direction === "top-right";
+
+      const resizeBottom =
+        drag.direction === "bottom" ||
+        drag.direction === "bottom-left" ||
+        drag.direction === "bottom-right";
+
+      if (resizeLeft || resizeRight) {
+        nextLayout.width = drag.currentWidth;
+      }
+      if (resizeTop || resizeBottom) {
+        nextLayout.height = drag.currentHeight;
+      }
+      if (isAbsolute && resizeLeft) {
+        nextLayout.x = drag.currentX;
+      }
+      if (isAbsolute && resizeTop) {
+        nextLayout.y = drag.currentY;
+      }
+      onLayoutChange?.(nextLayout, true);
+      resizeDragRef.current = null;
+      resizeElementRef.current = null;
+    },
+    [isAbsolute, onLayoutChange],
+  );
+
+  const handleResizePointerCancel = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      const drag = resizeDragRef.current;
+
+      if (!drag || drag.pointerId !== event.pointerId) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+
+      const resizeLeft =
+        drag.direction === "left" ||
+        drag.direction === "top-left" ||
+        drag.direction === "bottom-left";
+
+      const resizeRight =
+        drag.direction === "right" ||
+        drag.direction === "top-right" ||
+        drag.direction === "bottom-right";
+
+      const resizeTop =
+        drag.direction === "top" ||
+        drag.direction === "top-left" ||
+        drag.direction === "top-right";
+
+      const resizeBottom =
+        drag.direction === "bottom" ||
+        drag.direction === "bottom-left" ||
+        drag.direction === "bottom-right";
+
+      const originalLayout: Partial<ComponentLayout> = {};
+
+      if (resizeLeft || resizeRight) {
+        originalLayout.width = drag.originalWidth;
+      }
+
+      if (resizeTop || resizeBottom) {
+        originalLayout.height = drag.originalHeight;
+      }
+
+      if (isAbsolute && resizeLeft) {
+        originalLayout.x = drag.originalX;
+      }
+
+      if (isAbsolute && resizeTop) {
+        originalLayout.y = drag.originalY;
+      }
+
+      // 드래그 중 변경된 값을 원래 값으로 복구
+      onLayoutChange?.(originalLayout, false);
+
+      resizeDragRef.current = null;
+      resizeElementRef.current = null;
+    },
+    [isAbsolute, onLayoutChange],
+  );
+
   const handlePointerUp = useCallback(
     (event: PointerEvent<HTMLDivElement>) => {
       if (event.pointerType === "mouse") {
@@ -408,6 +697,82 @@ function DivBox({
       )}
 
       {children}
+
+      {!previewMode && isSelected && canResizeWidth && (
+        <>
+          <div
+            onPointerDown={(event) => handleResizePointerDown(event, "left")}
+            onPointerMove={handleResizePointerMove}
+            onPointerUp={handleResizePointerUp}
+            onPointerCancel={handleResizePointerCancel}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: -4,
+              width: 8,
+              height: "100%",
+              cursor: "ew-resize",
+              touchAction: "none",
+              zIndex: 120,
+            }}
+          />
+
+          <div
+            onPointerDown={(event) => handleResizePointerDown(event, "right")}
+            onPointerMove={handleResizePointerMove}
+            onPointerUp={handleResizePointerUp}
+            onPointerCancel={handleResizePointerCancel}
+            style={{
+              position: "absolute",
+              top: 0,
+              right: -4,
+              width: 8,
+              height: "100%",
+              cursor: "ew-resize",
+              touchAction: "none",
+              zIndex: 120,
+            }}
+          />
+        </>
+      )}
+
+      {!previewMode && isSelected && canResizeHeight && (
+        <>
+          <div
+            onPointerDown={(event) => handleResizePointerDown(event, "top")}
+            onPointerMove={handleResizePointerMove}
+            onPointerUp={handleResizePointerUp}
+            onPointerCancel={handleResizePointerCancel}
+            style={{
+              position: "absolute",
+              top: -4,
+              left: 0,
+              width: "100%",
+              height: 8,
+              cursor: "ns-resize",
+              touchAction: "none",
+              zIndex: 120,
+            }}
+          />
+
+          <div
+            onPointerDown={(event) => handleResizePointerDown(event, "bottom")}
+            onPointerMove={handleResizePointerMove}
+            onPointerUp={handleResizePointerUp}
+            onPointerCancel={handleResizePointerCancel}
+            style={{
+              position: "absolute",
+              bottom: -4,
+              left: 0,
+              width: "100%",
+              height: 8,
+              cursor: "ns-resize",
+              touchAction: "none",
+              zIndex: 120,
+            }}
+          />
+        </>
+      )}
     </div>
   );
 }

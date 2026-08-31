@@ -239,6 +239,7 @@ function LayoutComponentNode({
       >
         <DivBox
           previewMode={previewMode}
+          isSelected={isSelected}
           positionContextId={component.id}
           layout={component.layout}
           onLayoutChange={(layout, recordHistory) =>
@@ -400,6 +401,7 @@ function LayoutComponentNode({
     <div ref={componentRef} data-component-id={component.id} style={nodeStyle}>
       <DivBox
         previewMode={previewMode}
+        isSelected={isSelected}
         positionContextId={component.id}
         layout={{
           ...component.layout,

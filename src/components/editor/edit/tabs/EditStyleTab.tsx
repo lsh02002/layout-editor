@@ -1,4 +1,9 @@
-import type { CSSProperties, Dispatch, SetStateAction } from "react";
+import {
+  useState,
+  type CSSProperties,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
 import ApplyButton from "../fields/ApplyButton";
 
@@ -50,6 +55,13 @@ function EditStyleTab({
   positionParentOptions,
   onPositionParentChange,
 }: Props) {
+  const [widthApplied, setWidthApplied] = useState(
+    editLayout.widthMode === "fixed",
+  );
+
+  const [heightApplied, setHeightApplied] = useState(
+    editLayout.heightMode === "fixed",
+  );
   /*
    * Style 입력값 변경
    *
@@ -151,9 +163,16 @@ function EditStyleTab({
                     ? editLayout.width
                     : undefined,
               });
+
+              setWidthApplied(editLayout.widthMode === "fixed");
             }}
           />
         </div>
+        {widthApplied && (
+          <div className="form-text">
+            지금 박스 왼쪽 오른쪽 드래그해서 너비 변경할 수 있음!
+          </div>
+        )}
       </div>
 
       {/* Height */}
@@ -206,9 +225,16 @@ function EditStyleTab({
                     ? editLayout.height
                     : undefined,
               });
+
+              setHeightApplied(editLayout.heightMode === "fixed");
             }}
           />
         </div>
+        {heightApplied && (
+          <div className="form-text">
+            지금 박스 위아래 부분 드래그해서 높이 변경할 수 있음!
+          </div>
+        )}
       </div>
 
       {/* Margin */}
