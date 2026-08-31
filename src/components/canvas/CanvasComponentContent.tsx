@@ -114,9 +114,9 @@ function CanvasComponentContent({ component }: Props) {
           <div
             className="text-secondary border rounded d-flex align-items-center justify-content-center"
             style={{
+              ...component.contentStyle,
               width: "100%",
               minHeight: 180,
-              ...component.contentStyle,
             }}
           >
             동영상 없음
@@ -133,10 +133,12 @@ function CanvasComponentContent({ component }: Props) {
           loop={component.props.loop ?? false}
           playsInline
           style={{
+            ...component.contentStyle,
             display: "block",
             width: "100%",
             height: "auto",
-            ...component.contentStyle,
+            minHeight: 180,
+            objectFit: "contain",
           }}
         />
       );
