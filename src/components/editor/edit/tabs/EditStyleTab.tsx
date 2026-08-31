@@ -112,9 +112,6 @@ function EditStyleTab({
         <div className="input-group input-group-sm">
           <select
             className="form-select"
-            style={{
-              maxWidth: editLayout.widthMode === "fixed" ? "80px" : undefined,
-            }}
             value={editLayout.widthMode ?? "auto"}
             onChange={(event) => {
               const widthMode = event.target.value as "auto" | "fill" | "fixed";
@@ -166,9 +163,6 @@ function EditStyleTab({
         <div className="input-group input-group-sm">
           <select
             className="form-select"
-            style={{
-              maxWidth: editLayout.widthMode === "fixed" ? "80px" : undefined,
-            }}
             value={editLayout.heightMode ?? "auto"}
             onChange={(event) => {
               const heightMode = event.target.value as
