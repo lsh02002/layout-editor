@@ -147,6 +147,7 @@ function CanvasDropZone({
           visibility: "visible",
           pointerEvents: draggingId ? "none" : "auto",
           transform: hovered || isActive ? "scale(1.08)" : "scale(1)",
+          touchAction: "manipulation",
           transition: `
         opacity 120ms ease,
         transform 120ms ease,
@@ -159,10 +160,7 @@ function CanvasDropZone({
           event.stopPropagation();
           onCreate(parentId, index);
         }}
-        onPointerUp={(event) => {
-          event.stopPropagation();
-          onCreate(parentId, index);
-        }}
+        onPointerDown={(event) => event.stopPropagation()}
       >
         +
       </button>
