@@ -98,10 +98,16 @@ export const useEditComponentForm = () => {
 
     setEditLayout({
       position: component.layout?.position ?? "relative",
-      x: component.layout?.x,
-      y: component.layout?.y,
+      widthMode:
+        component.layout?.widthMode ??
+        (component.layout?.width != null ? "fixed" : "auto"),
+      heightMode:
+        component.layout?.heightMode ??
+        (component.layout?.height != null ? "fixed" : "auto"),
       width: component.layout?.width,
       height: component.layout?.height,
+      x: component.layout?.x,
+      y: component.layout?.y,
       positionParentId: component.layout?.positionParentId ?? null,
     });
 

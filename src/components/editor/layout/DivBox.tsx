@@ -12,6 +12,7 @@ import {
 import EditMenuBox from "./EditMenuBox";
 
 import type { ComponentLayout } from "../../../types/types";
+import { resolveHeight, resolveWidth } from "../utils/layoutSize";
 
 interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
@@ -299,12 +300,15 @@ function DivBox({
     [onSelect, previewMode],
   );
 
+  const resolvedWidth = resolveWidth(layout);
+  const resolvedHeight = resolveHeight(layout);
+
   return (
     <div
       data-layout-box
       data-position-context-id={positionContextId}
       className={`
-        d-inline-block
+        ${layout?.widthMode === "auto" ? "d-inline-block" : "d-block"} 
         ${className}        
       `}
       onClick={handleClick}
@@ -312,10 +316,11 @@ function DivBox({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
-        width: layout?.width ?? (isAbsolute ? "max-content" : undefined),
-        maxWidth: isAbsolute ? "none" : undefined,
-        height: layout?.height,
         ...style,
+        width: resolvedWidth ?? (isAbsolute ? "max-content" : undefined),
+        height: resolvedHeight,
+        boxSizing: "border-box",
+        maxWidth: isAbsolute ? "none" : "100%",
         position: "relative",
         outline:
           style?.outline ??

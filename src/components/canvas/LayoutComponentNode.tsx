@@ -144,6 +144,10 @@ function LayoutComponentNode({
         : -40
       : -10;
 
+  const effectiveWidthMode =
+    component.layout?.widthMode ??
+    (component.type === "image" ? "fill" : undefined);
+
   const handleNativeDragStart = useCallback(
     (event: DragEvent<HTMLElement>, componentId: string) => {
       setIsLocalDragging(true);
@@ -177,8 +181,9 @@ function LayoutComponentNode({
     left: isAbsolute ? (component.layout?.x ?? 0) : undefined,
     top: isAbsolute ? (component.layout?.y ?? 0) : undefined,
     zIndex: isAbsolute ? 1000 : undefined,
-    width: isAbsolute ? "max-content" : undefined,
-    maxWidth: isAbsolute ? "none" : undefined,
+    width: isAbsolute ? "max-content" : "100%",
+    minWidth: 0,
+    maxWidth: isAbsolute ? "none" : "100%",
 
     ...(component.style?.border
       ? { border: component.style.border }
@@ -260,117 +265,25 @@ function LayoutComponentNode({
                 : component.style?.outlineOffset,
           }}
         >
-          {dragHandleView}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: direction,
-              gap: component.props.gap ?? 8,
-              width: "100%",
-              maxWidth: component.props.maxWidth
-                ? `${component.props.maxWidth}px`
-                : undefined,
-              marginInline: component.props.maxWidth ? "auto" : undefined,
-              justifyContent: component.props.justifyContent ?? "space-between",
-              alignItems: component.props.alignItems ?? "stretch",
-            }}
-          >
-            <CanvasDropZone
-              previewMode={previewMode}
-              parentId={component.id}
-              index={0}
-              direction={direction}
-              draggingId={draggingId}
-              activeDropTarget={activeDropTarget}
-              setActiveDropTarget={setActiveDropTarget}
-              onDrop={onDrop}
-              onCreate={onCreate}
-            />
-            {children.map((child, index) => {
-              const childIsAbsolute = child.layout?.position === "absolute";
-              const shouldFillRow =
-                child.type === "image" ||
-                child.type === "textarea" ||
-                child.type === "quill" ||
-                child.type === "heading" ||
-                child.type === "spacer" ||
-                child.type === "divider";
-              const explicitLayoutWidth = child.layout?.width;
+          <div style={{ position: "relative", width: "100%" }}>
+            {dragHandleView}
 
-              return (
-                <div
-                  key={child.id}
-                  style={
-                    childIsAbsolute
-                      ? {
-                          display: "contents",
-                        }
-                      : {
-                          width: isRow
-                            ? (explicitLayoutWidth ??
-                              (shouldFillRow ? 0 : "auto"))
-                            : "100%",
-
-                          flex: isRow
-                            ? explicitLayoutWidth
-                              ? "0 0 auto"
-                              : shouldFillRow
-                                ? "1 1 0"
-                                : "0 0 auto"
-                            : undefined,
-
-                          minWidth: 0,
-                          maxWidth: "100%",
-                        }
-                  }
-                >
-                  <LayoutComponentNode
-                    previewMode={previewMode}
-                    component={child}
-                    selectedComponentId={selectedComponentId}
-                    draggingId={draggingId}
-                    droppedId={droppedId}
-                    layerSearch={layerSearch}
-                    activeDropTarget={activeDropTarget}
-                    setActiveDropTarget={setActiveDropTarget}
-                    onLayoutChange={onLayoutChange}
-                    onSelect={onSelect}
-                    onEdit={onEdit}
-                    onCopy={onCopy}
-                    onDelete={onDelete}
-                    onCreate={onCreate}
-                    onDrop={onDrop}
-                    onDragStart={onDragStart}
-                    onDragEnd={onDragEnd}
-                    onPointerDragStart={onPointerDragStart}
-                    onPointerDragMove={onPointerDragMove}
-                    onPointerDragEnd={onPointerDragEnd}
-                    onPointerDragCancel={onPointerDragCancel}
-                    snapLayout={snapLayout}
-                  />
-                  {!childIsAbsolute &&
-                    child.type !== "scrollToTopButton" &&
-                    !isRow && (
-                      <CanvasDropZone
-                        previewMode={previewMode}
-                        parentId={component.id}
-                        index={index + 1}
-                        direction={direction}
-                        draggingId={draggingId}
-                        activeDropTarget={activeDropTarget}
-                        setActiveDropTarget={setActiveDropTarget}
-                        onDrop={onDrop}
-                        onCreate={onCreate}
-                      />
-                    )}
-                </div>
-              );
-            })}
-            {isRow && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: direction,
+                gap: component.props.gap ?? 8,
+                width: "100%",
+                minWidth: 0,
+                justifyContent:
+                  component.props.justifyContent ?? "space-between",
+                alignItems: component.props.alignItems ?? "stretch",
+              }}
+            >
               <CanvasDropZone
                 previewMode={previewMode}
                 parentId={component.id}
-                index={children.length}
+                index={0}
                 direction={direction}
                 draggingId={draggingId}
                 activeDropTarget={activeDropTarget}
@@ -378,7 +291,105 @@ function LayoutComponentNode({
                 onDrop={onDrop}
                 onCreate={onCreate}
               />
-            )}
+              {children.map((child, index) => {
+                const childIsAbsolute = child.layout?.position === "absolute";
+                const widthMode =
+                  child.layout?.widthMode ??
+                  (child.type === "image" ? "fill" : undefined);
+                const childWidth = child.layout?.width;
+
+                const childWrapperStyle = childIsAbsolute
+                  ? {
+                      display: "contents",
+                    }
+                  : isRow
+                    ? {
+                        // row의 직계 자식일 때만 flex sizing 적용
+                        width:
+                          widthMode === "fixed"
+                            ? childWidth
+                            : widthMode === "fill"
+                              ? 0
+                              : "auto",
+                        flex:
+                          widthMode === "fixed"
+                            ? "0 0 auto"
+                            : widthMode === "fill"
+                              ? "1 1 0"
+                              : "0 0 auto",
+                        minWidth: 0,
+                        maxWidth: "100%",
+                      }
+                    : {
+                        // column / 일반 부모에서는 그냥 부모 폭 사용
+                        width:
+                          widthMode === "fixed"
+                            ? childWidth
+                            : widthMode === "auto"
+                              ? "auto"
+                              : "100%",
+                        minWidth: 0,
+                        maxWidth: "100%",
+                      };
+
+                return (
+                  <div key={child.id} style={childWrapperStyle}>
+                    <LayoutComponentNode
+                      previewMode={previewMode}
+                      component={child}
+                      selectedComponentId={selectedComponentId}
+                      draggingId={draggingId}
+                      droppedId={droppedId}
+                      layerSearch={layerSearch}
+                      activeDropTarget={activeDropTarget}
+                      setActiveDropTarget={setActiveDropTarget}
+                      onLayoutChange={onLayoutChange}
+                      onSelect={onSelect}
+                      onEdit={onEdit}
+                      onCopy={onCopy}
+                      onDelete={onDelete}
+                      onCreate={onCreate}
+                      onDrop={onDrop}
+                      onDragStart={onDragStart}
+                      onDragEnd={onDragEnd}
+                      onPointerDragStart={onPointerDragStart}
+                      onPointerDragMove={onPointerDragMove}
+                      onPointerDragEnd={onPointerDragEnd}
+                      onPointerDragCancel={onPointerDragCancel}
+                      snapLayout={snapLayout}
+                    />
+                    {!childIsAbsolute &&
+                      child.type !== "scrollToTopButton" &&
+                      !isRow && (
+                        <CanvasDropZone
+                          previewMode={previewMode}
+                          parentId={component.id}
+                          index={index + 1}
+                          direction={direction}
+                          draggingId={draggingId}
+                          activeDropTarget={activeDropTarget}
+                          setActiveDropTarget={setActiveDropTarget}
+                          onDrop={onDrop}
+                          onCreate={onCreate}
+                        />
+                      )}
+                  </div>
+                );
+              })}
+              {isRow && (
+                <CanvasDropZone
+                  previewMode={previewMode}
+                  parentId={component.id}
+                  index={children.length}
+                  direction={direction}
+                  draggingId={draggingId}
+                  activeDropTarget={activeDropTarget}
+                  setActiveDropTarget={setActiveDropTarget}
+                  onDrop={onDrop}
+                  onCreate={onCreate}
+                />
+              )}
+            </div>
           </div>
         </DivBox>
       </div>,
@@ -390,7 +401,10 @@ function LayoutComponentNode({
       <DivBox
         previewMode={previewMode}
         positionContextId={component.id}
-        layout={component.layout}
+        layout={{
+          ...component.layout,
+          widthMode: effectiveWidthMode,
+        }}
         onLayoutChange={(layout, recordHistory) =>
           onLayoutChange(component.id, layout, recordHistory)
         }

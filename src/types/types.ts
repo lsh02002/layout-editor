@@ -7,9 +7,13 @@ export type ComponentType = LayoutComponent["type"];
 export type ContainerDirection = "row" | "column";
 export type LinkType = "url" | "tel" | "email";
 
+export type SizeMode = "auto" | "fill" | "fixed";
+
 export interface ComponentLayout {
   position?: "relative" | "absolute";
-  width?: number | string;
+  widthMode?: "fixed" | "auto" | "fill";
+  heightMode?: "fixed" | "auto" | "fill";
+  width?: number | string;  
   height?: number | string;
   x?: number;
   y?: number;

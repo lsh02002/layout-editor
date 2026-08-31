@@ -110,25 +110,50 @@ function EditStyleTab({
         <label className="form-label">Width</label>
 
         <div className="input-group input-group-sm">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="100%, 500px, auto"
-            value={String(editStyle.width ?? "")}
+          <select
+            className="form-select"
+            style={{
+              maxWidth: editLayout.widthMode === "fixed" ? "80px" : undefined,
+            }}
+            value={editLayout.widthMode ?? "auto"}
             onChange={(event) => {
-              updateStyle("width", event.target.value || undefined);
+              const widthMode = event.target.value as "auto" | "fill" | "fixed";
 
               setEditLayout((prev) => ({
                 ...prev,
-                width: event.target.value || undefined,
+                widthMode,
+                width: widthMode === "fixed" ? (prev.width ?? 300) : prev.width,
               }));
             }}
-          />
+          >
+            <option value="auto">Auto</option>
+            <option value="fill">Fill</option>
+            <option value="fixed">Fixed</option>
+          </select>
+
+          {editLayout.widthMode === "fixed" && (
+            <input
+              type="number"
+              className="form-control"
+              value={Number(editLayout.width ?? 300)}
+              onChange={(event) => {
+                setEditLayout((prev) => ({
+                  ...prev,
+                  width: Number(event.target.value),
+                }));
+              }}
+            />
+          )}
 
           <ApplyButton
             onClick={() => {
-              onApply("style", "width", editStyle.width);
-              onLayoutChange({ width: editLayout.width });
+              onLayoutChange({
+                widthMode: editLayout.widthMode ?? "auto",
+                width:
+                  editLayout.widthMode === "fixed"
+                    ? editLayout.width
+                    : undefined,
+              });
             }}
           />
         </div>
@@ -139,25 +164,54 @@ function EditStyleTab({
         <label className="form-label">Height</label>
 
         <div className="input-group input-group-sm">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="200px, auto"
-            value={String(editStyle.height ?? "")}
+          <select
+            className="form-select"
+            style={{
+              maxWidth: editLayout.widthMode === "fixed" ? "80px" : undefined,
+            }}
+            value={editLayout.heightMode ?? "auto"}
             onChange={(event) => {
-              updateStyle("height", event.target.value || undefined);
+              const heightMode = event.target.value as
+                | "auto"
+                | "fill"
+                | "fixed";
 
               setEditLayout((prev) => ({
                 ...prev,
-                height: event.target.value || undefined,
+                heightMode,
+                height:
+                  heightMode === "fixed" ? (prev.height ?? 100) : prev.height,
               }));
             }}
-          />
+          >
+            <option value="auto">Auto</option>
+            <option value="fill">Fill</option>
+            <option value="fixed">Fixed</option>
+          </select>
+
+          {editLayout.heightMode === "fixed" && (
+            <input
+              type="number"
+              className="form-control"
+              value={Number(editLayout.height ?? 100)}
+              onChange={(event) => {
+                setEditLayout((prev) => ({
+                  ...prev,
+                  height: Number(event.target.value),
+                }));
+              }}
+            />
+          )}
 
           <ApplyButton
             onClick={() => {
-              onApply("style", "height", editStyle.height);
-              onLayoutChange({ height: editLayout.height });
+              onLayoutChange({
+                heightMode: editLayout.heightMode ?? "auto",
+                height:
+                  editLayout.heightMode === "fixed"
+                    ? editLayout.height
+                    : undefined,
+              });
             }}
           />
         </div>

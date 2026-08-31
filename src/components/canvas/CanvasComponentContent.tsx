@@ -77,13 +77,27 @@ function CanvasComponentContent({ component }: Props) {
     case "image": {
       const imageUrl = component.props.urls?.[0];
       return (
-        <div style={{ ...component.contentStyle, width: "100%" }}>
+        <div
+          style={{
+            ...component.contentStyle,
+            width: "100%",
+            maxWidth: "100%",
+            minWidth: 0,
+            overflow: "hidden",
+          }}
+        >
           {imageUrl ? (
             <img
               src={imageUrl}
               alt=""
               draggable={false}
-              style={{ width: "100%", height: "auto", display: "block" }}
+              style={{
+                display: "block",
+                width: "100%",
+                maxWidth: "100%",
+                height: "auto",
+                objectFit: "contain",
+              }}
             />
           ) : (
             <div className="text-secondary">이미지 없음</div>
