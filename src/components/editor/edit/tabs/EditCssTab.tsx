@@ -1,4 +1,4 @@
-import CssEditor from "../../utils/cssEditor";
+import CodeEditor from "../../utils/codeEditor";
 import ApplyButton from "../fields/ApplyButton";
 
 type Props = {
@@ -12,9 +12,9 @@ function EditCssTab({ value, onValueChange, onApply }: Props) {
     <div>
       <label className="form-label">컴포넌트 Custom CSS</label>
 
-      <CssEditor
+      <CodeEditor
         data={value}
-        setData={onValueChange}        
+        setData={onValueChange}
         placeholder={`& {
   background: #111;
   color: white;

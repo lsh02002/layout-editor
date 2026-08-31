@@ -1,4 +1,4 @@
-import CssEditor from "../utils/cssEditor";
+import CodeEditor from "../utils/codeEditor";
 
 type Props = {
   open: boolean;
@@ -28,7 +28,7 @@ function ProjectCssModal({ open, value, onChange, onClose, onSave }: Props) {
             </div>
 
             <div className="modal-body">
-              <CssEditor
+              <CodeEditor
                 data={value}
                 setData={onChange}
                 height="350px"
