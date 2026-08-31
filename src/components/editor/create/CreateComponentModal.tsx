@@ -117,6 +117,7 @@ function CreateComponentModal({
                   <option value="link">Link</option>
                   <option value="divider">Divider</option>
                   <option value="spacer">Spacer</option>
+                  <option value="codeEditor">Code Editor</option>
                 </select>
               </div>
 
@@ -210,6 +211,26 @@ function CreateComponentModal({
                   value={newComponentName}
                   onChange={setNewComponentName}
                 />
+              )}
+
+              {newType === "codeEditor" && (
+                <>
+                  <ComponentNameField
+                    value={newComponentName}
+                    onChange={setNewComponentName}
+                  />
+
+                  <div className="mb-3">
+                    <label className="form-label">초기 코드</label>
+
+                    <textarea
+                      className="form-control font-monospace"
+                      rows={8}
+                      value={newValue}
+                      onChange={(e) => setNewValue(e.target.value)}
+                    />
+                  </div>
+                </>
               )}
 
               {newType === "container" && (

@@ -13,7 +13,7 @@ export interface ComponentLayout {
   position?: "relative" | "absolute";
   widthMode?: "fixed" | "auto" | "fill";
   heightMode?: "fixed" | "auto" | "fill";
-  width?: number | string;  
+  width?: number | string;
   height?: number | string;
   x?: number;
   y?: number;
@@ -32,6 +32,13 @@ export type ContainerAlignItems =
   | "flex-start"
   | "center"
   | "flex-end";
+
+export type CodeLanguage =
+  | "css"
+  | "html"
+  | "javascript"
+  | "typescript"
+  | "json";
 
 interface BaseComponent {
   id: string;
@@ -168,6 +175,16 @@ export interface VideoComponent extends BaseComponent {
   };
 }
 
+export interface CodeEditorComponent extends BaseComponent {
+  type: "codeEditor";
+
+  props: {
+    value: string;
+    language: CodeLanguage;
+    readOnly?: boolean;
+  };
+}
+
 export type LayoutComponent =
   | ButtonComponent
   | ScrollToTopButtonComponent
@@ -179,6 +196,7 @@ export type LayoutComponent =
   | DividerComponent
   | SpacerComponent
   | VideoComponent
+  | CodeEditorComponent
   | ContainerComponent;
 
 export interface HistoryState {
@@ -285,6 +303,7 @@ export type EditValues = {
   editVideoAutoplay: boolean;
   editVideoMuted: boolean;
   editVideoLoop: boolean;
+  editCodeLanguage: CodeLanguage;
 };
 
 export type SelectionSetter = Dispatch<SetStateAction<string | null>>;
@@ -303,5 +322,6 @@ export const VALID_COMPONENT_TYPES = [
   "container",
   "divider",
   "spacer",
+  "codeEditor",
   "scrollToTopButton",
 ] as const satisfies readonly ComponentType[];

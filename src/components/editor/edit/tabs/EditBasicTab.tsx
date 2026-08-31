@@ -7,6 +7,7 @@ import type {
   HeadingLevel,
   ContainerJustifyContent,
   ContainerAlignItems,
+  CodeLanguage,
 } from "../../../../types/types";
 
 import EditButtonFields from "../fields/EditButtonFields";
@@ -19,6 +20,7 @@ import EditTextareaFields from "../fields/EditTextareaFields";
 import EditDividerFields from "../fields/EditDividerFields";
 import EditSpacerFields from "../fields/EditSpacerFields";
 import EditVideoFields from "../fields/EditVideoFields";
+import EditCodeEditorFields from "../fields/EditCodeEditorFields";
 
 type Props = {
   editType: ComponentType;
@@ -95,6 +97,9 @@ type Props = {
   setEditVideoMuted: Dispatch<SetStateAction<boolean>>;
   editVideoLoop: boolean;
   setEditVideoLoop: Dispatch<SetStateAction<boolean>>;
+
+  editCodeLanguage: CodeLanguage;
+  setEditCodeLanguage: Dispatch<SetStateAction<CodeLanguage>>;
 };
 
 function EditBasicTab({
@@ -165,6 +170,9 @@ function EditBasicTab({
   editVideoLoop,
   setEditVideoLoop,
 
+  editCodeLanguage,
+  setEditCodeLanguage,
+
   onImmediateChange,
 }: Props) {
   const handleComponentNameChange = (name: string) => {
@@ -214,6 +222,15 @@ function EditBasicTab({
 
         case "textarea":
         case "quill":
+          return {
+            ...component,
+            props: {
+              ...component.props,
+              value,
+            },
+          };
+
+        case "codeEditor":
           return {
             ...component,
             props: {
@@ -609,6 +626,24 @@ function EditBasicTab({
     });
   };
 
+  const handleCodeLanguageChange = (language: CodeLanguage) => {
+    setEditCodeLanguage(language);
+
+    onImmediateChange((component) => {
+      if (component.type !== "codeEditor") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          language,
+        },
+      };
+    });
+  };
+
   return (
     <>
       {/* 타입 */}
@@ -748,6 +783,19 @@ function EditBasicTab({
             height={editSpacerHeight}
             onComponentNameChange={handleComponentNameChange}
             onHeightChange={handleSpacerHeightChange}
+          />
+        </div>
+      )}
+
+      {editType === "codeEditor" && (
+        <div className="mb-3">
+          <EditCodeEditorFields
+            componentName={editComponentName}
+            value={editValue}
+            language={editCodeLanguage}
+            onComponentNameChange={handleComponentNameChange}
+            onValueChange={handleValueChange}
+            onLanguageChange={handleCodeLanguageChange}
           />
         </div>
       )}

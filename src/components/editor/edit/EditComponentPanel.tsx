@@ -15,6 +15,7 @@ import type {
   HeadingLevel,
   ContainerAlignItems,
   ContainerJustifyContent,
+  CodeLanguage,
 } from "../../../types/types";
 
 import type { EditTab } from "../hooks/useEditComponentForm";
@@ -168,6 +169,9 @@ type Props = {
   setEditVideoMuted: Dispatch<SetStateAction<boolean>>;
   editVideoLoop: boolean;
   setEditVideoLoop: Dispatch<SetStateAction<boolean>>;
+
+  editCodeLanguage: CodeLanguage;
+  setEditCodeLanguage: Dispatch<SetStateAction<CodeLanguage>>;
 };
 
 function EditComponentPanel({
@@ -281,6 +285,9 @@ function EditComponentPanel({
   setEditVideoMuted,
   editVideoLoop,
   setEditVideoLoop,
+
+  editCodeLanguage,
+  setEditCodeLanguage,
 }: Props) {
   const { editTab, setEditTab } = useLogin();
 
@@ -443,6 +450,8 @@ function EditComponentPanel({
                   setEditVideoMuted={setEditVideoMuted}
                   editVideoLoop={editVideoLoop}
                   setEditVideoLoop={setEditVideoLoop}
+                  editCodeLanguage={editCodeLanguage}
+                  setEditCodeLanguage={setEditCodeLanguage}
                   onImmediateChange={onImmediateChange}
                 />
               )}

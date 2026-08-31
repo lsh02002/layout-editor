@@ -234,6 +234,29 @@ export const useCreateComponentForm = () => {
           },
         };
 
+      case "codeEditor":
+        return {
+          id,
+          name: newComponentName.trim() || "CodeEditor",
+          type: "codeEditor",
+          order: 0,
+
+          props: {
+            value:
+              newValue || `const hello = "Hello World";\n\nconsole.log(hello);`,
+            language: "javascript",
+            readOnly: false,
+          },
+
+          style: {
+            width: "100%",
+          },
+
+          contentStyle: {
+            width: "100%",
+          },
+        };
+
       case "container":
         return {
           id,
@@ -455,6 +478,29 @@ export const useCreateComponentForm = () => {
             height: 32,
           },
           style: {
+            width: "100%",
+          },
+        };
+
+      case "codeEditor":
+        return {
+          id,
+          name: newComponentName.trim() || "CodeEditor",
+          type: "codeEditor",
+          order: 0,
+
+          props: {
+            value:
+              newValue || `const hello = "Hello World";\n\nconsole.log(hello);`,
+            language: "javascript",
+            readOnly: false,
+          },
+
+          style: {
+            width: "100%",
+          },
+
+          contentStyle: {
             width: "100%",
           },
         };

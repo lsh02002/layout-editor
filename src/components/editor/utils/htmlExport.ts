@@ -360,6 +360,42 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
         ></div>`;
     }
 
+    case "codeEditor": {
+      const code = component.props.value ?? "";
+
+      return `
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="codeEditor"
+      data-component-name="${componentName}"
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <pre
+        class="builder-code-editor"
+        data-language="${escapeAttribute(component.props.language)}"
+        style="${escapeAttribute(
+          [
+            "margin:0",
+            "width:100%",
+            "height:100%",
+            "overflow:auto",
+            "box-sizing:border-box",
+            "padding:16px",
+            "background:#1f2329",
+            "color:#c9d1d9",
+            "font-family:Consolas,Monaco,monospace",
+            "white-space:pre",
+            contentStyle,
+          ]
+            .filter(Boolean)
+            .join(";"),
+        )}"
+      ><code>${escapeHtml(code)}</code></pre>
+    </div>
+  `;
+    }
+
     case "container": {
       const direction = component.props.direction ?? "column";
       const gap = component.props.gap ?? 8;

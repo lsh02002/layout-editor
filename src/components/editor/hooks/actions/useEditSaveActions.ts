@@ -52,6 +52,8 @@ export const useEditSaveActions = ({
         editVideoMuted,
         editVideoLoop,
 
+        editCodeLanguage,
+
         editLayout,
       } = editValues;
 
@@ -192,6 +194,18 @@ export const useEditSaveActions = ({
               disabled: editDisabled,
             },
           };
+
+          case "codeEditor":
+  return {
+    ...component,
+    ...common,
+
+    props: {
+      ...component.props,
+      value: editValue,
+      language: editCodeLanguage,
+    },
+  };
 
         case "scrollToTopButton":
           return {

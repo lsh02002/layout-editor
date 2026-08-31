@@ -1,6 +1,7 @@
 import { memo, type CSSProperties, type JSX } from "react";
 import type { LayoutComponent } from "../../types/types";
 import { getLinkHref } from "../editor/utils/linkUtils";
+import CodeEditor from "../editor/utils/codeEditor";
 
 type Props = {
   component: Exclude<LayoutComponent, { type: "container" }>;
@@ -191,6 +192,27 @@ function CanvasComponentContent({ component }: Props) {
             ...component.contentStyle,
           }}
         />
+      );
+
+    case "codeEditor":
+      return (
+        <div
+          style={{
+            ...component.contentStyle,
+            width: "100%",
+            height: "100%",
+            minWidth: 0,
+            overflow: "hidden",
+          }}
+        >
+          <CodeEditor
+            data={component.props.value}
+            setData={() => {}}
+            language={component.props.language}
+            height="100%"
+            readOnly
+          />
+        </div>
       );
   }
 }

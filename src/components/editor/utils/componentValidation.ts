@@ -161,6 +161,24 @@ const spacerSchema = baseComponentSchema.extend({
   }),
 });
 
+const codeEditorSchema = baseComponentSchema.extend({
+  type: z.literal("codeEditor"),
+
+  props: z.object({
+    value: z.string(),
+
+    language: z.enum([
+      "css",
+      "html",
+      "javascript",
+      "typescript",
+      "json",
+    ]),
+
+    readOnly: z.boolean().optional(),
+  }),
+});
+
 type ComponentSchema =
   | z.infer<typeof buttonSchema>
   | z.infer<typeof scrollToTopButtonSchema>
@@ -172,6 +190,7 @@ type ComponentSchema =
   | z.infer<typeof linkSchema>
   | z.infer<typeof dividerSchema>
   | z.infer<typeof spacerSchema>
+  | z.infer<typeof codeEditorSchema>
   | {
       id: string;
       name?: string;
@@ -207,6 +226,7 @@ const componentSchema: z.ZodType<ComponentSchema> = z.lazy(() =>
     linkSchema,
     dividerSchema,
     spacerSchema,
+    codeEditorSchema,
 
     baseComponentSchema.extend({
       type: z.literal("container"),

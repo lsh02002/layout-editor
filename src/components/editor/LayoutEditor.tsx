@@ -152,6 +152,9 @@ function LayoutEditor() {
     editVideoLoop,
     setEditVideoLoop,
 
+    editCodeLanguage,
+    setEditCodeLanguage,
+
     resetEditForm,
   } = useEditComponentForm();
 
@@ -298,6 +301,8 @@ function LayoutEditor() {
       editVideoMuted,
       editVideoLoop,
 
+      editCodeLanguage,
+
       editLayout,
     }),
     [
@@ -329,6 +334,8 @@ function LayoutEditor() {
       editVideoAutoplay,
       editVideoMuted,
       editVideoLoop,
+
+      editCodeLanguage,
 
       editLayout,
     ],
@@ -817,6 +824,8 @@ function LayoutEditor() {
         setEditVideoMuted={setEditVideoMuted}
         editVideoLoop={editVideoLoop}
         setEditVideoLoop={setEditVideoLoop}
+        editCodeLanguage={editCodeLanguage}
+        setEditCodeLanguage={setEditCodeLanguage}
       />
     </>
   );

@@ -1,5 +1,5 @@
 import { useCallback, useState, type CSSProperties } from "react";
-import type { ContainerAlignItems } from "../../../types/types";
+import type { CodeLanguage, ContainerAlignItems } from "../../../types/types";
 import {
   type ComponentLayout,
   type ComponentType,
@@ -76,6 +76,9 @@ export const useEditComponentForm = () => {
   const [editVideoAutoplay, setEditVideoAutoplay] = useState(false);
   const [editVideoMuted, setEditVideoMuted] = useState(false);
   const [editVideoLoop, setEditVideoLoop] = useState(false);
+
+  const [editCodeLanguage, setEditCodeLanguage] =
+  useState<CodeLanguage>("javascript");
 
   const loadComponentToEdit = useCallback((component: LayoutComponent) => {
     setEditingComponentId(component.id);
@@ -245,6 +248,16 @@ export const useEditComponentForm = () => {
 
         break;
       }
+
+      case "codeEditor": {
+        setEditTitle("");
+        setEditValue(component.props.value ?? "");
+        setEditPlaceholder("");
+        setEditDirection("column");
+
+        setEditCodeLanguage(component.props.language ?? "javascript");
+        break;
+      }
     }
   }, []);
 
@@ -283,6 +296,8 @@ export const useEditComponentForm = () => {
     setEditVideoAutoplay(false);
     setEditVideoMuted(false);
     setEditVideoLoop(false);
+
+    setEditCodeLanguage("javascript");
   }, []);
 
   return {
@@ -348,6 +363,9 @@ export const useEditComponentForm = () => {
     setEditVideoMuted,
     editVideoLoop,
     setEditVideoLoop,
+
+    editCodeLanguage,
+    setEditCodeLanguage,
 
     resetEditForm,
   };

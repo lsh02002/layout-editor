@@ -60,6 +60,11 @@ const COMPONENTS: {
     label: "Spacer",
     description: "여백",
   },
+  {
+    type: "codeEditor",
+    label: "Code Editor",
+    description: "코드 편집기",
+  },
 ];
 
 function ComponentPanel() {
