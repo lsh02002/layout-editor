@@ -16,17 +16,17 @@ function EditCssTab({ value, onValueChange, onApply }: Props) {
         data={value}
         setData={onValueChange}        
         placeholder={`& {
-    background: #111;
-    color: white;
-  }
+  background: #111;
+  color: white;
+}
 
-  &:hover {
-    opacity: 0.9;
-  }
+&:hover {
+  opacity: 0.9;
+}
 
-  & button {
-    border-radius: 20px;
-  }`}
+& button {
+  border-radius: 20px;
+}`}
       />
 
       <div className="form-text mb-3">
