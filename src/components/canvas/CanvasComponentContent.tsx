@@ -81,8 +81,9 @@ function CanvasComponentContent({ component }: Props) {
           style={{
             ...component.contentStyle,
             width: "100%",
-            maxWidth: "100%",
+            height: "100%",
             minWidth: 0,
+            minHeight: 0,
             overflow: "hidden",
           }}
         >
@@ -92,11 +93,10 @@ function CanvasComponentContent({ component }: Props) {
               alt=""
               draggable={false}
               style={{
-                display: "block",
                 width: "100%",
-                maxWidth: "100%",
-                height: "auto",
-                objectFit: "contain",
+                height: "100%",
+                objectFit: "fill",
+                display: "block",
               }}
             />
           ) : (

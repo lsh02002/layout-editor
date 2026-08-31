@@ -245,27 +245,32 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
         console.error("HTML 이미지 압축 실패:", error);
       }
 
-      return `
-        <div
-          class="${wrapperClass}"
-          data-component-id="${componentId}"
-          data-component-type="image"
-          data-component-name="${componentName}"
-          style="${escapeAttribute(wrapperStyle)}"
-        >
-          <img
-            class="builder-image"
-            src="${escapeAttribute(imageUrl)}"
-            alt="${componentName}"
-            loading="lazy"
-            decoding="async"
-            style="${escapeAttribute(
-              ["display:block", "width:100%", "height:auto", contentStyle]
-                .filter(Boolean)
-                .join(";"),
-            )}"
-          />
-        </div>`;
+      return `<div 
+        class="${wrapperClass}" 
+        data-component-id="${componentId}" 
+        data-component-type="image" 
+        data-component-name="${componentName}" 
+        style="${escapeAttribute(wrapperStyle)}" 
+      > 
+        <img 
+          class="builder-image" 
+          src="${escapeAttribute(imageUrl)}" 
+          alt="${componentName}" 
+          loading="lazy" 
+          decoding="async" 
+          style="${escapeAttribute(
+            [
+              "display:block",
+              "width:100%",
+              "height:100%",
+              "object-fit:fill",
+              contentStyle,
+            ]
+              .filter(Boolean)
+              .join(";"),
+          )}" 
+        /> 
+      </div>`;
     }
 
     case "video": {
