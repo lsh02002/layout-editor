@@ -12,12 +12,8 @@ import {
 
 type Options = {
   components: LayoutComponent[];
-
-  selectedComponentId: string | null;
   selectedComponentIds: string[];
-
   commitHistory: CommitHistory;
-  setSelectedComponentId: (id: string | null) => void;
   setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
@@ -63,12 +59,12 @@ const removeSelectedComponents = (
 
 export const useEditorShortcuts = ({
   components,
-  selectedComponentId,
   selectedComponentIds,
   commitHistory,
-  setSelectedComponentId,
   setSelectedComponentIds,
 }: Options) => {
+  const primarySelectedId = selectedComponentIds.at(-1) ?? null;
+
   const copiedComponentsRef = useRef<LayoutComponent[]>([]);
 
   useEffect(() => {
@@ -90,12 +86,7 @@ export const useEditorShortcuts = ({
       }
 
       if (key === "c") {
-        const ids =
-          selectedComponentIds.length > 0
-            ? selectedComponentIds
-            : selectedComponentId
-              ? [selectedComponentId]
-              : [];
+        const ids = selectedComponentIds;
 
         if (ids.length === 0) {
           return;
@@ -161,14 +152,13 @@ export const useEditorShortcuts = ({
       const clones = copied.map((component) => cloneComponent(component));
       const newIds = clones.map((component) => component.id);
 
-      if (!selectedComponentId) {
+      if (!primarySelectedId) {
         commitHistory((prev) => normalizeOrder([...prev, ...clones]));
         setSelectedComponentIds(newIds);
-        setSelectedComponentId(newIds[0] ?? null);
         return;
       }
 
-      const selected = findComponentRecursive(components, selectedComponentId);
+      const selected = findComponentRecursive(components, primarySelectedId);
 
       if (selected && selected.type === "container") {
         commitHistory((prev) => {
@@ -185,11 +175,10 @@ export const useEditorShortcuts = ({
           return next;
         });
         setSelectedComponentIds(newIds);
-        setSelectedComponentId(newIds[newIds.length - 1] ?? null);
         return;
       }
 
-      const location = findComponentLocation(components, selectedComponentId);
+      const location = findComponentLocation(components, primarySelectedId);
 
       if (!location) {
         return;
@@ -210,7 +199,6 @@ export const useEditorShortcuts = ({
       });
 
       setSelectedComponentIds(newIds);
-      setSelectedComponentId(newIds[newIds.length - 1] ?? null);
     };
 
     window.addEventListener("keydown", handleClipboardShortcut);
@@ -221,9 +209,8 @@ export const useEditorShortcuts = ({
   }, [
     commitHistory,
     components,
-    selectedComponentId,
+    primarySelectedId,
     selectedComponentIds,
-    setSelectedComponentId,
     setSelectedComponentIds,
   ]);
 
@@ -237,22 +224,13 @@ export const useEditorShortcuts = ({
         return;
       }
 
-      if (selectedComponentIds.length === 0 && !selectedComponentId) {
-        return;
-      }
-
       event.preventDefault();
 
       if (event.repeat) {
         return;
       }
 
-      const ids =
-        selectedComponentIds.length > 0
-          ? selectedComponentIds
-          : selectedComponentId
-            ? [selectedComponentId]
-            : [];
+      const ids = selectedComponentIds;
 
       if (ids.length === 0) {
         return;
@@ -261,7 +239,6 @@ export const useEditorShortcuts = ({
       const selectedSet = new Set(ids);
       commitHistory((prev) => removeSelectedComponents(prev, selectedSet));
       setSelectedComponentIds([]);
-      setSelectedComponentId(null);
     };
 
     window.addEventListener("keydown", handleDeleteKey);
@@ -269,11 +246,5 @@ export const useEditorShortcuts = ({
     return () => {
       window.removeEventListener("keydown", handleDeleteKey);
     };
-  }, [
-    commitHistory,
-    selectedComponentId,
-    selectedComponentIds,
-    setSelectedComponentId,
-    setSelectedComponentIds,
-  ]);
+  }, [commitHistory, selectedComponentIds, setSelectedComponentIds]);
 };

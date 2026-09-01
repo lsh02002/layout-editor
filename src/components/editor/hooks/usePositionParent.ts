@@ -15,23 +15,25 @@ type PositionParentOption = {
 
 type Props = {
   components: LayoutComponent[];
-  selectedComponentId: string | null;
+  selectedComponentIds: string[];
   setEditLayout: Dispatch<SetStateAction<ComponentLayout>>;
   updateLayout: (id: string, layout: Partial<ComponentLayout>) => void;
 };
 
 export function usePositionParent({
   components,
-  selectedComponentId,
+  selectedComponentIds,
   setEditLayout,
   updateLayout,
 }: Props) {
+  const primarySelectedId = selectedComponentIds[0] ?? null;
+
   const positionParentOptions = useMemo<PositionParentOption[]>(() => {
-    if (!selectedComponentId) {
+    if (!primarySelectedId) {
       return [];
     }
 
-    const selected = findComponentRecursive(components, selectedComponentId);
+    const selected = findComponentRecursive(components, primarySelectedId);
 
     if (!selected) {
       return [];
@@ -58,11 +60,11 @@ export function usePositionParent({
     walk(components);
 
     return result;
-  }, [components, selectedComponentId]);
+  }, [components, primarySelectedId]);
 
   const handlePositionParentChange = useCallback(
     (positionParentId: string | null) => {
-      if (!selectedComponentId) {
+      if (!primarySelectedId) {
         return;
       }
 
@@ -75,9 +77,9 @@ export function usePositionParent({
         ...nextLayout,
       }));
 
-      updateLayout(selectedComponentId, nextLayout);
+      updateLayout(primarySelectedId, nextLayout);
     },
-    [selectedComponentId, setEditLayout, updateLayout],
+    [primarySelectedId, setEditLayout, updateLayout],
   );
 
   return {

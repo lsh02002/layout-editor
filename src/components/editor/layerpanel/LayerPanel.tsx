@@ -12,12 +12,10 @@ type LayerPanelProps = {
   previewMode: boolean;
   visible: boolean;
   components: LayoutComponent[];
-  selectedComponentId: string | null;
   selectedComponentIds: string[];
   draggingId: string | null;
   search: string;
   activeDropTarget: DropTarget;
-  setSelectedComponentId: React.Dispatch<React.SetStateAction<string | null>>;
   setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
   onSearchChange: (value: string) => void;
   onSelect: (
@@ -91,12 +89,10 @@ function LayerPanel({
   previewMode,
   visible,
   components,
-  selectedComponentId,
   selectedComponentIds,
   draggingId,
   search,
   activeDropTarget,
-  setSelectedComponentId,
   setSelectedComponentIds,
   onSearchChange,
   onSelect,
@@ -111,6 +107,8 @@ function LayerPanel({
   onDrop,
   onActiveDropTargetChange,
 }: LayerPanelProps) {
+  const primarySelectedId = selectedComponentIds.at(-1) ?? null;
+
   const flatComponents = useMemo(
     () => flattenComponents(components),
     [components],
@@ -224,7 +222,7 @@ function LayerPanel({
                   // Shift + 클릭 → 범위 선택
                   if (event.shiftKey) {
                     const anchorId =
-                      lastSelectedIdRef.current ?? selectedComponentId;
+                      lastSelectedIdRef.current ?? primarySelectedId;
                     if (anchorId) {
                       const startIndex = flatComponentIds.indexOf(anchorId);
                       const endIndex = flatComponentIds.indexOf(currentId);
@@ -232,18 +230,24 @@ function LayerPanel({
                         const from = Math.min(startIndex, endIndex);
                         const to = Math.max(startIndex, endIndex);
                         const rangeIds = flatComponentIds.slice(from, to + 1);
-                        // Ctrl/Cmd + Shift → 기존 선택에 범위 추가
+
+                        // 현재 클릭한 항목을 항상 마지막에 둠
+                        const orderedRangeIds = [
+                          ...rangeIds.filter((id) => id !== currentId),
+                          currentId,
+                        ];
+
                         if (event.ctrlKey || event.metaKey) {
-                          setSelectedComponentIds([
-                            ...new Set([...selectedComponentIds, ...rangeIds]),
-                          ]);
+                          setSelectedComponentIds((prev) => {
+                            const existing = prev.filter(
+                              (id) => !orderedRangeIds.includes(id),
+                            );
+                            return [...existing, ...orderedRangeIds];
+                          });
                         } else {
-                          setSelectedComponentIds(rangeIds);
+                          setSelectedComponentIds(orderedRangeIds);
                         }
-                        // 대표 선택만 현재 클릭한 컴포넌트로
-                        setSelectedComponentId(currentId);
-                        // 중요:
-                        // 여기서 onSelect() 호출하면 안 됨
+
                         return;
                       }
                     }
@@ -480,7 +484,7 @@ function LayerPanel({
         )}
       </div>
 
-      {selectedComponentId && selectedComponentIds?.length === 1 && (
+      {primarySelectedId && selectedComponentIds?.length === 1 && (
         <div className="p-2">
           <button
             type="button"

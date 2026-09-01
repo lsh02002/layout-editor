@@ -30,7 +30,6 @@ type Props = {
   showEditModal: boolean;
   setShowEditModal: Dispatch<SetStateAction<boolean>>;
 
-  selectedComponentId: string | null;
   selectedComponentIds: string[];
 
   /*
@@ -180,7 +179,6 @@ function EditComponentPanel({
   showEditModal,
   setShowEditModal,
 
-  selectedComponentId,
   selectedComponentIds,
 
   editorSyncKey,
@@ -294,6 +292,7 @@ function EditComponentPanel({
 }: Props) {
   const { editTab, setEditTab } = useLogin();
   const isMultiSelected = selectedComponentIds?.length > 1;
+  const primarySelectedId = selectedComponentIds.at(-1) ?? null;
 
   const tabMenus = [
     {
@@ -311,7 +310,7 @@ function EditComponentPanel({
   ];
 
   useEffect(() => {
-    if (!selectedComponentId || isMultiSelected) {
+    if (!primarySelectedId || isMultiSelected) {
       return;
     }
 
@@ -319,7 +318,7 @@ function EditComponentPanel({
   }, [
     editorSyncKey,
     resetEditPanelToSelected,
-    selectedComponentId,
+    primarySelectedId,
     isMultiSelected,
   ]);
 
@@ -362,7 +361,7 @@ function EditComponentPanel({
           >
             {isMultiSelected
               ? `${selectedComponentIds?.length}개 컴포넌트 선택됨`
-              : selectedComponentId
+              : primarySelectedId
                 ? editComponentName || editType
                 : "선택된 컴포넌트 없음"}
           </div>
@@ -435,7 +434,7 @@ function EditComponentPanel({
                 </div>
               </div>
             </div>
-          ) : !selectedComponentId ? (
+          ) : !primarySelectedId ? (
             <div
               className="text-secondary text-center"
               style={{
@@ -516,11 +515,11 @@ function EditComponentPanel({
                   isContainer={editType === "container"}
                   setEditLayout={setEditLayout}
                   onLayoutChange={(layout) => {
-                    if (!selectedComponentId) {
+                    if (!primarySelectedId) {
                       return;
                     }
 
-                    onLayoutChange(selectedComponentId, layout);
+                    onLayoutChange(primarySelectedId, layout);
                   }}
                   onApply={onStyleApply}
                   positionParentOptions={positionParentOptions}
@@ -539,7 +538,7 @@ function EditComponentPanel({
           )}
         </div>
 
-        {!isMultiSelected && selectedComponentId && (
+        {!isMultiSelected && primarySelectedId && (
           <div className="d-flex justify-content-end p-2">
             <button
               type="button"
@@ -562,7 +561,7 @@ function EditComponentPanel({
 
         <ComponentLibraryPanel
           favorites={favoriteComponents}
-          hasSelectedComponent={Boolean(selectedComponentId)}
+          hasSelectedComponent={selectedComponentIds.length === 1}
           onAddSelected={addSelectedComponentToFavorites}
           onInsert={insertFavoriteComponent}
           onRemove={removeFavoriteComponent}

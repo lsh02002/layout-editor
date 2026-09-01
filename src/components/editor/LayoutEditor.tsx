@@ -176,10 +176,6 @@ function LayoutEditor() {
     () => window.innerWidth > 768,
   );
 
-  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
-    null,
-  );
-
   const [layerSearch, setLayerSearch] = useState("");
 
   const [projectCustomCss, setProjectCustomCss] = useState("");
@@ -199,8 +195,8 @@ function LayoutEditor() {
     canRedo,
   } = useComponentHistory({
     initialComponents: data,
-    selectedComponentId,
-    setSelectedComponentId,
+    selectedComponentIds,
+    setSelectedComponentIds,
     resetEditForm,
   });
 
@@ -216,7 +212,7 @@ function LayoutEditor() {
     projectCustomCss,
     resetHistory,
     setProjectCustomCss,
-    setSelectedComponentId,
+    setSelectedComponentIds,
   });
 
   const isMobile = useMediaQuery("(max-width: 767.98px)");
@@ -229,17 +225,15 @@ function LayoutEditor() {
     removeFavoriteComponent,
   } = useFavoriteComponents({
     components,
-    selectedComponentId,
+    selectedComponentIds,
     commitHistory,
-    setSelectedComponentId,
+    setSelectedComponentIds,
   });
 
   useEditorShortcuts({
     components,
-    selectedComponentId,
     selectedComponentIds,
     commitHistory,
-    setSelectedComponentId,
     setSelectedComponentIds,
   });
 
@@ -249,16 +243,16 @@ function LayoutEditor() {
       projectCustomCss,
       setProjectCustomCss,
       resetHistory,
-      setSelectedComponentId,
+      setSelectedComponentIds,
       setAutoSaveBaseline,
     });
 
   const { loadTemplateFile, saveProjectTemplate, saveSelectedTemplate } =
     useTemplates({
       components,
-      selectedComponentId,
+      selectedComponentIds,
       commitHistory,
-      setSelectedComponentId,
+      setSelectedComponentIds,
     });
 
   const { snapLayout } = useSnapLayout({
@@ -363,8 +357,6 @@ function LayoutEditor() {
     handleStyleApply,
   } = useComponentActions({
     components,
-    selectedComponentId,
-    setSelectedComponentId,
     selectedComponentIds,
     setSelectedComponentIds,
     showEditModal,
@@ -408,13 +400,13 @@ function LayoutEditor() {
     dropTemplate,
     commitHistory,
     makeComponentByType,
-    setSelectedComponentId,
+    setSelectedComponentIds,
   });
 
   const { positionParentOptions, handlePositionParentChange } =
     usePositionParent({
       components,
-      selectedComponentId,
+      selectedComponentIds,
       setEditLayout,
       updateLayout,
     });
@@ -569,12 +561,10 @@ function LayoutEditor() {
                   previewMode={previewMode}
                   visible
                   components={filteredLayerComponents}
-                  selectedComponentId={selectedComponentId}
                   selectedComponentIds={selectedComponentIds}
                   draggingId={draggingId}
                   search={layerSearch}
                   activeDropTarget={activeDropTarget}
-                  setSelectedComponentId={setSelectedComponentId}
                   setSelectedComponentIds={setSelectedComponentIds}
                   onSearchChange={setLayerSearch}
                   onSelect={selectComponent}
@@ -643,9 +633,9 @@ function LayoutEditor() {
           canUndo={canUndo}
           canRedo={canRedo}
           hasUnsavedChanges={hasUnsavedChanges}
-          hasSelectedComponent={Boolean(selectedComponentId)}
+          hasSelectedComponent={selectedComponentIds.length > 0}
           lastAutoSavedAt={lastAutoSavedAt}
-          setSelectedComponentId={setSelectedComponentId}
+          onClearSelection={() => setSelectedComponentIds([])}
           setPreviewMode={setPreviewMode}
           onSnapEnabledChange={setSnapEnabled}
           onGridSizeChange={setGridSize}
@@ -665,7 +655,6 @@ function LayoutEditor() {
           canvasWidth={canvasWidth}
           components={components}
           droppedId={droppedId}
-          selectedComponentId={selectedComponentId}
           selectedComponentIds={selectedComponentIds}
           draggingId={draggingId}
           layerSearch={layerSearch}
@@ -765,7 +754,6 @@ function LayoutEditor() {
         isMobile={isMobile}
         showEditModal={showEditModal}
         setShowEditModal={setShowEditModal}
-        selectedComponentId={selectedComponentId}
         selectedComponentIds={selectedComponentIds}
         editType={editType}
         editTitle={editTitle}

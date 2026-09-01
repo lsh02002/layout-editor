@@ -35,7 +35,7 @@ type Options = {
   ) => boolean;
   commitHistory: CommitHistory;
   makeComponentByType: (type: ComponentType) => LayoutComponent;
-  setSelectedComponentId: (id: string | null) => void;
+  setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 export const useComponentDragDrop = ({
@@ -45,7 +45,7 @@ export const useComponentDragDrop = ({
   dropTemplate,
   commitHistory,
   makeComponentByType,
-  setSelectedComponentId,
+  setSelectedComponentIds,
 }: Options) => {
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
@@ -455,7 +455,7 @@ export const useComponentDragDrop = ({
         commitHistory((prev) =>
           insertComponentRecursive(prev, parentId, index, newComponent),
         );
-        setSelectedComponentId(newComponent.id);
+        setSelectedComponentIds([newComponent.id]);
         triggerDropAnimation(newComponent.id);
         setActiveDropTarget(null);
         return;
@@ -520,7 +520,7 @@ export const useComponentDragDrop = ({
       makeComponentByType,
       moveComponent,
       moveComponents,
-      setSelectedComponentId,
+      setSelectedComponentIds,
       triggerDropAnimation,
     ],
   );

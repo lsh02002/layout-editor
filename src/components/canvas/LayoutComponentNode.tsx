@@ -23,7 +23,6 @@ import ComponentDragHandle from "./ComponentDragHandle";
 type Props = {
   previewMode: boolean;
   component: LayoutComponent;
-  selectedComponentId: string | null;
   selectedComponentIds: string[];
   draggingId: string | null;
   droppedId: string | null;
@@ -64,7 +63,6 @@ type Props = {
 function LayoutComponentNode({
   previewMode,
   component,
-  selectedComponentId,
   selectedComponentIds,
   draggingId,
   droppedId,
@@ -93,7 +91,7 @@ function LayoutComponentNode({
 
   const isDragging = isLocalDragging || draggingId === component.id;
   const isSelected = selectedComponentIds.includes(component.id);
-  const isPrimarySelected = selectedComponentId === component.id;
+  const isPrimarySelected = selectedComponentIds.at(-1) === component.id;
   const isAbsolute = component.layout?.position === "absolute";
 
   const positionParentId = component.layout?.positionParentId ?? null;
@@ -347,7 +345,6 @@ function LayoutComponentNode({
                     <LayoutComponentNode
                       previewMode={previewMode}
                       component={child}
-                      selectedComponentId={selectedComponentId}
                       selectedComponentIds={selectedComponentIds}
                       draggingId={draggingId}
                       droppedId={droppedId}

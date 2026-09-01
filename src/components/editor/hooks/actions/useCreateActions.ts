@@ -12,7 +12,6 @@ import type {
   CommitHistory,
   InsertTarget,
   InsertTargetSetter,
-  SelectionSetter,
 } from "../../../../types/types";
 
 type Options = {
@@ -21,7 +20,7 @@ type Options = {
   setInsertTarget: InsertTargetSetter;
   setShowCreateModal: BooleanSetter;
   setShowEditModal: BooleanSetter;
-  setSelectedComponentId: SelectionSetter;
+  setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
   newType: LayoutComponent["type"];
   setNewType: (type: LayoutComponent["type"]) => void;
   resetCreateForm: () => void;
@@ -33,7 +32,7 @@ type Options = {
 export const useCreateActions = ({
   components,
   insertTarget,
-  setSelectedComponentId,
+  setSelectedComponentIds,
   setInsertTarget,
   setShowCreateModal,
   setShowEditModal,
@@ -75,7 +74,7 @@ export const useCreateActions = ({
 
     closeCreateModal();
 
-    setSelectedComponentId(newComponent.id);
+    setSelectedComponentIds([newComponent.id]);
 
     loadComponentToEdit(newComponent);
 
@@ -88,7 +87,7 @@ export const useCreateActions = ({
     loadComponentToEdit,
     makeNewComponent,
     newType,
-    setSelectedComponentId,
+    setSelectedComponentIds,
     setShowEditModal,
   ]);
 

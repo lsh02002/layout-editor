@@ -15,7 +15,7 @@ type ProjectToolbarProps = {
   hasUnsavedChanges: boolean;
   hasSelectedComponent: boolean;
   lastAutoSavedAt: string | null;
-  setSelectedComponentId: React.Dispatch<React.SetStateAction<string | null>>;
+  onClearSelection: () => void;
   setPreviewMode: React.Dispatch<React.SetStateAction<boolean>>;
   onSnapEnabledChange: (value: boolean) => void;
   onGridSizeChange: (value: number) => void;
@@ -42,7 +42,7 @@ function ProjectToolbar({
   hasUnsavedChanges,
   hasSelectedComponent,
   lastAutoSavedAt,
-  setSelectedComponentId,
+  onClearSelection,
   setPreviewMode,
   onSnapEnabledChange,
   onGridSizeChange,
@@ -74,7 +74,7 @@ function ProjectToolbar({
               const next = !prev;
 
               if (next) {
-                setSelectedComponentId(null);
+                onClearSelection();
               }
 
               return next;

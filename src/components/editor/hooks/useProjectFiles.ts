@@ -15,7 +15,7 @@ type Options = {
   projectCustomCss: string;
   setProjectCustomCss: (value: string) => void;
   resetHistory: (components: LayoutComponent[]) => void;
-  setSelectedComponentId: (id: string | null) => void;
+  setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
   setAutoSaveBaseline: (value: string) => void;
 };
 
@@ -130,7 +130,7 @@ export const useProjectFiles = ({
   projectCustomCss,
   setProjectCustomCss,
   resetHistory,
-  setSelectedComponentId,
+  setSelectedComponentIds,
   setAutoSaveBaseline,
 }: Options) => {
   const isLoadingProjectRef = useRef(false);
@@ -180,9 +180,9 @@ export const useProjectFiles = ({
         }),
       );
 
-      setSelectedComponentId(null);
+      setSelectedComponentIds([]);
     },
-    [resetHistory, setProjectCustomCss, setSelectedComponentId],
+    [resetHistory, setProjectCustomCss, setSelectedComponentIds],
   );
 
   const saveProjectFile = useCallback(async () => {

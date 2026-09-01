@@ -10,13 +10,11 @@ import {
   removeComponentRecursive,
 } from "../../utils/componentTree";
 
-import type { CommitHistory, SelectionSetter } from "../../../../types/types";
+import type { CommitHistory } from "../../../../types/types";
 
 type Options = {
   components: LayoutComponent[];
-  selectedComponentId: string | null;
   selectedComponentIds: string[];
-  setSelectedComponentId: SelectionSetter;
   setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
   commitHistory: CommitHistory;
   resetEditForm: () => void;
@@ -24,9 +22,7 @@ type Options = {
 
 export const useCrudActions = ({
   components,
-  selectedComponentId,
   selectedComponentIds,
-  setSelectedComponentId,
   setSelectedComponentIds,
   commitHistory,
   resetEditForm,
@@ -35,12 +31,19 @@ export const useCrudActions = ({
     (id: string) => {
       commitHistory((prev) => removeComponentRecursive(prev, id).items);
 
-      if (selectedComponentId === id) {
-        setSelectedComponentId(null);
+      if (selectedComponentIds.includes(id)) {
+        setSelectedComponentIds((prev) =>
+          prev.filter((selectedId) => selectedId !== id),
+        );
         resetEditForm();
       }
     },
-    [commitHistory, selectedComponentId, setSelectedComponentId, resetEditForm],
+    [
+      commitHistory,
+      selectedComponentIds,
+      setSelectedComponentIds,
+      resetEditForm,
+    ],
   );
 
   const deleteSelectedComponents = useCallback(() => {
@@ -78,12 +81,12 @@ export const useCrudActions = ({
 
     // 선택 초기화
     setSelectedComponentIds([]);
-    setSelectedComponentId(null);
+    resetEditForm();
   }, [
     selectedComponentIds,
     commitHistory,
     setSelectedComponentIds,
-    setSelectedComponentId,
+    resetEditForm,
   ]);
 
   const copyComponent = useCallback(
@@ -107,9 +110,9 @@ export const useCrudActions = ({
         ),
       );
 
-      setSelectedComponentId(cloned.id);
+      setSelectedComponentIds([cloned.id]);
     },
-    [commitHistory, components, setSelectedComponentId],
+    [commitHistory, components, setSelectedComponentIds],
   );
 
   return {

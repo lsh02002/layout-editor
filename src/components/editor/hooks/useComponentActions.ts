@@ -11,7 +11,6 @@ import type {
   FavoriteSetter,
   InsertTarget,
   InsertTargetSetter,
-  SelectionSetter,
   SetComponents,
 } from "../../../types/types";
 
@@ -25,9 +24,6 @@ import { useStyleActions } from "./actions/useStyleActions";
 
 type Options = {
   components: LayoutComponent[];
-
-  selectedComponentId: string | null;
-  setSelectedComponentId: SelectionSetter;
 
   selectedComponentIds: string[];
   setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
@@ -65,8 +61,6 @@ type Options = {
 
 export const useComponentActions = ({
   components,
-  selectedComponentId,
-  setSelectedComponentId,
   selectedComponentIds,
   setSelectedComponentIds,
   setShowEditModal,
@@ -93,9 +87,9 @@ export const useComponentActions = ({
     components,
     insertTarget,
     setInsertTarget,
-    setSelectedComponentId,
     setShowCreateModal,
     setShowEditModal,
+    setSelectedComponentIds,
     newType,
     setNewType,
     resetCreateForm,
@@ -106,9 +100,7 @@ export const useComponentActions = ({
 
   const crudActions = useCrudActions({
     components,
-    selectedComponentId,
     selectedComponentIds,
-    setSelectedComponentId,
     setSelectedComponentIds,
     commitHistory,
     resetEditForm,
@@ -116,8 +108,6 @@ export const useComponentActions = ({
 
   const selectionActions = useSelectionActions({
     components,
-    selectedComponentId,
-    setSelectedComponentId,
     selectedComponentIds,
     setSelectedComponentIds,
     setShowEditModal,
@@ -138,14 +128,14 @@ export const useComponentActions = ({
   });
 
   const layoutActions = useLayoutActions({
-    selectedComponentId,
+    selectedComponentIds,
     setComponents,
     setEditLayout,
     snapLayout,
   });
 
   const styleActions = useStyleActions({
-    selectedComponentId,
+    selectedComponentIds,
     setComponents,
   });
 

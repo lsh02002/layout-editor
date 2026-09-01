@@ -1,30 +1,25 @@
 import { useCallback } from "react";
 
-import type { LayoutComponent } from "../../../../types/types";
+import type { LayoutComponent, BooleanSetter } from "../../../../types/types";
 
 import { findComponentRecursive } from "../../utils/componentTree";
 
-import type { BooleanSetter, SelectionSetter } from "../../../../types/types";
-
 type Options = {
   components: LayoutComponent[];
-  selectedComponentId: string | null;
-  setSelectedComponentId: SelectionSetter;
   selectedComponentIds: string[];
-  setSelectedComponentIds: (ids: string[]) => void;
+  setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
   setShowEditModal: BooleanSetter;
   loadComponentToEdit: (component: LayoutComponent) => void;
 };
 
 export const useSelectionActions = ({
   components,
-  selectedComponentId,
-  setSelectedComponentId,
   selectedComponentIds,
   setSelectedComponentIds,
   setShowEditModal,
   loadComponentToEdit,
 }: Options) => {
+  const primarySelectedId = selectedComponentIds.at(-1) ?? null;
   const selectComponent = useCallback(
     (id: string, openEditPanel = false, multiSelect = false) => {
       const component = findComponentRecursive(components, id);
@@ -33,10 +28,8 @@ export const useSelectionActions = ({
         return;
       }
 
-      // 일반 클릭
       if (!multiSelect) {
         setSelectedComponentIds([id]);
-        setSelectedComponentId(id);
         loadComponentToEdit(component);
 
         if (openEditPanel) {
@@ -46,7 +39,6 @@ export const useSelectionActions = ({
         return;
       }
 
-      // Ctrl / Cmd + 클릭
       const alreadySelected = selectedComponentIds.includes(id);
 
       if (alreadySelected) {
@@ -56,11 +48,8 @@ export const useSelectionActions = ({
 
         setSelectedComponentIds(nextIds);
 
-        // 현재 대표 선택까지 해제한 경우
-        if (selectedComponentId === id) {
+        if (primarySelectedId === id) {
           const nextPrimaryId = nextIds.at(-1) ?? null;
-
-          setSelectedComponentId(nextPrimaryId);
 
           if (nextPrimaryId) {
             const nextComponent = findComponentRecursive(
@@ -77,11 +66,8 @@ export const useSelectionActions = ({
         return;
       }
 
-      // 새 컴포넌트 추가 선택
       setSelectedComponentIds([...selectedComponentIds, id]);
 
-      // 마지막으로 누른 것을 대표 선택으로
-      setSelectedComponentId(id);
       loadComponentToEdit(component);
 
       if (openEditPanel) {
@@ -91,9 +77,8 @@ export const useSelectionActions = ({
     [
       components,
       loadComponentToEdit,
-      selectedComponentId,
+      primarySelectedId,
       selectedComponentIds,
-      setSelectedComponentId,
       setSelectedComponentIds,
       setShowEditModal,
     ],
@@ -101,25 +86,24 @@ export const useSelectionActions = ({
 
   const editComponent = useCallback(
     (id: string) => {
-      // 편집 버튼은 단일 선택 취급
       selectComponent(id, true, false);
     },
     [selectComponent],
   );
 
   const resetEditPanelToSelected = useCallback(() => {
-    if (!selectedComponentId) {
+    if (!primarySelectedId) {
       return;
     }
 
-    const component = findComponentRecursive(components, selectedComponentId);
+    const component = findComponentRecursive(components, primarySelectedId);
 
     if (!component) {
       return;
     }
 
     loadComponentToEdit(component);
-  }, [components, loadComponentToEdit, selectedComponentId]);
+  }, [components, loadComponentToEdit, primarySelectedId]);
 
   return {
     selectComponent,

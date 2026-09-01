@@ -16,27 +16,29 @@ import {
 
 type Options = {
   components: LayoutComponent[];
-  selectedComponentId: string | null;
+  selectedComponentIds: string[];
   commitHistory: CommitHistory;
-  setSelectedComponentId: (id: string | null) => void;
+  setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 export const useFavoriteComponents = ({
   components,
-  selectedComponentId,
+  selectedComponentIds,
   commitHistory,
-  setSelectedComponentId,
+  setSelectedComponentIds,
 }: Options) => {
+  const primarySelectedId = selectedComponentIds?.at(-1) ?? null;
+
   const [favoriteComponents, setFavoriteComponents] = useState<
     FavoriteComponent[]
   >([]);
 
   const addSelectedComponentToFavorites = useCallback(() => {
-    if (!selectedComponentId) {
+    if (!primarySelectedId) {
       return;
     }
 
-    const component = findComponentRecursive(components, selectedComponentId);
+    const component = findComponentRecursive(components, primarySelectedId);
 
     if (!component) {
       return;
@@ -68,20 +70,20 @@ export const useFavoriteComponents = ({
         component: structuredClone(component),
       },
     ]);
-  }, [components, favoriteComponents, selectedComponentId]);
+  }, [components, favoriteComponents, primarySelectedId]);
 
   const insertFavoriteComponent = useCallback(
     (favorite: FavoriteComponent) => {
       const cloned = cloneComponent(favorite.component);
 
-      if (!selectedComponentId) {
+      if (!primarySelectedId) {
         commitHistory((prev) => normalizeOrder([...prev, cloned]));
 
-        setSelectedComponentId(cloned.id);
+        setSelectedComponentIds([cloned.id]);
         return;
       }
 
-      const selected = findComponentRecursive(components, selectedComponentId);
+      const selected = findComponentRecursive(components, primarySelectedId);
 
       if (selected && selected.type === "container") {
         commitHistory((prev) =>
@@ -93,11 +95,11 @@ export const useFavoriteComponents = ({
           ),
         );
 
-        setSelectedComponentId(cloned.id);
+        setSelectedComponentIds([cloned.id]);
         return;
       }
 
-      const location = findComponentLocation(components, selectedComponentId);
+      const location = findComponentLocation(components, primarySelectedId);
 
       if (!location) {
         return;
@@ -112,9 +114,9 @@ export const useFavoriteComponents = ({
         ),
       );
 
-      setSelectedComponentId(cloned.id);
+      setSelectedComponentIds([cloned.id]);
     },
-    [commitHistory, components, selectedComponentId, setSelectedComponentId],
+    [commitHistory, components, primarySelectedId, setSelectedComponentIds],
   );
 
   const removeFavoriteComponent = useCallback((favoriteId: string) => {

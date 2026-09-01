@@ -14,7 +14,7 @@ type Options = {
   delay?: number;
   resetHistory: (components: LayoutComponent[]) => void;
   setProjectCustomCss: (css: string) => void;
-  setSelectedComponentId: (id: string | null) => void;
+  setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 export const useAutoSave = ({
@@ -23,7 +23,7 @@ export const useAutoSave = ({
   delay = 3000,
   resetHistory,
   setProjectCustomCss,
-  setSelectedComponentId,
+  setSelectedComponentIds,
 }: Options) => {
   const [lastAutoSavedAt, setLastAutoSavedAt] = useState<string | null>(null);
 
@@ -123,7 +123,7 @@ export const useAutoSave = ({
 
     setProjectCustomCss(restoredCss);
 
-    setSelectedComponentId(null);
+    setSelectedComponentIds([]);
 
     consumeRestoreData({
       ...restoreData,
@@ -133,7 +133,7 @@ export const useAutoSave = ({
     restoreData,
     resetHistory,
     setProjectCustomCss,
-    setSelectedComponentId,
+    setSelectedComponentIds,
     consumeRestoreData,
   ]);
 

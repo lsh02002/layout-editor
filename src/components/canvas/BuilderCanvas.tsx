@@ -7,7 +7,6 @@ type Props = {
   previewMode: boolean;
   canvasWidth: number;
   components: LayoutComponent[];
-  selectedComponentId: string | null;
   selectedComponentIds: string[];
   draggingId: string | null;
   droppedId: string | null;
@@ -50,7 +49,6 @@ function BuilderCanvas({
   previewMode,
   canvasWidth,
   components,
-  selectedComponentId,
   selectedComponentIds,
   draggingId,
   droppedId,
@@ -113,7 +111,6 @@ function BuilderCanvas({
             <LayoutComponentNode
               previewMode={previewMode}
               component={component}
-              selectedComponentId={selectedComponentId}
               selectedComponentIds={selectedComponentIds}
               draggingId={draggingId}
               droppedId={droppedId}

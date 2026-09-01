@@ -14,18 +14,20 @@ import {
 } from "../../utils/componentTree";
 
 type Options = {
-  selectedComponentId: string | null;
+  selectedComponentIds: string[];
   setComponents: SetComponents;
   setEditLayout: React.Dispatch<React.SetStateAction<ComponentLayout>>;
   snapLayout: (layout: Partial<ComponentLayout>) => Partial<ComponentLayout>;
 };
 
 export const useLayoutActions = ({
-  selectedComponentId,
+  selectedComponentIds,
   setComponents,
   setEditLayout,
   snapLayout,
 }: Options) => {
+  const primarySelectedId = selectedComponentIds.at(-1) ?? null;
+
   const updateLayout = useCallback(
     (id: string, newLayout: Partial<ComponentLayout>, recordHistory = true) => {
       const snappedLayout = snapLayout(newLayout);
@@ -35,27 +37,27 @@ export const useLayoutActions = ({
         recordHistory,
       );
 
-      if (selectedComponentId === id) {
+      if (primarySelectedId === id) {
         setEditLayout((prev) => ({
           ...prev,
           ...snappedLayout,
         }));
       }
     },
-    [selectedComponentId, setComponents, setEditLayout, snapLayout],
+    [primarySelectedId, setComponents, setEditLayout, snapLayout],
   );
 
   const updateSelectedComponentImmediate = useCallback(
     (updater: (component: LayoutComponent) => LayoutComponent) => {
-      if (!selectedComponentId) {
+      if (!primarySelectedId) {
         return;
       }
 
       setComponents((items) =>
-        updateComponentRecursive(items, selectedComponentId, updater),
+        updateComponentRecursive(items, primarySelectedId, updater),
       );
     },
-    [selectedComponentId, setComponents],
+    [primarySelectedId, setComponents],
   );
 
   return {

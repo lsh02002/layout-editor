@@ -10,16 +10,16 @@ import { findComponentRecursive } from "../utils/componentTree";
 type HistoryUpdater = (prev: LayoutComponent[]) => LayoutComponent[];
 
 type Options = {
-  selectedComponentId: string | null;
-  setSelectedComponentId: (id: string | null) => void;
+  selectedComponentIds: string[];
+  setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
   resetEditForm: () => void;
   initialComponents: LayoutComponent[];
 };
 
 export const useComponentHistory = ({
   initialComponents,
-  selectedComponentId,
-  setSelectedComponentId,
+  selectedComponentIds,
+  setSelectedComponentIds,
   resetEditForm,
 }: Options) => {
   const [history, setHistory] = useState<HistoryState>(() => ({
@@ -30,23 +30,22 @@ export const useComponentHistory = ({
 
   const syncSelection = useCallback(
     (nextComponents: LayoutComponent[]) => {
-      if (!selectedComponentId) {
+      if (selectedComponentIds.length === 0) {
         return;
       }
 
-      const exists = findComponentRecursive(
-        nextComponents,
-        selectedComponentId,
+      const nextSelectedIds = selectedComponentIds.filter((id) =>
+        Boolean(findComponentRecursive(nextComponents, id)),
       );
 
-      if (exists) {
+      if (nextSelectedIds.length === selectedComponentIds.length) {
         return;
       }
 
-      setSelectedComponentId(null);
+      setSelectedComponentIds(nextSelectedIds);
       resetEditForm();
     },
-    [selectedComponentId, setSelectedComponentId, resetEditForm],
+    [selectedComponentIds, setSelectedComponentIds, resetEditForm],
   );
 
   const commitHistory = useCallback((updater: HistoryUpdater) => {

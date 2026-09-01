@@ -18,9 +18,9 @@ import { isTauri } from "../utils/projectUtils";
 
 type Options = {
   components: LayoutComponent[];
-  selectedComponentId: string | null;
+  selectedComponentIds: string[];
   commitHistory: CommitHistory;
-  setSelectedComponentId: (id: string | null) => void;
+  setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 type SaveFilePickerOptions = {
@@ -238,10 +238,12 @@ const validateTemplateFile = (
 
 export const useTemplates = ({
   components,
-  selectedComponentId,
+  selectedComponentIds,
   commitHistory,
-  setSelectedComponentId,
+  setSelectedComponentIds,
 }: Options) => {
+  const primarySelectedId = selectedComponentIds?.at(-1) ?? null;
+
   const isLoadingTemplateRef = useRef(false);
 
   const saveProjectAsTemplateFile = useCallback(
@@ -298,13 +300,13 @@ export const useTemplates = ({
         return;
       }
 
-      if (!selectedComponentId) {
+      if (!primarySelectedId) {
         alert("먼저 컴포넌트를 선택해주세요.");
 
         return;
       }
 
-      const component = findComponentRecursive(components, selectedComponentId);
+      const component = findComponentRecursive(components, primarySelectedId);
 
       if (!component) {
         alert("선택한 컴포넌트를 찾을 수 없습니다.");
@@ -337,7 +339,7 @@ export const useTemplates = ({
         alert("템플릿 저장 중 오류가 발생했습니다.");
       }
     },
-    [components, selectedComponentId],
+    [components, primarySelectedId],
   );
 
   const applyLoadedProjectTemplate = useCallback(
@@ -360,14 +362,14 @@ export const useTemplates = ({
       if (replace) {
         commitHistory(() => normalizeOrder(cloned));
 
-        setSelectedComponentId(null);
+        setSelectedComponentIds([]);
 
         return;
       }
 
       commitHistory((prev) => normalizeOrder([...prev, ...cloned]));
     },
-    [commitHistory, setSelectedComponentId],
+    [commitHistory, setSelectedComponentIds],
   );
 
   const applyLoadedComponentTemplate = useCallback(
@@ -381,15 +383,15 @@ export const useTemplates = ({
     ) => {
       const cloned = cloneComponent(template.component);
 
-      if (!selectedComponentId) {
+      if (!primarySelectedId) {
         commitHistory((prev) => normalizeOrder([...prev, cloned]));
 
-        setSelectedComponentId(cloned.id);
+        setSelectedComponentIds([cloned.id]);
 
         return;
       }
 
-      const selected = findComponentRecursive(components, selectedComponentId);
+      const selected = findComponentRecursive(components, primarySelectedId);
 
       if (selected && selected.type === "container") {
         commitHistory((prev) =>
@@ -401,16 +403,16 @@ export const useTemplates = ({
           ),
         );
 
-        setSelectedComponentId(cloned.id);
+        setSelectedComponentIds([cloned.id]);
 
         return;
       }
 
       commitHistory((prev) => normalizeOrder([...prev, cloned]));
 
-      setSelectedComponentId(cloned.id);
+      setSelectedComponentIds([cloned.id]);
     },
-    [commitHistory, components, selectedComponentId, setSelectedComponentId],
+    [commitHistory, components, primarySelectedId, setSelectedComponentIds],
   );
 
   const applyTemplateText = useCallback(
@@ -563,12 +565,12 @@ export const useTemplates = ({
   }, [saveProjectAsTemplateFile]);
 
   const saveSelectedTemplate = useCallback(() => {
-    if (!selectedComponentId) {
+    if (!primarySelectedId) {
       alert("먼저 컴포넌트를 선택해주세요.");
       return;
     }
 
-    const component = findComponentRecursive(components, selectedComponentId);
+    const component = findComponentRecursive(components, primarySelectedId);
 
     if (!component) {
       alert("선택한 컴포넌트를 찾을 수 없습니다.");
@@ -578,7 +580,7 @@ export const useTemplates = ({
     const templateName = component.name?.trim() || "새 컴포넌트 템플릿";
 
     void saveSelectedComponentAsTemplateFile(templateName);
-  }, [components, selectedComponentId, saveSelectedComponentAsTemplateFile]);
+  }, [components, primarySelectedId, saveSelectedComponentAsTemplateFile]);
 
   return {
     loadTemplateFile,
