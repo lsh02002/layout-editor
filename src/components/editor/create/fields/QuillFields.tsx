@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 
-import QuillEditorSimpleInput from "../../utils/quillEditor";
+import QuillEditor from "../../utils/quillEditor";
 import ComponentNameField from "./ComponentNameField";
 
 type Props = {
@@ -30,7 +30,7 @@ function QuillFields({
       <div className="mb-3">
         <label className="form-label">Edit</label>
 
-        <QuillEditorSimpleInput
+        <QuillEditor
           data={value}
           placeholder={placeholder || "본문을 입력하세요."}
           setData={onValueChange}

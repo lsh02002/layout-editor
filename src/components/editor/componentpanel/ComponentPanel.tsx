@@ -1,69 +1,98 @@
+import {
+  AlignLeft,
+  ArrowUpToLine,
+  Box,
+  Code2,
+  Heading1,
+  ImageIcon,
+  Link2,
+  Minus,
+  MousePointerClick,
+  MoveVertical,
+  PlaySquare,
+  TextQuote,
+  type LucideIcon,
+} from "lucide-react";
+
 import type { ComponentType } from "../../../types/types";
 
 const COMPONENTS: {
   type: ComponentType;
   label: string;
   description: string;
+  icon: LucideIcon;
 }[] = [
   {
     type: "container",
     label: "Container",
     description: "컴포넌트를 묶는 영역",
+    icon: Box,
   },
   {
     type: "heading",
     label: "Heading",
     description: "제목 텍스트",
+    icon: Heading1,
   },
   {
     type: "textarea",
     label: "TextArea",
     description: "일반 텍스트",
+    icon: AlignLeft,
   },
   {
     type: "quill",
-    label: "Quill Editor",
+    label: "Quill",
     description: "리치 텍스트",
+    icon: TextQuote,
   },
   {
     type: "button",
     label: "Button",
     description: "버튼",
+    icon: MousePointerClick,
   },
   {
     type: "scrollToTopButton",
-    label: "Scroll To Top",
+    label: "ScrollToTop",
     description: "페이지 상단 이동 버튼",
+    icon: ArrowUpToLine,
   },
   {
     type: "image",
     label: "Image",
     description: "이미지",
+    icon: ImageIcon,
   },
   {
     type: "video",
     label: "Video",
     description: "동영상",
+    icon: PlaySquare,
   },
   {
     type: "link",
     label: "Link",
     description: "링크",
+    icon: Link2,
   },
   {
     type: "divider",
     label: "Divider",
     description: "구분선",
+    icon: Minus,
   },
   {
     type: "spacer",
     label: "Spacer",
     description: "여백",
+    icon: MoveVertical,
   },
   {
     type: "codeEditor",
-    label: "Code Editor",
+    label: "Highlighter",
     description: "코드 편집기",
+    icon: Code2,
   },
 ];
 
@@ -111,46 +140,63 @@ function ComponentPanel() {
             gap: 8,
           }}
         >
-          {COMPONENTS.map((component) => (
-            <button
-              key={component.type}
-              type="button"
-              draggable
-              onDragStart={(event) => {
-                event.dataTransfer.effectAllowed = "copy";
+          {COMPONENTS.map((component) => {
+            const Icon = component.icon;
 
-                event.dataTransfer.setData(
-                  "application/x-component-type",
-                  component.type,
-                );
-              }}
-              className="btn btn-light border text-start"
-              style={{
-                minHeight: 82,
-                padding: 10,
-                cursor: "grab",
-              }}
-            >
-              <div
+            return (
+              <button
+                key={component.type}
+                type="button"
+                draggable
+                onDragStart={(event) => {
+                  event.dataTransfer.effectAllowed = "copy";
+
+                  event.dataTransfer.setData(
+                    "application/x-component-type",
+                    component.type,
+                  );
+                }}
+                className="btn btn-light border text-start"
                 style={{
-                  fontSize: 14,
-                  fontWeight: 600,
+                  minHeight: 92,
+                  padding: 10,
+                  cursor: "grab",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  justifyContent: "center",
                 }}
               >
-                {component.label}
-              </div>
+                <div
+                  style={{
+                    width: "100%",
+                    height: 28,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "flex-start",
+                    marginBottom: 8,
+                    borderRadius: 6,
+                    color: "#495057",
+                  }}
+                >
+                  <Icon size={17} strokeWidth={1.8} />
+                  &nbsp;
+                  {component.label}
+                </div>
 
-              <div
-                className="text-secondary"
-                style={{
-                  marginTop: 4,
-                  fontSize: 11,
-                }}
-              >
-                {component.description}
-              </div>
-            </button>
-          ))}
+                <div
+                  className="text-secondary"
+                  style={{
+                    marginTop: 4,
+                    fontSize: 11,
+                    lineHeight: 1.35,
+                  }}
+                >
+                  {component.description}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
