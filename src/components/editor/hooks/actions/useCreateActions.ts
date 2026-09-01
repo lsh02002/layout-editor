@@ -21,7 +21,6 @@ type Options = {
   setInsertTarget: InsertTargetSetter;
   setShowCreateModal: BooleanSetter;
   setShowEditModal: BooleanSetter;
-  selectedComponentId: string | null;
   setSelectedComponentId: SelectionSetter;
   newType: LayoutComponent["type"];
   setNewType: (type: LayoutComponent["type"]) => void;

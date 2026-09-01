@@ -93,7 +93,6 @@ export const useComponentActions = ({
     components,
     insertTarget,
     setInsertTarget,
-    selectedComponentId,
     setSelectedComponentId,
     setShowCreateModal,
     setShowEditModal,
