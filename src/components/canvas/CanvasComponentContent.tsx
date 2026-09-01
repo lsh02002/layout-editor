@@ -203,10 +203,11 @@ function CanvasComponentContent({ component }: Props) {
             height: "100%",
             minWidth: 0,
             overflow: "hidden",
+            backgroundColor: "#1f2329",
           }}
         >
           <CodeEditor
-            data={component.props.value}
+            data={String(component.props.value ?? "")}
             setData={() => {}}
             language={component.props.language}
             height="100%"

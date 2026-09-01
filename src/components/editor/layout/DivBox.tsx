@@ -14,6 +14,8 @@ import EditMenuBox from "./EditMenuBox";
 import type { ComponentLayout } from "../../../types/types";
 import { resolveHeight, resolveWidth } from "../utils/layoutSize";
 
+import { GripHorizontal, GripVertical } from "lucide-react";
+
 interface DivBoxProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   previewMode?: boolean;
@@ -715,7 +717,23 @@ function DivBox({
               touchAction: "none",
               zIndex: 120,
             }}
-          />
+          >
+            <GripHorizontal
+              size={14}
+              strokeWidth={2}
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                padding: 2,
+                borderRadius: 4,
+                background: "white",
+                color: "#71717a",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+              }}
+            />
+          </div>
 
           <div
             onPointerDown={(event) => handleResizePointerDown(event, "right")}
@@ -732,7 +750,23 @@ function DivBox({
               touchAction: "none",
               zIndex: 120,
             }}
-          />
+          >
+            <GripHorizontal
+              size={14}
+              strokeWidth={2}
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                padding: 2,
+                borderRadius: 4,
+                background: "white",
+                color: "#71717a",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+              }}
+            />
+          </div>
         </>
       )}
 
@@ -753,7 +787,23 @@ function DivBox({
               touchAction: "none",
               zIndex: 120,
             }}
-          />
+          >
+            <GripVertical
+              size={14}
+              strokeWidth={2}
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                padding: 2,
+                borderRadius: 4,
+                background: "white",
+                color: "#71717a",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+              }}
+            />
+          </div>
 
           <div
             onPointerDown={(event) => handleResizePointerDown(event, "bottom")}
@@ -770,7 +820,23 @@ function DivBox({
               touchAction: "none",
               zIndex: 120,
             }}
-          />
+          >
+            <GripVertical
+              size={14}
+              strokeWidth={2}
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                padding: 2,
+                borderRadius: 4,
+                background: "white",
+                color: "#71717a",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+              }}
+            />
+          </div>
         </>
       )}
     </div>

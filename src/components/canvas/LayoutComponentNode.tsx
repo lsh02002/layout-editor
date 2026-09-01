@@ -206,7 +206,7 @@ function LayoutComponentNode({
         style={{
           position: "absolute",
           left: 0,
-          top: 0,
+          top: component.type === "container" ? "-14px" : 0,
           transform: "translate(-50%, -50%)",
           zIndex: 120,
         }}

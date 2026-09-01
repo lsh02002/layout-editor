@@ -5,6 +5,11 @@ import type { LayoutComponent } from "../../../types/types";
 import { getLinkHref } from "./linkUtils";
 import { compressImageUrl } from "./projectUtils";
 import { collectComponentCustomCss } from "./customCssUtils";
+import {
+  codeHighlight,
+  highlightCode,
+  normalizeCodeLanguage,
+} from "./codeHighlight";
 
 const escapeHtml = (value: string) =>
   value
@@ -361,7 +366,11 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
     }
 
     case "codeEditor": {
-      const code = component.props.value ?? "";
+      const code = String(component.props.value ?? "");
+
+      const language = normalizeCodeLanguage(component.props.language);
+
+      const highlightedCode = highlightCode(code, language);
 
       return `
     <div
@@ -373,7 +382,7 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
     >
       <pre
         class="builder-code-editor"
-        data-language="${escapeAttribute(component.props.language)}"
+        data-language="${escapeAttribute(language)}"
         style="${escapeAttribute(
           [
             "margin:0",
@@ -381,17 +390,20 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
             "height:100%",
             "overflow:auto",
             "box-sizing:border-box",
-            "padding:16px",
-            "background:#1f2329",
-            "color:#c9d1d9",
-            "font-family:Consolas,Monaco,monospace",
+            "padding:12px 16px",
+            'font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace',
+            "font-size:14px",
+            "line-height:1.5",
             "white-space:pre",
+            "tab-size:4",
+            "background-color:#1f2329",
+            "color:#c9d1d9",
             contentStyle,
           ]
             .filter(Boolean)
             .join(";"),
         )}"
-      ><code>${escapeHtml(code)}</code></pre>
+      ><code>${highlightedCode}</code></pre>
     </div>
   `;
     }
@@ -497,6 +509,8 @@ export const buildHtmlDocument = async (
     img {
       max-width: 100%;
     }
+
+    ${codeHighlight}
 
     ${projectCustomCss}
 
