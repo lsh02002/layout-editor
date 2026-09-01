@@ -31,6 +31,7 @@ type Props = {
   setShowEditModal: Dispatch<SetStateAction<boolean>>;
 
   selectedComponentId: string | null;
+  selectedComponentIds: string[];
 
   /*
    * Undo / Redo가 실행될 때만 변경되는 값
@@ -180,6 +181,8 @@ function EditComponentPanel({
   setShowEditModal,
 
   selectedComponentId,
+  selectedComponentIds,
+
   editorSyncKey,
 
   editType,
@@ -290,6 +293,7 @@ function EditComponentPanel({
   setEditCodeLanguage,
 }: Props) {
   const { editTab, setEditTab } = useLogin();
+  const isMultiSelected = selectedComponentIds?.length > 1;
 
   const tabMenus = [
     {
@@ -307,12 +311,17 @@ function EditComponentPanel({
   ];
 
   useEffect(() => {
-    if (!selectedComponentId) {
+    if (!selectedComponentId || isMultiSelected) {
       return;
     }
 
     resetEditPanelToSelected();
-  }, [editorSyncKey, resetEditPanelToSelected, selectedComponentId]);
+  }, [
+    editorSyncKey,
+    resetEditPanelToSelected,
+    selectedComponentId,
+    isMultiSelected,
+  ]);
 
   if (isMobile && !showEditModal) {
     return null;
@@ -340,7 +349,9 @@ function EditComponentPanel({
       >
         {/* HEADER */}
         <div className="editor-edit-panel-header">
-          <h5 className="modal-title">컴포넌트 수정</h5>
+          <h5 className="modal-title">
+            {isMultiSelected ? "멀티 셀렉션" : "컴포넌트 수정"}
+          </h5>
 
           <div
             className="text-secondary"
@@ -349,9 +360,11 @@ function EditComponentPanel({
               marginTop: 2,
             }}
           >
-            {selectedComponentId
-              ? editComponentName || editType
-              : "선택된 컴포넌트 없음"}
+            {isMultiSelected
+              ? `${selectedComponentIds?.length}개 컴포넌트 선택됨`
+              : selectedComponentId
+                ? editComponentName || editType
+                : "선택된 컴포넌트 없음"}
           </div>
         </div>
 
@@ -367,25 +380,62 @@ function EditComponentPanel({
         )}
 
         {/* TAB */}
-        <div className="px-3 pt-3">
-          <ul className="nav nav-tabs">
-            {tabMenus.map(({ key, label }) => (
-              <li className="nav-item" key={key}>
-                <button
-                  type="button"
-                  className={`nav-link ${editTab === key ? "active" : ""}`}
-                  onClick={() => setEditTab(key as EditTab)}
-                >
-                  {label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {!isMultiSelected && (
+          <div className="px-3 pt-3">
+            <ul className="nav nav-tabs">
+              {tabMenus.map(({ key, label }) => (
+                <li className="nav-item" key={key}>
+                  <button
+                    type="button"
+                    className={`nav-link ${editTab === key ? "active" : ""}`}
+                    onClick={() => setEditTab(key as EditTab)}
+                  >
+                    {label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* BODY */}
         <div className="editor-edit-panel-body">
-          {!selectedComponentId ? (
+          {isMultiSelected ? (
+            <div
+              style={{
+                padding: 16,
+              }}
+            >
+              <div
+                style={{
+                  padding: 16,
+                  border: "1px solid #dee2e6",
+                  borderRadius: 8,
+                  backgroundColor: "#f8f9fa",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 600,
+                  }}
+                >
+                  {selectedComponentIds?.length}개 컴포넌트 선택됨
+                </div>
+
+                <div
+                  className="text-secondary"
+                  style={{
+                    marginTop: 6,
+                    fontSize: 12,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  여러 컴포넌트가 선택되어 있습니다.
+                </div>
+              </div>
+            </div>
+          ) : !selectedComponentId ? (
             <div
               className="text-secondary text-center"
               style={{
@@ -456,7 +506,6 @@ function EditComponentPanel({
                 />
               )}
 
-              {/* STYLE */}
               {editTab === "style" && (
                 <EditStyleTab
                   editStyle={editStyle}
@@ -479,7 +528,6 @@ function EditComponentPanel({
                 />
               )}
 
-              {/* CUSTOM CSS */}
               {editTab === "css" && (
                 <EditCssTab
                   value={editCustomCss}
@@ -490,25 +538,27 @@ function EditComponentPanel({
             </>
           )}
         </div>
-        {/* 스타일 초기화 */}
-        <div className="d-flex justify-content-end p-2">
-          <button
-            type="button"
-            className="btn btn-outline-secondary btn-sm"
-            onClick={() => {
-              setEditStyle({});
-              setEditContentStyle({});
 
-              onImmediateChange((component) => ({
-                ...component,
-                style: {},
-                contentStyle: {},
-              }));
-            }}
-          >
-            스타일 초기화
-          </button>
-        </div>
+        {!isMultiSelected && selectedComponentId && (
+          <div className="d-flex justify-content-end p-2">
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-sm"
+              onClick={() => {
+                setEditStyle({});
+                setEditContentStyle({});
+
+                onImmediateChange((component) => ({
+                  ...component,
+                  style: {},
+                  contentStyle: {},
+                }));
+              }}
+            >
+              스타일 초기화
+            </button>
+          </div>
+        )}
 
         <ComponentLibraryPanel
           favorites={favoriteComponents}

@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useMemo, useRef } from "react";
 import type { LayoutComponent } from "../../../types/types";
 import { getComponentDisplayName } from "../utils/componentDisplayName";
 
@@ -13,11 +13,19 @@ type LayerPanelProps = {
   visible: boolean;
   components: LayoutComponent[];
   selectedComponentId: string | null;
+  selectedComponentIds: string[];
   draggingId: string | null;
   search: string;
   activeDropTarget: DropTarget;
+  setSelectedComponentId: React.Dispatch<React.SetStateAction<string | null>>;
+  setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
   onSearchChange: (value: string) => void;
-  onEdit: (componentId: string) => void;
+  onSelect: (
+    id: string,
+    openEditPanel?: boolean,
+    multiSelect?: boolean,
+  ) => void;
+  onEdit: (id: string) => void;
   onAddFavorite: () => void;
   onDragStart: (
     event: React.DragEvent<HTMLElement>,
@@ -71,15 +79,27 @@ const highlightSearchText = (text: string, keyword: string) => {
   });
 };
 
+const flattenComponents = (items: LayoutComponent[]): LayoutComponent[] => {
+  return items.flatMap((component) => {
+    const children = "children" in component ? (component.children ?? []) : [];
+
+    return [component, ...flattenComponents(children)];
+  });
+};
+
 function LayerPanel({
   previewMode,
   visible,
   components,
   selectedComponentId,
+  selectedComponentIds,
   draggingId,
   search,
   activeDropTarget,
+  setSelectedComponentId,
+  setSelectedComponentIds,
   onSearchChange,
+  onSelect,
   onEdit,
   onAddFavorite,
   onDragStart,
@@ -91,6 +111,18 @@ function LayerPanel({
   onDrop,
   onActiveDropTargetChange,
 }: LayerPanelProps) {
+  const flatComponents = useMemo(
+    () => flattenComponents(components),
+    [components],
+  );
+
+  const flatComponentIds = useMemo(
+    () => flatComponents.map((component) => component.id),
+    [flatComponents],
+  );
+
+  const lastSelectedIdRef = useRef<string | null>(null);
+
   if (!visible) {
     return null;
   }
@@ -175,22 +207,61 @@ function LayerPanel({
 
         {sorted.map((component, index) => {
           const isContainer = component.type === "container";
-          const isSelected = selectedComponentId === component.id;
+          const isSelected = selectedComponentIds.includes(component.id);
           const isDragging = draggingId === component.id;
-
           return (
             <React.Fragment key={component.id}>
               <div
-                onClick={() => {
+                onClick={(event) => {
                   if (previewMode) {
                     return;
                   }
-                  onEdit(component.id);
+
+                  event.preventDefault();
+                  event.stopPropagation();
+
+                  const currentId = component.id;
+                  // Shift + 클릭 → 범위 선택
+                  if (event.shiftKey) {
+                    const anchorId =
+                      lastSelectedIdRef.current ?? selectedComponentId;
+                    if (anchorId) {
+                      const startIndex = flatComponentIds.indexOf(anchorId);
+                      const endIndex = flatComponentIds.indexOf(currentId);
+                      if (startIndex !== -1 && endIndex !== -1) {
+                        const from = Math.min(startIndex, endIndex);
+                        const to = Math.max(startIndex, endIndex);
+                        const rangeIds = flatComponentIds.slice(from, to + 1);
+                        // Ctrl/Cmd + Shift → 기존 선택에 범위 추가
+                        if (event.ctrlKey || event.metaKey) {
+                          setSelectedComponentIds([
+                            ...new Set([...selectedComponentIds, ...rangeIds]),
+                          ]);
+                        } else {
+                          setSelectedComponentIds(rangeIds);
+                        }
+                        // 대표 선택만 현재 클릭한 컴포넌트로
+                        setSelectedComponentId(currentId);
+                        // 중요:
+                        // 여기서 onSelect() 호출하면 안 됨
+                        return;
+                      }
+                    }
+                  }
+                  // Ctrl / Cmd + 클릭
+                  const multiSelect = event.ctrlKey || event.metaKey;
+                  onSelect(currentId, false, multiSelect);
+                  // Shift 범위 선택의 anchor
+                  lastSelectedIdRef.current = currentId;
                 }}
-                onDoubleClick={() => {
+                onDoubleClick={(event) => {
                   if (previewMode) {
                     return;
                   }
+
+                  event.preventDefault();
+                  event.stopPropagation();
+
                   onEdit(component.id);
                 }}
                 style={{
@@ -220,12 +291,7 @@ function LayerPanel({
                   onDragStart={(event) => {
                     event.stopPropagation();
 
-                    if (search) {
-                      event.preventDefault();
-                      return;
-                    }
-
-                    if (previewMode) {
+                    if (search || previewMode) {
                       event.preventDefault();
                       return;
                     }
@@ -414,7 +480,7 @@ function LayerPanel({
         )}
       </div>
 
-      {selectedComponentId && (
+      {selectedComponentId && selectedComponentIds?.length === 1 && (
         <div className="p-2">
           <button
             type="button"

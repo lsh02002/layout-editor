@@ -53,6 +53,10 @@ function LayoutEditor() {
     null,
   );
 
+  const [selectedComponentIds, setSelectedComponentIds] = useState<string[]>(
+    [],
+  );
+
   const [editorSyncKey, setEditorSyncKey] = useState(0);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -233,8 +237,10 @@ function LayoutEditor() {
   useEditorShortcuts({
     components,
     selectedComponentId,
+    selectedComponentIds,
     commitHistory,
     setSelectedComponentId,
+    setSelectedComponentIds,
   });
 
   const { hasUnsavedChanges, saveProjectFile, loadProjectFile } =
@@ -359,6 +365,8 @@ function LayoutEditor() {
     components,
     selectedComponentId,
     setSelectedComponentId,
+    selectedComponentIds,
+    setSelectedComponentIds,
     showEditModal,
     setShowEditModal,
     setShowCreateModal,
@@ -396,6 +404,7 @@ function LayoutEditor() {
   } = useComponentDragDrop({
     components,
     layerSearch,
+    selectedComponentIds,
     dropTemplate,
     commitHistory,
     makeComponentByType,
@@ -561,10 +570,14 @@ function LayoutEditor() {
                   visible
                   components={filteredLayerComponents}
                   selectedComponentId={selectedComponentId}
+                  selectedComponentIds={selectedComponentIds}
                   draggingId={draggingId}
                   search={layerSearch}
                   activeDropTarget={activeDropTarget}
+                  setSelectedComponentId={setSelectedComponentId}
+                  setSelectedComponentIds={setSelectedComponentIds}
                   onSearchChange={setLayerSearch}
+                  onSelect={selectComponent}
                   onEdit={editComponent}
                   onAddFavorite={addSelectedComponentToFavorites}
                   onDragStart={handleDragStart}
@@ -653,6 +666,7 @@ function LayoutEditor() {
           components={components}
           droppedId={droppedId}
           selectedComponentId={selectedComponentId}
+          selectedComponentIds={selectedComponentIds}
           draggingId={draggingId}
           layerSearch={layerSearch}
           activeDropTarget={activeDropTarget}
@@ -752,6 +766,7 @@ function LayoutEditor() {
         showEditModal={showEditModal}
         setShowEditModal={setShowEditModal}
         selectedComponentId={selectedComponentId}
+        selectedComponentIds={selectedComponentIds}
         editType={editType}
         editTitle={editTitle}
         setEditTitle={setEditTitle}

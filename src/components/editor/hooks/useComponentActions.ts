@@ -29,6 +29,9 @@ type Options = {
   selectedComponentId: string | null;
   setSelectedComponentId: SelectionSetter;
 
+  selectedComponentIds: string[];
+  setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
+
   showEditModal: boolean;
   setShowEditModal: BooleanSetter;
 
@@ -64,6 +67,8 @@ export const useComponentActions = ({
   components,
   selectedComponentId,
   setSelectedComponentId,
+  selectedComponentIds,
+  setSelectedComponentIds,
   setShowEditModal,
   setShowCreateModal,
   insertTarget,
@@ -103,7 +108,9 @@ export const useComponentActions = ({
   const crudActions = useCrudActions({
     components,
     selectedComponentId,
+    selectedComponentIds,
     setSelectedComponentId,
+    setSelectedComponentIds,
     commitHistory,
     resetEditForm,
   });
@@ -112,6 +119,8 @@ export const useComponentActions = ({
     components,
     selectedComponentId,
     setSelectedComponentId,
+    selectedComponentIds,
+    setSelectedComponentIds,
     setShowEditModal,
     loadComponentToEdit,
   });

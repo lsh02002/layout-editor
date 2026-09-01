@@ -8,14 +8,17 @@ import {
   findComponentRecursive,
   insertComponentRecursive,
   normalizeOrder,
-  removeComponentRecursive,
 } from "../utils/componentTree";
 
 type Options = {
   components: LayoutComponent[];
+
   selectedComponentId: string | null;
+  selectedComponentIds: string[];
+
   commitHistory: CommitHistory;
   setSelectedComponentId: (id: string | null) => void;
+  setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 const isTextEditingTarget = (target: EventTarget | null) => {
@@ -36,13 +39,37 @@ const isTextEditingTarget = (target: EventTarget | null) => {
   );
 };
 
+const removeSelectedComponents = (
+  items: LayoutComponent[],
+  selectedIds: Set<string>,
+): LayoutComponent[] => {
+  return items
+    .filter((component) => !selectedIds.has(component.id))
+    .map((component) => {
+      if (component.type !== "container") {
+        return component;
+      }
+
+      return {
+        ...component,
+        children: removeSelectedComponents(component.children, selectedIds),
+      };
+    })
+    .map((component, index) => ({
+      ...component,
+      order: index,
+    }));
+};
+
 export const useEditorShortcuts = ({
   components,
   selectedComponentId,
+  selectedComponentIds,
   commitHistory,
   setSelectedComponentId,
+  setSelectedComponentIds,
 }: Options) => {
-  const copiedComponentRef = useRef<LayoutComponent | null>(null);
+  const copiedComponentsRef = useRef<LayoutComponent[]>([]);
 
   useEffect(() => {
     const handleClipboardShortcut = (event: KeyboardEvent) => {
@@ -63,56 +90,102 @@ export const useEditorShortcuts = ({
       }
 
       if (key === "c") {
-        if (!selectedComponentId) {
+        const ids =
+          selectedComponentIds.length > 0
+            ? selectedComponentIds
+            : selectedComponentId
+              ? [selectedComponentId]
+              : [];
+
+        if (ids.length === 0) {
           return;
         }
 
-        const component = findComponentRecursive(
-          components,
-          selectedComponentId,
+        const selectedSet = new Set(ids);
+
+        const topLevelIds = ids.filter((id) => {
+          const location = findComponentLocation(components, id);
+          let parentId = location?.parentId ?? null;
+          while (parentId) {
+            if (selectedSet.has(parentId)) {
+              return false;
+            }
+            const parentLocation = findComponentLocation(components, parentId);
+            parentId = parentLocation?.parentId ?? null;
+          }
+          return true;
+        });
+
+        const orderMap = new Map<string, number>();
+        let order = 0;
+        const walk = (items: LayoutComponent[]) => {
+          const sorted = [...items].sort((a, b) => a.order - b.order);
+
+          for (const component of sorted) {
+            orderMap.set(component.id, order++);
+
+            if (component.type === "container") {
+              walk(component.children);
+            }
+          }
+        };
+
+        walk(components);
+
+        topLevelIds.sort(
+          (a, b) => (orderMap.get(a) ?? 0) - (orderMap.get(b) ?? 0),
         );
 
-        if (!component) {
+        const copied = topLevelIds
+          .map((id) => findComponentRecursive(components, id))
+          .filter((component): component is LayoutComponent =>
+            Boolean(component),
+          )
+          .map((component) => structuredClone(component));
+        if (copied.length === 0) {
           return;
         }
-
         event.preventDefault();
-
-        copiedComponentRef.current = structuredClone(component);
-
+        copiedComponentsRef.current = copied;
         return;
       }
 
-      const copied = copiedComponentRef.current;
+      const copied = copiedComponentsRef.current;
 
-      if (!copied) {
+      if (copied.length === 0) {
         return;
       }
 
       event.preventDefault();
 
-      const cloned = cloneComponent(copied);
+      const clones = copied.map((component) => cloneComponent(component));
+      const newIds = clones.map((component) => component.id);
 
       if (!selectedComponentId) {
-        commitHistory((prev) => normalizeOrder([...prev, cloned]));
-
-        setSelectedComponentId(cloned.id);
+        commitHistory((prev) => normalizeOrder([...prev, ...clones]));
+        setSelectedComponentIds(newIds);
+        setSelectedComponentId(newIds[0] ?? null);
         return;
       }
 
       const selected = findComponentRecursive(components, selectedComponentId);
 
       if (selected && selected.type === "container") {
-        commitHistory((prev) =>
-          insertComponentRecursive(
-            prev,
-            selected.id,
-            selected.children.length,
-            cloned,
-          ),
-        );
+        commitHistory((prev) => {
+          let next = prev;
 
-        setSelectedComponentId(cloned.id);
+          clones.forEach((clone, offset) => {
+            next = insertComponentRecursive(
+              next,
+              selected.id,
+              selected.children.length + offset,
+              clone,
+            );
+          });
+          return next;
+        });
+        setSelectedComponentIds(newIds);
+        setSelectedComponentId(newIds[newIds.length - 1] ?? null);
         return;
       }
 
@@ -122,16 +195,22 @@ export const useEditorShortcuts = ({
         return;
       }
 
-      commitHistory((prev) =>
-        insertComponentRecursive(
-          prev,
-          location.parentId,
-          location.index + 1,
-          cloned,
-        ),
-      );
+      commitHistory((prev) => {
+        let next = prev;
+        clones.forEach((clone, offset) => {
+          next = insertComponentRecursive(
+            next,
+            location.parentId,
+            location.index + 1 + offset,
+            clone,
+          );
+        });
 
-      setSelectedComponentId(cloned.id);
+        return next;
+      });
+
+      setSelectedComponentIds(newIds);
+      setSelectedComponentId(newIds[newIds.length - 1] ?? null);
     };
 
     window.addEventListener("keydown", handleClipboardShortcut);
@@ -139,7 +218,14 @@ export const useEditorShortcuts = ({
     return () => {
       window.removeEventListener("keydown", handleClipboardShortcut);
     };
-  }, [commitHistory, components, selectedComponentId, setSelectedComponentId]);
+  }, [
+    commitHistory,
+    components,
+    selectedComponentId,
+    selectedComponentIds,
+    setSelectedComponentId,
+    setSelectedComponentIds,
+  ]);
 
   useEffect(() => {
     const handleDeleteKey = (event: KeyboardEvent) => {
@@ -151,7 +237,7 @@ export const useEditorShortcuts = ({
         return;
       }
 
-      if (!selectedComponentId) {
+      if (selectedComponentIds.length === 0 && !selectedComponentId) {
         return;
       }
 
@@ -161,10 +247,20 @@ export const useEditorShortcuts = ({
         return;
       }
 
-      const targetId = selectedComponentId;
+      const ids =
+        selectedComponentIds.length > 0
+          ? selectedComponentIds
+          : selectedComponentId
+            ? [selectedComponentId]
+            : [];
 
-      commitHistory((prev) => removeComponentRecursive(prev, targetId).items);
+      if (ids.length === 0) {
+        return;
+      }
 
+      const selectedSet = new Set(ids);
+      commitHistory((prev) => removeSelectedComponents(prev, selectedSet));
+      setSelectedComponentIds([]);
       setSelectedComponentId(null);
     };
 
@@ -173,5 +269,11 @@ export const useEditorShortcuts = ({
     return () => {
       window.removeEventListener("keydown", handleDeleteKey);
     };
-  }, [commitHistory, selectedComponentId, setSelectedComponentId]);
+  }, [
+    commitHistory,
+    selectedComponentId,
+    selectedComponentIds,
+    setSelectedComponentId,
+    setSelectedComponentIds,
+  ]);
 };

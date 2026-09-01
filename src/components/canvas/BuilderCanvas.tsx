@@ -8,6 +8,7 @@ type Props = {
   canvasWidth: number;
   components: LayoutComponent[];
   selectedComponentId: string | null;
+  selectedComponentIds: string[];
   draggingId: string | null;
   droppedId: string | null;
   layerSearch: string;
@@ -19,7 +20,11 @@ type Props = {
     layout: Partial<ComponentLayout>,
     recordHistory?: boolean,
   ) => void;
-  onSelect: (id: string) => void;
+  onSelect: (
+    id: string,
+    openEditPanel?: boolean,
+    multiSelect?: boolean,
+  ) => void;
   onEdit: (id: string) => void;
   onCopy: (id: string) => void;
   onDelete: (id: string) => void;
@@ -46,6 +51,7 @@ function BuilderCanvas({
   canvasWidth,
   components,
   selectedComponentId,
+  selectedComponentIds,
   draggingId,
   droppedId,
   layerSearch,
@@ -108,6 +114,7 @@ function BuilderCanvas({
               previewMode={previewMode}
               component={component}
               selectedComponentId={selectedComponentId}
+              selectedComponentIds={selectedComponentIds}
               draggingId={draggingId}
               droppedId={droppedId}
               layerSearch={layerSearch}

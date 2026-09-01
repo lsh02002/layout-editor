@@ -27,6 +27,7 @@ type DropTarget = {
 type Options = {
   components: LayoutComponent[];
   layerSearch: string;
+  selectedComponentIds: string[];
   dropTemplate: (
     event: DragEvent<HTMLElement>,
     parentId: string | null,
@@ -40,6 +41,7 @@ type Options = {
 export const useComponentDragDrop = ({
   components,
   layerSearch,
+  selectedComponentIds,
   dropTemplate,
   commitHistory,
   makeComponentByType,
@@ -142,13 +144,166 @@ export const useComponentDragDrop = ({
     [components, commitHistory],
   );
 
+  const moveComponents = useCallback(
+    (
+      componentIds: string[],
+      targetParentId: string | null,
+      targetIndex: number,
+    ) => {
+      if (componentIds.length === 0) {
+        return;
+      }
+
+      const selectedSet = new Set(componentIds);
+
+      // 선택된 부모 안에 들어있는 선택 자식은 제외
+      // 부모가 이동하면 자식도 같이 이동되므로 중복 방지
+      const topLevelIds = componentIds.filter((id) => {
+        const location = findComponentLocation(components, id);
+
+        let parentId = location?.parentId ?? null;
+
+        while (parentId) {
+          if (selectedSet.has(parentId)) {
+            return false;
+          }
+
+          const parentLocation = findComponentLocation(components, parentId);
+
+          parentId = parentLocation?.parentId ?? null;
+        }
+
+        return true;
+      });
+
+      if (topLevelIds.length === 0) {
+        return;
+      }
+
+      // 현재 화면/tree 순서대로 정렬
+      const orderMap = new Map<string, number>();
+
+      let order = 0;
+
+      const walk = (items: LayoutComponent[]) => {
+        const sorted = [...items].sort((a, b) => a.order - b.order);
+
+        for (const component of sorted) {
+          orderMap.set(component.id, order++);
+
+          if (component.type === "container") {
+            walk(component.children);
+          }
+        }
+      };
+
+      walk(components);
+
+      topLevelIds.sort(
+        (a, b) => (orderMap.get(a) ?? 0) - (orderMap.get(b) ?? 0),
+      );
+
+      // 자기 자신 / 자기 자식으로 이동 방지
+      if (targetParentId) {
+        for (const id of topLevelIds) {
+          const component = findComponentRecursive(components, id);
+
+          if (!component) {
+            continue;
+          }
+
+          if (
+            component.id === targetParentId ||
+            containsComponent(component, targetParentId)
+          ) {
+            return;
+          }
+        }
+      }
+
+      commitHistory((prev) => {
+        let next = prev;
+
+        const movingComponents: LayoutComponent[] = [];
+
+        // 원래 위치 정보
+        const sourceLocations = topLevelIds
+          .map((id) => ({
+            id,
+            location: findComponentLocation(prev, id),
+          }))
+          .filter(
+            (
+              item,
+            ): item is {
+              id: string;
+              location: NonNullable<ReturnType<typeof findComponentLocation>>;
+            } => item.location != null,
+          );
+
+        // 같은 부모에서 앞쪽 아이템들이 빠지면
+        // targetIndex를 그만큼 보정해야 함
+        const removedBeforeTarget = sourceLocations.filter(
+          ({ location }) =>
+            location.parentId === targetParentId &&
+            location.index < targetIndex,
+        ).length;
+
+        const adjustedTargetIndex = Math.max(
+          0,
+          targetIndex - removedBeforeTarget,
+        );
+
+        // 선택 컴포넌트 제거
+        for (const id of topLevelIds) {
+          const removed = removeComponentRecursive(next, id);
+
+          if (removed.removed) {
+            movingComponents.push(removed.removed);
+
+            next = removed.items;
+          }
+        }
+
+        // 같은 순서를 유지하면서 삽입
+        movingComponents.forEach((component, offset) => {
+          next = insertComponentRecursive(
+            next,
+            targetParentId,
+            adjustedTargetIndex + offset,
+            component,
+          );
+        });
+
+        return next;
+      });
+    },
+    [components, commitHistory],
+  );
+
   const handleDragStart = useCallback(
     (event: DragEvent<HTMLElement>, componentId: string) => {
       draggingIdRef.current = componentId;
+
       setDraggingId(componentId);
+
+      const isMultiDragging =
+        selectedComponentIds.length > 1 &&
+        selectedComponentIds.includes(componentId);
+
+      const draggingIds = isMultiDragging
+        ? selectedComponentIds
+        : [componentId];
 
       event.dataTransfer.effectAllowed = "move";
 
+      // 멀티
+      event.dataTransfer.setData(
+        "application/x-layout-component-ids",
+        JSON.stringify(draggingIds),
+      );
+
+      // 기존 단일 호환
       event.dataTransfer.setData(
         "application/x-layout-component-id",
         componentId,
@@ -156,7 +311,7 @@ export const useComponentDragDrop = ({
 
       event.dataTransfer.setData("text/plain", componentId);
     },
-    [],
+    [selectedComponentIds],
   );
 
   const handleDragEnd = useCallback(() => {
@@ -295,35 +450,57 @@ export const useComponentDragDrop = ({
       const componentType = event.dataTransfer.getData(
         "application/x-component-type",
       ) as ComponentType;
-
       if (componentType) {
         const newComponent = makeComponentByType(componentType);
-
         commitHistory((prev) =>
           insertComponentRecursive(prev, parentId, index, newComponent),
         );
-
         setSelectedComponentId(newComponent.id);
         triggerDropAnimation(newComponent.id);
         setActiveDropTarget(null);
-
         return;
       }
 
       // 2. 템플릿 드롭
       const templateDropped = dropTemplate(event, parentId, index);
-
       if (templateDropped) {
         setActiveDropTarget(null);
         return;
       }
 
-      // 3. 기존 컴포넌트 이동
+      const multiRaw = event.dataTransfer.getData(
+        "application/x-layout-component-ids",
+      );
+      let draggedIds: string[] = [];
+      if (multiRaw) {
+        try {
+          const parsed = JSON.parse(multiRaw);
+          if (Array.isArray(parsed)) {
+            draggedIds = parsed.filter(
+              (id): id is string => typeof id === "string",
+            );
+          }
+        } catch {
+          draggedIds = [];
+        }
+      }
+
+      // 멀티 드래그
+      if (draggedIds.length > 1) {
+        moveComponents(draggedIds, parentId, index);
+        draggedIds.forEach((id) => triggerDropAnimation(id));
+        draggingIdRef.current = null;
+        setDraggingId(null);
+        setActiveDropTarget(null);
+        return;
+      }
+
+      // 기존 단일 드래그
       const draggedId =
+        draggedIds[0] ||
         event.dataTransfer.getData("application/x-layout-component-id") ||
         event.dataTransfer.getData("text/plain") ||
         draggingIdRef.current;
-
       if (!draggedId) {
         setActiveDropTarget(null);
         return;
@@ -334,7 +511,6 @@ export const useComponentDragDrop = ({
       triggerDropAnimation(draggedId);
 
       draggingIdRef.current = null;
-
       setDraggingId(null);
       setActiveDropTarget(null);
     },
@@ -343,6 +519,7 @@ export const useComponentDragDrop = ({
       dropTemplate,
       makeComponentByType,
       moveComponent,
+      moveComponents,
       setSelectedComponentId,
       triggerDropAnimation,
     ],

@@ -24,6 +24,7 @@ type Props = {
   previewMode: boolean;
   component: LayoutComponent;
   selectedComponentId: string | null;
+  selectedComponentIds: string[];
   draggingId: string | null;
   droppedId: string | null;
   layerSearch: string;
@@ -34,7 +35,11 @@ type Props = {
     layout: Partial<ComponentLayout>,
     recordHistory?: boolean,
   ) => void;
-  onSelect: (id: string) => void;
+  onSelect: (
+    id: string,
+    openEditPanel?: boolean,
+    multiSelect?: boolean,
+  ) => void;
   onEdit: (id: string) => void;
   onCopy: (id: string) => void;
   onDelete: (id: string) => void;
@@ -60,6 +65,7 @@ function LayoutComponentNode({
   previewMode,
   component,
   selectedComponentId,
+  selectedComponentIds,
   draggingId,
   droppedId,
   layerSearch,
@@ -86,7 +92,8 @@ function LayoutComponentNode({
   const [editToolbarVisible, setEditToolbarVisible] = useState(false);
 
   const isDragging = isLocalDragging || draggingId === component.id;
-  const isSelected = selectedComponentId === component.id;
+  const isSelected = selectedComponentIds.includes(component.id);
+  const isPrimarySelected = selectedComponentId === component.id;
   const isAbsolute = component.layout?.position === "absolute";
 
   const positionParentId = component.layout?.positionParentId ?? null;
@@ -239,13 +246,15 @@ function LayoutComponentNode({
       >
         <DivBox
           previewMode={previewMode}
-          isSelected={isSelected}
+          isSelected={isPrimarySelected}
           positionContextId={component.id}
           layout={component.layout}
           onLayoutChange={(layout, recordHistory) =>
             onLayoutChange(component.id, layout, recordHistory)
           }
-          onSelect={() => onSelect(component.id)}
+          onComponentSelect={(multiSelect) =>
+            onSelect(component.id, false, multiSelect)
+          }
           onEdit={() => onEdit(component.id)}
           onCopy={() => onCopy(component.id)}
           onDelete={() => onDelete(component.id)}
@@ -339,6 +348,7 @@ function LayoutComponentNode({
                       previewMode={previewMode}
                       component={child}
                       selectedComponentId={selectedComponentId}
+                      selectedComponentIds={selectedComponentIds}
                       draggingId={draggingId}
                       droppedId={droppedId}
                       layerSearch={layerSearch}
@@ -401,7 +411,7 @@ function LayoutComponentNode({
     <div ref={componentRef} data-component-id={component.id} style={nodeStyle}>
       <DivBox
         previewMode={previewMode}
-        isSelected={isSelected}
+        isSelected={isPrimarySelected}
         positionContextId={component.id}
         layout={{
           ...component.layout,
@@ -410,7 +420,9 @@ function LayoutComponentNode({
         onLayoutChange={(layout, recordHistory) =>
           onLayoutChange(component.id, layout, recordHistory)
         }
-        onSelect={() => onSelect(component.id)}
+        onComponentSelect={(multiSelect) =>
+          onSelect(component.id, false, multiSelect)
+        }
         onEdit={() => onEdit(component.id)}
         onCopy={() => onCopy(component.id)}
         onDelete={() => onDelete(component.id)}
