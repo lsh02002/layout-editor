@@ -25,7 +25,7 @@ type Props = {
   component: LayoutComponent;
   selectedComponentIds: string[];
   draggingIds: string[];
-  droppedId: string | null;
+  droppedIds: string[];
   layerSearch: string;
   activeDropTarget: CanvasDropTarget | null;
   setActiveDropTarget: (target: CanvasDropTarget | null) => void;
@@ -65,7 +65,7 @@ function LayoutComponentNode({
   component,
   selectedComponentIds,
   draggingIds,
-  droppedId,
+  droppedIds,
   layerSearch,
   activeDropTarget,
   setActiveDropTarget,
@@ -111,7 +111,7 @@ function LayoutComponentNode({
 
   const componentRef = useRef<HTMLDivElement>(null);
 
-  const justDropped = !isAbsolute && droppedId === component.id;
+  const justDropped = !isAbsolute && droppedIds.includes(component.id);
 
   useEffect(() => {
     if (!isSelected) {
@@ -361,7 +361,7 @@ function LayoutComponentNode({
                       component={child}
                       selectedComponentIds={selectedComponentIds}
                       draggingIds={draggingIds}
-                      droppedId={droppedId}
+                      droppedIds={droppedIds}
                       layerSearch={layerSearch}
                       activeDropTarget={activeDropTarget}
                       setActiveDropTarget={setActiveDropTarget}

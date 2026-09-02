@@ -49,7 +49,7 @@ export const useComponentDragDrop = ({
 }: Options) => {
   const [draggingIds, setDraggingIds] = useState<string[]>([]);
 
-  const [droppedId, setDroppedId] = useState<string | null>(null);
+  const [droppedIds, setDroppedIds] = useState<string[]>([]);
   const dropAnimationTimerRef = useRef<number | null>(null);
 
   const [activeDropTarget, setActiveDropTarget] = useState<DropTarget | null>(
@@ -71,15 +71,15 @@ export const useComponentDragDrop = ({
     setActiveDropTarget(null);
   }, []);
 
-  const triggerDropAnimation = useCallback((componentId: string) => {
-    setDroppedId(componentId);
+  const triggerDropAnimation = useCallback((componentIds: string[]) => {
+    setDroppedIds(componentIds);
 
     if (dropAnimationTimerRef.current !== null) {
       window.clearTimeout(dropAnimationTimerRef.current);
     }
 
     dropAnimationTimerRef.current = window.setTimeout(() => {
-      setDroppedId(null);
+      setDroppedIds([]);
       dropAnimationTimerRef.current = null;
     }, 250);
   }, []);
@@ -453,7 +453,7 @@ export const useComponentDragDrop = ({
           insertComponentRecursive(prev, parentId, index, newComponent),
         );
         setSelectedComponentIds([newComponent.id]);
-        triggerDropAnimation(newComponent.id);
+        triggerDropAnimation([newComponent.id]);
         setActiveDropTarget(null);
         return;
       }
@@ -485,7 +485,7 @@ export const useComponentDragDrop = ({
       // 멀티 드래그
       if (draggedIds.length > 1) {
         moveComponents(draggedIds, parentId, index);
-        draggedIds.forEach((id) => triggerDropAnimation(id));
+        triggerDropAnimation(draggedIds);
         clearDraggingState();
         return;
       }
@@ -504,7 +504,7 @@ export const useComponentDragDrop = ({
 
       moveComponent(draggedId, parentId, index);
 
-      triggerDropAnimation(draggedId);
+      triggerDropAnimation([draggedId]);
 
       clearDraggingState();
     },
@@ -523,7 +523,7 @@ export const useComponentDragDrop = ({
 
   return {
     draggingIds,
-    droppedId,
+    droppedIds,
     activeDropTarget,
     setActiveDropTarget,
     moveComponent,

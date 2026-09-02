@@ -383,7 +383,7 @@ function LayoutEditor() {
 
   const {
     draggingIds,
-    droppedId,
+    droppedIds,
     activeDropTarget,
     setActiveDropTarget,
     handleDragStart,
@@ -654,7 +654,7 @@ function LayoutEditor() {
           previewMode={previewMode}
           canvasWidth={canvasWidth}
           components={components}
-          droppedId={droppedId}
+          droppedIds={droppedIds}
           selectedComponentIds={selectedComponentIds}
           draggingIds={draggingIds}
           layerSearch={layerSearch}

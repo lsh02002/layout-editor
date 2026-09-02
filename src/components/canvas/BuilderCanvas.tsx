@@ -9,7 +9,7 @@ type Props = {
   components: LayoutComponent[];
   selectedComponentIds: string[];
   draggingIds: string[];
-  droppedId: string | null;
+  droppedIds: string[];
   layerSearch: string;
   activeDropTarget: CanvasDropTarget | null;
   setPreviewMode: React.Dispatch<React.SetStateAction<boolean>>;
@@ -51,7 +51,7 @@ function BuilderCanvas({
   components,
   selectedComponentIds,
   draggingIds,
-  droppedId,
+  droppedIds,
   layerSearch,
   activeDropTarget,
   setActiveDropTarget,
@@ -113,7 +113,7 @@ function BuilderCanvas({
               component={component}
               selectedComponentIds={selectedComponentIds}
               draggingIds={draggingIds}
-              droppedId={droppedId}
+              droppedIds={droppedIds}
               layerSearch={layerSearch}
               activeDropTarget={activeDropTarget}
               setActiveDropTarget={setActiveDropTarget}
