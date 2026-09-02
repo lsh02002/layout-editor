@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { FAKE_IMAGE_URL, FAKE_IMAGE_SLIDER_URLS } from "../../../data/data";
 
 import type {
   ComponentType,
@@ -150,7 +151,7 @@ export const useCreateComponentForm = () => {
           type: "image",
           order: 0,
           props: {
-            urls: ["https://picsum.photos/id/238/1200/500"],
+            urls: [FAKE_IMAGE_URL],
             maxCount: 1,
             disabled: false,
           },
@@ -166,11 +167,7 @@ export const useCreateComponentForm = () => {
           type: "imageSlider",
           order: 0,
           props: {
-            urls: [
-              "https://picsum.photos/id/238/1200/500",
-              "https://picsum.photos/id/239/1200/500",
-              "https://picsum.photos/id/240/1200/500",
-            ],
+            urls: FAKE_IMAGE_SLIDER_URLS,
             autoplay: true,
             interval: 3000,
             showArrows: true,
@@ -425,7 +422,7 @@ export const useCreateComponentForm = () => {
           type: "image",
           order: 0,
           props: {
-            urls: ["https://picsum.photos/id/238/1200/500"],
+            urls: [FAKE_IMAGE_URL],
             maxCount: 1,
             disabled: false,
           },
@@ -441,11 +438,7 @@ export const useCreateComponentForm = () => {
           type: "imageSlider",
           order: 0,
           props: {
-            urls: [
-              "https://picsum.photos/id/238/1200/500",
-              "https://picsum.photos/id/239/1200/500",
-              "https://picsum.photos/id/240/1200/500",
-            ],
+            urls: FAKE_IMAGE_SLIDER_URLS,
             autoplay: true,
             interval: 3000,
             showArrows: true,

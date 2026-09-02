@@ -20,3 +20,11 @@ export const data: LayoutComponent[] = [
     children: [],
   },
 ];
+
+export const FAKE_IMAGE_URL = "https://picsum.photos/id/238/1200/500";
+
+export const FAKE_IMAGE_SLIDER_URLS = [
+  "https://picsum.photos/id/238/1200/500",
+  "https://picsum.photos/id/239/1200/500",
+  "https://picsum.photos/id/240/1200/500",
+];

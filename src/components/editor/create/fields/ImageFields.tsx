@@ -1,4 +1,5 @@
 import ComponentNameField from "./ComponentNameField";
+import { FAKE_IMAGE_URL } from "../../../../data/data";
 
 type Props = {
   componentName: string;
@@ -40,7 +41,7 @@ function ImageFields({
         />
         <div className="mt-3">
           <img
-            src={previewUrl || "https://picsum.photos/id/238/1200/500"}
+            src={previewUrl || FAKE_IMAGE_URL}
             alt="미리보기"
             style={{
               display: "block",

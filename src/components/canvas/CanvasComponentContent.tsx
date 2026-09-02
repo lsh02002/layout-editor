@@ -3,6 +3,7 @@ import type { LayoutComponent } from "../../types/types";
 import ImageSlider from "../editor/utils/ImageSlider";
 import CodeEditor from "../editor/utils/codeEditor";
 import { getLinkHref } from "../editor/utils/linkUtils";
+import { FAKE_IMAGE_URL } from "../../data/data";
 
 type Props = {
   component: Exclude<LayoutComponent, { type: "container" }>;
@@ -91,7 +92,7 @@ function CanvasComponentContent({ component }: Props) {
         >
           {imageUrl ? (
             <img
-              src={imageUrl || "https://picsum.photos/id/238/1200/500"}
+              src={imageUrl || FAKE_IMAGE_URL}
               alt=""
               draggable={false}
               style={{
