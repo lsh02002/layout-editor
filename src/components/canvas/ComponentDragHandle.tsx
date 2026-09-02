@@ -4,7 +4,7 @@ import type { LayoutComponent } from "../../types/types";
 
 type Props = {
   component: LayoutComponent;
-  draggingId: string | null;
+  draggingIds: string[];
   layerSearch: string;
 
   onDragStart: (event: DragEvent<HTMLElement>, componentId: string) => void;
@@ -27,7 +27,7 @@ type Props = {
 
 function ComponentDragHandle({
   component,
-  draggingId,
+  draggingIds,
   layerSearch,
   onDragStart,
   onDragEnd,
@@ -37,7 +37,7 @@ function ComponentDragHandle({
   onPointerDragCancel,
   dragHandleLeft,
 }: Props) {
-  const isDragging = draggingId === component.id;
+  const isDragging = draggingIds.includes(component.id);
   const dragDisabled = Boolean(layerSearch);
 
   return (

@@ -382,7 +382,7 @@ function LayoutEditor() {
   });
 
   const {
-    draggingId,
+    draggingIds,
     droppedId,
     activeDropTarget,
     setActiveDropTarget,
@@ -562,7 +562,7 @@ function LayoutEditor() {
                   visible
                   components={filteredLayerComponents}
                   selectedComponentIds={selectedComponentIds}
-                  draggingId={draggingId}
+                  draggingIds={draggingIds}
                   search={layerSearch}
                   activeDropTarget={activeDropTarget}
                   setSelectedComponentIds={setSelectedComponentIds}
@@ -656,7 +656,7 @@ function LayoutEditor() {
           components={components}
           droppedId={droppedId}
           selectedComponentIds={selectedComponentIds}
-          draggingId={draggingId}
+          draggingIds={draggingIds}
           layerSearch={layerSearch}
           activeDropTarget={activeDropTarget}
           setPreviewMode={setPreviewMode}

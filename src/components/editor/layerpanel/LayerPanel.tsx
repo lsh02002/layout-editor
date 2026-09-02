@@ -13,7 +13,7 @@ type LayerPanelProps = {
   visible: boolean;
   components: LayoutComponent[];
   selectedComponentIds: string[];
-  draggingId: string | null;
+  draggingIds: string[];
   search: string;
   activeDropTarget: DropTarget;
   setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
@@ -90,7 +90,7 @@ function LayerPanel({
   visible,
   components,
   selectedComponentIds,
-  draggingId,
+  draggingIds,
   search,
   activeDropTarget,
   setSelectedComponentIds,
@@ -206,7 +206,7 @@ function LayerPanel({
         {sorted.map((component, index) => {
           const isContainer = component.type === "container";
           const isSelected = selectedComponentIds.includes(component.id);
-          const isDragging = draggingId === component.id;
+          const isDragging = draggingIds.includes(component.id);
           return (
             <React.Fragment key={component.id}>
               <div
@@ -433,7 +433,7 @@ function LayerPanel({
   return (
     <aside
       onDragOver={(event) => {
-        if (draggingId) {
+        if (draggingIds.length > 0) {
           event.preventDefault();
         }
       }}

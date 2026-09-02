@@ -8,7 +8,7 @@ type Props = {
   canvasWidth: number;
   components: LayoutComponent[];
   selectedComponentIds: string[];
-  draggingId: string | null;
+  draggingIds: string[];
   droppedId: string | null;
   layerSearch: string;
   activeDropTarget: CanvasDropTarget | null;
@@ -50,7 +50,7 @@ function BuilderCanvas({
   canvasWidth,
   components,
   selectedComponentIds,
-  draggingId,
+  draggingIds,
   droppedId,
   layerSearch,
   activeDropTarget,
@@ -92,7 +92,7 @@ function BuilderCanvas({
         parentId={null}
         index={0}
         direction="column"
-        draggingId={draggingId}
+        draggingIds={draggingIds}
         activeDropTarget={activeDropTarget}
         setActiveDropTarget={setActiveDropTarget}
         onDrop={onDrop}
@@ -112,7 +112,7 @@ function BuilderCanvas({
               previewMode={previewMode}
               component={component}
               selectedComponentIds={selectedComponentIds}
-              draggingId={draggingId}
+              draggingIds={draggingIds}
               droppedId={droppedId}
               layerSearch={layerSearch}
               activeDropTarget={activeDropTarget}
@@ -138,7 +138,7 @@ function BuilderCanvas({
                 parentId={null}
                 index={index + 1}
                 direction="column"
-                draggingId={draggingId}
+                draggingIds={draggingIds}
                 activeDropTarget={activeDropTarget}
                 setActiveDropTarget={setActiveDropTarget}
                 onDrop={onDrop}

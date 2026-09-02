@@ -12,7 +12,7 @@ type Props = {
   parentId: string | null;
   index: number;
   direction?: ContainerDirection;
-  draggingId: string | null;
+  draggingIds: string[];
   activeDropTarget: CanvasDropTarget | null;
   setActiveDropTarget: (target: CanvasDropTarget | null) => void;
   onDrop: (
@@ -28,7 +28,7 @@ function CanvasDropZone({
   parentId,
   index,
   direction = "column",
-  draggingId,
+  draggingIds,
   activeDropTarget,
   setActiveDropTarget,
   onDrop,
@@ -110,8 +110,8 @@ function CanvasDropZone({
         flexDirection: isRow ? "column" : "row",
         alignItems: "center",
         justifyContent: "center",
-        minHeight: isRow ? undefined : draggingId ? 32 : 14,
-        minWidth: isRow ? (draggingId ? 32 : 14) : undefined,
+        minHeight: isRow ? undefined : draggingIds.length > 0 ? 32 : 14,
+        minWidth: isRow ? (draggingIds.length > 0 ? 32 : 14) : undefined,
         flexShrink: 0,
         margin: isRow ? "0 3px" : "3px 0",
         borderRadius: 6,
@@ -145,7 +145,7 @@ function CanvasDropZone({
           color: "#64748b",
           opacity: 1,
           visibility: "visible",
-          pointerEvents: draggingId ? "none" : "auto",
+          pointerEvents: draggingIds.length > 0 ? "none" : "auto",
           transform: hovered || isActive ? "scale(1.08)" : "scale(1)",
           touchAction: "manipulation",
           transition: `

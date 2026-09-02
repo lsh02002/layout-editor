@@ -24,7 +24,7 @@ type Props = {
   previewMode: boolean;
   component: LayoutComponent;
   selectedComponentIds: string[];
-  draggingId: string | null;
+  draggingIds: string[];
   droppedId: string | null;
   layerSearch: string;
   activeDropTarget: CanvasDropTarget | null;
@@ -64,7 +64,7 @@ function LayoutComponentNode({
   previewMode,
   component,
   selectedComponentIds,
-  draggingId,
+  draggingIds,
   droppedId,
   layerSearch,
   activeDropTarget,
@@ -84,12 +84,9 @@ function LayoutComponentNode({
   onPointerDragCancel,
   snapLayout,
 }: Props) {
-  const [isLocalDragging, setIsLocalDragging] = useState(false);
   const [renderedWidth, setRenderedWidth] = useState<number>(0);
-
   const [editToolbarVisible, setEditToolbarVisible] = useState(false);
 
-  const isDragging = isLocalDragging || draggingId === component.id;
   const isSelected = selectedComponentIds.includes(component.id);
   const isPrimarySelected = selectedComponentIds.at(-1) === component.id;
   const isAbsolute = component.layout?.position === "absolute";
@@ -155,21 +152,39 @@ function LayoutComponentNode({
 
   const handleNativeDragStart = useCallback(
     (event: DragEvent<HTMLElement>, componentId: string) => {
-      setIsLocalDragging(true);
+      const nextDraggingIds = selectedComponentIds.includes(componentId)
+        ? selectedComponentIds
+        : [componentId];
+
       onDragStart(event, componentId);
+
+      requestAnimationFrame(() => {
+        nextDraggingIds.forEach((id) => {
+          document
+            .querySelectorAll<HTMLElement>(`[data-component-id="${id}"]`)
+            .forEach((element) => {
+              element.style.opacity = "0.4";
+            });
+        });
+      });
     },
-    [onDragStart],
+    [onDragStart, selectedComponentIds],
   );
 
   const handleNativeDragEnd = useCallback(() => {
-    setIsLocalDragging(false);
+    document
+      .querySelectorAll<HTMLElement>("[data-component-id]")
+      .forEach((element) => {
+        element.style.opacity = "";
+      });
+
     onDragEnd();
   }, [onDragEnd]);
 
   const dragHandle = (
     <ComponentDragHandle
       component={component}
-      draggingId={draggingId}
+      draggingIds={draggingIds}
       layerSearch={layerSearch}
       onDragStart={handleNativeDragStart}
       onDragEnd={handleNativeDragEnd}
@@ -261,7 +276,6 @@ function LayoutComponentNode({
           style={{
             ...component.style,
             border: !previewMode ? "1px dashed #adb5bd" : "none",
-            opacity: isDragging ? 0.45 : (component.style?.opacity ?? 1),
             transition: "opacity 120ms ease",
             outline:
               !previewMode && isSelected
@@ -293,7 +307,7 @@ function LayoutComponentNode({
                 parentId={component.id}
                 index={0}
                 direction={direction}
-                draggingId={draggingId}
+                draggingIds={draggingIds}
                 activeDropTarget={activeDropTarget}
                 setActiveDropTarget={setActiveDropTarget}
                 onDrop={onDrop}
@@ -346,7 +360,7 @@ function LayoutComponentNode({
                       previewMode={previewMode}
                       component={child}
                       selectedComponentIds={selectedComponentIds}
-                      draggingId={draggingId}
+                      draggingIds={draggingIds}
                       droppedId={droppedId}
                       layerSearch={layerSearch}
                       activeDropTarget={activeDropTarget}
@@ -374,7 +388,7 @@ function LayoutComponentNode({
                           parentId={component.id}
                           index={index + 1}
                           direction={direction}
-                          draggingId={draggingId}
+                          draggingIds={draggingIds}
                           activeDropTarget={activeDropTarget}
                           setActiveDropTarget={setActiveDropTarget}
                           onDrop={onDrop}
@@ -390,7 +404,7 @@ function LayoutComponentNode({
                   parentId={component.id}
                   index={children.length}
                   direction={direction}
-                  draggingId={draggingId}
+                  draggingIds={draggingIds}
                   activeDropTarget={activeDropTarget}
                   setActiveDropTarget={setActiveDropTarget}
                   onDrop={onDrop}
@@ -429,7 +443,6 @@ function LayoutComponentNode({
           ...component.style,
           position: "relative",
           zIndex: isAbsolute ? (component.layout?.zIndex ?? 100) : 0,
-          opacity: isDragging ? 0.45 : (component.style?.opacity ?? 1),
           transition: "opacity 120ms ease",
           outline:
             !previewMode && isSelected

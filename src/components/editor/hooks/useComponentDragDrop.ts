@@ -47,7 +47,7 @@ export const useComponentDragDrop = ({
   makeComponentByType,
   setSelectedComponentIds,
 }: Options) => {
-  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [draggingIds, setDraggingIds] = useState<string[]>([]);
 
   const [droppedId, setDroppedId] = useState<string | null>(null);
   const dropAnimationTimerRef = useRef<number | null>(null);
@@ -55,8 +55,6 @@ export const useComponentDragDrop = ({
   const [activeDropTarget, setActiveDropTarget] = useState<DropTarget | null>(
     null,
   );
-
-  const draggingIdRef = useRef<string | null>(null);
 
   const pointerDragRef = useRef<{
     componentId: string | null;
@@ -67,6 +65,11 @@ export const useComponentDragDrop = ({
     targetParentId: null,
     targetIndex: null,
   });
+
+  const clearDraggingState = useCallback(() => {
+    setDraggingIds([]);
+    setActiveDropTarget(null);
+  }, []);
 
   const triggerDropAnimation = useCallback((componentId: string) => {
     setDroppedId(componentId);
@@ -283,27 +286,19 @@ export const useComponentDragDrop = ({
 
   const handleDragStart = useCallback(
     (event: DragEvent<HTMLElement>, componentId: string) => {
-      draggingIdRef.current = componentId;
-
-      setDraggingId(componentId);
-
-      const isMultiDragging =
-        selectedComponentIds.length > 1 &&
-        selectedComponentIds.includes(componentId);
-
-      const draggingIds = isMultiDragging
-        ? selectedComponentIds
+      const nextDraggingIds = selectedComponentIds.includes(componentId)
+        ? [...selectedComponentIds]
         : [componentId];
+
+      setDraggingIds(nextDraggingIds);
 
       event.dataTransfer.effectAllowed = "move";
 
-      // 멀티
       event.dataTransfer.setData(
         "application/x-layout-component-ids",
-        JSON.stringify(draggingIds),
+        JSON.stringify(nextDraggingIds),
       );
 
-      // 기존 단일 호환
       event.dataTransfer.setData(
         "application/x-layout-component-id",
         componentId,
@@ -315,10 +310,8 @@ export const useComponentDragDrop = ({
   );
 
   const handleDragEnd = useCallback(() => {
-    draggingIdRef.current = null;
-    setDraggingId(null);
-    setActiveDropTarget(null);
-  }, []);
+    clearDraggingState();
+  }, [clearDraggingState]);
 
   const handlePointerDragStart = useCallback(
     (event: PointerEvent<HTMLElement>, componentId: string) => {
@@ -335,15 +328,23 @@ export const useComponentDragDrop = ({
 
       event.currentTarget.setPointerCapture(event.pointerId);
 
+      const isMultiDragging =
+        selectedComponentIds.length > 1 &&
+        selectedComponentIds.includes(componentId);
+
+      const nextDraggingIds = isMultiDragging
+        ? [...selectedComponentIds]
+        : [componentId];
+
       pointerDragRef.current = {
         componentId,
         targetParentId: null,
         targetIndex: null,
       };
 
-      setDraggingId(componentId);
+      setDraggingIds(nextDraggingIds);
     },
-    [layerSearch],
+    [layerSearch, selectedComponentIds],
   );
 
   const handlePointerDragMove = useCallback(
@@ -422,11 +423,9 @@ export const useComponentDragDrop = ({
         targetIndex: null,
       };
 
-      draggingIdRef.current = null;
-      setDraggingId(null);
-      setActiveDropTarget(null);
+      clearDraggingState();
     },
-    [moveComponent],
+    [clearDraggingState, moveComponent],
   );
 
   const handlePointerDragCancel = useCallback(() => {
@@ -436,10 +435,8 @@ export const useComponentDragDrop = ({
       targetIndex: null,
     };
 
-    draggingIdRef.current = null;
-    setDraggingId(null);
-    setActiveDropTarget(null);
-  }, []);
+    clearDraggingState();
+  }, [clearDraggingState]);
 
   const handleDrop = useCallback(
     (event: DragEvent<HTMLElement>, parentId: string | null, index: number) => {
@@ -489,9 +486,7 @@ export const useComponentDragDrop = ({
       if (draggedIds.length > 1) {
         moveComponents(draggedIds, parentId, index);
         draggedIds.forEach((id) => triggerDropAnimation(id));
-        draggingIdRef.current = null;
-        setDraggingId(null);
-        setActiveDropTarget(null);
+        clearDraggingState();
         return;
       }
 
@@ -500,7 +495,8 @@ export const useComponentDragDrop = ({
         draggedIds[0] ||
         event.dataTransfer.getData("application/x-layout-component-id") ||
         event.dataTransfer.getData("text/plain") ||
-        draggingIdRef.current;
+        draggingIds[0];
+
       if (!draggedId) {
         setActiveDropTarget(null);
         return;
@@ -510,12 +506,12 @@ export const useComponentDragDrop = ({
 
       triggerDropAnimation(draggedId);
 
-      draggingIdRef.current = null;
-      setDraggingId(null);
-      setActiveDropTarget(null);
+      clearDraggingState();
     },
     [
+      clearDraggingState,
       commitHistory,
+      draggingIds,
       dropTemplate,
       makeComponentByType,
       moveComponent,
@@ -526,7 +522,7 @@ export const useComponentDragDrop = ({
   );
 
   return {
-    draggingId,
+    draggingIds,
     droppedId,
     activeDropTarget,
     setActiveDropTarget,
