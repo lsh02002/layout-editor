@@ -91,7 +91,7 @@ function CanvasComponentContent({ component }: Props) {
         >
           {imageUrl ? (
             <img
-              src={imageUrl}
+              src={imageUrl || "https://picsum.photos/id/238/1200/500"}
               alt=""
               draggable={false}
               style={{

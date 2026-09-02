@@ -38,22 +38,19 @@ function ImageFields({
             onPreviewUrlChange(URL.createObjectURL(file));
           }}
         />
-
-        {previewUrl && (
-          <div className="mt-3">
-            <img
-              src={previewUrl}
-              alt="미리보기"
-              style={{
-                display: "block",
-                maxWidth: "100%",
-                maxHeight: 300,
-                objectFit: "contain",
-                borderRadius: 8,
-              }}
-            />
-          </div>
-        )}
+        <div className="mt-3">
+          <img
+            src={previewUrl || "https://picsum.photos/id/238/1200/500"}
+            alt="미리보기"
+            style={{
+              display: "block",
+              maxWidth: "100%",
+              maxHeight: 300,
+              objectFit: "contain",
+              borderRadius: 8,
+            }}
+          />
+        </div>
       </div>
     </>
   );

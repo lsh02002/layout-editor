@@ -150,7 +150,7 @@ export const useCreateComponentForm = () => {
           type: "image",
           order: 0,
           props: {
-            urls: newImagePreviewUrl ? [newImagePreviewUrl] : [],
+            urls: ["https://picsum.photos/id/238/1200/500"],
             maxCount: 1,
             disabled: false,
           },
@@ -167,9 +167,9 @@ export const useCreateComponentForm = () => {
           order: 0,
           props: {
             urls: [
-              "https://picsum.photos/1200/500?random=1",
-              "https://picsum.photos/1200/500?random=2",
-              "https://picsum.photos/1200/500?random=3",
+              "https://picsum.photos/id/238/1200/500",
+              "https://picsum.photos/id/239/1200/500",
+              "https://picsum.photos/id/240/1200/500",
             ],
             autoplay: true,
             interval: 3000,
@@ -314,7 +314,6 @@ export const useCreateComponentForm = () => {
     newValue,
     newPlaceholder,
     newDirection,
-    newImagePreviewUrl,
     newLinkType,
     newLinkNewWindow,
     newHeadingText,
@@ -426,7 +425,7 @@ export const useCreateComponentForm = () => {
           type: "image",
           order: 0,
           props: {
-            urls: [],
+            urls: ["https://picsum.photos/id/238/1200/500"],
             maxCount: 1,
             disabled: false,
           },
@@ -443,9 +442,9 @@ export const useCreateComponentForm = () => {
           order: 0,
           props: {
             urls: [
-              "https://picsum.photos/1200/500?random=1",
-              "https://picsum.photos/1200/500?random=2",
-              "https://picsum.photos/1200/500?random=3",
+              "https://picsum.photos/id/238/1200/500",
+              "https://picsum.photos/id/239/1200/500",
+              "https://picsum.photos/id/240/1200/500",
             ],
             autoplay: true,
             interval: 3000,
