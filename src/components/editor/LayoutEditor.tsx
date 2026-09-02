@@ -116,6 +116,20 @@ function LayoutEditor() {
     setEditImageUrl,
     editImagePreviewUrl,
     setEditImagePreviewUrl,
+
+    editSliderUrls,
+    setEditSliderUrls,
+    editSliderAutoplay,
+    setEditSliderAutoplay,
+    editSliderInterval,
+    setEditSliderInterval,
+    editSliderShowArrows,
+    setEditSliderShowArrows,
+    editSliderShowDots,
+    setEditSliderShowDots,
+    editSliderLoop,
+    setEditSliderLoop,
+
     editLinkType,
     setEditLinkType,
     editLinkNewWindow,
@@ -282,6 +296,14 @@ function LayoutEditor() {
       editContentStyle,
       editCustomCss,
       editImageUrl,
+
+      editSliderUrls,
+      editSliderAutoplay,
+      editSliderInterval,
+      editSliderShowArrows,
+      editSliderShowDots,
+      editSliderLoop,
+
       editLinkType,
       editLinkNewWindow,
       editComponentName,
@@ -316,6 +338,12 @@ function LayoutEditor() {
       editContentStyle,
       editCustomCss,
       editImageUrl,
+      editSliderUrls,
+      editSliderAutoplay,
+      editSliderInterval,
+      editSliderShowArrows,
+      editSliderShowDots,
+      editSliderLoop,
       editLinkType,
       editLinkNewWindow,
       editComponentName,
@@ -324,19 +352,15 @@ function LayoutEditor() {
       editDividerColor,
       editDividerLineStyle,
       editSpacerHeight,
-
       editContainerGap,
       editContainerJustifyContent,
       editContainerAlignItems,
       editContainerMaxWidth,
-
       editVideoControls,
       editVideoAutoplay,
       editVideoMuted,
       editVideoLoop,
-
       editCodeLanguage,
-
       editLayout,
     ],
   );
@@ -776,6 +800,18 @@ function LayoutEditor() {
         setEditImageUrl={setEditImageUrl}
         editImagePreviewUrl={editImagePreviewUrl}
         setEditImagePreviewUrl={setEditImagePreviewUrl}
+        editSliderUrls={editSliderUrls}
+        setEditSliderUrls={setEditSliderUrls}
+        editSliderAutoplay={editSliderAutoplay}
+        setEditSliderAutoplay={setEditSliderAutoplay}
+        editSliderInterval={editSliderInterval}
+        setEditSliderInterval={setEditSliderInterval}
+        editSliderShowArrows={editSliderShowArrows}
+        setEditSliderShowArrows={setEditSliderShowArrows}
+        editSliderShowDots={editSliderShowDots}
+        setEditSliderShowDots={setEditSliderShowDots}
+        editSliderLoop={editSliderLoop}
+        setEditSliderLoop={setEditSliderLoop}
         editLinkType={editLinkType}
         setEditLinkType={setEditLinkType}
         editLinkNewWindow={editLinkNewWindow}

@@ -5,6 +5,7 @@ import {
   Code2,
   Heading1,
   ImageIcon,
+  Images,
   Link2,
   Minus,
   MousePointerClick,
@@ -63,6 +64,12 @@ const COMPONENTS: {
     label: "Image",
     description: "이미지",
     icon: ImageIcon,
+  },
+  {
+    type: "imageSlider",
+    label: "Image Slider",
+    description: "여러 이미지를 슬라이드",
+    icon: Images,
   },
   {
     type: "video",

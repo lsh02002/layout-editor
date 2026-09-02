@@ -69,6 +69,21 @@ type Props = {
   editImageUrl: string;
   setEditImageUrl: Dispatch<SetStateAction<string>>;
 
+  editSliderUrls: string[];
+
+  setEditSliderUrls: Dispatch<SetStateAction<string[]>>;
+
+  editSliderAutoplay: boolean;
+  setEditSliderAutoplay: Dispatch<SetStateAction<boolean>>;
+  editSliderInterval: number;
+  setEditSliderInterval: Dispatch<SetStateAction<number>>;
+  editSliderShowArrows: boolean;
+  setEditSliderShowArrows: Dispatch<SetStateAction<boolean>>;
+  editSliderShowDots: boolean;
+  setEditSliderShowDots: Dispatch<SetStateAction<boolean>>;
+  editSliderLoop: boolean;
+  setEditSliderLoop: Dispatch<SetStateAction<boolean>>;
+
   editImagePreviewUrl: string;
   setEditImagePreviewUrl: Dispatch<SetStateAction<string>>;
 
@@ -217,6 +232,19 @@ function EditComponentPanel({
 
   editImagePreviewUrl,
   setEditImagePreviewUrl,
+
+  editSliderUrls,
+  setEditSliderUrls,
+  editSliderAutoplay,
+  setEditSliderAutoplay,
+  editSliderInterval,
+  setEditSliderInterval,
+  editSliderShowArrows,
+  setEditSliderShowArrows,
+  editSliderShowDots,
+  setEditSliderShowDots,
+  editSliderLoop,
+  setEditSliderLoop,
 
   editLinkType,
   setEditLinkType,
@@ -465,6 +493,18 @@ function EditComponentPanel({
                   setEditImageUrl={setEditImageUrl}
                   editImagePreviewUrl={editImagePreviewUrl}
                   setEditImagePreviewUrl={setEditImagePreviewUrl}
+                  editSliderUrls={editSliderUrls}
+                  setEditSliderUrls={setEditSliderUrls}
+                  editSliderAutoplay={editSliderAutoplay}
+                  setEditSliderAutoplay={setEditSliderAutoplay}
+                  editSliderInterval={editSliderInterval}
+                  setEditSliderInterval={setEditSliderInterval}
+                  editSliderShowArrows={editSliderShowArrows}
+                  setEditSliderShowArrows={setEditSliderShowArrows}
+                  editSliderShowDots={editSliderShowDots}
+                  setEditSliderShowDots={setEditSliderShowDots}
+                  editSliderLoop={editSliderLoop}
+                  setEditSliderLoop={setEditSliderLoop}
                   editLinkType={editLinkType}
                   setEditLinkType={setEditLinkType}
                   editLinkNewWindow={editLinkNewWindow}

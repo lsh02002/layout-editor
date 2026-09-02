@@ -1,7 +1,8 @@
 import { memo, type CSSProperties, type JSX } from "react";
 import type { LayoutComponent } from "../../types/types";
-import { getLinkHref } from "../editor/utils/linkUtils";
+import ImageSlider from "../editor/utils/ImageSlider";
 import CodeEditor from "../editor/utils/codeEditor";
+import { getLinkHref } from "../editor/utils/linkUtils";
 
 type Props = {
   component: Exclude<LayoutComponent, { type: "container" }>;
@@ -129,7 +130,7 @@ function CanvasComponentContent({ component }: Props) {
         <video
           src={src}
           controls={component.props.controls ?? true}
-          autoPlay={component.props.autoplay ?? false}
+          autoPlay={component.props.autoplay ?? true}
           muted={component.props.muted ?? false}
           loop={component.props.loop ?? false}
           playsInline
@@ -215,6 +216,9 @@ function CanvasComponentContent({ component }: Props) {
           />
         </div>
       );
+
+    case "imageSlider":
+      return <ImageSlider component={component} />;
   }
 }
 

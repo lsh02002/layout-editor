@@ -44,6 +44,16 @@ export const getComponentSearchText = (component: LayoutComponent): string => {
       content = "image 이미지";
       break;
 
+    case "imageSlider":
+      content = [
+        "image slider",
+        "slider",
+        "carousel",
+        "이미지 슬라이더",
+        "슬라이더",
+      ].join(" ");
+      break;
+
     case "video":
       content = [component.props.src, "video", "동영상", "영상"]
         .filter(Boolean)

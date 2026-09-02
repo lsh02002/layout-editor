@@ -159,6 +159,34 @@ export const useCreateComponentForm = () => {
           },
         };
 
+      case "imageSlider":
+        return {
+          id,
+          name: newComponentName.trim() || "ImageSlider",
+          type: "imageSlider",
+          order: 0,
+          props: {
+            urls: [
+              "https://picsum.photos/1200/500?random=1",
+              "https://picsum.photos/1200/500?random=2",
+              "https://picsum.photos/1200/500?random=3",
+            ],
+            autoplay: true,
+            interval: 3000,
+            showArrows: true,
+            showDots: true,
+            loop: true,
+          },
+          layout: {
+            widthMode: "fill",
+            heightMode: "fixed",
+            height: 320,
+          },
+          style: {
+            width: "100%",
+          },
+        };
+
       case "video":
         return {
           id,
@@ -401,6 +429,34 @@ export const useCreateComponentForm = () => {
             urls: [],
             maxCount: 1,
             disabled: false,
+          },
+          style: {
+            width: "100%",
+          },
+        };
+
+      case "imageSlider":
+        return {
+          id,
+          name: "ImageSlider",
+          type: "imageSlider",
+          order: 0,
+          props: {
+            urls: [
+              "https://picsum.photos/1200/500?random=1",
+              "https://picsum.photos/1200/500?random=2",
+              "https://picsum.photos/1200/500?random=3",
+            ],
+            autoplay: true,
+            interval: 3000,
+            showArrows: true,
+            showDots: true,
+            loop: true,
+          },
+          layout: {
+            widthMode: "fill",
+            heightMode: "fixed",
+            height: 320,
           },
           style: {
             width: "100%",

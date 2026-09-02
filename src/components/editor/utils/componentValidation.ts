@@ -111,6 +111,18 @@ const imageSchema = baseComponentSchema.extend({
   }),
 });
 
+const imageSliderSchema = baseComponentSchema.extend({
+  type: z.literal("imageSlider"),
+  props: z.object({
+    urls: z.array(z.string()),
+    autoplay: z.boolean().optional(),
+    interval: z.number().optional(),
+    showArrows: z.boolean().optional(),
+    showDots: z.boolean().optional(),
+    loop: z.boolean().optional(),
+  }),
+});
+
 const videoSchema = baseComponentSchema.extend({
   type: z.literal("video"),
 
@@ -167,13 +179,7 @@ const codeEditorSchema = baseComponentSchema.extend({
   props: z.object({
     value: z.string(),
 
-    language: z.enum([
-      "css",
-      "html",
-      "javascript",
-      "typescript",
-      "json",
-    ]),
+    language: z.enum(["css", "html", "javascript", "typescript", "json"]),
 
     readOnly: z.boolean().optional(),
   }),
@@ -186,6 +192,7 @@ type ComponentSchema =
   | z.infer<typeof textareaSchema>
   | z.infer<typeof quillSchema>
   | z.infer<typeof imageSchema>
+  | z.infer<typeof imageSliderSchema>
   | z.infer<typeof videoSchema>
   | z.infer<typeof linkSchema>
   | z.infer<typeof dividerSchema>
@@ -222,6 +229,7 @@ const componentSchema: z.ZodType<ComponentSchema> = z.lazy(() =>
     textareaSchema,
     quillSchema,
     imageSchema,
+    imageSliderSchema,
     videoSchema,
     linkSchema,
     dividerSchema,

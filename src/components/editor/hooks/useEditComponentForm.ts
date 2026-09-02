@@ -39,6 +39,13 @@ export const useEditComponentForm = () => {
 
   const [editImagePreviewUrl, setEditImagePreviewUrl] = useState("");
 
+  const [editSliderUrls, setEditSliderUrls] = useState<string[]>([]);
+  const [editSliderAutoplay, setEditSliderAutoplay] = useState(false);
+  const [editSliderInterval, setEditSliderInterval] = useState(3000);
+  const [editSliderShowArrows, setEditSliderShowArrows] = useState(true);
+  const [editSliderShowDots, setEditSliderShowDots] = useState(true);
+  const [editSliderLoop, setEditSliderLoop] = useState(true);
+
   const [editLinkType, setEditLinkType] = useState<LinkType>("url");
 
   const [editLinkNewWindow, setEditLinkNewWindow] = useState(false);
@@ -78,7 +85,7 @@ export const useEditComponentForm = () => {
   const [editVideoLoop, setEditVideoLoop] = useState(false);
 
   const [editCodeLanguage, setEditCodeLanguage] =
-  useState<CodeLanguage>("javascript");
+    useState<CodeLanguage>("javascript");
 
   const loadComponentToEdit = useCallback((component: LayoutComponent) => {
     setEditingComponentId(component.id);
@@ -131,6 +138,12 @@ export const useEditComponentForm = () => {
     setEditDividerColor("#dee2e6");
     setEditDividerLineStyle("solid");
     setEditSpacerHeight(32);
+
+    setEditSliderUrls([]);
+    setEditSliderAutoplay(false);
+    setEditSliderInterval(3000);
+    setEditSliderShowArrows(true);
+    setEditSliderShowDots(true);
 
     switch (component.type) {
       case "button": {
@@ -190,6 +203,21 @@ export const useEditComponentForm = () => {
 
         setEditImageUrl(existingUrl);
         setEditImagePreviewUrl(existingUrl);
+        break;
+      }
+
+      case "imageSlider": {
+        setEditTitle("");
+        setEditValue("");
+        setEditPlaceholder("");
+        setEditDirection("column");
+
+        setEditSliderUrls(component.props.urls ?? []);
+        setEditSliderAutoplay(component.props.autoplay ?? true);
+        setEditSliderInterval(component.props.interval ?? 3000);
+        setEditSliderShowArrows(component.props.showArrows ?? true);
+        setEditSliderShowDots(component.props.showDots ?? true);
+        setEditSliderLoop(component.props.loop ?? true);
         break;
       }
 
@@ -274,6 +302,14 @@ export const useEditComponentForm = () => {
     setEditCustomCss("");
     setEditImageUrl("");
     setEditImagePreviewUrl("");
+
+    setEditSliderUrls([]);
+    setEditSliderAutoplay(false);
+    setEditSliderInterval(3000);
+    setEditSliderShowArrows(true);
+    setEditSliderShowDots(true);
+    setEditSliderLoop(true);
+
     setEditLinkType("url");
     setEditLinkNewWindow(false);
     setEditComponentName("");
@@ -325,6 +361,20 @@ export const useEditComponentForm = () => {
     setEditImageUrl,
     editImagePreviewUrl,
     setEditImagePreviewUrl,
+    // Slider specific states
+    editSliderUrls,
+    setEditSliderUrls,
+    editSliderAutoplay,
+    setEditSliderAutoplay,
+    editSliderInterval,
+    setEditSliderInterval,
+    editSliderShowArrows,
+    setEditSliderShowArrows,
+    editSliderShowDots,
+    setEditSliderShowDots,
+    editSliderLoop,
+    setEditSliderLoop,
+
     editLinkType,
     setEditLinkType,
     editLinkNewWindow,

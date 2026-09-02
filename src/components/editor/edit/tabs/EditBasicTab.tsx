@@ -21,6 +21,7 @@ import EditDividerFields from "../fields/EditDividerFields";
 import EditSpacerFields from "../fields/EditSpacerFields";
 import EditVideoFields from "../fields/EditVideoFields";
 import EditCodeEditorFields from "../fields/EditCodeEditorFields";
+import EditImageSliderFields from "../fields/EditImageSliderFields";
 
 type Props = {
   editType: ComponentType;
@@ -47,6 +48,19 @@ type Props = {
 
   editImagePreviewUrl: string;
   setEditImagePreviewUrl: Dispatch<SetStateAction<string>>;
+
+  editSliderUrls: string[];
+  setEditSliderUrls: Dispatch<SetStateAction<string[]>>;
+  editSliderAutoplay: boolean;
+  setEditSliderAutoplay: Dispatch<SetStateAction<boolean>>;
+  editSliderInterval: number;
+  setEditSliderInterval: Dispatch<SetStateAction<number>>;
+  editSliderShowArrows: boolean;
+  setEditSliderShowArrows: Dispatch<SetStateAction<boolean>>;
+  editSliderShowDots: boolean;
+  setEditSliderShowDots: Dispatch<SetStateAction<boolean>>;
+  editSliderLoop: boolean;
+  setEditSliderLoop: Dispatch<SetStateAction<boolean>>;
 
   editLinkType: LinkType;
   setEditLinkType: Dispatch<SetStateAction<LinkType>>;
@@ -127,6 +141,19 @@ function EditBasicTab({
 
   editImagePreviewUrl,
   setEditImagePreviewUrl,
+
+  editSliderUrls,
+  setEditSliderUrls,
+  editSliderAutoplay,
+  setEditSliderAutoplay,
+  editSliderInterval,
+  setEditSliderInterval,
+  editSliderShowArrows,
+  setEditSliderShowArrows,
+  editSliderShowDots,
+  setEditSliderShowDots,
+  editSliderLoop,
+  setEditSliderLoop,
 
   editLinkType,
   setEditLinkType,
@@ -644,6 +671,48 @@ function EditBasicTab({
     });
   };
 
+  const handleSliderUrlsChange = (urls: string[]) => {
+    setEditSliderUrls(urls);
+
+    onImmediateChange((component) => {
+      if (component.type !== "imageSlider") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          urls,
+        },
+      };
+    });
+  };
+
+  const handleSliderPropsChange = (
+    values: Partial<{
+      autoplay: boolean;
+      interval: number;
+      showArrows: boolean;
+      showDots: boolean;
+      loop: boolean;
+    }>,
+  ) => {
+    onImmediateChange((component) => {
+      if (component.type !== "imageSlider") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          ...values,
+        },
+      };
+    });
+  };
+
   return (
     <>
       {/* 타입 */}
@@ -719,6 +788,50 @@ function EditBasicTab({
             onPreviewUrlChange={setEditImagePreviewUrl}
           />
         </div>
+      )}
+
+      {editType === "imageSlider" && (
+        <EditImageSliderFields
+          componentName={editComponentName}
+          urls={editSliderUrls}
+          autoplay={editSliderAutoplay}
+          interval={editSliderInterval}
+          showArrows={editSliderShowArrows}
+          showDots={editSliderShowDots}
+          loop={editSliderLoop}
+          onComponentNameChange={handleComponentNameChange}
+          onUrlsChange={handleSliderUrlsChange}
+          onAutoplayChange={(value) => {
+            setEditSliderAutoplay(value);
+            handleSliderPropsChange({
+              autoplay: value,
+            });
+          }}
+          onIntervalChange={(value) => {
+            setEditSliderInterval(value);
+            handleSliderPropsChange({
+              interval: value,
+            });
+          }}
+          onShowArrowsChange={(value) => {
+            setEditSliderShowArrows(value);
+            handleSliderPropsChange({
+              showArrows: value,
+            });
+          }}
+          onShowDotsChange={(value) => {
+            setEditSliderShowDots(value);
+            handleSliderPropsChange({
+              showDots: value,
+            });
+          }}
+          onLoopChange={(value) => {
+            setEditSliderLoop(value);
+            handleSliderPropsChange({
+              loop: value,
+            });
+          }}
+        />
       )}
 
       {editType === "video" && (

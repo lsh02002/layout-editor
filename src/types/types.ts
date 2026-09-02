@@ -185,6 +185,19 @@ export interface CodeEditorComponent extends BaseComponent {
   };
 }
 
+export interface ImageSliderComponent extends BaseComponent {
+  type: "imageSlider";
+
+  props: {
+    urls: string[];
+    autoplay?: boolean;
+    interval?: number;
+    showDots?: boolean;
+    showArrows?: boolean;
+    loop?: boolean;
+  };
+}
+
 export type LayoutComponent =
   | ButtonComponent
   | ScrollToTopButtonComponent
@@ -197,6 +210,7 @@ export type LayoutComponent =
   | SpacerComponent
   | VideoComponent
   | CodeEditorComponent
+  | ImageSliderComponent
   | ContainerComponent;
 
 export interface HistoryState {
@@ -286,6 +300,12 @@ export type EditValues = {
   editContentStyle: CSSProperties;
   editCustomCss: string;
   editImageUrl: string;
+  editSliderUrls: string[];
+  editSliderAutoplay: boolean;
+  editSliderInterval: number;
+  editSliderShowArrows: boolean;
+  editSliderShowDots: boolean;
+  editSliderLoop: boolean;
   editLinkType: LinkType;
   editLinkNewWindow: boolean;
   editComponentName: string;
@@ -323,5 +343,6 @@ export const VALID_COMPONENT_TYPES = [
   "divider",
   "spacer",
   "codeEditor",
+  "imageSlider",
   "scrollToTopButton",
 ] as const satisfies readonly ComponentType[];

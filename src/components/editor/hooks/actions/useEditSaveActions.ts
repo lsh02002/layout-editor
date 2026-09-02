@@ -32,6 +32,14 @@ export const useEditSaveActions = ({
         editContentStyle,
         editCustomCss,
         editImageUrl,
+
+        editSliderUrls,
+        editSliderAutoplay,
+        editSliderInterval,
+        editSliderShowArrows,
+        editSliderShowDots,
+        editSliderLoop,
+
         editLinkType,
         editLinkNewWindow,
         editComponentName,
@@ -164,6 +172,21 @@ export const useEditSaveActions = ({
               urls: editImageUrl.trim() ? [editImageUrl.trim()] : [],
               maxCount: 1,
               disabled: editDisabled,
+            },
+          };
+
+        case "imageSlider":
+          return {
+            ...component,
+            ...common,
+            props: {
+              ...component.props,
+              urls: editSliderUrls.map((url) => url.trim()).filter(Boolean),
+              autoplay: editSliderAutoplay,
+              interval: Math.max(editSliderInterval, 500),
+              showArrows: editSliderShowArrows,
+              showDots: editSliderShowDots,
+              loop: editSliderLoop,
             },
           };
 

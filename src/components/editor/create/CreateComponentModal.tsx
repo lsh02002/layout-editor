@@ -113,6 +113,7 @@ function CreateComponentModal({
                     Scroll To Top Button
                   </option>
                   <option value="image">Image</option>
+                  <option value="imageSlider">Image Slider</option>
                   <option value="video">Video</option>
                   <option value="link">Link</option>
                   <option value="divider">Divider</option>

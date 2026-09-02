@@ -278,6 +278,53 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
       </div>`;
     }
 
+    case "imageSlider": {
+      const urls = component.props.urls ?? [];
+
+      if (!urls.length) {
+        return `
+      <div
+        class="${wrapperClass}"
+        data-component-id="${componentId}"
+        data-component-type="imageSlider"
+        data-component-name="${componentName}"
+        style="${escapeAttribute(wrapperStyle)}"
+      ></div>
+    `;
+      }
+
+      const images = urls
+        .map(
+          (url, index) => `
+        <img
+          src="${escapeAttribute(url)}"
+          alt="${componentName} ${index + 1}"
+          style="
+            display:${index === 0 ? "block" : "none"};
+            width:100%;
+            height:100%;
+            object-fit:cover;
+          "
+        />
+      `,
+        )
+        .join("");
+
+      return `
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="imageSlider"
+      data-component-name="${componentName}"
+      style="${escapeAttribute(
+        [wrapperStyle, "overflow:hidden"].filter(Boolean).join(";"),
+      )}"
+    >
+      ${images}
+    </div>
+  `;
+    }
+
     case "video": {
       const src = component.props.src ?? "";
       if (!src) {

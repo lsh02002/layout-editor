@@ -148,7 +148,9 @@ function LayoutComponentNode({
 
   const effectiveWidthMode =
     component.layout?.widthMode ??
-    (component.type === "image" ? "fill" : undefined);
+    (component.type === "image" || component.type === "imageSlider"
+      ? "fill"
+      : undefined);
 
   const handleNativeDragStart = useCallback(
     (event: DragEvent<HTMLElement>, componentId: string) => {
@@ -317,7 +319,9 @@ function LayoutComponentNode({
                 const childIsAbsolute = child.layout?.position === "absolute";
                 const widthMode =
                   child.layout?.widthMode ??
-                  (child.type === "image" ? "fill" : undefined);
+                  (child.type === "image" || child.type === "imageSlider"
+                    ? "fill"
+                    : undefined);
                 const childWidth = child.layout?.width;
 
                 const childWrapperStyle = childIsAbsolute
