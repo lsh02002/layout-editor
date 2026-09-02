@@ -26,7 +26,7 @@ export function usePositionParent({
   setEditLayout,
   updateLayout,
 }: Props) {
-  const primarySelectedId = selectedComponentIds[0] ?? null;
+  const primarySelectedId = selectedComponentIds.at(-1) ?? null;
 
   const positionParentOptions = useMemo<PositionParentOption[]>(() => {
     if (!primarySelectedId) {
