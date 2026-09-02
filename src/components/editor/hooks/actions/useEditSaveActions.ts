@@ -195,17 +195,17 @@ export const useEditSaveActions = ({
             },
           };
 
-          case "codeEditor":
-  return {
-    ...component,
-    ...common,
+        case "codeEditor":
+          return {
+            ...component,
+            ...common,
 
-    props: {
-      ...component.props,
-      value: editValue,
-      language: editCodeLanguage,
-    },
-  };
+            props: {
+              ...component.props,
+              value: editValue,
+              language: editCodeLanguage,
+            },
+          };
 
         case "scrollToTopButton":
           return {
