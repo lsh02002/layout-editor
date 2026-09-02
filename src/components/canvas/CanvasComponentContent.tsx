@@ -1,4 +1,4 @@
-import { memo, type CSSProperties, type JSX } from "react";
+import { memo, type JSX } from "react";
 import type { LayoutComponent } from "../../types/types";
 import ImageSlider from "../editor/utils/ImageSlider";
 import CodeEditor from "../editor/utils/codeEditor";
@@ -37,30 +37,80 @@ function CanvasComponentContent({ component }: Props) {
       );
 
     case "heading": {
-      const style: CSSProperties = {
-        margin: 0,
-        ...component.contentStyle,
-        width: "100%",
-      };
       const Tag = `h${component.props.level}` as keyof JSX.IntrinsicElements;
-      return <Tag style={style}>{component.props.text}</Tag>;
+
+      const defaultFontSize =
+        {
+          1: "2.5rem",
+          2: "2rem",
+          3: "1.75rem",
+          4: "1.5rem",
+          5: "1.25rem",
+          6: "1rem",
+        }[component.props.level] ?? "1rem";
+
+      return (
+        <Tag
+          style={{
+            margin: 0,
+            padding: 0,
+
+            fontFamily: "inherit",
+            fontSize: defaultFontSize,
+            fontWeight: 700,
+            lineHeight: 1.2,
+            wordBreak: "break-word",
+            ...component.contentStyle,
+          }}
+        >
+          {component.props.text}
+        </Tag>
+      );
     }
 
     case "textarea":
       return (
-        <div
-          style={{
-            ...component.contentStyle,
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-          }}
-        >
-          {component.props.value ||
-            component.props.placeholder ||
-            "내용을 입력하세요."}
-        </div>
-      );
+        <textarea
+          value={component.props.value ?? ""}
+          placeholder={component.props.placeholder ?? "내용을 입력하세요."}
+          disabled={component.props.disabled ?? false}
+          readOnly
+          tabIndex={-1}
+          ref={(element) => {
+            if (!element) return;
 
+            element.style.height = "auto";
+            element.style.height = `${element.scrollHeight}px`;
+          }}
+          style={{
+            display: "block",
+            boxSizing: "border-box",
+
+            width: "100%",
+            maxWidth: "100%",
+
+            // 스크롤 제거
+            overflow: "hidden",
+
+            // 사용자 resize 제거
+            resize: "none",
+
+            fontFamily: "inherit",
+            fontSize: "inherit",
+            fontWeight: "inherit",
+            fontStyle: "inherit",
+            lineHeight: "inherit",
+            letterSpacing: "inherit",
+            color: "inherit",
+            border: "none",
+            wordBreak: "break-word",
+
+            ...component.contentStyle,
+
+            pointerEvents: "none",
+          }}
+        />
+      );
     case "quill":
       return (
         <div

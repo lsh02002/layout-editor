@@ -162,45 +162,82 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
     case "heading": {
       const tag = `h${component.props.level}`;
 
+      const defaultFontSize =
+        {
+          1: "2.5rem",
+          2: "2rem",
+          3: "1.75rem",
+          4: "1.5rem",
+          5: "1.25rem",
+          6: "1rem",
+        }[component.props.level] ?? "1rem";
+
       return `
-        <div
-          class="${wrapperClass}"
-          data-component-id="${componentId}"
-          data-component-type="heading"
-          data-component-name="${componentName}"
-          style="${escapeAttribute(wrapperStyle)}"
-        >
-          <${tag}
-            class="builder-heading"
-            style="${escapeAttribute(contentStyle)}"
-          >
-            ${escapeHtml(component.props.text)}
-          </${tag}>
-        </div>`;
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="heading"
+      data-component-name="${componentName}"
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <${tag}
+        class="builder-heading"
+        style="${escapeAttribute(
+          [
+            "margin:0",
+            "padding:0",
+            `font-size:${defaultFontSize}`,
+            "font-family:inherit",
+            "font-weight:700",
+            "line-height:1.2",
+            "word-break:break-word",
+            contentStyle,
+          ]
+            .filter(Boolean)
+            .join(";"),
+        )}"
+      >
+        ${escapeHtml(component.props.text)}
+      </${tag}>
+    </div>`;
     }
 
     case "textarea": {
       const text = component.props.value || component.props.placeholder || "";
 
       return `
-        <div
-          class="${wrapperClass}"
-          data-component-id="${componentId}"
-          data-component-type="textarea"
-          data-component-name="${componentName}"
-          style="${escapeAttribute(wrapperStyle)}"
-        >
-          <div
-            class="builder-text"
-            style="${escapeAttribute(
-              ["white-space:pre-wrap", "word-break:break-word", contentStyle]
-                .filter(Boolean)
-                .join(";"),
-            )}"
-          >
-            ${escapeHtml(text)}
-          </div>
-        </div>`;
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="textarea"
+      data-component-name="${componentName}"
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <div
+        class="builder-textarea"
+        style="${escapeAttribute(
+          [
+            "display:block",
+            "box-sizing:border-box",
+            "width:100%",
+            "max-width:100%",
+            "overflow:visible",
+            "font-family:inherit",
+            "font-size:inherit",
+            "font-weight:inherit",
+            "font-style:inherit",
+            "line-height:inherit",
+            "letter-spacing:inherit",
+            "color:inherit",
+            "border:none",            
+            "word-break:break-word",
+            contentStyle,
+          ]
+            .filter(Boolean)
+            .join(";"),
+        )}"
+      >${escapeHtml(text)}</div>
+    </div>`;
     }
 
     case "quill": {
