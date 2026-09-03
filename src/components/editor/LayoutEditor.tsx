@@ -527,7 +527,7 @@ function LayoutEditor() {
             zIndex: 1200,
             background: "#fff",
             borderRight: "1px solid #dee2e6",
-            marginTop: 30,
+            paddingTop: 30,
 
             display: "flex",
             flexDirection: "column",
