@@ -148,7 +148,9 @@ function LayoutComponentNode({
 
   const effectiveWidthMode =
     component.layout?.widthMode ??
-    (component.type === "image" || component.type === "imageSlider"
+    (component.type === "image" ||
+    component.type === "imageGallery" ||
+    component.type === "imageSlider"
       ? "fill"
       : undefined);
 
