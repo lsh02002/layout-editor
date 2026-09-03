@@ -229,7 +229,7 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
             "line-height:inherit",
             "letter-spacing:inherit",
             "color:inherit",
-            "border:none",            
+            "border:none",
             "word-break:break-word",
             contentStyle,
           ]
@@ -316,7 +316,7 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
     }
 
     case "imageSlider": {
-      const urls = component.props.urls ?? [];
+      const urls = component.props.urls?.filter(Boolean) ?? [];
 
       if (!urls.length) {
         return `
@@ -330,34 +330,381 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
     `;
       }
 
-      const images = urls
+      const autoplay = component.props.autoplay ?? false;
+      const interval = Math.max(component.props.interval ?? 3000, 500);
+      const showArrows = component.props.showArrows ?? true;
+      const showDots = component.props.showDots ?? true;
+      const loop = component.props.loop ?? true;
+      const sliderId = `slider-${componentId}`;
+      const slideUrls =
+        loop && urls.length > 1
+          ? [urls[urls.length - 1], ...urls, urls[0]]
+          : urls;
+      const startIndex = loop && urls.length > 1 ? 1 : 0;
+      const slides = slideUrls
         .map(
           (url, index) => `
-        <img
-          src="${escapeAttribute(url)}"
-          alt="${componentName} ${index + 1}"
+        <div
+          class="builder-slider-slide"
+          data-slide-index="${index}"
           style="
-            display:${index === 0 ? "block" : "none"};
+            flex:0 0 100%;
             width:100%;
             height:100%;
-            object-fit:cover;
+            min-width:0;
           "
-        />
+        >
+          <img
+            src="${escapeAttribute(url)}"
+            alt="${escapeAttribute(`${componentName} ${index + 1}`)}"
+            draggable="false"
+            style="
+              display:block;
+              width:100%;
+              height:100%;
+              object-fit:fill;
+              user-select:none;
+              pointer-events:none;
+            "
+          />
+        </div>
       `,
         )
         .join("");
 
+      const arrows =
+        showArrows && urls.length > 1
+          ? `
+        <button
+          type="button"
+          class="builder-slider-prev"
+          aria-label="이전 슬라이드"
+          style="
+            position:absolute;
+            left:12px;
+            top:50%;
+            z-index:5;
+            width:36px;
+            height:36px;
+            padding:0;
+            border:0;
+            border-radius:50%;
+            transform:translateY(-50%);
+            cursor:pointer;
+            background:rgba(0,0,0,.65);
+            color:#fff;
+            font-size:24px;
+            line-height:36px;
+          "
+        >
+          ‹
+        </button>
+
+        <button
+          type="button"
+          class="builder-slider-next"
+          aria-label="다음 슬라이드"
+          style="
+            position:absolute;
+            right:12px;
+            top:50%;
+            z-index:5;
+            width:36px;
+            height:36px;
+            padding:0;
+            border:0;
+            border-radius:50%;
+            transform:translateY(-50%);
+            cursor:pointer;
+            background:rgba(0,0,0,.65);
+            color:#fff;
+            font-size:24px;
+            line-height:36px;
+          "
+        >
+          ›
+        </button>
+      `
+          : "";
+
+      const dots =
+        showDots && urls.length > 1
+          ? `
+        <div
+          class="builder-slider-dots"
+          style="
+            position:absolute;
+            left:50%;
+            bottom:12px;
+            z-index:5;
+            display:flex;
+            gap:7px;
+            transform:translateX(-50%);
+          "
+        >
+          ${urls
+            .map(
+              (_, index) => `
+                <button
+                  type="button"
+                  class="builder-slider-dot"
+                  data-real-index="${index}"
+                  aria-label="슬라이드 ${index + 1}"
+                  style="
+                    width:10px;
+                    height:10px;
+                    padding:0;
+                    border:0;
+                    border-radius:50%;
+                    background:#fff;
+                    opacity:${index === 0 ? 1 : 0.45};
+                    cursor:pointer;
+                  "
+                ></button>
+              `,
+            )
+            .join("")}
+        </div>
+      `
+          : "";
+
       return `
     <div
+      id="${sliderId}"
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="imageSlider"
       data-component-name="${componentName}"
+      data-slider-loop="${loop}"
+      data-slider-autoplay="${autoplay}"
+      data-slider-interval="${interval}"
+      data-slider-count="${urls.length}"
+      data-slider-index="${startIndex}"
       style="${escapeAttribute(
-        [wrapperStyle, "overflow:hidden"].filter(Boolean).join(";"),
+        [wrapperStyle, "position:relative", "overflow:hidden"]
+          .filter(Boolean)
+          .join(";"),
       )}"
     >
-      ${images}
+      <div
+        class="builder-slider-track"
+        style="
+          display:flex;
+          width:100%;
+          height:100%;
+          transform:translateX(-${startIndex * 100}%);
+          transition:transform 350ms ease;
+        "
+      >
+        ${slides}
+      </div>
+
+      ${arrows}
+      ${dots}
+
+      <script>
+        (() => {
+          const root =
+            document.getElementById(
+              ${JSON.stringify(sliderId)}
+            );
+          if (!root) return;
+          const track =
+            root.querySelector(
+              ".builder-slider-track"
+            );
+          const prevButton =
+            root.querySelector(
+              ".builder-slider-prev"
+            );
+          const nextButton =
+            root.querySelector(
+              ".builder-slider-next"
+            );
+          const dots =
+            Array.from(
+              root.querySelectorAll(
+                ".builder-slider-dot"
+              )
+            );
+          const count =
+            Number(
+              root.dataset.sliderCount || 0
+            );
+          const loop =
+            root.dataset.sliderLoop === "true";
+          const autoplay =
+            root.dataset.sliderAutoplay === "true";
+          const interval =
+            Math.max(
+              Number(
+                root.dataset.sliderInterval || 3000
+              ),
+              500
+            );
+          const canLoop =
+            loop && count > 1;
+          let currentIndex =
+            Number(
+              root.dataset.sliderIndex || 0
+            );
+          let transitionEnabled =
+            true;
+          const getRealIndex = () => {
+            if (count <= 0) {
+              return 0;
+            }
+            if (!canLoop) {
+              return Math.min(
+                currentIndex,
+                count - 1
+              );
+            }
+            return (
+              currentIndex -
+              1 +
+              count
+            ) % count;
+          };
+          const updateDots = () => {
+            const realIndex =
+              getRealIndex();
+            dots.forEach(
+              (dot, index) => {
+                dot.style.opacity =
+                  index === realIndex
+                    ? "1"
+                    : "0.45";
+              }
+            );
+          };
+          const render = () => {
+            track.style.transition =
+              transitionEnabled
+                ? "transform 350ms ease"
+                : "none";
+            track.style.transform =
+              "translateX(-" +
+              currentIndex * 100 +
+              "%)";
+            updateDots();
+          };
+          const goPrev = () => {
+            if (count <= 1) return;
+            transitionEnabled = true;
+            if (canLoop) {
+              currentIndex -= 1;
+            } else {
+              currentIndex =
+                Math.max(
+                  currentIndex - 1,
+                  0
+                );
+            }
+            render();
+          };
+          const goNext = () => {
+            if (count <= 1) return;
+            transitionEnabled = true;
+            if (canLoop) {
+              currentIndex += 1;
+            } else {
+              currentIndex =
+                Math.min(
+                  currentIndex + 1,
+                  count - 1
+                );
+            }
+            render();
+          };
+          prevButton?.addEventListener(
+            "click",
+            goPrev
+          );
+          nextButton?.addEventListener(
+            "click",
+            goNext
+          );
+          dots.forEach(
+            (dot, index) => {
+              dot.addEventListener(
+                "click",
+                () => {
+                  transitionEnabled =
+                    true;
+                  currentIndex =
+                    canLoop
+                      ? index + 1
+                      : index;
+                  render();
+                }
+              );
+            }
+          );
+          track.addEventListener(
+            "transitionend",
+            () => {
+              if (!canLoop) {
+                return;
+              }
+              if (
+                currentIndex ===
+                count + 1
+              ) {
+                transitionEnabled =
+                  false;
+                currentIndex = 1;
+                render();
+                requestAnimationFrame(
+                  () => {
+                    transitionEnabled =
+                      true;
+                  }
+                );
+                return;
+              }
+              if (
+                currentIndex === 0
+              ) {
+                transitionEnabled =
+                  false;
+                currentIndex =
+                  count;
+                render();
+                requestAnimationFrame(
+                  () => {
+                    transitionEnabled =
+                      true;
+                  }
+                );
+              }
+            }
+          );
+          if (
+            autoplay &&
+            count > 1
+          ) {
+            window.setInterval(
+              () => {
+                if (canLoop) {
+                  goNext();
+                  return;
+                }
+                transitionEnabled =
+                  true;
+                currentIndex =
+                  currentIndex >=
+                  count - 1
+                    ? 0
+                    : currentIndex + 1;
+                render();
+              },
+              interval
+            );
+          }
+          render();
+        })();
+      </script>
     </div>
   `;
     }
