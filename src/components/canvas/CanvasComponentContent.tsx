@@ -4,6 +4,7 @@ import ImageSlider from "../editor/utils/ImageSlider";
 import CodeEditor from "../editor/utils/codeEditor";
 import { getLinkHref } from "../editor/utils/linkUtils";
 import { FAKE_IMAGE_URL } from "../../data/data";
+import ImageGallery from "../editor/utils/ImageGallery";
 
 type Props = {
   component: Exclude<LayoutComponent, { type: "container" }>;
@@ -158,6 +159,9 @@ function CanvasComponentContent({ component }: Props) {
         </div>
       );
     }
+
+    case "imageGallery":
+      return <ImageGallery component={component} />;
 
     case "video": {
       const src = component.props.src;

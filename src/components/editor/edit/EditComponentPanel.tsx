@@ -69,10 +69,24 @@ type Props = {
   editImageUrl: string;
   setEditImageUrl: Dispatch<SetStateAction<string>>;
 
+  editImagePreviewUrl: string;
+  setEditImagePreviewUrl: Dispatch<SetStateAction<string>>;
+
+  editGalleryUrls: string[];
+  setEditGalleryUrls: Dispatch<SetStateAction<string[]>>;
+  editGalleryColumns: number;
+  setEditGalleryColumns: Dispatch<SetStateAction<number>>;
+  editGalleryGap: number;
+  setEditGalleryGap: Dispatch<SetStateAction<number>>;
+  editGalleryObjectFit: "cover" | "contain" | "fill";
+  setEditGalleryObjectFit: Dispatch<
+    SetStateAction<"cover" | "contain" | "fill">
+  >;
+  editGalleryBorderRadius: number;
+  setEditGalleryBorderRadius: Dispatch<SetStateAction<number>>;
+
   editSliderUrls: string[];
-
   setEditSliderUrls: Dispatch<SetStateAction<string[]>>;
-
   editSliderAutoplay: boolean;
   setEditSliderAutoplay: Dispatch<SetStateAction<boolean>>;
   editSliderInterval: number;
@@ -83,9 +97,6 @@ type Props = {
   setEditSliderShowDots: Dispatch<SetStateAction<boolean>>;
   editSliderLoop: boolean;
   setEditSliderLoop: Dispatch<SetStateAction<boolean>>;
-
-  editImagePreviewUrl: string;
-  setEditImagePreviewUrl: Dispatch<SetStateAction<string>>;
 
   editLinkType: LinkType;
   setEditLinkType: Dispatch<SetStateAction<LinkType>>;
@@ -232,6 +243,17 @@ function EditComponentPanel({
 
   editImagePreviewUrl,
   setEditImagePreviewUrl,
+
+  editGalleryUrls,
+  setEditGalleryUrls,
+  editGalleryColumns,
+  setEditGalleryColumns,
+  editGalleryGap,
+  setEditGalleryGap,
+  editGalleryObjectFit,
+  setEditGalleryObjectFit,
+  editGalleryBorderRadius,
+  setEditGalleryBorderRadius,
 
   editSliderUrls,
   setEditSliderUrls,
@@ -493,6 +515,16 @@ function EditComponentPanel({
                   setEditImageUrl={setEditImageUrl}
                   editImagePreviewUrl={editImagePreviewUrl}
                   setEditImagePreviewUrl={setEditImagePreviewUrl}
+                  editGalleryUrls={editGalleryUrls}
+                  setEditGalleryUrls={setEditGalleryUrls}
+                  editGalleryColumns={editGalleryColumns}
+                  setEditGalleryColumns={setEditGalleryColumns}
+                  editGalleryGap={editGalleryGap}
+                  setEditGalleryGap={setEditGalleryGap}
+                  editGalleryObjectFit={editGalleryObjectFit}
+                  setEditGalleryObjectFit={setEditGalleryObjectFit}
+                  editGalleryBorderRadius={editGalleryBorderRadius}
+                  setEditGalleryBorderRadius={setEditGalleryBorderRadius}
                   editSliderUrls={editSliderUrls}
                   setEditSliderUrls={setEditSliderUrls}
                   editSliderAutoplay={editSliderAutoplay}

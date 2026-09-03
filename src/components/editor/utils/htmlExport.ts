@@ -315,6 +315,64 @@ const componentToHtml = async (component: LayoutComponent): Promise<string> => {
       </div>`;
     }
 
+    case "imageGallery": {
+      const urls = component.props.urls?.filter(Boolean) ?? [];
+      const columns = Math.max(component.props.columns ?? 3, 1);
+      const gap = Math.max(component.props.gap ?? 8, 0);
+      const objectFit = component.props.objectFit ?? "cover";
+      const borderRadius = Math.max(component.props.borderRadius ?? 8, 0);
+
+      const images = urls
+        .map(
+          (url, index) => `
+        <div
+          style="
+            width:100%;
+            aspect-ratio:1/1;
+            overflow:hidden;
+            border-radius:${borderRadius}px;
+          "
+        >
+          <img
+            src="${escapeAttribute(url)}"
+            alt="${escapeAttribute(`${componentName} ${index + 1}`)}"
+            loading="lazy"
+            decoding="async"
+            style="
+              display:block;
+              width:100%;
+              height:100%;
+              object-fit:${objectFit};
+            "
+          />
+        </div>
+      `,
+        )
+        .join("");
+
+      return `
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="imageGallery"
+      data-component-name="${componentName}"
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <div
+        style="
+          display:grid;
+          width:100%;
+          grid-template-columns:repeat(${columns}, minmax(0, 1fr));
+          gap:${gap}px;
+          ${contentStyle}
+        "
+      >
+        ${images}
+      </div>
+    </div>
+  `;
+    }
+
     case "imageSlider": {
       const urls = component.props.urls?.filter(Boolean) ?? [];
 

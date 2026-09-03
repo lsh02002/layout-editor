@@ -39,6 +39,14 @@ export const useEditComponentForm = () => {
 
   const [editImagePreviewUrl, setEditImagePreviewUrl] = useState("");
 
+  const [editGalleryUrls, setEditGalleryUrls] = useState<string[]>([]);
+  const [editGalleryColumns, setEditGalleryColumns] = useState(3);
+  const [editGalleryGap, setEditGalleryGap] = useState(8);
+  const [editGalleryObjectFit, setEditGalleryObjectFit] = useState<
+    "cover" | "contain" | "fill"
+  >("cover");
+  const [editGalleryBorderRadius, setEditGalleryBorderRadius] = useState(8);
+
   const [editSliderUrls, setEditSliderUrls] = useState<string[]>([]);
   const [editSliderAutoplay, setEditSliderAutoplay] = useState(false);
   const [editSliderInterval, setEditSliderInterval] = useState(3000);
@@ -139,6 +147,12 @@ export const useEditComponentForm = () => {
     setEditDividerLineStyle("solid");
     setEditSpacerHeight(32);
 
+    setEditGalleryUrls([]);
+    setEditGalleryColumns(3);
+    setEditGalleryGap(8);
+    setEditGalleryObjectFit("cover");
+    setEditGalleryBorderRadius(8);
+
     setEditSliderUrls([]);
     setEditSliderAutoplay(false);
     setEditSliderInterval(3000);
@@ -203,6 +217,20 @@ export const useEditComponentForm = () => {
 
         setEditImageUrl(existingUrl);
         setEditImagePreviewUrl(existingUrl);
+        break;
+      }
+
+      case "imageGallery": {
+        setEditTitle("");
+        setEditValue("");
+        setEditPlaceholder("");
+        setEditDirection("column");
+
+        setEditGalleryUrls(component.props.urls ?? []);
+        setEditGalleryColumns(component.props.columns ?? 3);
+        setEditGalleryGap(component.props.gap ?? 8);
+        setEditGalleryObjectFit(component.props.objectFit ?? "cover");
+        setEditGalleryBorderRadius(component.props.borderRadius ?? 8);
         break;
       }
 
@@ -303,6 +331,12 @@ export const useEditComponentForm = () => {
     setEditImageUrl("");
     setEditImagePreviewUrl("");
 
+    setEditGalleryUrls([]);
+    setEditGalleryColumns(3);
+    setEditGalleryGap(8);
+    setEditGalleryObjectFit("cover");
+    setEditGalleryBorderRadius(8);
+
     setEditSliderUrls([]);
     setEditSliderAutoplay(false);
     setEditSliderInterval(3000);
@@ -361,6 +395,17 @@ export const useEditComponentForm = () => {
     setEditImageUrl,
     editImagePreviewUrl,
     setEditImagePreviewUrl,
+    // Image Gallery specific states
+    editGalleryUrls,
+    setEditGalleryUrls,
+    editGalleryColumns,
+    setEditGalleryColumns,
+    editGalleryGap,
+    setEditGalleryGap,
+    editGalleryObjectFit,
+    setEditGalleryObjectFit,
+    editGalleryBorderRadius,
+    setEditGalleryBorderRadius,
     // Slider specific states
     editSliderUrls,
     setEditSliderUrls,

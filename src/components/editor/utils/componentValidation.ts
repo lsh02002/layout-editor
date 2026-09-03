@@ -111,6 +111,18 @@ const imageSchema = baseComponentSchema.extend({
   }),
 });
 
+const imageGallerySchema = baseComponentSchema.extend({
+  type: z.literal("imageGallery"),
+
+  props: z.object({
+    urls: z.array(z.string()),
+    columns: z.number().min(1).max(12).optional(),
+    gap: z.number().min(0).optional(),
+    objectFit: z.enum(["cover", "contain", "fill"]).optional(),
+    borderRadius: z.number().min(0).optional(),
+  }),
+});
+
 const imageSliderSchema = baseComponentSchema.extend({
   type: z.literal("imageSlider"),
   props: z.object({
@@ -192,6 +204,7 @@ type ComponentSchema =
   | z.infer<typeof textareaSchema>
   | z.infer<typeof quillSchema>
   | z.infer<typeof imageSchema>
+  | z.infer<typeof imageGallerySchema>
   | z.infer<typeof imageSliderSchema>
   | z.infer<typeof videoSchema>
   | z.infer<typeof linkSchema>
@@ -229,6 +242,7 @@ const componentSchema: z.ZodType<ComponentSchema> = z.lazy(() =>
     textareaSchema,
     quillSchema,
     imageSchema,
+    imageGallerySchema,
     imageSliderSchema,
     videoSchema,
     linkSchema,

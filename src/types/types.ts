@@ -185,6 +185,18 @@ export interface CodeEditorComponent extends BaseComponent {
   };
 }
 
+export interface ImageGalleryComponent extends BaseComponent {
+  type: "imageGallery";
+
+  props: {
+    urls: string[];
+    columns?: number;
+    gap?: number;
+    objectFit?: "cover" | "contain" | "fill";
+    borderRadius?: number;
+  };
+}
+
 export interface ImageSliderComponent extends BaseComponent {
   type: "imageSlider";
 
@@ -210,6 +222,7 @@ export type LayoutComponent =
   | SpacerComponent
   | VideoComponent
   | CodeEditorComponent
+  | ImageGalleryComponent
   | ImageSliderComponent
   | ContainerComponent;
 
@@ -300,6 +313,11 @@ export type EditValues = {
   editContentStyle: CSSProperties;
   editCustomCss: string;
   editImageUrl: string;
+  editGalleryUrls: string[];
+  editGalleryColumns: number;
+  editGalleryGap: number;
+  editGalleryObjectFit: "cover" | "contain" | "fill";
+  editGalleryBorderRadius: number;
   editSliderUrls: string[];
   editSliderAutoplay: boolean;
   editSliderInterval: number;
@@ -343,6 +361,7 @@ export const VALID_COMPONENT_TYPES = [
   "divider",
   "spacer",
   "codeEditor",
+  "imageGallery",
   "imageSlider",
   "scrollToTopButton",
 ] as const satisfies readonly ComponentType[];

@@ -22,6 +22,7 @@ import EditSpacerFields from "../fields/EditSpacerFields";
 import EditVideoFields from "../fields/EditVideoFields";
 import EditCodeEditorFields from "../fields/EditCodeEditorFields";
 import EditImageSliderFields from "../fields/EditImageSliderFields";
+import EditImageGalleryFields from "../fields/EditImageGalleryFields";
 
 type Props = {
   editType: ComponentType;
@@ -48,6 +49,19 @@ type Props = {
 
   editImagePreviewUrl: string;
   setEditImagePreviewUrl: Dispatch<SetStateAction<string>>;
+
+  editGalleryUrls: string[];
+  setEditGalleryUrls: Dispatch<SetStateAction<string[]>>;
+  editGalleryColumns: number;
+  setEditGalleryColumns: Dispatch<SetStateAction<number>>;
+  editGalleryGap: number;
+  setEditGalleryGap: Dispatch<SetStateAction<number>>;
+  editGalleryObjectFit: "cover" | "contain" | "fill";
+  setEditGalleryObjectFit: Dispatch<
+    SetStateAction<"cover" | "contain" | "fill">
+  >;
+  editGalleryBorderRadius: number;
+  setEditGalleryBorderRadius: Dispatch<SetStateAction<number>>;
 
   editSliderUrls: string[];
   setEditSliderUrls: Dispatch<SetStateAction<string[]>>;
@@ -141,6 +155,17 @@ function EditBasicTab({
 
   editImagePreviewUrl,
   setEditImagePreviewUrl,
+
+  editGalleryUrls,
+  setEditGalleryUrls,
+  editGalleryColumns,
+  setEditGalleryColumns,
+  editGalleryGap,
+  setEditGalleryGap,
+  editGalleryObjectFit,
+  setEditGalleryObjectFit,
+  editGalleryBorderRadius,
+  setEditGalleryBorderRadius,
 
   editSliderUrls,
   setEditSliderUrls,
@@ -671,6 +696,47 @@ function EditBasicTab({
     });
   };
 
+  const handleGalleryUrlsChange = (urls: string[]) => {
+    setEditGalleryUrls(urls);
+
+    onImmediateChange((component) => {
+      if (component.type !== "imageGallery") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          urls,
+        },
+      };
+    });
+  };
+
+  const handleGalleryPropsChange = (
+    values: Partial<{
+      columns: number;
+      gap: number;
+      objectFit: "cover" | "contain" | "fill";
+      borderRadius: number;
+    }>,
+  ) => {
+    onImmediateChange((component) => {
+      if (component.type !== "imageGallery") {
+        return component;
+      }
+
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          ...values,
+        },
+      };
+    });
+  };
+
   const handleSliderUrlsChange = (urls: string[]) => {
     setEditSliderUrls(urls);
 
@@ -788,6 +854,43 @@ function EditBasicTab({
             onPreviewUrlChange={setEditImagePreviewUrl}
           />
         </div>
+      )}
+
+      {editType === "imageGallery" && (
+        <EditImageGalleryFields
+          componentName={editComponentName}
+          urls={editGalleryUrls}
+          columns={editGalleryColumns}
+          gap={editGalleryGap}
+          objectFit={editGalleryObjectFit}
+          borderRadius={editGalleryBorderRadius}
+          onComponentNameChange={handleComponentNameChange}
+          onUrlsChange={handleGalleryUrlsChange}
+          onColumnsChange={(value) => {
+            setEditGalleryColumns(value);
+            handleGalleryPropsChange({
+              columns: value,
+            });
+          }}
+          onGapChange={(value) => {
+            setEditGalleryGap(value);
+            handleGalleryPropsChange({
+              gap: value,
+            });
+          }}
+          onObjectFitChange={(value) => {
+            setEditGalleryObjectFit(value);
+            handleGalleryPropsChange({
+              objectFit: value,
+            });
+          }}
+          onBorderRadiusChange={(value) => {
+            setEditGalleryBorderRadius(value);
+            handleGalleryPropsChange({
+              borderRadius: value,
+            });
+          }}
+        />
       )}
 
       {editType === "imageSlider" && (

@@ -66,6 +66,12 @@ const COMPONENTS: {
     icon: ImageIcon,
   },
   {
+    type: "imageGallery",
+    label: "Image Gallery",
+    description: "여러 이미지를 갤러리로 표시",
+    icon: Images,
+  },
+  {
     type: "imageSlider",
     label: "Image Slider",
     description: "여러 이미지를 슬라이드",

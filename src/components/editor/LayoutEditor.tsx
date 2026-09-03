@@ -117,6 +117,17 @@ function LayoutEditor() {
     editImagePreviewUrl,
     setEditImagePreviewUrl,
 
+    editGalleryUrls,
+    setEditGalleryUrls,
+    editGalleryColumns,
+    setEditGalleryColumns,
+    editGalleryGap,
+    setEditGalleryGap,
+    editGalleryObjectFit,
+    setEditGalleryObjectFit,
+    editGalleryBorderRadius,
+    setEditGalleryBorderRadius,
+
     editSliderUrls,
     setEditSliderUrls,
     editSliderAutoplay,
@@ -297,6 +308,12 @@ function LayoutEditor() {
       editCustomCss,
       editImageUrl,
 
+      editGalleryUrls,
+      editGalleryColumns,
+      editGalleryGap,
+      editGalleryObjectFit,
+      editGalleryBorderRadius,
+
       editSliderUrls,
       editSliderAutoplay,
       editSliderInterval,
@@ -338,6 +355,11 @@ function LayoutEditor() {
       editContentStyle,
       editCustomCss,
       editImageUrl,
+      editGalleryUrls,
+      editGalleryColumns,
+      editGalleryGap,
+      editGalleryObjectFit,
+      editGalleryBorderRadius,
       editSliderUrls,
       editSliderAutoplay,
       editSliderInterval,
@@ -800,6 +822,16 @@ function LayoutEditor() {
         setEditImageUrl={setEditImageUrl}
         editImagePreviewUrl={editImagePreviewUrl}
         setEditImagePreviewUrl={setEditImagePreviewUrl}
+        editGalleryUrls={editGalleryUrls}
+        setEditGalleryUrls={setEditGalleryUrls}
+        editGalleryColumns={editGalleryColumns}
+        setEditGalleryColumns={setEditGalleryColumns}
+        editGalleryGap={editGalleryGap}
+        setEditGalleryGap={setEditGalleryGap}
+        editGalleryObjectFit={editGalleryObjectFit}
+        setEditGalleryObjectFit={setEditGalleryObjectFit}
+        editGalleryBorderRadius={editGalleryBorderRadius}
+        setEditGalleryBorderRadius={setEditGalleryBorderRadius}
         editSliderUrls={editSliderUrls}
         setEditSliderUrls={setEditSliderUrls}
         editSliderAutoplay={editSliderAutoplay}

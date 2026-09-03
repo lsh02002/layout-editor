@@ -160,6 +160,28 @@ export const useCreateComponentForm = () => {
           },
         };
 
+      case "imageGallery":
+        return {
+          id,
+          name: newComponentName.trim() || "ImageGallery",
+          type: "imageGallery",
+          order: 0,
+          props: {
+            urls: FAKE_IMAGE_SLIDER_URLS,
+            columns: 3,
+            gap: 8,
+            objectFit: "cover",
+            borderRadius: 8,
+          },
+          layout: {
+            widthMode: "fill",
+            heightMode: "auto",
+          },
+          style: {
+            width: "100%",
+          },
+        };
+
       case "imageSlider":
         return {
           id,
@@ -425,6 +447,28 @@ export const useCreateComponentForm = () => {
             urls: [FAKE_IMAGE_URL],
             maxCount: 1,
             disabled: false,
+          },
+          style: {
+            width: "100%",
+          },
+        };
+
+      case "imageGallery":
+        return {
+          id,
+          name: "ImageGallery",
+          type: "imageGallery",
+          order: 0,
+          props: {
+            urls: FAKE_IMAGE_SLIDER_URLS,
+            columns: 3,
+            gap: 8,
+            objectFit: "cover",
+            borderRadius: 8,
+          },
+          layout: {
+            widthMode: "fill",
+            heightMode: "auto",
           },
           style: {
             width: "100%",

@@ -33,6 +33,12 @@ export const useEditSaveActions = ({
         editCustomCss,
         editImageUrl,
 
+        editGalleryUrls,
+        editGalleryColumns,
+        editGalleryGap,
+        editGalleryObjectFit,
+        editGalleryBorderRadius,
+
         editSliderUrls,
         editSliderAutoplay,
         editSliderInterval,
@@ -172,6 +178,20 @@ export const useEditSaveActions = ({
               urls: editImageUrl.trim() ? [editImageUrl.trim()] : [],
               maxCount: 1,
               disabled: editDisabled,
+            },
+          };
+
+        case "imageGallery":
+          return {
+            ...component,
+            ...common,
+            props: {
+              ...component.props,
+              urls: editGalleryUrls.map((url) => url.trim()).filter(Boolean),
+              columns: Math.min(12, Math.max(editGalleryColumns, 1)),
+              gap: Math.max(editGalleryGap, 0),
+              objectFit: editGalleryObjectFit,
+              borderRadius: Math.max(editGalleryBorderRadius, 0),
             },
           };
 
