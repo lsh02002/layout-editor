@@ -1,10 +1,4 @@
-import {
-  createElement,
-  type ChangeEvent,
-  type Dispatch,
-  type ReactNode,
-  type SetStateAction,
-} from "react";
+import { createElement, type ReactNode } from "react";
 
 import {
   AlignLeft,
@@ -25,32 +19,21 @@ import {
 
 import { z } from "zod";
 
-import type {
-  ComponentType,
-  ContainerDirection,
-  HeadingLevel,
-  LayoutComponent,
-  LinkType,
-} from "../../../types/types";
+import type { ComponentType, LayoutComponent } from "../../../types/types";
 
 import { FAKE_IMAGE_SLIDER_URLS, FAKE_IMAGE_URL } from "../../../data/data";
 
 import type { EditBasicContext } from "../edit/types/editBasicContext";
 
-import {
-  ButtonEditor,
+import RegistryFieldsEditor, {
   CodeEditorEditor,
   ContainerEditor,
-  DividerEditor,
-  HeadingEditor,
   ImageEditor,
   ImageGalleryEditor,
   ImageSliderEditor,
   LinkEditor,
   QuillEditor,
   ScrollToTopButtonEditor,
-  SpacerEditor,
-  TextareaEditor,
   VideoEditor,
 } from "../edit/componentEditors";
 
@@ -88,57 +71,86 @@ import {
 } from "../utils/htmlexport/htmlExporters";
 
 import type { HtmlExporter } from "../utils/htmlexport/htmlExport";
-import ContainerFields from "../create/fields/ContainerFields";
-import HeadingFields from "../create/fields/HeadingFields";
-import TextareaFields from "../create/fields/TextareaFields";
-import QuillFields from "../create/fields/QuillFields";
-import ButtonFields from "../create/fields/ButtonFields";
-import ImageFields from "../create/fields/ImageFields";
-import ComponentNameField from "../create/fields/ComponentNameField";
-import LinkFields from "../create/fields/LinkFields";
 
-export type CreateComponentFormValues = {
-  componentName: string;
-  title: string;
-  value: string;
-  placeholder: string;
-  direction: ContainerDirection;
-  imagePreviewUrl: string;
-  linkType: LinkType;
-  linkNewWindow: boolean;
-  headingText: string;
-  headingLevel: HeadingLevel;
+type FieldOption<T extends string | number = string | number> = {
+  label: string;
+  value: T;
 };
 
-type StateSetter<T> = Dispatch<SetStateAction<T>>;
+export type ComponentField =
+  | {
+      type: "text";
+      label: string;
+      placeholder?: string;
+      getValue?: (value: unknown) => string;
+      setValue?: (value: string) => unknown;
+    }
+  | {
+      type: "textarea";
+      label: string;
+      placeholder?: string;
+    }
+  | {
+      type: "number";
+      label: string;
+      min?: number;
+      max?: number;
+    }
+  | {
+      type: "select";
+      label: string;
+      options: FieldOption[];
+    }
+  | {
+      type: "checkbox";
+      label: string;
+    };
 
-export type CreateComponentFormContext = {
-  values: CreateComponentFormValues;
-  setComponentName: StateSetter<string>;
-  setTitle: StateSetter<string>;
-  setValue: StateSetter<string>;
-  setPlaceholder: StateSetter<string>;
-  setDirection: StateSetter<ContainerDirection>;
-  setImagePreviewUrl: StateSetter<string>;
-  setLinkType: StateSetter<LinkType>;
-  setLinkNewWindow: StateSetter<boolean>;
-  setHeadingText: StateSetter<string>;
-  setHeadingLevel: StateSetter<HeadingLevel>;
+type ComponentOf<T extends ComponentType> = Extract<
+  LayoutComponent,
+  { type: T }
+>;
+
+type ComponentProps<T extends ComponentType> = ComponentOf<T>["props"];
+
+type TextField = Extract<ComponentField, { type: "text" }>;
+type TextareaField = Extract<ComponentField, { type: "textarea" }>;
+type NumberField = Extract<ComponentField, { type: "number" }>;
+type CheckboxField = Extract<ComponentField, { type: "checkbox" }>;
+
+type SelectField<T extends string | number> = {
+  type: "select";
+  label: string;
+  options: FieldOption<T>[];
 };
 
-type ComponentRegistryItem = {
+type SelectValue<T> = Extract<NonNullable<T>, string | number>;
+
+type ComponentFieldForValue<T> =
+  NonNullable<T> extends boolean
+    ? CheckboxField
+    : NonNullable<T> extends number
+      ? NumberField | SelectField<SelectValue<T>>
+      : NonNullable<T> extends string
+        ? TextField | TextareaField | SelectField<SelectValue<T>>
+        : NonNullable<T> extends string[]
+          ? TextField
+          : ComponentField;
+
+type ComponentFields<T extends ComponentType> = Partial<{
+  [K in keyof ComponentProps<T>]: ComponentFieldForValue<ComponentProps<T>[K]>;
+}>;
+
+type ComponentRegistryItem<T extends ComponentType> = {
   label: string;
   description: string;
   icon: LucideIcon;
   supportsDisabled: boolean;
   propsSchema: z.ZodType;
   maxInstances?: number;
-  createDefault: (id: string) => LayoutComponent;
-  applyCreateForm?: (
-    component: LayoutComponent,
-    form: CreateComponentFormValues,
-  ) => LayoutComponent;
-  createForm: (context: CreateComponentFormContext) => ReactNode;
+  fields: ComponentFields<T>;
+  defaultProps: ComponentProps<T>;
+  createComponent: (id: string, props: ComponentProps<T>) => ComponentOf<T>;
   editor: (context: EditBasicContext) => ReactNode;
   canvas?: (component: LayoutComponent) => ReactNode;
   getSearchText?: (component: LayoutComponent) => string;
@@ -146,7 +158,15 @@ type ComponentRegistryItem = {
   exportHtml: HtmlExporter;
 };
 
-export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
+type ComponentRegistry = {
+  [T in ComponentType]: ComponentRegistryItem<T>;
+};
+
+type ComponentRegistryEntry = {
+  [T in ComponentType]: [T, ComponentRegistryItem<T>];
+}[ComponentType];
+
+export const componentRegistry: ComponentRegistry = {
   container: {
     label: "Container",
     description: "컴포넌트를 묶는 영역",
@@ -159,60 +179,73 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
       alignItems: z.string().optional(),
       maxWidth: z.number().finite().positive().optional(),
     }),
-
-    createDefault: (id) => ({
+    fields: {
+      direction: {
+        type: "select",
+        label: "방향",
+        options: [
+          { label: "가로", value: "row" },
+          { label: "세로", value: "column" },
+        ],
+      },
+      gap: {
+        type: "number",
+        label: "간격",
+        min: 0,
+      },
+      justifyContent: {
+        type: "select",
+        label: "가로 정렬",
+        options: [
+          { label: "Start", value: "flex-start" },
+          { label: "Center", value: "center" },
+          { label: "End", value: "flex-end" },
+          { label: "Space Between", value: "space-between" },
+        ],
+      },
+      alignItems: {
+        type: "select",
+        label: "세로 정렬",
+        options: [
+          { label: "Stretch", value: "stretch" },
+          { label: "Start", value: "flex-start" },
+          { label: "Center", value: "center" },
+          { label: "End", value: "flex-end" },
+        ],
+      },
+      maxWidth: {
+        type: "number",
+        label: "최대 너비",
+        min: 1,
+      },
+    },
+    defaultProps: {
+      direction: "column",
+      gap: 8,
+      justifyContent: "space-between",
+      alignItems: "stretch",
+      maxWidth: undefined,
+    },
+    createComponent: (id, props) => ({
       id,
       name: "Container",
       type: "container",
       order: 0,
-      props: {
-        direction: "column",
-        gap: 8,
-        justifyContent: "space-between",
-        alignItems: "stretch",
-        maxWidth: undefined,
-      },
-
+      props,
       style: {
         width: "100%",
         minHeight: 100,
         padding: 12,
       },
-
       children: [],
     }),
-
-    applyCreateForm: (component, form) => {
-      if (component.type !== "container") {
-        return component;
-      }
-
-      return {
-        ...component,
-        props: {
-          ...component.props,
-          direction: form.direction,
-        },
-      };
-    },
-
-    createForm: ({ values, setComponentName, setDirection }) =>
-      createElement(ContainerFields, {
-        componentName: values.componentName,
-        direction: values.direction,
-        onComponentNameChange: setComponentName,
-        onDirectionChange: setDirection,
-      }),
-
     editor: (context) => createElement(ContainerEditor, context),
     getSearchText: (component) => {
       if (component.type !== "container") {
         return "";
       }
-
       return "container 컨테이너";
     },
-
     exportHtml: exportContainerHtml,
   },
 
@@ -233,49 +266,40 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
       ]),
     }),
 
-    createDefault: (id) => ({
-      id,
-      name: "제목",
-      type: "heading",
-      order: 0,
-      props: {
-        text: "제목을 입력하세요",
-        level: 2,
+    fields: {
+      text: {
+        type: "text",
+        label: "제목",
+        placeholder: "제목을 입력하세요",
       },
-
-      style: {
-        width: "100%",
+      level: {
+        type: "select",
+        label: "Heading Level",
+        options: [
+          { label: "H1", value: 1 },
+          { label: "H2", value: 2 },
+          { label: "H3", value: 3 },
+          { label: "H4", value: 4 },
+          { label: "H5", value: 5 },
+          { label: "H6", value: 6 },
+        ],
       },
-
-      contentStyle: {
-        margin: 0,
-      },
-    }),
-
-    applyCreateForm: (component, form) => {
-      if (component.type !== "heading") {
-        return component;
-      }
-
-      return {
-        ...component,
-        props: {
-          ...component.props,
-          text: form.headingText.trim() || "제목을 입력하세요",
-          level: form.headingLevel,
-        },
-      };
     },
 
-    createForm: ({ values, setHeadingText, setHeadingLevel }) =>
-      createElement(HeadingFields, {
-        text: values.headingText,
-        level: values.headingLevel,
-        onTextChange: setHeadingText,
-        onLevelChange: setHeadingLevel,
-      }),
+    defaultProps: {
+      text: "Heading",
+      level: 2,
+    },
 
-    editor: (context) => createElement(HeadingEditor, context),
+    createComponent: (id, props) => ({
+      id,
+      name: "Heading",
+      type: "heading",
+      order: 0,
+      props,
+    }),
+
+    editor: (context) => createElement(RegistryFieldsEditor, context),
     canvas: (component) => {
       if (component.type !== "heading") {
         return null;
@@ -326,49 +350,44 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
       disabled: z.boolean().optional(),
     }),
 
-    createDefault: (id) => ({
+    fields: {
+      value: {
+        type: "textarea",
+        label: "내용",
+        placeholder: "내용을 입력하세요.",
+      },
+      rows: {
+        type: "number",
+        label: "행 수",
+        min: 1,
+      },
+      placeholder: {
+        type: "text",
+        label: "Placeholder",
+        placeholder: "내용을 입력하세요.",
+      },
+      disabled: {
+        type: "checkbox",
+        label: "비활성화",
+      },
+    },
+    defaultProps: {
+      value: "",
+      rows: 3,
+      placeholder: "내용을 입력하세요.",
+      disabled: false,
+    },
+    createComponent: (id, props) => ({
       id,
       name: "Textarea",
       type: "textarea",
       order: 0,
-      props: {
-        value: "",
-        rows: 3,
-        placeholder: "내용을 입력하세요.",
-        disabled: false,
-      },
-
+      props,
       style: {
         width: "100%",
       },
     }),
-
-    applyCreateForm: (component, form) => {
-      if (component.type !== "textarea") {
-        return component;
-      }
-
-      return {
-        ...component,
-        props: {
-          ...component.props,
-          value: form.value,
-          placeholder: form.placeholder.trim() || "내용을 입력하세요.",
-        },
-      };
-    },
-
-    createForm: ({ values, setComponentName, setValue, setPlaceholder }) =>
-      createElement(TextareaFields, {
-        componentName: values.componentName,
-        value: values.value,
-        placeholder: values.placeholder,
-        onComponentNameChange: setComponentName,
-        onValueChange: setValue,
-        onPlaceholderChange: setPlaceholder,
-      }),
-
-    editor: (context) => createElement(TextareaEditor, context),
+    editor: (context) => createElement(RegistryFieldsEditor, context),
     canvas: (component) => {
       if (component.type !== "textarea") {
         return null;
@@ -416,47 +435,37 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
       disabled: z.boolean().optional(),
     }),
 
-    createDefault: (id) => ({
+    fields: {
+      value: {
+        type: "textarea",
+        label: "초기 내용",
+        placeholder: "본문을 입력하세요.",
+      },
+      placeholder: {
+        type: "text",
+        label: "Placeholder",
+        placeholder: "본문을 입력하세요.",
+      },
+      disabled: {
+        type: "checkbox",
+        label: "비활성화",
+      },
+    },
+    defaultProps: {
+      value: "",
+      placeholder: "본문을 입력하세요.",
+      disabled: false,
+    },
+    createComponent: (id, props) => ({
       id,
       name: "RichText",
       type: "quill",
       order: 0,
-      props: {
-        value: "",
-        placeholder: "본문을 입력하세요.",
-        disabled: false,
-      },
-
+      props,
       style: {
         width: "100%",
       },
     }),
-
-    applyCreateForm: (component, form) => {
-      if (component.type !== "quill") {
-        return component;
-      }
-
-      return {
-        ...component,
-        props: {
-          ...component.props,
-          value: form.value,
-          placeholder: form.placeholder.trim() || "본문을 입력하세요.",
-        },
-      };
-    },
-
-    createForm: ({ values, setComponentName, setValue, setPlaceholder }) =>
-      createElement(QuillFields, {
-        componentName: values.componentName,
-        value: values.value,
-        placeholder: values.placeholder,
-        onComponentNameChange: setComponentName,
-        onValueChange: setValue,
-        onPlaceholderChange: setPlaceholder,
-      }),
-
     editor: (context) => createElement(QuillEditor, context),
     canvas: (component) => {
       if (component.type !== "quill") {
@@ -520,49 +529,36 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
         })
         .optional(),
     }),
-
-    createDefault: (id) => ({
+    fields: {
+      title: {
+        type: "text",
+        label: "버튼명",
+        placeholder: "버튼",
+      },
+      disabled: {
+        type: "checkbox",
+        label: "비활성화",
+      },
+    },
+    defaultProps: {
+      title: "버튼",
+      disabled: false,
+      action: {
+        type: "none",
+        payload: null,
+      },
+    },
+    createComponent: (id, props) => ({
       id,
       name: "Button",
       type: "button",
       order: 0,
-      props: {
-        title: "버튼",
-        disabled: false,
-        action: {
-          type: "none",
-          payload: null,
-        },
-      },
-
+      props,
       style: {
         width: "100%",
       },
     }),
-
-    applyCreateForm: (component, form) => {
-      if (component.type !== "button") {
-        return component;
-      }
-
-      return {
-        ...component,
-        props: {
-          ...component.props,
-          title: form.title.trim() || "버튼",
-        },
-      };
-    },
-
-    createForm: ({ values, setComponentName, setTitle }) =>
-      createElement(ButtonFields, {
-        componentName: values.componentName,
-        title: values.title,
-        onComponentNameChange: setComponentName,
-        onTitleChange: setTitle,
-      }),
-
-    editor: (context) => createElement(ButtonEditor, context),
+    editor: (context) => createElement(RegistryFieldsEditor, context),
     canvas: (component) => {
       if (component.type !== "button") {
         return null;
@@ -611,20 +607,31 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
         .optional(),
     }),
 
-    createDefault: (id) => ({
+    fields: {
+      title: {
+        type: "text",
+        label: "버튼명",
+        placeholder: "↑",
+      },
+      disabled: {
+        type: "checkbox",
+        label: "비활성화",
+      },
+    },
+    defaultProps: {
+      title: "↑",
+      disabled: false,
+      action: {
+        type: "scrollToTop",
+        payload: null,
+      },
+    },
+    createComponent: (id, props) => ({
       id,
       name: "ScrollToTopButton",
       type: "scrollToTopButton",
       order: 0,
-      props: {
-        title: "↑",
-        disabled: false,
-        action: {
-          type: "scrollToTop",
-          payload: null,
-        },
-      },
-
+      props,
       style: {
         position: "fixed",
         width: "50px",
@@ -634,29 +641,6 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
         zIndex: 1400,
       },
     }),
-
-    applyCreateForm: (component, form) => {
-      if (component.type !== "scrollToTopButton") {
-        return component;
-      }
-
-      return {
-        ...component,
-        props: {
-          ...component.props,
-          title: form.title.trim() || "↑",
-        },
-      };
-    },
-
-    createForm: ({ values, setComponentName, setTitle }) =>
-      createElement(ButtonFields, {
-        componentName: values.componentName,
-        title: values.title,
-        onComponentNameChange: setComponentName,
-        onTitleChange: setTitle,
-      }),
-
     editor: (context) => createElement(ScrollToTopButtonEditor, context),
     canvas: (component) => {
       if (component.type !== "scrollToTopButton") {
@@ -703,70 +687,50 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
       maxCount: z.number().int().positive().optional(),
       disabled: z.boolean().optional(),
     }),
-
-    createDefault: (id) => ({
+    fields: {
+      urls: {
+        type: "text",
+        label: "이미지 URL",
+        placeholder: "https://example.com/image.jpg",
+        getValue: (value) =>
+          Array.isArray(value) && typeof value[0] === "string" ? value[0] : "",
+        setValue: (value) => (value.trim() ? [value] : []),
+      },
+      disabled: {
+        type: "checkbox",
+        label: "비활성화",
+      },
+    },
+    defaultProps: {
+      urls: [FAKE_IMAGE_URL],
+      maxCount: 1,
+      disabled: false,
+    },
+    createComponent: (id, props) => ({
       id,
       name: "Image",
       type: "image",
       order: 0,
-      props: {
-        urls: [FAKE_IMAGE_URL],
-        maxCount: 1,
-        disabled: false,
-      },
-
+      props,
       style: {
         width: "100%",
       },
     }),
-
-    applyCreateForm: (component, form) => {
-      if (component.type !== "image") {
-        return component;
-      }
-
-      const url = form.imagePreviewUrl.trim();
-
-      if (!url) {
-        return component;
-      }
-
-      return {
-        ...component,
-        props: {
-          ...component.props,
-          urls: [url],
-        },
-      };
-    },
-
-    createForm: ({ values, setComponentName, setImagePreviewUrl }) =>
-      createElement(ImageFields, {
-        componentName: values.componentName,
-        previewUrl: values.imagePreviewUrl,
-        onComponentNameChange: setComponentName,
-        onPreviewUrlChange: setImagePreviewUrl,
-      }),
-
     editor: (context) => createElement(ImageEditor, context),
     canvas: (component) => {
       if (component.type !== "image") {
         return null;
       }
-
       return createElement(ImageRenderer, {
         component,
       });
     },
-
     getSearchText: (component) => {
       if (component.type !== "image") {
         return "";
       }
-
       return "image 이미지";
     },
-
     exportHtml: exportImageHtml,
   },
 
@@ -782,55 +746,68 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
       objectFit: z.enum(["cover", "contain", "fill"]).optional(),
       borderRadius: z.number().finite().nonnegative().optional(),
     }),
-
-    createDefault: (id) => ({
+    fields: {
+      columns: {
+        type: "number",
+        label: "열 개수",
+        min: 1,
+      },
+      gap: {
+        type: "number",
+        label: "간격",
+        min: 0,
+      },
+      objectFit: {
+        type: "select",
+        label: "이미지 맞춤",
+        options: [
+          { label: "Cover", value: "cover" },
+          { label: "Contain", value: "contain" },
+          { label: "Fill", value: "fill" },
+        ],
+      },
+      borderRadius: {
+        type: "number",
+        label: "둥근 모서리",
+        min: 0,
+      },
+    },
+    defaultProps: {
+      urls: FAKE_IMAGE_SLIDER_URLS,
+      columns: 3,
+      gap: 8,
+      objectFit: "cover",
+      borderRadius: 8,
+    },
+    createComponent: (id, props) => ({
       id,
       name: "ImageGallery",
       type: "imageGallery",
       order: 0,
-      props: {
-        urls: FAKE_IMAGE_SLIDER_URLS,
-        columns: 3,
-        gap: 8,
-        objectFit: "cover",
-        borderRadius: 8,
-      },
-
+      props,
       layout: {
         widthMode: "fill",
         heightMode: "auto",
       },
-
       style: {
         width: "100%",
       },
     }),
-
-    createForm: ({ values, setComponentName }) =>
-      createElement(ComponentNameField, {
-        value: values.componentName,
-        onChange: setComponentName,
-      }),
-
     editor: (context) => createElement(ImageGalleryEditor, context),
     canvas: (component) => {
       if (component.type !== "imageGallery") {
         return null;
       }
-
       return createElement(ImageGalleryRenderer, {
         component,
       });
     },
-
     getSearchText: (component) => {
       if (component.type !== "imageGallery") {
         return "";
       }
-
       return ["image gallery", "gallery", "이미지 갤러리", "갤러리"].join(" ");
     },
-
     exportHtml: exportImageGalleryHtml,
   },
 
@@ -847,54 +824,65 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
       showDots: z.boolean().optional(),
       loop: z.boolean().optional(),
     }),
-
-    createDefault: (id) => ({
+    fields: {
+      autoplay: {
+        type: "checkbox",
+        label: "자동 재생",
+      },
+      interval: {
+        type: "number",
+        label: "재생 간격",
+        min: 100,
+      },
+      showArrows: {
+        type: "checkbox",
+        label: "화살표 표시",
+      },
+      showDots: {
+        type: "checkbox",
+        label: "인디케이터 표시",
+      },
+      loop: {
+        type: "checkbox",
+        label: "반복 재생",
+      },
+    },
+    defaultProps: {
+      urls: FAKE_IMAGE_SLIDER_URLS,
+      autoplay: true,
+      interval: 3000,
+      showArrows: true,
+      showDots: true,
+      loop: true,
+    },
+    createComponent: (id, props) => ({
       id,
       name: "ImageSlider",
       type: "imageSlider",
       order: 0,
-      props: {
-        urls: FAKE_IMAGE_SLIDER_URLS,
-        autoplay: true,
-        interval: 3000,
-        showArrows: true,
-        showDots: true,
-        loop: true,
-      },
-
+      props,
       layout: {
         widthMode: "fill",
         heightMode: "fixed",
         height: 320,
       },
-
       style: {
         width: "100%",
       },
     }),
-
-    createForm: ({ values, setComponentName }) =>
-      createElement(ComponentNameField, {
-        value: values.componentName,
-        onChange: setComponentName,
-      }),
-
     editor: (context) => createElement(ImageSliderEditor, context),
     canvas: (component) => {
       if (component.type !== "imageSlider") {
         return null;
       }
-
       return createElement(ImageSliderRenderer, {
         component,
       });
     },
-
     getSearchText: (component) => {
       if (component.type !== "imageSlider") {
         return "";
       }
-
       return [
         "image slider",
         "slider",
@@ -903,7 +891,6 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
         "슬라이더",
       ].join(" ");
     },
-
     exportHtml: exportImageSliderHtml,
   },
 
@@ -919,100 +906,67 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
       muted: z.boolean().optional(),
       loop: z.boolean().optional(),
     }),
-
-    createDefault: (id) => ({
+    fields: {
+      src: {
+        type: "text",
+        label: "동영상 URL",
+        placeholder: "https://example.com/video.mp4",
+      },
+      controls: {
+        type: "checkbox",
+        label: "컨트롤 표시",
+      },
+      autoplay: {
+        type: "checkbox",
+        label: "자동 재생",
+      },
+      muted: {
+        type: "checkbox",
+        label: "음소거",
+      },
+      loop: {
+        type: "checkbox",
+        label: "반복 재생",
+      },
+    },
+    defaultProps: {
+      src: "",
+      controls: true,
+      autoplay: false,
+      muted: false,
+      loop: false,
+    },
+    createComponent: (id, props) => ({
       id,
       name: "Video",
       type: "video",
       order: 0,
-      props: {
-        src: "",
-        controls: true,
-        autoplay: false,
-        muted: false,
-        loop: false,
-      },
-
+      props,
       style: {
         width: "100%",
       },
-
       contentStyle: {
         width: "100%",
         borderRadius: 8,
       },
     }),
-
-    applyCreateForm: (component, form) => {
-      if (component.type !== "video") {
-        return component;
-      }
-
-      return {
-        ...component,
-        props: {
-          ...component.props,
-          src: form.value.trim(),
-        },
-      };
-    },
-
-    createForm: ({ values, setComponentName, setValue }) =>
-      createElement(
-        "div",
-        null,
-        createElement(ComponentNameField, {
-          value: values.componentName,
-          onChange: setComponentName,
-        }),
-
-        createElement(
-          "div",
-          {
-            className: "mb-3",
-          },
-
-          createElement(
-            "label",
-            {
-              className: "form-label",
-            },
-            "동영상 URL",
-          ),
-
-          createElement("input", {
-            type: "url",
-            className: "form-control",
-            value: values.value,
-            placeholder: "https://example.com/video.mp4",
-            onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-              setValue(event.target.value);
-            },
-          }),
-        ),
-      ),
-
     editor: (context) => createElement(VideoEditor, context),
     canvas: (component) => {
       if (component.type !== "video") {
         return null;
       }
-
       return createElement(VideoRenderer, {
         component,
       });
     },
-
     getSearchText: (component) => {
       if (component.type !== "video") {
         return "";
       }
-
       return [component.props.src, "video", "동영상", "영상"]
         .filter(Boolean)
         .join(" ");
     },
-
     exportHtml: exportVideoHtml,
   },
 
@@ -1029,68 +983,57 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
       disabled: z.boolean().optional(),
     }),
 
-    createDefault: (id) => ({
+    fields: {
+      title: {
+        type: "text",
+        label: "링크명",
+        placeholder: "링크",
+      },
+      linkType: {
+        type: "select",
+        label: "링크 타입",
+        options: [
+          { label: "URL", value: "url" },
+          { label: "Email", value: "email" },
+          { label: "Tel", value: "tel" },
+        ],
+      },
+      value: {
+        type: "text",
+        label: "링크 값",
+        placeholder: "https://example.com",
+      },
+      newWindow: {
+        type: "checkbox",
+        label: "새 창에서 열기",
+      },
+      disabled: {
+        type: "checkbox",
+        label: "비활성화",
+      },
+    },
+    defaultProps: {
+      title: "링크",
+      linkType: "url",
+      value: "",
+      newWindow: false,
+      disabled: false,
+    },
+    createComponent: (id, props) => ({
       id,
       name: "Link",
       type: "link",
       order: 0,
-      props: {
-        title: "링크",
-        linkType: "url",
-        value: "",
-        newWindow: false,
-        disabled: false,
-      },
-
+      props,
       style: {
         width: "100%",
       },
-
       contentStyle: {
         color: "#0d6efd",
         textDecoration: "underline",
         cursor: "pointer",
       },
     }),
-
-    applyCreateForm: (component, form) => {
-      if (component.type !== "link") {
-        return component;
-      }
-
-      return {
-        ...component,
-        props: {
-          ...component.props,
-          title: form.title.trim() || "링크",
-          linkType: form.linkType,
-          value: form.value.trim(),
-          newWindow: form.linkType === "url" ? form.linkNewWindow : false,
-        },
-      };
-    },
-
-    createForm: ({
-      values,
-      setComponentName,
-      setTitle,
-      setLinkType,
-      setValue,
-      setLinkNewWindow,
-    }) =>
-      createElement(LinkFields, {
-        componentName: values.componentName,
-        title: values.title,
-        linkType: values.linkType,
-        value: values.value,
-        newWindow: values.linkNewWindow,
-        onComponentNameChange: setComponentName,
-        onTitleChange: setTitle,
-        onLinkTypeChange: setLinkType,
-        onValueChange: setValue,
-        onNewWindowChange: setLinkNewWindow,
-      }),
-
     editor: (context) => createElement(LinkEditor, context),
     canvas: (component) => {
       if (component.type !== "link") {
@@ -1144,63 +1087,57 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
       color: z.string().optional(),
       lineStyle: z.enum(["solid", "dashed", "dotted"]).optional(),
     }),
-
-    createDefault: (id) => ({
+    fields: {
+      thickness: {
+        type: "number",
+        label: "두께",
+        min: 1,
+      },
+      color: {
+        type: "text",
+        label: "색상",
+        placeholder: "#dee2e6",
+      },
+      lineStyle: {
+        type: "select",
+        label: "선 스타일",
+        options: [
+          { label: "Solid", value: "solid" },
+          { label: "Dashed", value: "dashed" },
+          { label: "Dotted", value: "dotted" },
+        ],
+      },
+    },
+    defaultProps: {
+      thickness: 3,
+      color: "#dee2e6",
+      lineStyle: "solid",
+    },
+    createComponent: (id, props) => ({
       id,
       name: "Divider",
       type: "divider",
       order: 0,
-      props: {
-        thickness: 3,
-        color: "#dee2e6",
-        lineStyle: "solid",
-      },
-
+      props,
       style: {
         width: "100%",
       },
     }),
-
-    createForm: ({
-      values,
-      setComponentName,
-      setTitle,
-      setLinkType,
-      setValue,
-      setLinkNewWindow,
-    }) =>
-      createElement(LinkFields, {
-        componentName: values.componentName,
-        title: values.title,
-        linkType: values.linkType,
-        value: values.value,
-        newWindow: values.linkNewWindow,
-        onComponentNameChange: setComponentName,
-        onTitleChange: setTitle,
-        onLinkTypeChange: setLinkType,
-        onValueChange: setValue,
-        onNewWindowChange: setLinkNewWindow,
-      }),
-
-    editor: (context) => createElement(DividerEditor, context),
+    editor: (context) => createElement(RegistryFieldsEditor, context),
     canvas: (component) => {
       if (component.type !== "divider") {
         return null;
       }
-
       return createElement(DividerRenderer, {
         component,
       });
     },
-
     getSearchText: (component) => {
       if (component.type !== "divider") {
         return "";
       }
-
       return "divider 구분선 선";
     },
-
     exportHtml: exportDividerHtml,
   },
 
@@ -1212,46 +1149,41 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
     propsSchema: z.object({
       height: z.number().finite().nonnegative(),
     }),
-
-    createDefault: (id) => ({
+    fields: {
+      height: {
+        type: "number",
+        label: "높이",
+        min: 0,
+      },
+    },
+    defaultProps: {
+      height: 32,
+    },
+    createComponent: (id, props) => ({
       id,
       name: "Spacer",
       type: "spacer",
       order: 0,
-      props: {
-        height: 32,
-      },
-
+      props,
       style: {
         width: "100%",
       },
     }),
-
-    createForm: ({ values, setComponentName }) =>
-      createElement(ComponentNameField, {
-        value: values.componentName,
-        onChange: setComponentName,
-      }),
-
-    editor: (context) => createElement(SpacerEditor, context),
+    editor: (context) => createElement(RegistryFieldsEditor, context),
     canvas: (component) => {
       if (component.type !== "spacer") {
         return null;
       }
-
       return createElement(SpacerRenderer, {
         component,
       });
     },
-
     getSearchText: (component) => {
       if (component.type !== "spacer") {
         return "";
       }
-
       return "spacer 여백 공백";
     },
-
     exportHtml: exportSpacerHtml,
   },
 
@@ -1265,96 +1197,59 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
       language: z.string(),
       readOnly: z.boolean().optional(),
     }),
-
-    createDefault: (id) => ({
+    fields: {
+      value: {
+        type: "textarea",
+        label: "초기 코드",
+        placeholder: "코드를 입력하세요",
+      },
+      language: {
+        type: "select",
+        label: "언어",
+        options: [
+          { label: "JavaScript", value: "javascript" },
+          { label: "TypeScript", value: "typescript" },
+          { label: "HTML", value: "html" },
+          { label: "CSS", value: "css" },
+          { label: "JSON", value: "json" },
+        ],
+      },
+      readOnly: {
+        type: "checkbox",
+        label: "읽기 전용",
+      },
+    },
+    defaultProps: {
+      value: `const hello = "Hello World";\n\nconsole.log(hello);`,
+      language: "javascript",
+      readOnly: false,
+    },
+    createComponent: (id, props) => ({
       id,
       name: "CodeEditor",
       type: "codeEditor",
       order: 0,
-      props: {
-        value: `const hello = "Hello World";\n\nconsole.log(hello);`,
-        language: "javascript",
-        readOnly: false,
-      },
-
+      props,
       style: {
         width: "100%",
       },
-
       contentStyle: {
         width: "100%",
       },
     }),
-
-    applyCreateForm: (component, form) => {
-      if (component.type !== "codeEditor") {
-        return component;
-      }
-
-      return {
-        ...component,
-        props: {
-          ...component.props,
-          value: form.value || component.props.value,
-        },
-      };
-    },
-
-    createForm: ({ values, setComponentName, setValue }) =>
-      createElement(
-        "div",
-        null,
-
-        createElement(ComponentNameField, {
-          value: values.componentName,
-
-          onChange: setComponentName,
-        }),
-
-        createElement(
-          "div",
-          {
-            className: "mb-3",
-          },
-
-          createElement(
-            "label",
-            {
-              className: "form-label",
-            },
-            "초기 코드",
-          ),
-
-          createElement("textarea", {
-            className: "form-control font-monospace",
-
-            rows: 8,
-
-            value: values.value,
-
-            onChange: (event: ChangeEvent<HTMLTextAreaElement>) => {
-              setValue(event.target.value);
-            },
-          }),
-        ),
-      ),
-
     editor: (context) => createElement(CodeEditorEditor, context),
     canvas: (component) => {
       if (component.type !== "codeEditor") {
         return null;
       }
-
       return createElement(CodeEditorRenderer, {
         component,
       });
     },
-
     getSearchText: (component) => {
       if (component.type !== "codeEditor") {
         return "";
       }
-
       return [
         component.props.value,
         component.props.language,
@@ -1366,44 +1261,38 @@ export const componentRegistry: Record<ComponentType, ComponentRegistryItem> = {
         .filter(Boolean)
         .join(" ");
     },
-
     exportHtml: exportCodeEditorHtml,
   },
 };
 
-export const componentRegistryEntries = Object.entries(componentRegistry) as [
-  ComponentType,
-  ComponentRegistryItem,
-][];
+export const componentRegistryEntries = Object.entries(
+  componentRegistry,
+) as ComponentRegistryEntry[];
 
-export function createDefaultComponent(type: ComponentType): LayoutComponent {
-  const id = crypto.randomUUID();
-
-  return componentRegistry[type].createDefault(id);
+export function createDefaultComponent<T extends ComponentType>(
+  type: T,
+): ComponentOf<T> {
+  return createComponentFromProps(type, {});
 }
 
-export function createComponentFromForm(
-  type: ComponentType,
-  form: CreateComponentFormValues,
-): LayoutComponent {
-  const id = crypto.randomUUID();
+export function createComponentFromProps<T extends ComponentType>(
+  type: T,
+  props: Partial<ComponentProps<T>>,
+  name?: string,
+): ComponentOf<T> {
   const definition = componentRegistry[type];
-  let component = definition.createDefault(id);
-  const componentName = form.componentName.trim();
-
-  if (componentName) {
-    component = {
-      ...component,
-
-      name: componentName,
-    };
-  }
-
-  if (definition.applyCreateForm) {
-    component = definition.applyCreateForm(component, form);
-  }
-
-  return component;
+  const mergedProps = {
+    ...structuredClone(definition.defaultProps),
+    ...props,
+  } as ComponentProps<T>;
+  const component = definition.createComponent(
+    crypto.randomUUID(),
+    mergedProps,
+  );
+  return {
+    ...component,
+    name: name?.trim() || component.name,
+  };
 }
 
 export function getComponentDefinition(type: ComponentType) {
@@ -1444,11 +1333,4 @@ export function getComponentSearchText(component: LayoutComponent): string {
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
-}
-
-export function renderComponentCreateForm(
-  type: ComponentType,
-  context: CreateComponentFormContext,
-): ReactNode {
-  return componentRegistry[type].createForm(context);
 }

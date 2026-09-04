@@ -65,29 +65,14 @@ function LayoutEditor() {
   const {
     newType,
     setNewType,
-    newTitle,
-    setNewTitle,
-    newValue,
-    setNewValue,
-    newPlaceholder,
-    setNewPlaceholder,
-    newDirection,
-    setNewDirection,
-    newImagePreviewUrl,
-    setNewImagePreviewUrl,
-    newLinkType,
-    setNewLinkType,
-    newLinkNewWindow,
-    setNewLinkNewWindow,
     newComponentName,
     setNewComponentName,
-    newHeadingText,
-    setNewHeadingText,
-    newHeadingLevel,
-    setNewHeadingLevel,
     resetCreateForm,
     makeNewComponent,
     makeComponentByType,
+    newProps,
+    setNewProps,
+    changeNewType,
   } = useCreateComponentForm();
 
   const [showEditModal, setShowEditModal] = useState(
@@ -618,27 +603,11 @@ function LayoutEditor() {
       <CreateComponentModal
         open={showCreateModal}
         newType={newType}
-        setNewType={setNewType}
-        newTitle={newTitle}
-        setNewTitle={setNewTitle}
-        newValue={newValue}
-        setNewValue={setNewValue}
-        newPlaceholder={newPlaceholder}
-        setNewPlaceholder={setNewPlaceholder}
-        newDirection={newDirection}
-        setNewDirection={setNewDirection}
-        newImagePreviewUrl={newImagePreviewUrl}
-        setNewImagePreviewUrl={setNewImagePreviewUrl}
-        newLinkType={newLinkType}
-        setNewLinkType={setNewLinkType}
-        newLinkNewWindow={newLinkNewWindow}
-        setNewLinkNewWindow={setNewLinkNewWindow}
+        setNewType={changeNewType}
         newComponentName={newComponentName}
         setNewComponentName={setNewComponentName}
-        newHeadingText={newHeadingText}
-        setNewHeadingText={setNewHeadingText}
-        newHeadingLevel={newHeadingLevel}
-        setNewHeadingLevel={setNewHeadingLevel}
+        newProps={newProps}
+        setNewProps={setNewProps}
         onClose={closeCreateModal}
         onCreate={createComponent}
       />

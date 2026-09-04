@@ -17,6 +17,8 @@ import EditTextareaFields from "./fields/EditTextareaFields";
 import EditVideoFields from "./fields/EditVideoFields";
 
 import type { EditBasicContext } from "./types/editBasicContext";
+import { componentRegistry } from "../registry/componentRegistry";
+import FieldRenderer from "../../canvas/renderers";
 
 type ComponentOf<T extends ComponentType> = Extract<
   LayoutComponent,
@@ -612,5 +614,44 @@ export function ContainerEditor(context: EditBasicContext) {
         });
       }}
     />
+  );
+}
+
+export default function RegistryFieldsEditor({
+  component,
+  updateComponent,
+}: {
+  component: LayoutComponent;
+  updateComponent: (
+    updater: (current: LayoutComponent) => LayoutComponent,
+  ) => void;
+}) {
+  const fields = componentRegistry[component.type].fields;
+  if (!fields) {
+    return null;
+  }
+  return (
+    <>
+      {Object.entries(fields).map(([name, field]) => (
+        <FieldRenderer
+          key={name}
+          name={name}
+          field={field}
+          value={(component.props as Record<string, unknown>)[name]}
+          onChange={(value) => {
+            updateComponent(
+              (current) =>
+                ({
+                  ...current,
+                  props: {
+                    ...current.props,
+                    [name]: value,
+                  },
+                }) as LayoutComponent,
+            );
+          }}
+        />
+      ))}
+    </>
   );
 }

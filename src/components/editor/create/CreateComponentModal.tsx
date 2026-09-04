@@ -1,41 +1,16 @@
 import type { Dispatch, SetStateAction } from "react";
-
-import type {
-  ComponentType,
-  ContainerDirection,
-  HeadingLevel,
-  LinkType,
-} from "../../../types/types";
-
-import {
-  componentRegistryEntries,
-  renderComponentCreateForm,
-} from "../registry/componentRegistry";
+import type { ComponentType } from "../../../types/types";
+import { componentRegistryEntries } from "../registry/componentRegistry";
+import RegistryFieldsCreateForm from "./fields/RegistryFieldsCreateForm";
 
 type Props = {
   open: boolean;
   newType: ComponentType;
-  setNewType: Dispatch<SetStateAction<ComponentType>>;
-  newTitle: string;
-  setNewTitle: Dispatch<SetStateAction<string>>;
-  newValue: string;
-  setNewValue: Dispatch<SetStateAction<string>>;
-  newPlaceholder: string;
-  setNewPlaceholder: Dispatch<SetStateAction<string>>;
-  newDirection: ContainerDirection;
-  setNewDirection: Dispatch<SetStateAction<ContainerDirection>>;
-  newImagePreviewUrl: string;
-  setNewImagePreviewUrl: Dispatch<SetStateAction<string>>;
-  newLinkType: LinkType;
-  setNewLinkType: Dispatch<SetStateAction<LinkType>>;
-  newLinkNewWindow: boolean;
-  setNewLinkNewWindow: Dispatch<SetStateAction<boolean>>;
+  setNewType: (type: ComponentType) => void;
   newComponentName: string;
   setNewComponentName: Dispatch<SetStateAction<string>>;
-  newHeadingText: string;
-  setNewHeadingText: Dispatch<SetStateAction<string>>;
-  newHeadingLevel: HeadingLevel;
-  setNewHeadingLevel: Dispatch<SetStateAction<HeadingLevel>>;
+  newProps: Record<string, unknown>;
+  setNewProps: Dispatch<SetStateAction<Record<string, unknown>>>;
   onClose: () => void;
   onCreate: () => void;
 };
@@ -44,58 +19,16 @@ function CreateComponentModal({
   open,
   newType,
   setNewType,
-  newTitle,
-  setNewTitle,
-  newValue,
-  setNewValue,
-  newPlaceholder,
-  setNewPlaceholder,
-  newDirection,
-  setNewDirection,
-  newImagePreviewUrl,
-  setNewImagePreviewUrl,
-  newLinkType,
-  setNewLinkType,
-  newLinkNewWindow,
-  setNewLinkNewWindow,
   newComponentName,
   setNewComponentName,
-  newHeadingText,
-  setNewHeadingText,
-  newHeadingLevel,
-  setNewHeadingLevel,
+  newProps,
+  setNewProps,
   onClose,
   onCreate,
 }: Props) {
   if (!open) {
     return null;
   }
-
-  const createForm = renderComponentCreateForm(newType, {
-    values: {
-      componentName: newComponentName,
-      title: newTitle,
-      value: newValue,
-      placeholder: newPlaceholder,
-      direction: newDirection,
-      imagePreviewUrl: newImagePreviewUrl,
-      linkType: newLinkType,
-      linkNewWindow: newLinkNewWindow,
-      headingText: newHeadingText,
-      headingLevel: newHeadingLevel,
-    },
-
-    setComponentName: setNewComponentName,
-    setTitle: setNewTitle,
-    setValue: setNewValue,
-    setPlaceholder: setNewPlaceholder,
-    setDirection: setNewDirection,
-    setImagePreviewUrl: setNewImagePreviewUrl,
-    setLinkType: setNewLinkType,
-    setLinkNewWindow: setNewLinkNewWindow,
-    setHeadingText: setNewHeadingText,
-    setHeadingLevel: setNewHeadingLevel,
-  });
 
   return (
     <>
@@ -111,19 +44,17 @@ function CreateComponentModal({
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">컴포넌트 추가</h5>
-
               <button type="button" className="btn-close" onClick={onClose} />
             </div>
-
             <div className="modal-body">
               <div className="mb-3">
                 <label className="form-label">타입</label>
-
                 <select
                   className="form-select"
                   value={newType}
                   onChange={(event) => {
-                    setNewType(event.target.value as ComponentType);
+                    const type = event.target.value as ComponentType;
+                    setNewType(type);
                   }}
                 >
                   {componentRegistryEntries.map(([type, definition]) => (
@@ -133,10 +64,21 @@ function CreateComponentModal({
                   ))}
                 </select>
               </div>
-
-              {createForm}
+              <div className="mb-3">
+                <label className="form-label">컴포넌트명</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={newComponentName}
+                  onChange={(event) => setNewComponentName(event.target.value)}
+                />
+              </div>
+              <RegistryFieldsCreateForm
+                type={newType}
+                value={newProps}
+                onChange={setNewProps}
+              />
             </div>
-
             <div className="modal-footer">
               <button
                 type="button"
@@ -145,7 +87,6 @@ function CreateComponentModal({
               >
                 취소
               </button>
-
               <button
                 type="button"
                 className="btn btn-primary"
@@ -157,7 +98,6 @@ function CreateComponentModal({
           </div>
         </div>
       </div>
-
       <div
         className="modal-backdrop fade show"
         style={{
