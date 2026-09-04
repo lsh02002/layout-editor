@@ -331,7 +331,7 @@ export const componentRegistry: ComponentRegistry = {
       }
 
       return (
-        component.name?.trim() || component.props.text?.trim() || "Heading"
+        component.props.text?.trim() || component.name?.trim() || "Heading"
       );
     },
 
@@ -414,8 +414,8 @@ export const componentRegistry: ComponentRegistry = {
       }
 
       return (
-        component.name?.trim() ||
         component.props.value?.trim() ||
+        component.name?.trim() ||
         component.props.placeholder?.trim() ||
         "TextArea"
       );
@@ -504,8 +504,8 @@ export const componentRegistry: ComponentRegistry = {
         .trim();
 
       return (
-        component.name?.trim() ||
         text ||
+        component.name?.trim() ||
         component.props.placeholder?.trim() ||
         "Quill"
       );
@@ -583,7 +583,7 @@ export const componentRegistry: ComponentRegistry = {
       }
 
       return (
-        component.name?.trim() || component.props.title?.trim() || "Button"
+        component.props.title?.trim() || component.name?.trim() || "Button"
       );
     },
 
@@ -668,7 +668,7 @@ export const componentRegistry: ComponentRegistry = {
       }
 
       return (
-        component.name?.trim() || component.props.title?.trim() || "ScrollToTop"
+        component.props.title?.trim() || component.name?.trim() || "ScrollToTop"
       );
     },
 
@@ -1067,9 +1067,9 @@ export const componentRegistry: ComponentRegistry = {
       }
 
       return (
-        component.name?.trim() ||
-        component.props.title?.trim() ||
         component.props.value?.trim() ||
+        component.props.title?.trim() ||
+        component.name?.trim() ||
         "Link"
       );
     },
