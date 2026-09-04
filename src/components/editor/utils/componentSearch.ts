@@ -1,90 +1,5 @@
 import type { LayoutComponent } from "../../../types/types";
-
-export const getComponentSearchText = (component: LayoutComponent): string => {
-  const type = component.type.toLowerCase();
-  const componentName = component.name ?? "";
-
-  let content = "";
-
-  switch (component.type) {
-    case "button":
-      content = component.props.title ?? "";
-      break;
-
-    case "heading":
-      content = [
-        component.props.text,
-        `h${component.props.level}`,
-        "heading",
-        "제목",
-      ]
-        .filter(Boolean)
-        .join(" ");
-      break;
-
-    case "textarea":
-      content = [component.props.value, component.props.placeholder]
-        .filter(Boolean)
-        .join(" ");
-      break;
-
-    case "quill":
-      content = [
-        component.props.value
-          ?.replace(/<[^>]*>/g, " ")
-          .replace(/\s+/g, " ")
-          .trim(),
-        component.props.placeholder,
-      ]
-        .filter(Boolean)
-        .join(" ");
-      break;
-
-    case "image":
-      content = "image 이미지";
-      break;
-
-    case "imageSlider":
-      content = [
-        "image slider",
-        "slider",
-        "carousel",
-        "이미지 슬라이더",
-        "슬라이더",
-      ].join(" ");
-      break;
-
-    case "video":
-      content = [component.props.src, "video", "동영상", "영상"]
-        .filter(Boolean)
-        .join(" ");
-      break;
-
-    case "container":
-      content = "container 컨테이너";
-      break;
-
-    case "scrollToTopButton":
-      content = [component.props.title, "scrollToTop", "scroll top", "맨위로"]
-        .filter(Boolean)
-        .join(" ");
-      break;
-
-    case "link":
-      content = [
-        component.props.title,
-        component.props.value,
-        component.props.linkType,
-        "link",
-        "링크",
-      ]
-        .filter(Boolean)
-        .join(" ");
-      break;
-  }
-
-  return `${componentName} ${type} ${content}`.toLowerCase();
-};
+import { getComponentSearchText } from "../registry/componentRegistry";
 
 export const normalizeSearchText = (value: string): string =>
   value
@@ -108,7 +23,6 @@ export const filterLayerComponents = (
     component: LayoutComponent,
   ): LayoutComponent | null => {
     const searchText = normalizeSearchText(getComponentSearchText(component));
-
     const selfMatched = searchText.includes(keyword);
 
     if (component.type !== "container") {

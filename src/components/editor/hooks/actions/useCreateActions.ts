@@ -1,9 +1,6 @@
 import { useCallback } from "react";
-
 import type { LayoutComponent } from "../../../../types/types";
-
-import {
-  hasComponentType,
+import {  
   insertComponentRecursive,
 } from "../../utils/componentTree";
 
@@ -13,6 +10,7 @@ import type {
   InsertTarget,
   InsertTargetSetter,
 } from "../../../../types/types";
+import { canAddComponentType } from "../../utils/componentDisplayName";
 
 type Options = {
   components: LayoutComponent[];
@@ -53,10 +51,7 @@ export const useCreateActions = ({
       return;
     }
 
-    if (
-      newType === "scrollToTopButton" &&
-      hasComponentType(components, "scrollToTopButton")
-    ) {
+    if (!canAddComponentType(components, newType)) {
       alert("Scroll To Top Button은 한번만 등록 가능합니다.");
       return;
     }

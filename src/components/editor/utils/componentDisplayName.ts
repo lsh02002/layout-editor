@@ -1,26 +1,12 @@
-import type { LayoutComponent } from "../../../types/types";
+import type { LayoutComponent, ComponentType } from "../../../types/types";
+import { componentRegistry } from "../registry/componentRegistry";
 
-export const getComponentDisplayName = (component: LayoutComponent) => {
-  if (component.type === "textarea") {
-    return component.props.value || component.name || component.type;
-  }
+export function getComponentDisplayName(component: LayoutComponent): string {
+  const definition = componentRegistry[component.type];
+  const displayName = definition.getDisplayName?.(component);
 
-  if (component.type === "quill") {
-    const plainText = component.props.value
-      .replace(/<br\s*\/?>/gi, " ")
-      .replace(/<\/p>/gi, " ")
-      .replace(/<\/div>/gi, " ")
-      .replace(/<[^>]*>/g, "")
-      .replace(/&nbsp;/gi, " ")
-      .replace(/\u00A0/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    return plainText || component.name || component.type;
-  }
-
-  if (component.type === "heading") {
-    return component.props.text || component.name?.trim() || "Heading";
+  if (displayName?.trim()) {
+    return displayName.trim();
   }
 
   if (component.name?.trim()) {
@@ -32,8 +18,43 @@ export const getComponentDisplayName = (component: LayoutComponent) => {
     typeof component.props.title === "string" &&
     component.props.title.trim()
   ) {
-    return `${component.props.title.trim()} (${component.type})`;
+    return component.props.title.trim();
   }
 
-  return component.type;
-};
+  return definition.label;
+}
+
+export function getComponentMaxInstances(
+  type: ComponentType,
+): number | undefined {
+  return componentRegistry[type].maxInstances;
+}
+
+export function canAddComponentType(
+  components: LayoutComponent[],
+  type: ComponentType,
+): boolean {
+  const maxInstances = getComponentMaxInstances(type);
+
+  if (maxInstances === undefined) {
+    return true;
+  }
+
+  let count = 0;
+
+  const walk = (items: LayoutComponent[]) => {
+    for (const component of items) {
+      if (component.type === type) {
+        count += 1;
+      }
+
+      if (component.type === "container") {
+        walk(component.children);
+      }
+    }
+  };
+
+  walk(components);
+
+  return count < maxInstances;
+}

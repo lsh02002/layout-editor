@@ -348,20 +348,3 @@ export type SelectionSetter = Dispatch<SetStateAction<string | null>>;
 export type BooleanSetter = Dispatch<SetStateAction<boolean>>;
 export type InsertTargetSetter = Dispatch<SetStateAction<InsertTarget>>;
 export type FavoriteSetter = Dispatch<SetStateAction<FavoriteComponent[]>>;
-
-export const VALID_COMPONENT_TYPES = [
-  "button",
-  "heading",
-  "textarea",
-  "quill",
-  "image",
-  "video",
-  "link",
-  "container",
-  "divider",
-  "spacer",
-  "codeEditor",
-  "imageGallery",
-  "imageSlider",
-  "scrollToTopButton",
-] as const satisfies readonly ComponentType[];

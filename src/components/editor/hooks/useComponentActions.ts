@@ -7,7 +7,6 @@ import type {
 import type {
   BooleanSetter,
   CommitHistory,
-  EditValues,
   FavoriteSetter,
   InsertTarget,
   InsertTargetSetter,
@@ -35,6 +34,8 @@ type Options = {
   insertTarget: InsertTarget;
   setInsertTarget: InsertTargetSetter;
 
+  draftComponent: LayoutComponent | null;
+
   newType: LayoutComponent["type"];
   setNewType: (type: LayoutComponent["type"]) => void;
   resetCreateForm: () => void;
@@ -46,8 +47,6 @@ type Options = {
   setComponents: SetComponents;
 
   setFavoriteComponents: FavoriteSetter;
-
-  editValues: EditValues;
 
   templates: TemplateItem[];
   selectedTemplateId: string | null;
@@ -61,6 +60,7 @@ type Options = {
 
 export const useComponentActions = ({
   components,
+  draftComponent,
   selectedComponentIds,
   setSelectedComponentIds,
   setShowEditModal,
@@ -74,8 +74,6 @@ export const useComponentActions = ({
   loadComponentToEdit,
   commitHistory,
   setComponents,
-  setFavoriteComponents,
-  editValues,
   templates,
   selectedTemplateId,
   setSelectedTemplateId,
@@ -115,9 +113,8 @@ export const useComponentActions = ({
   });
 
   const editActions = useEditSaveActions({
-    editValues,
+    draftComponent,
     setComponents,
-    setFavoriteComponents,
   });
 
   const templateActions = useTemplateActions({

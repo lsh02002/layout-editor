@@ -19,7 +19,7 @@ import { useEditorShortcuts } from "./hooks/useEditorShortcuts";
 import { useProjectFiles } from "./hooks/useProjectFiles";
 import { useTemplates } from "./hooks/useTemplates";
 import { collectComponentCustomCss } from "./utils/customCssUtils";
-import { downloadHtmlFile } from "./utils/htmlExport";
+import { downloadHtmlFile } from "./utils/htmlexport/htmlExport";
 import { filterLayerComponents } from "./utils/componentSearch";
 import { type TemplateItem } from "../../types/types";
 
@@ -27,7 +27,11 @@ import { data } from "../../data/data";
 import { useComponentActions } from "./hooks/useComponentActions";
 import { useSnapLayout } from "./hooks/useSnapLayout";
 
-import type { CanvasViewport, LeftPanelTab } from "../../types/types";
+import type {
+  CanvasViewport,
+  LayoutComponent,
+  LeftPanelTab,
+} from "../../types/types";
 import { usePositionParent } from "./hooks/usePositionParent";
 import ComponentPanel from "./componentpanel/ComponentPanel";
 
@@ -94,96 +98,19 @@ function LayoutEditor() {
   );
 
   const {
-    editingComponentId,
+    draftComponent,
+    setDraftComponent,
     editType,
-    editTitle,
-    setEditTitle,
-    editValue,
-    setEditValue,
-    editPlaceholder,
-    setEditPlaceholder,
-    editDirection,
-    setEditDirection,
-    editDisabled,
-    setEditDisabled,
     editStyle,
     setEditStyle,
     editContentStyle,
     setEditContentStyle,
     editCustomCss,
     setEditCustomCss,
-    editImageUrl,
-    setEditImageUrl,
-    editImagePreviewUrl,
-    setEditImagePreviewUrl,
-
-    editGalleryUrls,
-    setEditGalleryUrls,
-    editGalleryColumns,
-    setEditGalleryColumns,
-    editGalleryGap,
-    setEditGalleryGap,
-    editGalleryObjectFit,
-    setEditGalleryObjectFit,
-    editGalleryBorderRadius,
-    setEditGalleryBorderRadius,
-
-    editSliderUrls,
-    setEditSliderUrls,
-    editSliderAutoplay,
-    setEditSliderAutoplay,
-    editSliderInterval,
-    setEditSliderInterval,
-    editSliderShowArrows,
-    setEditSliderShowArrows,
-    editSliderShowDots,
-    setEditSliderShowDots,
-    editSliderLoop,
-    setEditSliderLoop,
-
-    editLinkType,
-    setEditLinkType,
-    editLinkNewWindow,
-    setEditLinkNewWindow,
     editComponentName,
-    setEditComponentName,
-    editHeadingLevel,
-    setEditHeadingLevel,
     loadComponentToEdit,
     editLayout,
     setEditLayout,
-    // Divider and Spacer specific states
-    editDividerThickness,
-    setEditDividerThickness,
-    editDividerColor,
-    setEditDividerColor,
-    editDividerLineStyle,
-    setEditDividerLineStyle,
-    editSpacerHeight,
-    setEditSpacerHeight,
-
-    editContainerGap,
-    setEditContainerGap,
-    editContainerJustifyContent,
-    setEditContainerJustifyContent,
-    editContainerAlignItems,
-    setEditContainerAlignItems,
-    editContainerMaxWidth,
-    setEditContainerMaxWidth,
-
-    // Video
-    editVideoControls,
-    setEditVideoControls,
-    editVideoAutoplay,
-    setEditVideoAutoplay,
-    editVideoMuted,
-    setEditVideoMuted,
-    editVideoLoop,
-    setEditVideoLoop,
-
-    editCodeLanguage,
-    setEditCodeLanguage,
-
     resetEditForm,
   } = useEditComponentForm();
 
@@ -295,98 +222,6 @@ function LayoutEditor() {
     [templateFiles],
   );
 
-  const editValues = useMemo(
-    () => ({
-      editingComponentId,
-      editTitle,
-      editValue,
-      editPlaceholder,
-      editDirection,
-      editDisabled,
-      editStyle,
-      editContentStyle,
-      editCustomCss,
-      editImageUrl,
-
-      editGalleryUrls,
-      editGalleryColumns,
-      editGalleryGap,
-      editGalleryObjectFit,
-      editGalleryBorderRadius,
-
-      editSliderUrls,
-      editSliderAutoplay,
-      editSliderInterval,
-      editSliderShowArrows,
-      editSliderShowDots,
-      editSliderLoop,
-
-      editLinkType,
-      editLinkNewWindow,
-      editComponentName,
-      editHeadingLevel,
-      editDividerThickness,
-      editDividerColor,
-      editDividerLineStyle,
-      editSpacerHeight,
-
-      editContainerGap,
-      editContainerJustifyContent,
-      editContainerAlignItems,
-      editContainerMaxWidth,
-
-      editVideoControls,
-      editVideoAutoplay,
-      editVideoMuted,
-      editVideoLoop,
-
-      editCodeLanguage,
-
-      editLayout,
-    }),
-    [
-      editingComponentId,
-      editTitle,
-      editValue,
-      editPlaceholder,
-      editDirection,
-      editDisabled,
-      editStyle,
-      editContentStyle,
-      editCustomCss,
-      editImageUrl,
-      editGalleryUrls,
-      editGalleryColumns,
-      editGalleryGap,
-      editGalleryObjectFit,
-      editGalleryBorderRadius,
-      editSliderUrls,
-      editSliderAutoplay,
-      editSliderInterval,
-      editSliderShowArrows,
-      editSliderShowDots,
-      editSliderLoop,
-      editLinkType,
-      editLinkNewWindow,
-      editComponentName,
-      editHeadingLevel,
-      editDividerThickness,
-      editDividerColor,
-      editDividerLineStyle,
-      editSpacerHeight,
-      editContainerGap,
-      editContainerJustifyContent,
-      editContainerAlignItems,
-      editContainerMaxWidth,
-      editVideoControls,
-      editVideoAutoplay,
-      editVideoMuted,
-      editVideoLoop,
-      editCodeLanguage,
-      editLayout,
-    ],
-  );
-
   const {
     openCreateModal,
     closeCreateModal,
@@ -403,6 +238,7 @@ function LayoutEditor() {
     handleStyleApply,
   } = useComponentActions({
     components,
+    draftComponent,
     selectedComponentIds,
     setSelectedComponentIds,
     showEditModal,
@@ -423,7 +259,6 @@ function LayoutEditor() {
     setSelectedTemplateId,
     setEditLayout,
     snapLayout,
-    editValues,
     resetEditForm,
   });
 
@@ -498,6 +333,19 @@ function LayoutEditor() {
   const closeLayerPanel = useCallback(() => {
     setShowLayerPanel(false);
   }, []);
+
+  const handleDraftChange = useCallback(
+    (updater: (component: LayoutComponent) => LayoutComponent) => {
+      setDraftComponent((current) => {
+        if (!current) {
+          return current;
+        }
+
+        return updater(current);
+      });
+    },
+    [setDraftComponent],
+  );
 
   return (
     <>
@@ -800,77 +648,19 @@ function LayoutEditor() {
         isMobile={isMobile}
         showEditModal={showEditModal}
         setShowEditModal={setShowEditModal}
+        draftComponent={draftComponent}
+        updateDraftComponent={handleDraftChange}
         selectedComponentIds={selectedComponentIds}
+        editorSyncKey={editorSyncKey}
         editType={editType}
-        editTitle={editTitle}
-        setEditTitle={setEditTitle}
-        editValue={editValue}
-        setEditValue={setEditValue}
-        editPlaceholder={editPlaceholder}
-        setEditPlaceholder={setEditPlaceholder}
-        editDirection={editDirection}
-        setEditDirection={setEditDirection}
-        editDisabled={editDisabled}
-        setEditDisabled={setEditDisabled}
+        editComponentName={editComponentName}
         editStyle={editStyle}
         setEditStyle={setEditStyle}
         editContentStyle={editContentStyle}
         setEditContentStyle={setEditContentStyle}
         editCustomCss={editCustomCss}
         setEditCustomCss={setEditCustomCss}
-        editImageUrl={editImageUrl}
-        setEditImageUrl={setEditImageUrl}
-        editImagePreviewUrl={editImagePreviewUrl}
-        setEditImagePreviewUrl={setEditImagePreviewUrl}
-        editGalleryUrls={editGalleryUrls}
-        setEditGalleryUrls={setEditGalleryUrls}
-        editGalleryColumns={editGalleryColumns}
-        setEditGalleryColumns={setEditGalleryColumns}
-        editGalleryGap={editGalleryGap}
-        setEditGalleryGap={setEditGalleryGap}
-        editGalleryObjectFit={editGalleryObjectFit}
-        setEditGalleryObjectFit={setEditGalleryObjectFit}
-        editGalleryBorderRadius={editGalleryBorderRadius}
-        setEditGalleryBorderRadius={setEditGalleryBorderRadius}
-        editSliderUrls={editSliderUrls}
-        setEditSliderUrls={setEditSliderUrls}
-        editSliderAutoplay={editSliderAutoplay}
-        setEditSliderAutoplay={setEditSliderAutoplay}
-        editSliderInterval={editSliderInterval}
-        setEditSliderInterval={setEditSliderInterval}
-        editSliderShowArrows={editSliderShowArrows}
-        setEditSliderShowArrows={setEditSliderShowArrows}
-        editSliderShowDots={editSliderShowDots}
-        setEditSliderShowDots={setEditSliderShowDots}
-        editSliderLoop={editSliderLoop}
-        setEditSliderLoop={setEditSliderLoop}
-        editLinkType={editLinkType}
-        setEditLinkType={setEditLinkType}
-        editLinkNewWindow={editLinkNewWindow}
-        setEditLinkNewWindow={setEditLinkNewWindow}
-        editComponentName={editComponentName}
-        setEditComponentName={setEditComponentName}
-        editHeadingLevel={editHeadingLevel}
-        setEditHeadingLevel={setEditHeadingLevel}
-        editDividerThickness={editDividerThickness}
-        setEditDividerThickness={setEditDividerThickness}
-        editDividerColor={editDividerColor}
-        setEditDividerColor={setEditDividerColor}
-        editDividerLineStyle={editDividerLineStyle}
-        setEditDividerLineStyle={setEditDividerLineStyle}
-        editSpacerHeight={editSpacerHeight}
-        setEditSpacerHeight={setEditSpacerHeight}
-        /* Container specific props */
-        editContainerGap={editContainerGap}
-        setEditContainerGap={setEditContainerGap}
-        editContainerJustifyContent={editContainerJustifyContent}
-        setEditContainerJustifyContent={setEditContainerJustifyContent}
-        editContainerAlignItems={editContainerAlignItems}
-        setEditContainerAlignItems={setEditContainerAlignItems}
-        editContainerMaxWidth={editContainerMaxWidth}
-        setEditContainerMaxWidth={setEditContainerMaxWidth}
         resetEditPanelToSelected={resetEditPanelToSelected}
-        saveEditedComponent={saveEditedComponent}
         favoriteComponents={favoriteComponents}
         addSelectedComponentToFavorites={addSelectedComponentToFavorites}
         insertFavoriteComponent={insertFavoriteComponent}
@@ -883,20 +673,10 @@ function LayoutEditor() {
         selectedTemplateId={selectedTemplateId}
         setSelectedTemplateId={setSelectedTemplateId}
         onImmediateChange={updateSelectedComponentImmediate}
-        editorSyncKey={editorSyncKey}
         onStyleApply={handleStyleApply}
+        saveEditedComponent={saveEditedComponent}
         positionParentOptions={positionParentOptions}
         onPositionParentChange={handlePositionParentChange}
-        editVideoControls={editVideoControls}
-        setEditVideoControls={setEditVideoControls}
-        editVideoAutoplay={editVideoAutoplay}
-        setEditVideoAutoplay={setEditVideoAutoplay}
-        editVideoMuted={editVideoMuted}
-        setEditVideoMuted={setEditVideoMuted}
-        editVideoLoop={editVideoLoop}
-        setEditVideoLoop={setEditVideoLoop}
-        editCodeLanguage={editCodeLanguage}
-        setEditCodeLanguage={setEditCodeLanguage}
       />
     </>
   );

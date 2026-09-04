@@ -3,18 +3,14 @@ import type { Dispatch, SetStateAction } from "react";
 import type {
   ComponentType,
   ContainerDirection,
-  LinkType,
   HeadingLevel,
+  LinkType,
 } from "../../../types/types";
 
-import ButtonFields from "./fields/ButtonFields";
-import ContainerFields from "./fields/ContainerFields";
-import HeadingFields from "./fields/HeadingFields";
-import ImageFields from "./fields/ImageFields";
-import LinkFields from "./fields/LinkFields";
-import QuillFields from "./fields/QuillFields";
-import TextareaFields from "./fields/TextareaFields";
-import ComponentNameField from "./fields/ComponentNameField";
+import {
+  componentRegistryEntries,
+  renderComponentCreateForm,
+} from "../registry/componentRegistry";
 
 type Props = {
   open: boolean;
@@ -75,6 +71,32 @@ function CreateComponentModal({
     return null;
   }
 
+  const createForm = renderComponentCreateForm(newType, {
+    values: {
+      componentName: newComponentName,
+      title: newTitle,
+      value: newValue,
+      placeholder: newPlaceholder,
+      direction: newDirection,
+      imagePreviewUrl: newImagePreviewUrl,
+      linkType: newLinkType,
+      linkNewWindow: newLinkNewWindow,
+      headingText: newHeadingText,
+      headingLevel: newHeadingLevel,
+    },
+
+    setComponentName: setNewComponentName,
+    setTitle: setNewTitle,
+    setValue: setNewValue,
+    setPlaceholder: setNewPlaceholder,
+    setDirection: setNewDirection,
+    setImagePreviewUrl: setNewImagePreviewUrl,
+    setLinkType: setNewLinkType,
+    setLinkNewWindow: setNewLinkNewWindow,
+    setHeadingText: setNewHeadingText,
+    setHeadingLevel: setNewHeadingLevel,
+  });
+
   return (
     <>
       <div
@@ -100,149 +122,19 @@ function CreateComponentModal({
                 <select
                   className="form-select"
                   value={newType}
-                  onChange={(event) =>
-                    setNewType(event.target.value as ComponentType)
-                  }
+                  onChange={(event) => {
+                    setNewType(event.target.value as ComponentType);
+                  }}
                 >
-                  <option value="container">Container</option>
-                  <option value="heading">Heading</option>
-                  <option value="textarea">TextArea</option>
-                  <option value="quill">Quill Editor</option>
-                  <option value="button">Button</option>
-                  <option value="scrollToTopButton">
-                    Scroll To Top Button
-                  </option>
-                  <option value="image">Image</option>
-                  <option value="imageGallery">Image Gallery</option>
-                  <option value="imageSlider">Image Slider</option>
-                  <option value="video">Video</option>
-                  <option value="link">Link</option>
-                  <option value="divider">Divider</option>
-                  <option value="spacer">Spacer</option>
-                  <option value="codeEditor">Code Editor</option>
+                  {componentRegistryEntries.map(([type, definition]) => (
+                    <option key={type} value={type}>
+                      {definition.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
-              {(newType === "button" || newType === "scrollToTopButton") && (
-                <ButtonFields
-                  componentName={newComponentName}
-                  title={newTitle}
-                  onComponentNameChange={setNewComponentName}
-                  onTitleChange={setNewTitle}
-                />
-              )}
-
-              {newType === "heading" && (
-                <HeadingFields
-                  text={newHeadingText}
-                  level={newHeadingLevel}
-                  onTextChange={setNewHeadingText}
-                  onLevelChange={setNewHeadingLevel}
-                />
-              )}
-
-              {newType === "textarea" && (
-                <TextareaFields
-                  componentName={newComponentName}
-                  value={newValue}
-                  placeholder={newPlaceholder}
-                  onComponentNameChange={setNewComponentName}
-                  onValueChange={setNewValue}
-                  onPlaceholderChange={setNewPlaceholder}
-                />
-              )}
-
-              {newType === "quill" && (
-                <QuillFields
-                  componentName={newComponentName}
-                  value={newValue}
-                  placeholder={newPlaceholder}
-                  onComponentNameChange={setNewComponentName}
-                  onValueChange={setNewValue}
-                  onPlaceholderChange={setNewPlaceholder}
-                />
-              )}
-
-              {newType === "image" && (
-                <ImageFields
-                  componentName={newComponentName}
-                  previewUrl={newImagePreviewUrl}
-                  onComponentNameChange={setNewComponentName}
-                  onPreviewUrlChange={setNewImagePreviewUrl}
-                />
-              )}
-
-              {newType === "video" && (
-                <>
-                  <ComponentNameField
-                    value={newComponentName}
-                    onChange={setNewComponentName}
-                  />
-
-                  <div className="mb-3">
-                    <label className="form-label">동영상 URL</label>
-
-                    <input
-                      type="url"
-                      className="form-control"
-                      value={newValue}
-                      placeholder="https://example.com/video.mp4"
-                      onChange={(event) => setNewValue(event.target.value)}
-                    />
-                  </div>
-                </>
-              )}
-
-              {newType === "link" && (
-                <LinkFields
-                  componentName={newComponentName}
-                  title={newTitle}
-                  linkType={newLinkType}
-                  value={newValue}
-                  newWindow={newLinkNewWindow}
-                  onComponentNameChange={setNewComponentName}
-                  onTitleChange={setNewTitle}
-                  onLinkTypeChange={setNewLinkType}
-                  onValueChange={setNewValue}
-                  onNewWindowChange={setNewLinkNewWindow}
-                />
-              )}
-
-              {(newType === "divider" || newType === "spacer") && (
-                <ComponentNameField
-                  value={newComponentName}
-                  onChange={setNewComponentName}
-                />
-              )}
-
-              {newType === "codeEditor" && (
-                <>
-                  <ComponentNameField
-                    value={newComponentName}
-                    onChange={setNewComponentName}
-                  />
-
-                  <div className="mb-3">
-                    <label className="form-label">초기 코드</label>
-
-                    <textarea
-                      className="form-control font-monospace"
-                      rows={8}
-                      value={newValue}
-                      onChange={(e) => setNewValue(e.target.value)}
-                    />
-                  </div>
-                </>
-              )}
-
-              {newType === "container" && (
-                <ContainerFields
-                  componentName={newComponentName}
-                  direction={newDirection}
-                  onComponentNameChange={setNewComponentName}
-                  onDirectionChange={setNewDirection}
-                />
-              )}
+              {createForm}
             </div>
 
             <div className="modal-footer">

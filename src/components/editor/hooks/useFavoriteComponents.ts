@@ -9,10 +9,10 @@ import {
   cloneComponent,
   findComponentLocation,
   findComponentRecursive,
-  hasComponentType,
   insertComponentRecursive,
   normalizeOrder,
 } from "../utils/componentTree";
+import { canAddComponentType } from "../utils/componentDisplayName";
 
 type Options = {
   components: LayoutComponent[];
@@ -44,11 +44,8 @@ export const useFavoriteComponents = ({
       return;
     }
 
-    if (
-      component.type === "scrollToTopButton" &&
-      hasComponentType(components, component.type)
-    ) {
-      alert("Scroll To Top Button은 한번만 등록 가능합니다.");
+    if (!canAddComponentType(components, component.type)) {
+      alert("더 이상 추가할 수 없는 컴포넌트입니다.");
       return;
     }
 
@@ -75,6 +72,11 @@ export const useFavoriteComponents = ({
   const insertFavoriteComponent = useCallback(
     (favorite: FavoriteComponent) => {
       const cloned = cloneComponent(favorite.component);
+
+      if (!canAddComponentType(components, cloned.type)) {
+        alert("더 이상 추가할 수 없는 컴포넌트입니다.");
+        return;
+      }
 
       if (!primarySelectedId) {
         commitHistory((prev) => normalizeOrder([...prev, cloned]));

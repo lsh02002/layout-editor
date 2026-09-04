@@ -10,12 +10,7 @@ import type {
   ComponentType,
   FavoriteComponent,
   LayoutComponent,
-  LinkType,
   TemplateItem,
-  HeadingLevel,
-  ContainerAlignItems,
-  ContainerJustifyContent,
-  CodeLanguage,
 } from "../../../types/types";
 
 import type { EditTab } from "../hooks/useEditComponentForm";
@@ -30,6 +25,11 @@ type Props = {
   showEditModal: boolean;
   setShowEditModal: Dispatch<SetStateAction<boolean>>;
 
+  draftComponent?: LayoutComponent | null;
+  updateDraftComponent?: (
+    updater: (component: LayoutComponent) => LayoutComponent,
+  ) => void;
+
   selectedComponentIds: string[];
 
   /*
@@ -38,21 +38,7 @@ type Props = {
   editorSyncKey: number;
 
   editType: ComponentType;
-
-  editTitle: string;
-  setEditTitle: Dispatch<SetStateAction<string>>;
-
-  editValue: string;
-  setEditValue: Dispatch<SetStateAction<string>>;
-
-  editPlaceholder: string;
-  setEditPlaceholder: Dispatch<SetStateAction<string>>;
-
-  editDirection: "row" | "column";
-  setEditDirection: Dispatch<SetStateAction<"row" | "column">>;
-
-  editDisabled: boolean;
-  setEditDisabled: Dispatch<SetStateAction<boolean>>;
+  editComponentName: string;
 
   editStyle: CSSProperties;
   setEditStyle: Dispatch<SetStateAction<CSSProperties>>;
@@ -63,99 +49,21 @@ type Props = {
   editCustomCss: string;
   setEditCustomCss: Dispatch<SetStateAction<string>>;
 
-  // editTab: EditTab;
-  // setEditTab: Dispatch<SetStateAction<EditTab>>;
-
-  editImageUrl: string;
-  setEditImageUrl: Dispatch<SetStateAction<string>>;
-
-  editImagePreviewUrl: string;
-  setEditImagePreviewUrl: Dispatch<SetStateAction<string>>;
-
-  editGalleryUrls: string[];
-  setEditGalleryUrls: Dispatch<SetStateAction<string[]>>;
-  editGalleryColumns: number;
-  setEditGalleryColumns: Dispatch<SetStateAction<number>>;
-  editGalleryGap: number;
-  setEditGalleryGap: Dispatch<SetStateAction<number>>;
-  editGalleryObjectFit: "cover" | "contain" | "fill";
-  setEditGalleryObjectFit: Dispatch<
-    SetStateAction<"cover" | "contain" | "fill">
-  >;
-  editGalleryBorderRadius: number;
-  setEditGalleryBorderRadius: Dispatch<SetStateAction<number>>;
-
-  editSliderUrls: string[];
-  setEditSliderUrls: Dispatch<SetStateAction<string[]>>;
-  editSliderAutoplay: boolean;
-  setEditSliderAutoplay: Dispatch<SetStateAction<boolean>>;
-  editSliderInterval: number;
-  setEditSliderInterval: Dispatch<SetStateAction<number>>;
-  editSliderShowArrows: boolean;
-  setEditSliderShowArrows: Dispatch<SetStateAction<boolean>>;
-  editSliderShowDots: boolean;
-  setEditSliderShowDots: Dispatch<SetStateAction<boolean>>;
-  editSliderLoop: boolean;
-  setEditSliderLoop: Dispatch<SetStateAction<boolean>>;
-
-  editLinkType: LinkType;
-  setEditLinkType: Dispatch<SetStateAction<LinkType>>;
-
-  editLinkNewWindow: boolean;
-  setEditLinkNewWindow: Dispatch<SetStateAction<boolean>>;
-
-  editComponentName: string;
-  setEditComponentName: Dispatch<SetStateAction<string>>;
-
-  editHeadingLevel: HeadingLevel;
-  setEditHeadingLevel: Dispatch<SetStateAction<HeadingLevel>>;
-
-  editDividerThickness: number;
-  setEditDividerThickness: Dispatch<SetStateAction<number>>;
-
-  editDividerColor: string;
-  setEditDividerColor: Dispatch<SetStateAction<string>>;
-
-  editDividerLineStyle: "solid" | "dashed" | "dotted";
-  setEditDividerLineStyle: Dispatch<
-    SetStateAction<"solid" | "dashed" | "dotted">
-  >;
-
-  editSpacerHeight: number;
-  setEditSpacerHeight: Dispatch<SetStateAction<number>>;
-
-  editContainerGap: number;
-  setEditContainerGap: Dispatch<SetStateAction<number>>;
-  editContainerJustifyContent: ContainerJustifyContent;
-  setEditContainerJustifyContent: Dispatch<
-    SetStateAction<ContainerJustifyContent>
-  >;
-  editContainerAlignItems: ContainerAlignItems;
-  setEditContainerAlignItems: Dispatch<SetStateAction<ContainerAlignItems>>;
-  editContainerMaxWidth: number | undefined;
-  setEditContainerMaxWidth: Dispatch<SetStateAction<number | undefined>>;
-
   resetEditPanelToSelected: () => void;
 
   favoriteComponents: FavoriteComponent[];
-
   addSelectedComponentToFavorites: () => void;
-
   insertFavoriteComponent: (favorite: FavoriteComponent) => void;
-
   removeFavoriteComponent: (favoriteId: string) => void;
 
   editLayout: ComponentLayout;
-
   setEditLayout: Dispatch<SetStateAction<ComponentLayout>>;
-
   onLayoutChange: (id: string, layout: Partial<ComponentLayout>) => void;
 
   templateFiles: {
     name: string;
     data: TemplateItem;
   }[];
-
   setTemplateFiles: (
     files: {
       name: string;
@@ -164,7 +72,6 @@ type Props = {
   ) => void;
 
   selectedTemplateId: string | null;
-
   setSelectedTemplateId: (id: string | null) => void;
 
   onImmediateChange: (
@@ -184,20 +91,7 @@ type Props = {
     label: string;
     disabled?: boolean;
   }[];
-
   onPositionParentChange: (parentId: string | null) => void;
-
-  editVideoControls: boolean;
-  setEditVideoControls: Dispatch<SetStateAction<boolean>>;
-  editVideoAutoplay: boolean;
-  setEditVideoAutoplay: Dispatch<SetStateAction<boolean>>;
-  editVideoMuted: boolean;
-  setEditVideoMuted: Dispatch<SetStateAction<boolean>>;
-  editVideoLoop: boolean;
-  setEditVideoLoop: Dispatch<SetStateAction<boolean>>;
-
-  editCodeLanguage: CodeLanguage;
-  setEditCodeLanguage: Dispatch<SetStateAction<CodeLanguage>>;
 };
 
 function EditComponentPanel({
@@ -205,101 +99,22 @@ function EditComponentPanel({
   showEditModal,
   setShowEditModal,
 
-  selectedComponentIds,
+  draftComponent,
+  updateDraftComponent,
 
+  selectedComponentIds,
   editorSyncKey,
 
   editType,
-
-  editTitle,
-  setEditTitle,
-
-  editValue,
-  setEditValue,
-
-  editPlaceholder,
-  setEditPlaceholder,
-
-  editDirection,
-  setEditDirection,
-
-  editDisabled,
-  setEditDisabled,
+  editComponentName,
 
   editStyle,
   setEditStyle,
-
   editContentStyle,
   setEditContentStyle,
 
   editCustomCss,
   setEditCustomCss,
-
-  // editTab,
-  // setEditTab,
-
-  editImageUrl,
-  setEditImageUrl,
-
-  editImagePreviewUrl,
-  setEditImagePreviewUrl,
-
-  editGalleryUrls,
-  setEditGalleryUrls,
-  editGalleryColumns,
-  setEditGalleryColumns,
-  editGalleryGap,
-  setEditGalleryGap,
-  editGalleryObjectFit,
-  setEditGalleryObjectFit,
-  editGalleryBorderRadius,
-  setEditGalleryBorderRadius,
-
-  editSliderUrls,
-  setEditSliderUrls,
-  editSliderAutoplay,
-  setEditSliderAutoplay,
-  editSliderInterval,
-  setEditSliderInterval,
-  editSliderShowArrows,
-  setEditSliderShowArrows,
-  editSliderShowDots,
-  setEditSliderShowDots,
-  editSliderLoop,
-  setEditSliderLoop,
-
-  editLinkType,
-  setEditLinkType,
-
-  editLinkNewWindow,
-  setEditLinkNewWindow,
-
-  editComponentName,
-  setEditComponentName,
-
-  editHeadingLevel,
-  setEditHeadingLevel,
-
-  editDividerThickness,
-  setEditDividerThickness,
-
-  editDividerColor,
-  setEditDividerColor,
-
-  editDividerLineStyle,
-  setEditDividerLineStyle,
-
-  editSpacerHeight,
-  setEditSpacerHeight,
-
-  editContainerGap,
-  setEditContainerGap,
-  editContainerJustifyContent,
-  setEditContainerJustifyContent,
-  editContainerAlignItems,
-  setEditContainerAlignItems,
-  editContainerMaxWidth,
-  setEditContainerMaxWidth,
 
   resetEditPanelToSelected,
 
@@ -310,35 +125,19 @@ function EditComponentPanel({
 
   editLayout,
   setEditLayout,
-
   onLayoutChange,
 
   templateFiles,
   setTemplateFiles,
-
   selectedTemplateId,
   setSelectedTemplateId,
 
   onImmediateChange,
-
   onStyleApply,
-
   saveEditedComponent,
 
   positionParentOptions,
   onPositionParentChange,
-
-  editVideoControls,
-  setEditVideoControls,
-  editVideoAutoplay,
-  setEditVideoAutoplay,
-  editVideoMuted,
-  setEditVideoMuted,
-  editVideoLoop,
-  setEditVideoLoop,
-
-  editCodeLanguage,
-  setEditCodeLanguage,
 }: Props) {
   const { editTab, setEditTab } = useLogin();
   const isMultiSelected = selectedComponentIds?.length > 1;
@@ -497,85 +296,23 @@ function EditComponentPanel({
           ) : (
             <>
               {/* 기본 설정 */}
-              {editTab === "basic" && (
-                <EditBasicTab
-                  editType={editType}
-                  editTitle={editTitle}
-                  setEditTitle={setEditTitle}
-                  editValue={editValue}
-                  setEditValue={setEditValue}
-                  editPlaceholder={editPlaceholder}
-                  setEditPlaceholder={setEditPlaceholder}
-                  editDirection={editDirection}
-                  setEditDirection={setEditDirection}
-                  editDisabled={editDisabled}
-                  setEditDisabled={setEditDisabled}
-                  editContentStyle={editContentStyle}
-                  editImageUrl={editImageUrl}
-                  setEditImageUrl={setEditImageUrl}
-                  editImagePreviewUrl={editImagePreviewUrl}
-                  setEditImagePreviewUrl={setEditImagePreviewUrl}
-                  editGalleryUrls={editGalleryUrls}
-                  setEditGalleryUrls={setEditGalleryUrls}
-                  editGalleryColumns={editGalleryColumns}
-                  setEditGalleryColumns={setEditGalleryColumns}
-                  editGalleryGap={editGalleryGap}
-                  setEditGalleryGap={setEditGalleryGap}
-                  editGalleryObjectFit={editGalleryObjectFit}
-                  setEditGalleryObjectFit={setEditGalleryObjectFit}
-                  editGalleryBorderRadius={editGalleryBorderRadius}
-                  setEditGalleryBorderRadius={setEditGalleryBorderRadius}
-                  editSliderUrls={editSliderUrls}
-                  setEditSliderUrls={setEditSliderUrls}
-                  editSliderAutoplay={editSliderAutoplay}
-                  setEditSliderAutoplay={setEditSliderAutoplay}
-                  editSliderInterval={editSliderInterval}
-                  setEditSliderInterval={setEditSliderInterval}
-                  editSliderShowArrows={editSliderShowArrows}
-                  setEditSliderShowArrows={setEditSliderShowArrows}
-                  editSliderShowDots={editSliderShowDots}
-                  setEditSliderShowDots={setEditSliderShowDots}
-                  editSliderLoop={editSliderLoop}
-                  setEditSliderLoop={setEditSliderLoop}
-                  editLinkType={editLinkType}
-                  setEditLinkType={setEditLinkType}
-                  editLinkNewWindow={editLinkNewWindow}
-                  setEditLinkNewWindow={setEditLinkNewWindow}
-                  editComponentName={editComponentName}
-                  setEditComponentName={setEditComponentName}
-                  editHeadingLevel={editHeadingLevel}
-                  setEditHeadingLevel={setEditHeadingLevel}
-                  editDividerThickness={editDividerThickness}
-                  setEditDividerThickness={setEditDividerThickness}
-                  editDividerColor={editDividerColor}
-                  setEditDividerColor={setEditDividerColor}
-                  editDividerLineStyle={editDividerLineStyle}
-                  setEditDividerLineStyle={setEditDividerLineStyle}
-                  editSpacerHeight={editSpacerHeight}
-                  setEditSpacerHeight={setEditSpacerHeight}
-                  editContainerGap={editContainerGap}
-                  setEditContainerGap={setEditContainerGap}
-                  editContainerJustifyContent={editContainerJustifyContent}
-                  setEditContainerJustifyContent={
-                    setEditContainerJustifyContent
-                  }
-                  editContainerAlignItems={editContainerAlignItems}
-                  setEditContainerAlignItems={setEditContainerAlignItems}
-                  editContainerMaxWidth={editContainerMaxWidth}
-                  setEditContainerMaxWidth={setEditContainerMaxWidth}
-                  editVideoControls={editVideoControls}
-                  setEditVideoControls={setEditVideoControls}
-                  editVideoAutoplay={editVideoAutoplay}
-                  setEditVideoAutoplay={setEditVideoAutoplay}
-                  editVideoMuted={editVideoMuted}
-                  setEditVideoMuted={setEditVideoMuted}
-                  editVideoLoop={editVideoLoop}
-                  setEditVideoLoop={setEditVideoLoop}
-                  editCodeLanguage={editCodeLanguage}
-                  setEditCodeLanguage={setEditCodeLanguage}
-                  onImmediateChange={onImmediateChange}
-                />
-              )}
+              {editTab === "basic" &&
+                (draftComponent && updateDraftComponent ? (
+                  <EditBasicTab
+                    component={draftComponent}
+                    updateComponent={updateDraftComponent}
+                  />
+                ) : (
+                  <div
+                    className="text-secondary text-center"
+                    style={{
+                      padding: "40px 20px",
+                      fontSize: 13,
+                    }}
+                  >
+                    편집 데이터를 불러오는 중입니다.
+                  </div>
+                ))}
 
               {editTab === "style" && (
                 <EditStyleTab
