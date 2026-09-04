@@ -12,7 +12,6 @@ type HistoryUpdater = (prev: LayoutComponent[]) => LayoutComponent[];
 type Options = {
   selectedComponentIds: string[];
   setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
-  resetEditForm: () => void;
   initialComponents: LayoutComponent[];
 };
 
@@ -20,7 +19,6 @@ export const useComponentHistory = ({
   initialComponents,
   selectedComponentIds,
   setSelectedComponentIds,
-  resetEditForm,
 }: Options) => {
   const [history, setHistory] = useState<HistoryState>(() => ({
     past: [],
@@ -43,9 +41,8 @@ export const useComponentHistory = ({
       }
 
       setSelectedComponentIds(nextSelectedIds);
-      resetEditForm();
     },
-    [selectedComponentIds, setSelectedComponentIds, resetEditForm],
+    [selectedComponentIds, setSelectedComponentIds],
   );
 
   const commitHistory = useCallback((updater: HistoryUpdater) => {

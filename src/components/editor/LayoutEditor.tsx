@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import BuilderCanvas from "../canvas/BuilderCanvas";
 import LayerPanel from "./layerpanel/LayerPanel";
@@ -27,14 +27,10 @@ import { data } from "../../data/data";
 import { useComponentActions } from "./hooks/useComponentActions";
 import { useSnapLayout } from "./hooks/useSnapLayout";
 
-import type {
-  CanvasViewport,
-  LayoutComponent,
-  LeftPanelTab,
-} from "../../types/types";
+import type { CanvasViewport, LeftPanelTab } from "../../types/types";
 import { usePositionParent } from "./hooks/usePositionParent";
 import ComponentPanel from "./componentpanel/ComponentPanel";
-import { updateComponentRecursive } from "./utils/componentTree";
+import { findComponentRecursive } from "./utils/componentTree";
 
 function LayoutEditor() {
   const [previewMode, setPreviewMode] = useState(false);
@@ -99,8 +95,22 @@ function LayoutEditor() {
   );
 
   const {
+    components,
+    commitHistory,
+    setComponents,
+    resetHistory,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useComponentHistory({
+    initialComponents: data,
+    selectedComponentIds,
+    setSelectedComponentIds,
+  });
+
+  const {
     draftComponent,
-    setDraftComponent,
     editType,
     editStyle,
     setEditStyle,
@@ -112,8 +122,23 @@ function LayoutEditor() {
     loadComponentToEdit,
     editLayout,
     setEditLayout,
+    updateDraftComponent,
     resetEditForm,
-  } = useEditComponentForm();
+  } = useEditComponentForm({ setComponents });
+
+  useEffect(() => {
+    if (!draftComponent) {
+      return;
+    }
+
+    const component = findComponentRecursive(components, draftComponent.id);
+
+    if (component) {
+      return;
+    }
+
+    resetEditForm();
+  }, [components, draftComponent, resetEditForm]);
 
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [gridSize, setGridSize] = useState(10);
@@ -136,22 +161,6 @@ function LayoutEditor() {
   const [showProjectCssModal, setShowProjectCssModal] = useState(false);
 
   const [projectCssDraft, setProjectCssDraft] = useState("");
-
-  const {
-    components,
-    commitHistory,
-    setComponents,
-    resetHistory,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-  } = useComponentHistory({
-    initialComponents: data,
-    selectedComponentIds,
-    setSelectedComponentIds,
-    resetEditForm,
-  });
 
   const {
     lastAutoSavedAt,
@@ -334,24 +343,6 @@ function LayoutEditor() {
   const closeLayerPanel = useCallback(() => {
     setShowLayerPanel(false);
   }, []);
-
-  const handleDraftChange = useCallback(
-    (updater: (component: LayoutComponent) => LayoutComponent) => {
-      setDraftComponent((current) => {
-        if (!current) {
-          return current;
-        }
-        const next = updater(current);
-        
-        setComponents((components) =>
-          updateComponentRecursive(components, next.id, () => next),
-        );
-
-        return next;
-      });
-    },
-    [setComponents, setDraftComponent],
-  );
 
   return (
     <>
@@ -655,7 +646,7 @@ function LayoutEditor() {
         showEditModal={showEditModal}
         setShowEditModal={setShowEditModal}
         draftComponent={draftComponent}
-        updateDraftComponent={handleDraftChange}
+        updateDraftComponent={updateDraftComponent}
         selectedComponentIds={selectedComponentIds}
         editorSyncKey={editorSyncKey}
         editType={editType}

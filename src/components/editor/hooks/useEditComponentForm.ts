@@ -5,10 +5,18 @@ import type {
   ComponentType,
   LayoutComponent,
 } from "../../../types/types";
+import { updateComponentRecursive } from "../utils/componentTree";
 
 export type EditTab = "basic" | "style" | "css";
 
-export const useEditComponentForm = () => {
+export const useEditComponentForm = ({
+  setComponents,
+}: {
+  setComponents: (
+    updater: (components: LayoutComponent[]) => LayoutComponent[],
+    recordHistory?: boolean,
+  ) => void;
+}) => {
   const [draftComponent, setDraftComponent] = useState<LayoutComponent | null>(
     null,
   );
@@ -67,10 +75,18 @@ export const useEditComponentForm = () => {
           return current;
         }
 
-        return updater(current);
+        const next = updater(current);
+
+        setComponents(
+          (components) =>
+            updateComponentRecursive(components, next.id, () => next),
+          false,
+        );
+
+        return next;
       });
     },
-    [],
+    [setComponents],
   );
 
   const editComponentName = draftComponent?.name ?? "";
