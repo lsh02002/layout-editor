@@ -34,6 +34,7 @@ import type {
 } from "../../types/types";
 import { usePositionParent } from "./hooks/usePositionParent";
 import ComponentPanel from "./componentpanel/ComponentPanel";
+import { updateComponentRecursive } from "./utils/componentTree";
 
 function LayoutEditor() {
   const [previewMode, setPreviewMode] = useState(false);
@@ -340,11 +341,16 @@ function LayoutEditor() {
         if (!current) {
           return current;
         }
+        const next = updater(current);
+        
+        setComponents((components) =>
+          updateComponentRecursive(components, next.id, () => next),
+        );
 
-        return updater(current);
+        return next;
       });
     },
-    [setDraftComponent],
+    [setComponents, setDraftComponent],
   );
 
   return (
