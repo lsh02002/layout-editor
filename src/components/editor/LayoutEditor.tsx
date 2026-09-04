@@ -246,6 +246,7 @@ function LayoutEditor() {
     updateLayout,
     updateSelectedComponentImmediate,
     handleStyleApply,
+    handleCustomCssApply,
   } = useComponentActions({
     components,
     draftComponent,
@@ -671,6 +672,7 @@ function LayoutEditor() {
         setSelectedTemplateId={setSelectedTemplateId}
         onImmediateChange={updateSelectedComponentImmediate}
         onStyleApply={handleStyleApply}
+        onCustomCssApply={handleCustomCssApply}
         saveEditedComponent={saveEditedComponent}
         positionParentOptions={positionParentOptions}
         onPositionParentChange={handlePositionParentChange}

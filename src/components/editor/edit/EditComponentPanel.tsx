@@ -84,6 +84,8 @@ type Props = {
     value: CSSProperties[keyof CSSProperties],
   ) => void;
 
+  onCustomCssApply: (customCss: string) => void;
+
   saveEditedComponent: () => void;
 
   positionParentOptions: {
@@ -134,7 +136,7 @@ function EditComponentPanel({
 
   onImmediateChange,
   onStyleApply,
-  saveEditedComponent,
+  onCustomCssApply,
 
   positionParentOptions,
   onPositionParentChange,
@@ -341,7 +343,7 @@ function EditComponentPanel({
                 <EditCssTab
                   value={editCustomCss}
                   onValueChange={setEditCustomCss}
-                  onApply={saveEditedComponent}
+                  onApply={() => onCustomCssApply(editCustomCss)}
                 />
               )}
             </>

@@ -38,7 +38,24 @@ export const useStyleActions = ({
     [primarySelectedId, setComponents],
   );
 
+  const handleCustomCssApply = useCallback(
+    (customCss: string) => {
+      if (!primarySelectedId) {
+        return;
+      }
+
+      setComponents((items) =>
+        updateComponentRecursive(items, primarySelectedId, (component) => ({
+          ...component,
+          customCss,
+        })),
+      );
+    },
+    [primarySelectedId, setComponents],
+  );
+
   return {
     handleStyleApply,
+    handleCustomCssApply,
   };
 };
