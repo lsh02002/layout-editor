@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 
 import type { LayoutComponent, SetComponents } from "../../../../types/types";
+import { updateComponentRecursive } from "../../utils/componentTree";
 
 type Options = {
   draftComponent: LayoutComponent | null;
@@ -17,9 +18,7 @@ export const useEditSaveActions = ({
     }
 
     setComponents((prev) =>
-      prev.map((component) =>
-        component.id === draftComponent.id ? draftComponent : component,
-      ),
+      updateComponentRecursive(prev, draftComponent.id, () => draftComponent),
     );
   }, [draftComponent, setComponents]);
 
