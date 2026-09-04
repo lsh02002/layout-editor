@@ -36,6 +36,7 @@ function EditTextareaFields({
           rows={5}
           value={value}
           style={contentStyle}
+          placeholder={placeholder}
           onChange={(event) => onValueChange(event.target.value)}
         />
       </div>

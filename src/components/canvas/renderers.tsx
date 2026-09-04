@@ -9,7 +9,7 @@ import { FAKE_IMAGE_URL } from "../../data/data";
 export type CanvasComponent = Exclude<LayoutComponent, { type: "container" }>;
 
 export type CanvasComponentType = CanvasComponent["type"];
-    
+
 export type ComponentOf<T extends CanvasComponentType> = Extract<
   CanvasComponent,
   { type: T }
@@ -85,7 +85,7 @@ export function HeadingRenderer({
         ...component.contentStyle,
       }}
     >
-      {component.props.text}
+      {component.props.text || "제목을 입력하세요"}
     </Tag>
   );
 }
@@ -140,19 +140,35 @@ export function QuillRenderer({
 }: {
   component: ComponentOf<"quill">;
 }) {
+  function isQuillEmpty(value: string) {
+    return (
+      value
+        .replace(/<br\s*\/?>/gi, "")
+        .replace(/<\/p>/gi, "")
+        .replace(/<\/div>/gi, "")
+        .replace(/<[^>]*>/g, "")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/\u00A0/g, " ")
+        .trim().length === 0
+    );
+  }
+
+  const isEmpty = isQuillEmpty(component.props.value ?? "");
+
   return (
     <div
       style={{
         ...component.contentStyle,
         pointerEvents: "none",
         wordBreak: "break-word",
+        minHeight: "1.5em",
       }}
       dangerouslySetInnerHTML={{
-        __html:
-          component.props.value ||
-          `<span style="color:#6c757d">${
-            component.props.placeholder || "본문을 입력하세요."
-          }</span>`,
+        __html: isEmpty
+          ? `<span style="color:#6c757d">${
+              component.props.placeholder || "본문을 입력하세요."
+            }</span>`
+          : component.props.value,
       }}
     />
   );

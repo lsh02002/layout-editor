@@ -28,7 +28,11 @@ function EditQuillFields({
       <div className="mb-3">
         <label className="form-label">내용</label>
 
-        <QuillEditor data={value} setData={onValueChange} />
+        <QuillEditor
+          data={value}
+          setData={onValueChange}
+          placeholder={placeholder}
+        />
       </div>
 
       <div className="mb-3">
