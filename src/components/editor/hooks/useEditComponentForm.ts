@@ -77,8 +77,10 @@ export const useEditComponentForm = ({
 
         const next = updater(current);
 
-        setComponents((components) =>
-          updateComponentRecursive(components, next.id, () => next),
+        setComponents(
+          (components) =>
+            updateComponentRecursive(components, next.id, () => next),
+          false,
         );
 
         return next;

@@ -299,6 +299,7 @@ function EditComponentPanel({
               {editTab === "basic" &&
                 (draftComponent && updateDraftComponent ? (
                   <EditBasicTab
+                    key={`${draftComponent.id}-${editorSyncKey}`}
                     component={draftComponent}
                     updateComponent={updateDraftComponent}
                   />
