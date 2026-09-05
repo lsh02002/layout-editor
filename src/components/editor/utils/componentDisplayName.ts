@@ -1,33 +1,27 @@
 import type { LayoutComponent, ComponentType } from "../../../types/types";
-import { componentRegistry } from "../registry/componentRegistry";
+import {
+  componentRegistry,
+  type ComponentRegistryShape,
+} from "../registry/componentRegistry";
 
 export function getComponentDisplayName(component: LayoutComponent): string {
-  const definition = componentRegistry[component.type];
-  const displayName = definition.getDisplayName?.(component);
+  const definition = componentRegistry[
+    component.type as ComponentType
+  ] as ComponentRegistryShape;
 
-  if (displayName?.trim()) {
-    return displayName.trim();
-  }
-
-  if (component.name?.trim()) {
-    return component.name.trim();
-  }
-
-  if (
-    "title" in component.props &&
-    typeof component.props.title === "string" &&
-    component.props.title.trim()
-  ) {
-    return component.props.title.trim();
-  }
-
-  return definition.label;
+  return (
+    definition.getDisplayName?.(component) ??
+    component.name?.trim() ??
+    definition.label
+  );
 }
 
 export function getComponentMaxInstances(
   type: ComponentType,
 ): number | undefined {
-  return componentRegistry[type].maxInstances;
+  const definition = componentRegistry[type] as ComponentRegistryShape;
+
+  return definition.maxInstances;
 }
 
 export function canAddComponentType(

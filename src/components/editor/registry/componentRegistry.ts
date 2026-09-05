@@ -112,7 +112,7 @@ type RegistryCreatedComponent = {
   [key: string]: unknown;
 };
 
-type ComponentRegistryShape = {
+export type ComponentRegistryShape = {
   label: string;
   description: string;
   icon: LucideIcon;

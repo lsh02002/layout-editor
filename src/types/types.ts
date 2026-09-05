@@ -49,6 +49,7 @@ export type BaseComponent<
   type: TType;
   order: number;
   props: TProps;
+  layout?: ComponentLayout;
   style?: CSSProperties;
   contentStyle?: CSSProperties;
   customCss?: string;
