@@ -37,6 +37,11 @@ export type ComponentField =
   | {
       type: "checkbox";
       label: string;
+    }
+  | {
+      type: "radio";
+      label: string;
+      options: FieldOption[];
     };
 
 export type RegistryCreatedComponent<TType extends string = string> = {

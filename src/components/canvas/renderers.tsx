@@ -411,7 +411,7 @@ export default function FieldRenderer({
       </div>
     );
   }
-  
+
   if (field.type === "textarea") {
     return (
       <div className="mb-3">
@@ -428,6 +428,7 @@ export default function FieldRenderer({
       </div>
     );
   }
+
   if (field.type === "number") {
     return (
       <div className="mb-3">
@@ -446,6 +447,7 @@ export default function FieldRenderer({
       </div>
     );
   }
+
   if (field.type === "select") {
     return (
       <div className="mb-3">
@@ -474,6 +476,7 @@ export default function FieldRenderer({
       </div>
     );
   }
+
   if (field.type === "checkbox") {
     return (
       <div className="form-check mb-3">
@@ -487,6 +490,38 @@ export default function FieldRenderer({
         <label className="form-check-label" htmlFor={`field-${name}`}>
           {field.label}
         </label>
+      </div>
+    );
+  }
+
+  if (field.type === "radio") {
+    return (
+      <div className="mb-3">
+        <label className="form-label">{field.label}</label>
+        <div>
+          {field.options.map((option) => (
+            <div
+              className="form-check form-check-inline"
+              key={String(option.value)}
+            >
+              <input
+                id={`field-${name}-${option.value}`}
+                type="radio"
+                className="form-check-input"
+                name={`field-${name}`}
+                value={String(option.value)}
+                checked={value === option.value}
+                onChange={() => onChange(option.value)}
+              />
+              <label
+                className="form-check-label"
+                htmlFor={`field-${name}-${option.value}`}
+              >
+                {option.label}
+              </label>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
