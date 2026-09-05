@@ -40,16 +40,19 @@ export type CodeLanguage =
   | "typescript"
   | "json";
 
-interface BaseComponent {
+export type BaseComponent<
+  TType extends string = string,
+  TProps = Record<string, unknown>,
+> = {
   id: string;
-  name?: string;
+  name: string;
+  type: TType;
   order: number;
-  layout?: ComponentLayout;
+  props: TProps;
   style?: CSSProperties;
   contentStyle?: CSSProperties;
   customCss?: string;
-}
-
+};
 export interface ButtonComponent extends BaseComponent {
   type: "button";
 
@@ -142,7 +145,6 @@ export interface ContainerComponent extends BaseComponent {
     alignItems?: ContainerAlignItems;
     maxWidth?: number;
   };
-
   children: LayoutComponent[];
 }
 

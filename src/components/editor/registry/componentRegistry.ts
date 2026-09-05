@@ -18,12 +18,8 @@ import {
 } from "lucide-react";
 
 import { z } from "zod";
-
-import type { ComponentType, LayoutComponent } from "../../../types/types";
-
+import type { LayoutComponent } from "../../../types/types";
 import { FAKE_IMAGE_SLIDER_URLS, FAKE_IMAGE_URL } from "../../../data/data";
-
-import type { EditBasicContext } from "../edit/types/editBasicContext";
 
 import RegistryFieldsEditor, {
   CodeEditorEditor,
@@ -70,7 +66,8 @@ import {
   exportVideoHtml,
 } from "../utils/htmlexport/htmlExporters";
 
-import type { HtmlExporter } from "../utils/htmlexport/htmlExport";
+import type { EditBasicContext } from "../edit/types/editBasicContext";
+import type { HtmlExporter } from "../utils/htmlexport/htmlExportTypes";
 
 type FieldOption<T extends string | number = string | number> = {
   label: string;
@@ -106,13 +103,6 @@ export type ComponentField =
       label: string;
     };
 
-type ComponentOf<T extends ComponentType> = Extract<
-  LayoutComponent,
-  { type: T }
->;
-
-type ComponentProps<T extends ComponentType> = ComponentOf<T>["props"];
-
 type TextField = Extract<ComponentField, { type: "text" }>;
 type TextareaField = Extract<ComponentField, { type: "textarea" }>;
 type NumberField = Extract<ComponentField, { type: "number" }>;
@@ -137,11 +127,19 @@ type ComponentFieldForValue<T> =
           ? TextField
           : ComponentField;
 
-type ComponentFields<T extends ComponentType> = Partial<{
+type ComponentOf<T extends LayoutComponent["type"]> = Extract<
+  LayoutComponent,
+  { type: T }
+>;
+
+type ComponentProps<T extends LayoutComponent["type"]> =
+  ComponentOf<T>["props"];
+
+type ComponentFields<T extends LayoutComponent["type"]> = Partial<{
   [K in keyof ComponentProps<T>]: ComponentFieldForValue<ComponentProps<T>[K]>;
 }>;
 
-type ComponentRegistryItem<T extends ComponentType> = {
+type ComponentRegistryItem<T extends LayoutComponent["type"]> = {
   label: string;
   description: string;
   icon: LucideIcon;
@@ -158,15 +156,11 @@ type ComponentRegistryItem<T extends ComponentType> = {
   exportHtml: HtmlExporter;
 };
 
-type ComponentRegistry = {
-  [T in ComponentType]: ComponentRegistryItem<T>;
+type ComponentRegistryShape = {
+  [T in LayoutComponent["type"]]: ComponentRegistryItem<T>;
 };
 
-type ComponentRegistryEntry = {
-  [T in ComponentType]: [T, ComponentRegistryItem<T>];
-}[ComponentType];
-
-export const componentRegistry: ComponentRegistry = {
+export const componentRegistry = {
   container: {
     label: "Container",
     description: "컴포넌트를 묶는 영역",
@@ -303,7 +297,8 @@ export const componentRegistry: ComponentRegistry = {
       props,
     }),
 
-    editor: (context) => createElement(RegistryFieldsEditor, context),
+    editor: (context): ReactNode =>
+      createElement(RegistryFieldsEditor, context),
     canvas: (component) => {
       if (component.type !== "heading") {
         return null;
@@ -391,7 +386,8 @@ export const componentRegistry: ComponentRegistry = {
         width: "100%",
       },
     }),
-    editor: (context) => createElement(RegistryFieldsEditor, context),
+    editor: (context): ReactNode =>
+      createElement(RegistryFieldsEditor, context),
     canvas: (component) => {
       if (component.type !== "textarea") {
         return null;
@@ -470,7 +466,7 @@ export const componentRegistry: ComponentRegistry = {
         width: "100%",
       },
     }),
-    editor: (context) => createElement(QuillEditor, context),
+    editor: (context): ReactNode => createElement(QuillEditor, context),
     canvas: (component) => {
       if (component.type !== "quill") {
         return null;
@@ -560,7 +556,8 @@ export const componentRegistry: ComponentRegistry = {
         width: "100%",
       },
     }),
-    editor: (context) => createElement(RegistryFieldsEditor, context),
+    editor: (context): ReactNode =>
+      createElement(RegistryFieldsEditor, context),
     canvas: (component) => {
       if (component.type !== "button") {
         return null;
@@ -641,7 +638,8 @@ export const componentRegistry: ComponentRegistry = {
         zIndex: 1400,
       },
     }),
-    editor: (context) => createElement(ScrollToTopButtonEditor, context),
+    editor: (context): ReactNode =>
+      createElement(ScrollToTopButtonEditor, context),
     canvas: (component) => {
       if (component.type !== "scrollToTopButton") {
         return null;
@@ -716,7 +714,7 @@ export const componentRegistry: ComponentRegistry = {
         width: "100%",
       },
     }),
-    editor: (context) => createElement(ImageEditor, context),
+    editor: (context): ReactNode => createElement(ImageEditor, context),
     canvas: (component) => {
       if (component.type !== "image") {
         return null;
@@ -793,7 +791,7 @@ export const componentRegistry: ComponentRegistry = {
         width: "100%",
       },
     }),
-    editor: (context) => createElement(ImageGalleryEditor, context),
+    editor: (context): ReactNode => createElement(ImageGalleryEditor, context),
     canvas: (component) => {
       if (component.type !== "imageGallery") {
         return null;
@@ -870,7 +868,7 @@ export const componentRegistry: ComponentRegistry = {
         width: "100%",
       },
     }),
-    editor: (context) => createElement(ImageSliderEditor, context),
+    editor: (context): ReactNode => createElement(ImageSliderEditor, context),
     canvas: (component) => {
       if (component.type !== "imageSlider") {
         return null;
@@ -950,7 +948,7 @@ export const componentRegistry: ComponentRegistry = {
         borderRadius: 8,
       },
     }),
-    editor: (context) => createElement(VideoEditor, context),
+    editor: (context): ReactNode => createElement(VideoEditor, context),
     canvas: (component) => {
       if (component.type !== "video") {
         return null;
@@ -1034,7 +1032,7 @@ export const componentRegistry: ComponentRegistry = {
         cursor: "pointer",
       },
     }),
-    editor: (context) => createElement(LinkEditor, context),
+    editor: (context): ReactNode => createElement(LinkEditor, context),
     canvas: (component) => {
       if (component.type !== "link") {
         return null;
@@ -1123,7 +1121,8 @@ export const componentRegistry: ComponentRegistry = {
         width: "100%",
       },
     }),
-    editor: (context) => createElement(RegistryFieldsEditor, context),
+    editor: (context): ReactNode =>
+      createElement(RegistryFieldsEditor, context),
     canvas: (component) => {
       if (component.type !== "divider") {
         return null;
@@ -1169,7 +1168,8 @@ export const componentRegistry: ComponentRegistry = {
         width: "100%",
       },
     }),
-    editor: (context) => createElement(RegistryFieldsEditor, context),
+    editor: (context): ReactNode =>
+      createElement(RegistryFieldsEditor, context),
     canvas: (component) => {
       if (component.type !== "spacer") {
         return null;
@@ -1237,7 +1237,7 @@ export const componentRegistry: ComponentRegistry = {
         width: "100%",
       },
     }),
-    editor: (context) => createElement(CodeEditorEditor, context),
+    editor: (context): ReactNode => createElement(CodeEditorEditor, context),
     canvas: (component) => {
       if (component.type !== "codeEditor") {
         return null;
@@ -1263,24 +1263,32 @@ export const componentRegistry: ComponentRegistry = {
     },
     exportHtml: exportCodeEditorHtml,
   },
-};
+} satisfies ComponentRegistryShape;
+
+export type ComponentRegistry = typeof componentRegistry;
+
+type ComponentRegistryEntry = {
+  [T in LayoutComponent["type"]]: [T, ComponentRegistry[T]];
+}[LayoutComponent["type"]];
 
 export const componentRegistryEntries = Object.entries(
   componentRegistry,
 ) as ComponentRegistryEntry[];
 
-export function createDefaultComponent<T extends ComponentType>(
+export function createDefaultComponent<T extends LayoutComponent["type"]>(
   type: T,
 ): ComponentOf<T> {
   return createComponentFromProps(type, {});
 }
 
-export function createComponentFromProps<T extends ComponentType>(
+export function createComponentFromProps<T extends LayoutComponent["type"]>(
   type: T,
   props: Partial<ComponentProps<T>>,
   name?: string,
 ): ComponentOf<T> {
-  const definition = componentRegistry[type];
+  const definition = componentRegistry[
+    type
+  ] as unknown as ComponentRegistryItem<T>;
   const mergedProps = {
     ...structuredClone(definition.defaultProps),
     ...props,
@@ -1295,7 +1303,7 @@ export function createComponentFromProps<T extends ComponentType>(
   };
 }
 
-export function getComponentDefinition(type: ComponentType) {
+export function getComponentDefinition(type: LayoutComponent["type"]) {
   return componentRegistry[type];
 }
 
@@ -1304,7 +1312,10 @@ export function renderComponentEditor(context: EditBasicContext): ReactNode {
 }
 
 export function renderComponentCanvas(component: LayoutComponent): ReactNode {
-  const renderer = componentRegistry[component.type].canvas;
+  const definition = componentRegistry[component.type] as ComponentRegistryItem<
+    typeof component.type
+  >;
+  const renderer = definition.canvas;
 
   if (!renderer) {
     return null;
@@ -1320,7 +1331,9 @@ export function validateComponentProps(component: LayoutComponent) {
 }
 
 export function getComponentSearchText(component: LayoutComponent): string {
-  const definition = componentRegistry[component.type];
+  const definition = componentRegistry[
+    component.type
+  ] as unknown as ComponentRegistryItem<typeof component.type>;
   const content = definition.getSearchText?.(component) ?? "";
 
   return [

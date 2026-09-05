@@ -3,15 +3,6 @@ import { codeHighlight } from "../codeHighlight";
 import { componentRegistry } from "../../registry/componentRegistry";
 import { collectComponentCustomCss } from "../customCssUtils";
 
-export type HtmlExportContext = {
-  renderComponent: (component: LayoutComponent) => Promise<string>;
-};
-
-export type HtmlExporter = (
-  component: LayoutComponent,
-  context: HtmlExportContext,
-) => string | Promise<string>;
-
 const componentToHtml = async (component: LayoutComponent): Promise<string> => {
   const definition = componentRegistry[component.type];
 
