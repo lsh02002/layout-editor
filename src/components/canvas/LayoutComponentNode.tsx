@@ -239,10 +239,10 @@ function LayoutComponentNode({
     zIndex: isAbsolute ? 1000 : undefined,
     width: isAbsolute ? "max-content" : "100%",
     minWidth: 0,
-    maxWidth: containerMaxWidth
-      ? containerMaxWidth
-      : isAbsolute
-        ? "none"
+    maxWidth: isAbsolute
+      ? "none"
+      : containerMaxWidth
+        ? containerMaxWidth
         : "100%",
     marginLeft: containerMaxWidth ? "auto" : undefined,
     marginRight: containerMaxWidth ? "auto" : undefined,
