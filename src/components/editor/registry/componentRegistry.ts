@@ -146,7 +146,7 @@ type ComponentRegistryItem<T extends ComponentType> = {
   description: string;
   icon: LucideIcon;
   supportsDisabled: boolean;
-  propsSchema: z.ZodType;
+  propsSchema: z.ZodType<ComponentProps<T>>;
   maxInstances?: number;
   fields: ComponentFields<T>;
   defaultProps: ComponentProps<T>;
@@ -175,8 +175,12 @@ export const componentRegistry: ComponentRegistry = {
     propsSchema: z.object({
       direction: z.enum(["row", "column"]).optional(),
       gap: z.number().finite().optional(),
-      justifyContent: z.string().optional(),
-      alignItems: z.string().optional(),
+      justifyContent: z
+        .enum(["flex-start", "center", "flex-end", "space-between"])
+        .optional(),
+      alignItems: z
+        .enum(["stretch", "flex-start", "center", "flex-end"])
+        .optional(),
       maxWidth: z.number().finite().positive().optional(),
     }),
     fields: {
@@ -522,12 +526,10 @@ export const componentRegistry: ComponentRegistry = {
     propsSchema: z.object({
       title: z.string(),
       disabled: z.boolean().optional(),
-      action: z
-        .object({
-          type: z.string(),
-          payload: z.unknown().nullable(),
-        })
-        .optional(),
+      action: z.object({
+        type: z.enum(["none", "submit", "reset", "navigate", "scrollToTop"]),
+        payload: z.string().nullable().optional(),
+      }),
     }),
     fields: {
       title: {
@@ -599,12 +601,10 @@ export const componentRegistry: ComponentRegistry = {
     propsSchema: z.object({
       title: z.string(),
       disabled: z.boolean().optional(),
-      action: z
-        .object({
-          type: z.string(),
-          payload: z.unknown().nullable(),
-        })
-        .optional(),
+      action: z.object({
+        type: z.enum(["scrollToTop"]),
+        payload: z.string().nullable().optional(),
+      }),
     }),
 
     fields: {
@@ -977,7 +977,7 @@ export const componentRegistry: ComponentRegistry = {
     supportsDisabled: true,
     propsSchema: z.object({
       title: z.string(),
-      linkType: z.string(),
+      linkType: z.enum(["url", "email", "tel"]),
       value: z.string(),
       newWindow: z.boolean().optional(),
       disabled: z.boolean().optional(),
@@ -1194,7 +1194,7 @@ export const componentRegistry: ComponentRegistry = {
     supportsDisabled: true,
     propsSchema: z.object({
       value: z.string(),
-      language: z.string(),
+      language: z.enum(["css", "html", "javascript", "typescript", "json"]),
       readOnly: z.boolean().optional(),
     }),
     fields: {
