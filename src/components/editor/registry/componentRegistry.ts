@@ -1302,6 +1302,21 @@ export const componentRegistry = {
         createElement("div", null, props.content),
       );
     },
+    getSearchText: (component) => {
+      const props = component.props as {
+        title: string;
+        content: string;
+      };
+      return [props.title, props.content, "card", "카드"]
+        .filter(Boolean)
+        .join(" ");
+    },
+    getDisplayName: (component) => {
+      const props = component.props as {
+        title: string;
+      };
+      return props.title?.trim() || component.name?.trim() || "Card";
+    },
     exportHtml: () => "",
   },
 
@@ -1372,6 +1387,21 @@ export const componentRegistry = {
         },
         props.text,
       );
+    },
+    getSearchText: (component) => {
+      const props = component.props as {
+        text: string;
+        variant: string;
+      };
+      return [props.text, props.variant, "badge", "배지"]
+        .filter(Boolean)
+        .join(" ");
+    },
+    getDisplayName: (component) => {
+      const props = component.props as {
+        text: string;
+      };
+      return props.text?.trim() || component.name?.trim() || "Badge";
     },
     exportHtml: () => "",
   },
@@ -1478,6 +1508,21 @@ export const componentRegistry = {
             )
           : null,
       );
+    },
+    getSearchText: (component) => {
+      const props = component.props as {
+        message: string;
+        variant: string;
+      };
+      return [props.message, props.variant, "alert", "알림"]
+        .filter(Boolean)
+        .join(" ");
+    },
+    getDisplayName: (component) => {
+      const props = component.props as {
+        message: string;
+      };
+      return props.message?.trim() || component.name?.trim() || "Alert";
     },
     exportHtml: () => "",
   },
