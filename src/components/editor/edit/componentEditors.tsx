@@ -18,7 +18,7 @@ import EditVideoFields from "./fields/EditVideoFields";
 
 import type { EditBasicContext } from "./types/editBasicContext";
 import { type ComponentField } from "../registry/componentRegistry";
-import FieldRenderer from "../../canvas/renderers";
+import FieldRenderer from "../../canvas/Renderers";
 import EditComponentNameField from "./fields/EditComponentNameField";
 
 type ComponentOf<T extends ComponentType> = Extract<

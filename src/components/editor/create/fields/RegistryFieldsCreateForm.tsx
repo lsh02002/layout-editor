@@ -1,4 +1,4 @@
-import FieldRenderer from "../../../canvas/renderers";
+import FieldRenderer from "../../../canvas/Renderers";
 import {
   type ComponentRegistry,
   type RegistryComponentType,
