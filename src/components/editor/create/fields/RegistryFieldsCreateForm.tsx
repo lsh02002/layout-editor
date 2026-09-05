@@ -1,4 +1,4 @@
-import FieldRenderer from "../../../canvas/Renderers";
+import EditFieldFields from "../../edit/fields/EditFieldFields";
 import {
   type ComponentRegistry,
   type RegistryComponentType,
@@ -25,12 +25,14 @@ export default function RegistryFieldsCreateForm({
           return null;
         }
         return (
-          <FieldRenderer
+          <EditFieldFields
             key={name}
             name={name}
             field={field}
             value={value[name]}
-            onChange={(nextValue) => onChange({ ...value, [name]: nextValue })}
+            onChange={(nextValue: unknown) =>
+              onChange({ ...value, [name]: nextValue })
+            }
           />
         );
       })}

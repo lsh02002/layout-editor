@@ -30,7 +30,7 @@ import RegistryFieldsEditor, {
   QuillEditor,
   ScrollToTopButtonEditor,
   VideoEditor,
-} from "./components/editor/edit/ComponentEditors";
+} from "./components/editor/edit/componentEditors";
 import {
   ButtonRenderer,
   CodeEditorRenderer,
@@ -45,7 +45,7 @@ import {
   SpacerRenderer,
   TextareaRenderer,
   VideoRenderer,
-} from "./components/canvas/Renderers";
+} from "./components/canvas/renderers";
 import {
   exportButtonHtml,
   exportCodeEditorHtml,
