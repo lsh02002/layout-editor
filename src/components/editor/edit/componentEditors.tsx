@@ -18,8 +18,8 @@ import EditVideoFields from "./fields/EditVideoFields";
 
 import type { EditBasicContext } from "./types/editBasicContext";
 import { type ComponentField } from "../registry/componentRegistry";
-import FieldRenderer from "../../canvas/Renderers";
 import EditComponentNameField from "./fields/EditComponentNameField";
+import EditFieldFields from "./fields/EditFieldFields";
 
 type ComponentOf<T extends ComponentType> = Extract<
   LayoutComponent,
@@ -644,7 +644,7 @@ export default function RegistryFieldsEditor({
         }}
       />
       {Object.entries(fields).map(([name, field]) => (
-        <FieldRenderer
+        <EditFieldFields
           key={name}
           name={name}
           field={field ?? ({} as ComponentField)}
