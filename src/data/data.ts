@@ -3,6 +3,7 @@ import type { LayoutComponent } from "../types/types";
 export const data: LayoutComponent[] = [
   {
     id: "container-001",
+    name: "Container",
     type: "container",
     order: 0,
 

@@ -1534,26 +1534,24 @@ type ComponentRegistryEntry = {
   [T in LayoutComponent["type"]]: [T, ComponentRegistry[T]];
 }[LayoutComponent["type"]];
 
-type RegistryComponent<T extends LayoutComponent["type"]> = ReturnType<
-  ComponentRegistry[T]["createComponent"]
->;
-
 export const componentRegistryEntries = Object.entries(
   componentRegistry,
 ) as ComponentRegistryEntry[];
 
-export function createDefaultComponent<T extends LayoutComponent["type"]>(
-  type: T,
-): RegistryComponent<T> {
+export function createDefaultComponent(
+  type: LayoutComponent["type"],
+): LayoutComponent {
   return createComponentFromProps(type, {});
 }
 
-export function createComponentFromProps<T extends LayoutComponent["type"]>(
-  type: T,
+export function createComponentFromProps(
+  type: LayoutComponent["type"],
   props: Record<string, unknown>,
   name?: string,
-): RegistryComponent<T> {
-  const definition = componentRegistry[type];
+): LayoutComponent {
+  const definition = componentRegistry[
+    type
+  ] as ComponentRegistryShape;
   const mergedProps = {
     ...structuredClone(definition.defaultProps),
     ...props,
@@ -1561,11 +1559,11 @@ export function createComponentFromProps<T extends LayoutComponent["type"]>(
   const component = definition.createComponent(
     crypto.randomUUID(),
     mergedProps,
-  ) as RegistryComponent<T>;
+  );
   return {
     ...component,
     name: name?.trim() || component.name,
-  } as RegistryComponent<T>;
+  } as LayoutComponent;
 }
 
 export function getComponentDefinition(type: LayoutComponent["type"]) {
