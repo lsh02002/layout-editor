@@ -199,7 +199,8 @@ const config = {
         props,
       }),
 
-      editor: (context) => createElement(RegistryFieldsEditor, context),
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, { ...context, fields }),
       canvas: (component) => {
         if (component.type !== "heading") {
           return null;
@@ -287,7 +288,8 @@ const config = {
           width: "100%",
         },
       }),
-      editor: (context) => createElement(RegistryFieldsEditor, context),
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, { ...context, fields }),
       canvas: (component) => {
         if (component.type !== "textarea") {
           return null;
@@ -456,7 +458,8 @@ const config = {
           width: "100%",
         },
       }),
-      editor: (context) => createElement(RegistryFieldsEditor, context),
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, { ...context, fields }),
       canvas: (component) => {
         if (component.type !== "button") {
           return null;
@@ -1025,7 +1028,8 @@ const config = {
           width: "100%",
         },
       }),
-      editor: (context) => createElement(RegistryFieldsEditor, context),
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, { ...context, fields }),
       canvas: (component) => {
         if (component.type !== "divider") {
           return null;
@@ -1071,7 +1075,8 @@ const config = {
           width: "100%",
         },
       }),
-      editor: (context) => createElement(RegistryFieldsEditor, context),
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, { ...context, fields }),
       canvas: (component) => {
         if (component.type !== "spacer") {
           return null;
