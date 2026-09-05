@@ -229,6 +229,9 @@ function LayoutComponentNode({
     />
   );
 
+  const containerMaxWidth =
+    component.type === "container" ? component.props.maxWidth : undefined;
+
   const nodeStyle = {
     position: isAbsolute ? ("absolute" as const) : ("relative" as const),
     left: isAbsolute ? (component.layout?.x ?? 0) : undefined,
@@ -236,7 +239,13 @@ function LayoutComponentNode({
     zIndex: isAbsolute ? 1000 : undefined,
     width: isAbsolute ? "max-content" : "100%",
     minWidth: 0,
-    maxWidth: isAbsolute ? "none" : "100%",
+    maxWidth: containerMaxWidth
+      ? containerMaxWidth
+      : isAbsolute
+        ? "none"
+        : "100%",
+    marginLeft: containerMaxWidth ? "auto" : undefined,
+    marginRight: containerMaxWidth ? "auto" : undefined,
 
     ...(component.style?.border
       ? { border: component.style.border }
