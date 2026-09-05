@@ -86,20 +86,51 @@ function LayoutComponentNode({
 }: Props) {
   const [renderedWidth, setRenderedWidth] = useState<number>(0);
   const [editToolbarVisible, setEditToolbarVisible] = useState(false);
+  const [positionParentElement, setPositionParentElement] =
+    useState<HTMLElement | null>(null);
 
   const isSelected = selectedComponentIds.includes(component.id);
   const isPrimarySelected = selectedComponentIds.at(-1) === component.id;
   const isAbsolute = component.layout?.position === "absolute";
 
   const positionParentId = component.layout?.positionParentId ?? null;
-  const positionParentElement =
-    isAbsolute && positionParentId
-      ? (Array.from(
-          document.querySelectorAll<HTMLElement>("[data-position-context-id]"),
-        ).find(
-          (element) => element.dataset.positionContextId === positionParentId,
-        ) ?? null)
-      : null;
+
+  const componentRef = useRef<HTMLDivElement>(null);
+
+  const handleComponentRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      componentRef.current = element;
+
+      if (!element) {
+        return;
+      }
+
+      if (!isAbsolute || !positionParentId) {
+        setPositionParentElement(null);
+        return;
+      }
+
+      const canvasElement = element.closest<HTMLElement>(".builder-preview");
+
+      if (!canvasElement) {
+        setPositionParentElement(null);
+        return;
+      }
+
+      const parentElement =
+        Array.from(
+          canvasElement.querySelectorAll<HTMLElement>(
+            "[data-position-context-id]",
+          ),
+        ).find((item) => item.dataset.positionContextId === positionParentId) ??
+        null;
+
+      setPositionParentElement((current) =>
+        current === parentElement ? current : parentElement,
+      );
+    },
+    [isAbsolute, positionParentId],
+  );
 
   const renderWithPositionParent = (node: ReactNode) => {
     if (isAbsolute && positionParentId && positionParentElement) {
@@ -108,8 +139,6 @@ function LayoutComponentNode({
 
     return node;
   };
-
-  const componentRef = useRef<HTMLDivElement>(null);
 
   const justDropped = !isAbsolute && droppedIds.includes(component.id);
 
@@ -257,7 +286,7 @@ function LayoutComponentNode({
 
     return renderWithPositionParent(
       <div
-        ref={componentRef}
+        ref={handleComponentRef}
         data-component-id={component.id}
         style={nodeStyle}
       >
@@ -425,7 +454,11 @@ function LayoutComponentNode({
   }
 
   return renderWithPositionParent(
-    <div ref={componentRef} data-component-id={component.id} style={nodeStyle}>
+    <div
+      ref={handleComponentRef}
+      data-component-id={component.id}
+      style={nodeStyle}
+    >
       <DivBox
         previewMode={previewMode}
         isSelected={isPrimarySelected}

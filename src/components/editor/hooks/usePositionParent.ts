@@ -45,11 +45,16 @@ export function usePositionParent({
 
     const walk = (items: LayoutComponent[], depth = 0) => {
       items.forEach((component) => {
-        if (!containsComponent(selected, component.id)) {
+        if (
+          component.id !== selected.id &&
+          !containsComponent(selected, component.id)
+        ) {
           result.push({
             id: component.id,
-            label: `${"　".repeat(depth)}${getComponentDisplayName(componentRegistry, component)}`,
-            disabled: component.type === "container",
+            label: `${"　".repeat(depth)}${getComponentDisplayName(
+              componentRegistry,
+              component,
+            )}`,
           });
         }
 
