@@ -103,61 +103,36 @@ export type ComponentField =
       label: string;
     };
 
-type TextField = Extract<ComponentField, { type: "text" }>;
-type TextareaField = Extract<ComponentField, { type: "textarea" }>;
-type NumberField = Extract<ComponentField, { type: "number" }>;
-type CheckboxField = Extract<ComponentField, { type: "checkbox" }>;
-
-type SelectField<T extends string | number> = {
-  type: "select";
-  label: string;
-  options: FieldOption<T>[];
+type RegistryCreatedComponent = {
+  id: string;
+  name: string;
+  type: string;
+  order: number;
+  props: Record<string, unknown>;
+  [key: string]: unknown;
 };
 
-type SelectValue<T> = Extract<NonNullable<T>, string | number>;
-
-type ComponentFieldForValue<T> =
-  NonNullable<T> extends boolean
-    ? CheckboxField
-    : NonNullable<T> extends number
-      ? NumberField | SelectField<SelectValue<T>>
-      : NonNullable<T> extends string
-        ? TextField | TextareaField | SelectField<SelectValue<T>>
-        : NonNullable<T> extends string[]
-          ? TextField
-          : ComponentField;
-
-type ComponentOf<T extends LayoutComponent["type"]> = Extract<
-  LayoutComponent,
-  { type: T }
->;
-
-type ComponentProps<T extends LayoutComponent["type"]> =
-  ComponentOf<T>["props"];
-
-type ComponentFields<T extends LayoutComponent["type"]> = Partial<{
-  [K in keyof ComponentProps<T>]: ComponentFieldForValue<ComponentProps<T>[K]>;
-}>;
-
-type ComponentRegistryItem<T extends LayoutComponent["type"]> = {
+type ComponentRegistryShape = {
   label: string;
   description: string;
   icon: LucideIcon;
   supportsDisabled: boolean;
-  propsSchema: z.ZodType<ComponentProps<T>>;
+  propsSchema: z.ZodTypeAny;
   maxInstances?: number;
-  fields: ComponentFields<T>;
-  defaultProps: ComponentProps<T>;
-  createComponent: (id: string, props: ComponentProps<T>) => ComponentOf<T>;
-  editor: (context: EditBasicContext) => ReactNode;
+  fields: Partial<Record<string, ComponentField>>;
+  defaultProps: Record<string, unknown>;
+  createComponent: (
+    id: string,
+    props: Record<string, unknown>,
+  ) => RegistryCreatedComponent;
+  editor: (
+    context: EditBasicContext,
+    fields: Partial<Record<string, ComponentField>>,
+  ) => ReactNode;
   canvas?: (component: LayoutComponent) => ReactNode;
   getSearchText?: (component: LayoutComponent) => string;
   getDisplayName?: (component: LayoutComponent) => string;
   exportHtml: HtmlExporter;
-};
-
-type ComponentRegistryShape = {
-  [T in LayoutComponent["type"]]: ComponentRegistryItem<T>;
 };
 
 export const componentRegistry = {
@@ -245,6 +220,55 @@ export const componentRegistry = {
       return "container 컨테이너";
     },
     exportHtml: exportContainerHtml,
+  },
+
+  badge: {
+    label: "Badge",
+    description: "배지",
+    icon: Box,
+    supportsDisabled: false,
+    propsSchema: z.object({
+      text: z.string(),
+      variant: z.enum(["default", "success", "warning"]),
+    }),
+    fields: {
+      text: {
+        type: "text",
+        label: "텍스트",
+        placeholder: "Badge",
+      },
+      variant: {
+        type: "select",
+        label: "스타일",
+        options: [
+          { label: "Default", value: "default" },
+          { label: "Success", value: "success" },
+          { label: "Warning", value: "warning" },
+        ],
+      },
+    },
+    defaultProps: {
+      text: "Badge",
+      variant: "default",
+    },
+    createComponent: (id, props) => ({
+      id,
+      name: "Badge",
+      type: "badge",
+      order: 0,
+      props,
+      style: {
+        display: "inline-block",
+        padding: "4px 8px",
+        borderRadius: 4,
+      },
+    }),
+    editor: (context, fields): ReactNode =>
+      createElement(RegistryFieldsEditor, {
+        ...context,
+        fields,
+      }),
+    exportHtml: () => "",
   },
 
   heading: {
@@ -1263,7 +1287,7 @@ export const componentRegistry = {
     },
     exportHtml: exportCodeEditorHtml,
   },
-} satisfies ComponentRegistryShape;
+} satisfies Record<string, ComponentRegistryShape>;
 
 export type ComponentRegistry = typeof componentRegistry;
 
@@ -1271,36 +1295,38 @@ type ComponentRegistryEntry = {
   [T in LayoutComponent["type"]]: [T, ComponentRegistry[T]];
 }[LayoutComponent["type"]];
 
+type RegistryComponent<T extends LayoutComponent["type"]> = ReturnType<
+  ComponentRegistry[T]["createComponent"]
+>;
+
 export const componentRegistryEntries = Object.entries(
   componentRegistry,
 ) as ComponentRegistryEntry[];
 
 export function createDefaultComponent<T extends LayoutComponent["type"]>(
   type: T,
-): ComponentOf<T> {
+): RegistryComponent<T> {
   return createComponentFromProps(type, {});
 }
 
 export function createComponentFromProps<T extends LayoutComponent["type"]>(
   type: T,
-  props: Partial<ComponentProps<T>>,
+  props: Record<string, unknown>,
   name?: string,
-): ComponentOf<T> {
-  const definition = componentRegistry[
-    type
-  ] as unknown as ComponentRegistryItem<T>;
+): RegistryComponent<T> {
+  const definition = componentRegistry[type];
   const mergedProps = {
     ...structuredClone(definition.defaultProps),
     ...props,
-  } as ComponentProps<T>;
+  };
   const component = definition.createComponent(
     crypto.randomUUID(),
     mergedProps,
-  );
+  ) as RegistryComponent<T>;
   return {
     ...component,
     name: name?.trim() || component.name,
-  };
+  } as RegistryComponent<T>;
 }
 
 export function getComponentDefinition(type: LayoutComponent["type"]) {
@@ -1308,13 +1334,17 @@ export function getComponentDefinition(type: LayoutComponent["type"]) {
 }
 
 export function renderComponentEditor(context: EditBasicContext): ReactNode {
-  return componentRegistry[context.component.type].editor(context);
+  const definition = componentRegistry[
+    context.component.type as LayoutComponent["type"]
+  ] as ComponentRegistryShape;
+
+  return definition.editor(context, definition.fields);
 }
 
 export function renderComponentCanvas(component: LayoutComponent): ReactNode {
-  const definition = componentRegistry[component.type] as ComponentRegistryItem<
-    typeof component.type
-  >;
+  const definition = componentRegistry[
+    component.type as LayoutComponent["type"]
+  ] as ComponentRegistryShape;
   const renderer = definition.canvas;
 
   if (!renderer) {
@@ -1332,8 +1362,8 @@ export function validateComponentProps(component: LayoutComponent) {
 
 export function getComponentSearchText(component: LayoutComponent): string {
   const definition = componentRegistry[
-    component.type
-  ] as unknown as ComponentRegistryItem<typeof component.type>;
+    component.type as LayoutComponent["type"]
+  ] as ComponentRegistryShape;
   const content = definition.getSearchText?.(component) ?? "";
 
   return [
