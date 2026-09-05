@@ -6,11 +6,11 @@ import {
 } from "react";
 
 import type {
-  ComponentLayout,
-  ComponentType,
+  ComponentLayout,  
   FavoriteComponent,
   LayoutComponent,
   TemplateItem,
+  ComponentType,
 } from "../../../types/types";
 
 import type { EditTab } from "../hooks/useEditComponentForm";
@@ -18,7 +18,7 @@ import EditBasicTab from "./tabs/EditBasicTab";
 import EditStyleTab from "./tabs/EditStyleTab";
 import EditCssTab from "./tabs/EditCssTab";
 import ComponentLibraryPanel from "../librarypanel/ComponentLibraryPanel";
-import { useLogin } from "../../../context/usehooks";
+import { useEditorConfig, useLogin } from "../../../context/usehooks";
 
 type Props = {
   isMobile: boolean;
@@ -141,6 +141,8 @@ function EditComponentPanel({
   positionParentOptions,
   onPositionParentChange,
 }: Props) {
+  const { components: componentRegistry } = useEditorConfig();
+
   const { editTab, setEditTab } = useLogin();
   const isMultiSelected = selectedComponentIds?.length > 1;
   const primarySelectedId = selectedComponentIds.at(-1) ?? null;
@@ -302,6 +304,7 @@ function EditComponentPanel({
                 (draftComponent && updateDraftComponent ? (
                   <EditBasicTab
                     key={`${draftComponent.id}-${editorSyncKey}`}
+                    componentRegistry={componentRegistry}
                     component={draftComponent}
                     updateComponent={updateDraftComponent}
                   />

@@ -7,10 +7,12 @@ import {
 } from "react";
 import { isTauri } from "../utils/projectUtils";
 import type { LayoutComponent } from "../../../types/types";
+import type { ComponentRegistry } from "../registry/componentRegistry";
 import { isObject, validateComponent } from "../utils/componentValidation";
 import { downloadProjectFile } from "../utils/projectUtils";
 
 type Options = {
+  componentRegistry: ComponentRegistry;
   components: LayoutComponent[];
   projectCustomCss: string;
   setProjectCustomCss: (value: string) => void;
@@ -32,7 +34,10 @@ type ProjectValidation =
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
-const validateProjectFile = (value: unknown): ProjectValidation => {
+const validateProjectFile = (
+  componentRegistry: ComponentRegistry,
+  value: unknown,
+): ProjectValidation => {
   if (!isObject(value)) {
     return {
       valid: false,
@@ -96,6 +101,7 @@ const validateProjectFile = (value: unknown): ProjectValidation => {
 
   for (let index = 0; index < value.components.length; index += 1) {
     const error = validateComponent(
+      componentRegistry,
       value.components[index],
       `components[${index}]`,
     );
@@ -126,6 +132,7 @@ const validateProjectFile = (value: unknown): ProjectValidation => {
 };
 
 export const useProjectFiles = ({
+  componentRegistry,
   components,
   projectCustomCss,
   setProjectCustomCss,
@@ -163,7 +170,7 @@ export const useProjectFiles = ({
         throw new Error("JSON 형식이 깨져 있습니다.");
       }
 
-      const validation = validateProjectFile(parsed);
+      const validation = validateProjectFile(componentRegistry, parsed);
 
       if (!validation.valid) {
         throw new Error(validation.error);
@@ -182,7 +189,12 @@ export const useProjectFiles = ({
 
       setSelectedComponentIds([]);
     },
-    [resetHistory, setProjectCustomCss, setSelectedComponentIds],
+    [
+      componentRegistry,
+      resetHistory,
+      setProjectCustomCss,
+      setSelectedComponentIds,
+    ],
   );
 
   const saveProjectFile = useCallback(async () => {

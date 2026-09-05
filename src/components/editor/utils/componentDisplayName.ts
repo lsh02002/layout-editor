@@ -1,12 +1,16 @@
-import type { LayoutComponent, ComponentType } from "../../../types/types";
+import type { LayoutComponent } from "../../../types/types";
 import {
-  componentRegistry,
+  type ComponentRegistry,
   type ComponentRegistryShape,
+  type RegistryComponentType,
 } from "../registry/componentRegistry";
 
-export function getComponentDisplayName(component: LayoutComponent): string {
+export function getComponentDisplayName(
+  componentRegistry: ComponentRegistry,
+  component: LayoutComponent,
+): string {
   const definition = componentRegistry[
-    component.type as ComponentType
+    component.type as RegistryComponentType
   ] as ComponentRegistryShape;
 
   return (
@@ -17,7 +21,8 @@ export function getComponentDisplayName(component: LayoutComponent): string {
 }
 
 export function getComponentMaxInstances(
-  type: ComponentType,
+  componentRegistry: ComponentRegistry,
+  type: RegistryComponentType,
 ): number | undefined {
   const definition = componentRegistry[type] as ComponentRegistryShape;
 
@@ -25,10 +30,11 @@ export function getComponentMaxInstances(
 }
 
 export function canAddComponentType(
+  componentRegistry: ComponentRegistry,
   components: LayoutComponent[],
-  type: ComponentType,
+  type: RegistryComponentType,
 ): boolean {
-  const maxInstances = getComponentMaxInstances(type);
+  const maxInstances = getComponentMaxInstances(componentRegistry, type);
 
   if (maxInstances === undefined) {
     return true;

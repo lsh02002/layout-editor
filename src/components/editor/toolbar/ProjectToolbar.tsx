@@ -1,8 +1,11 @@
 import React, { memo } from "react";
 import type { CanvasViewport } from "../../../types/types";
+import type { ComponentRegistry } from "../registry/componentRegistry";
 
 type ProjectToolbarProps = {
   previewMode: boolean;
+
+  componentRegistry: ComponentRegistry;
 
   isMobile: boolean;
   canvasViewport: CanvasViewport;
@@ -27,11 +30,15 @@ type ProjectToolbarProps = {
   onDownloadHtml: () => void | Promise<void>;
   onOpenProjectTemplate: () => void;
   onOpenSelectedTemplate: () => void;
-  onLoadTemplate: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onLoadTemplate: (
+    componentRegistry: ComponentRegistry,
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => void;
 };
 
 function ProjectToolbar({
   previewMode,
+  componentRegistry,
   isMobile,
   canvasViewport,
   onCanvasViewportChange,
@@ -215,7 +222,7 @@ function ProjectToolbar({
           <input
             type="file"
             accept=".pbtpl,.json,application/json"
-            onChange={onLoadTemplate}
+            onChange={(event) => onLoadTemplate(componentRegistry, event)}
             style={{ display: "none" }}
           />
         </label>

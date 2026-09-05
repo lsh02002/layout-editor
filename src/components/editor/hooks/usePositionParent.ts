@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { ComponentLayout, LayoutComponent } from "../../../types/types";
+import { useEditorConfig } from "../../../context/usehooks";
 import {
   containsComponent,
   findComponentRecursive,
@@ -26,6 +27,7 @@ export function usePositionParent({
   setEditLayout,
   updateLayout,
 }: Props) {
+  const { components: componentRegistry } = useEditorConfig();
   const primarySelectedId = selectedComponentIds.at(-1) ?? null;
 
   const positionParentOptions = useMemo<PositionParentOption[]>(() => {
@@ -46,7 +48,7 @@ export function usePositionParent({
         if (!containsComponent(selected, component.id)) {
           result.push({
             id: component.id,
-            label: `${"　".repeat(depth)}${getComponentDisplayName(component)}`,
+            label: `${"　".repeat(depth)}${getComponentDisplayName(componentRegistry, component)}`,
             disabled: component.type === "container",
           });
         }
@@ -60,7 +62,7 @@ export function usePositionParent({
     walk(components);
 
     return result;
-  }, [components, primarySelectedId]);
+  }, [componentRegistry, components, primarySelectedId]);
 
   const handlePositionParentChange = useCallback(
     (positionParentId: string | null) => {

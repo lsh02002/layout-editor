@@ -1,6 +1,7 @@
 import React, { memo, useMemo, useRef } from "react";
 import type { LayoutComponent } from "../../../types/types";
 import { getComponentDisplayName } from "../utils/componentDisplayName";
+import { useEditorConfig } from "../../../context/usehooks";
 
 type DropTarget = {
   parentId: string | null;
@@ -107,6 +108,7 @@ function LayerPanel({
   onDrop,
   onActiveDropTargetChange,
 }: LayerPanelProps) {
+  const { components: componentRegistry } = useEditorConfig();
   const primarySelectedId = selectedComponentIds.at(-1) ?? null;
 
   const flatComponents = useMemo(
@@ -403,7 +405,7 @@ function LayerPanel({
                   }}
                 >
                   {highlightSearchText(
-                    getComponentDisplayName(component) ?? "",
+                    getComponentDisplayName(componentRegistry, component) ?? "",
                     search,
                   )}
                 </span>

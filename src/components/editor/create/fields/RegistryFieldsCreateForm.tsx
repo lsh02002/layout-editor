@@ -1,13 +1,17 @@
-import type { LayoutComponent } from "../../../../types/types";
 import FieldRenderer from "../../../canvas/renderers";
-import { componentRegistry } from "../../registry/componentRegistry";
+import {
+  type ComponentRegistry,
+  type RegistryComponentType,
+} from "../../registry/componentRegistry";
 
 type Props = {
-  type: LayoutComponent["type"];
+  componentRegistry: ComponentRegistry;
+  type: RegistryComponentType;
   value: Record<string, unknown>;
   onChange: (value: Record<string, unknown>) => void;
 };
 export default function RegistryFieldsCreateForm({
+  componentRegistry,
   type,
   value,
   onChange,
@@ -16,20 +20,20 @@ export default function RegistryFieldsCreateForm({
 
   return (
     <>
-      {Object.entries(definition.fields).map(([name, field]) => (
-        <FieldRenderer
-          key={name}
-          name={name}
-          field={field}
-          value={value[name]}
-          onChange={(nextValue) =>
-            onChange({
-              ...value,
-              [name]: nextValue,
-            })
-          }
-        />
-      ))}
+      {Object.entries(definition.fields).map(([name, field]) => {
+        if (!field) {
+          return null;
+        }
+        return (
+          <FieldRenderer
+            key={name}
+            name={name}
+            field={field}
+            value={value[name]}
+            onChange={(nextValue) => onChange({ ...value, [name]: nextValue })}
+          />
+        );
+      })}
     </>
   );
 }

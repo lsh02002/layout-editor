@@ -1,8 +1,7 @@
 import { useCallback } from "react";
 import type { LayoutComponent } from "../../../../types/types";
-import {  
-  insertComponentRecursive,
-} from "../../utils/componentTree";
+import { insertComponentRecursive } from "../../utils/componentTree";
+import type { ComponentRegistry, RegistryComponentType } from "../../registry/componentRegistry";
 
 import type {
   BooleanSetter,
@@ -13,14 +12,15 @@ import type {
 import { canAddComponentType } from "../../utils/componentDisplayName";
 
 type Options = {
+  componentRegistry: ComponentRegistry;
   components: LayoutComponent[];
   insertTarget: InsertTarget;
   setInsertTarget: InsertTargetSetter;
   setShowCreateModal: BooleanSetter;
   setShowEditModal: BooleanSetter;
   setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
-  newType: LayoutComponent["type"];
-  setNewType: (type: LayoutComponent["type"]) => void;
+  newType: RegistryComponentType;
+  setNewType: (type: RegistryComponentType) => void;
   resetCreateForm: () => void;
   makeNewComponent: () => LayoutComponent;
   loadComponentToEdit: (component: LayoutComponent) => void;
@@ -28,6 +28,7 @@ type Options = {
 };
 
 export const useCreateActions = ({
+  componentRegistry,
   components,
   insertTarget,
   setSelectedComponentIds,
@@ -51,7 +52,7 @@ export const useCreateActions = ({
       return;
     }
 
-    if (!canAddComponentType(components, newType)) {
+    if (!canAddComponentType(componentRegistry, components, newType)) {
       alert("Scroll To Top Button은 한번만 등록 가능합니다.");
       return;
     }
@@ -77,6 +78,7 @@ export const useCreateActions = ({
   }, [
     closeCreateModal,
     commitHistory,
+    componentRegistry,
     components,
     insertTarget,
     loadComponentToEdit,
@@ -87,11 +89,7 @@ export const useCreateActions = ({
   ]);
 
   const openCreateModal = useCallback(
-    (
-      parentId: string | null,
-      index: number,
-      type?: LayoutComponent["type"],
-    ) => {
+    (parentId: string | null, index: number, type?: RegistryComponentType) => {
       setInsertTarget({
         parentId,
         index,

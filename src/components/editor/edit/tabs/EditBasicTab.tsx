@@ -1,10 +1,12 @@
 import type { LayoutComponent } from "../../../../types/types";
+import type { ComponentRegistry } from "../../registry/componentRegistry";
 import {
   getComponentDefinition,
   renderComponentEditor,
 } from "../../registry/componentRegistry";
 
 type Props = {
+  componentRegistry: ComponentRegistry;
   component: LayoutComponent;
 
   updateComponent: (
@@ -12,8 +14,12 @@ type Props = {
   ) => void;
 };
 
-function EditBasicTab({ component, updateComponent }: Props) {
-  const definition = getComponentDefinition(component.type);
+function EditBasicTab({
+  componentRegistry,
+  component,
+  updateComponent,
+}: Props) {
+  const definition = getComponentDefinition(componentRegistry, component.type);
   const supportsDisabled = definition.supportsDisabled === true;
 
   const disabled =
@@ -49,7 +55,7 @@ function EditBasicTab({ component, updateComponent }: Props) {
         />
       </div>
 
-      {renderComponentEditor({ component, updateComponent })}
+      {renderComponentEditor(componentRegistry, { component, updateComponent })}
 
       {supportsDisabled && (
         <div className="form-check mb-3 mt-3">

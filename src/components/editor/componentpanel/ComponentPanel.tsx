@@ -1,6 +1,16 @@
-import { componentRegistryEntries } from "../../editor/registry/componentRegistry";
+import { useEditorConfig } from "../../../context/usehooks";
+import {
+  type ComponentRegistry,
+  type RegistryComponentType,
+} from "../../editor/registry/componentRegistry";
 
 function ComponentPanel() {
+  const { components: componentRegistry } = useEditorConfig();
+  const componentEntries = Object.entries(componentRegistry) as [
+    RegistryComponentType,
+    ComponentRegistry[RegistryComponentType],
+  ][];
+
   return (
     <div
       style={{
@@ -44,7 +54,7 @@ function ComponentPanel() {
             gap: 8,
           }}
         >
-          {componentRegistryEntries.map(([type, definition]) => {
+          {componentEntries.map(([type, definition]) => {
             const Icon = definition.icon;
 
             return (

@@ -1,23 +1,37 @@
 import type { LayoutComponent } from "../../../../types/types";
+import type {
+  ComponentRegistry,
+  ComponentRegistryShape,
+  RegistryComponentType,
+} from "../../registry/componentRegistry";
 import { codeHighlight } from "../codeHighlight";
-import { componentRegistry } from "../../registry/componentRegistry";
 import { collectComponentCustomCss } from "../customCssUtils";
 
-const componentToHtml = async (component: LayoutComponent): Promise<string> => {
-  const definition = componentRegistry[component.type];
+export async function renderComponentToHtml(
+  componentRegistry: ComponentRegistry,
+  component: LayoutComponent,
+): Promise<string> {
+  const definition = componentRegistry[
+    component.type as RegistryComponentType
+  ] as ComponentRegistryShape;
 
   return definition.exportHtml(component, {
-    renderComponent: componentToHtml,
+    renderComponent: (child) => renderComponentToHtml(componentRegistry, child),
   });
-};
+}
 
 export const buildHtmlDocument = async (
+  componentRegistry: ComponentRegistry,
   components: LayoutComponent[],
   projectCustomCss: string,
 ) => {
   const body = (
     await Promise.all(
-      [...components].sort((a, b) => a.order - b.order).map(componentToHtml),
+      [...components]
+        .sort((a, b) => a.order - b.order)
+        .map((component) =>
+          renderComponentToHtml(componentRegistry, component),
+        ),
     )
   ).join("");
 
@@ -66,11 +80,16 @@ export const buildHtmlDocument = async (
 };
 
 export const downloadHtmlFile = async (
+  componentRegistry: ComponentRegistry,
   components: LayoutComponent[],
   projectCustomCss: string,
 ) => {
   try {
-    const html = await buildHtmlDocument(components, projectCustomCss);
+    const html = await buildHtmlDocument(
+      componentRegistry,
+      components,
+      projectCustomCss,
+    );
 
     const blob = new Blob([html], {
       type: "text/html;charset=utf-8",

@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { renderComponentCanvas } from "../editor/registry/componentRegistry";
 import type { LayoutComponent } from "../../types/types";
+import { useEditorConfig } from "../../context/usehooks";
 
 type CanvasComponent = Exclude<LayoutComponent, { type: "container" }>;
 
@@ -9,7 +10,8 @@ type Props = {
 };
 
 function CanvasComponentContent({ component }: Props) {
-  return <>{renderComponentCanvas(component)}</>;
+  const { components: componentRegistry } = useEditorConfig();
+  return <>{renderComponentCanvas(componentRegistry, component)}</>;
 }
 
 export default memo(CanvasComponentContent);

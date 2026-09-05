@@ -1,12 +1,15 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { ComponentType } from "../../../types/types";
-import { componentRegistryEntries } from "../registry/componentRegistry";
+import {
+  type ComponentRegistry,
+  type RegistryComponentType,
+} from "../registry/componentRegistry";
+import { useEditorConfig } from "../../../context/usehooks";
 import RegistryFieldsCreateForm from "./fields/RegistryFieldsCreateForm";
 
 type Props = {
   open: boolean;
-  newType: ComponentType;
-  setNewType: (type: ComponentType) => void;
+  newType: RegistryComponentType;
+  setNewType: (type: RegistryComponentType) => void;
   newComponentName: string;
   setNewComponentName: Dispatch<SetStateAction<string>>;
   newProps: Record<string, unknown>;
@@ -26,6 +29,13 @@ function CreateComponentModal({
   onClose,
   onCreate,
 }: Props) {
+  const { components: componentRegistry } = useEditorConfig();
+
+  const componentEntries = Object.entries(componentRegistry) as [
+    RegistryComponentType,
+    ComponentRegistry[RegistryComponentType],
+  ][];
+
   if (!open) {
     return null;
   }
@@ -53,11 +63,11 @@ function CreateComponentModal({
                   className="form-select"
                   value={newType}
                   onChange={(event) => {
-                    const type = event.target.value as ComponentType;
+                    const type = event.target.value as RegistryComponentType;
                     setNewType(type);
                   }}
                 >
-                  {componentRegistryEntries.map(([type, definition]) => (
+                  {componentEntries.map(([type, definition]) => (
                     <option key={type} value={type}>
                       {definition.label}
                     </option>
@@ -74,6 +84,7 @@ function CreateComponentModal({
                 />
               </div>
               <RegistryFieldsCreateForm
+                componentRegistry={componentRegistry}
                 type={newType}
                 value={newProps}
                 onChange={setNewProps}

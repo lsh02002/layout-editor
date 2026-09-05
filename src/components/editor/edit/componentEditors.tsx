@@ -17,9 +17,7 @@ import EditTextareaFields from "./fields/EditTextareaFields";
 import EditVideoFields from "./fields/EditVideoFields";
 
 import type { EditBasicContext } from "./types/editBasicContext";
-import {  
-  type ComponentField,
-} from "../registry/componentRegistry";
+import { type ComponentField } from "../registry/componentRegistry";
 import FieldRenderer from "../../canvas/renderers";
 
 type ComponentOf<T extends ComponentType> = Extract<
@@ -38,7 +36,7 @@ function updateName(context: EditBasicContext, name: string) {
 
 function patchProps<T extends ComponentType>(
   context: EditBasicContext,
-  type: T,
+  type: ComponentType,
   values: Partial<PropsOf<T>>,
 ) {
   context.updateComponent((component) => {
@@ -639,7 +637,7 @@ export default function RegistryFieldsEditor({
         <FieldRenderer
           key={name}
           name={name}
-          field={field ?? {} as ComponentField}
+          field={field ?? ({} as ComponentField)}
           value={(component.props as Record<string, unknown>)[name]}
           onChange={(value) => {
             updateComponent(

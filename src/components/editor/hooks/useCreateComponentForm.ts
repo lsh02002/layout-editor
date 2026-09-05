@@ -1,41 +1,57 @@
 import { useCallback, useState } from "react";
-
-import type { ComponentType, LayoutComponent } from "../../../types/types";
-
-import {
-  componentRegistry,
-  createComponentFromProps,
-  createDefaultComponent,
+import type { LayoutComponent } from "../../../types/types";
+import type {
+  ComponentRegistry,
+  RegistryComponentType,
 } from "../registry/componentRegistry";
 
-export const useCreateComponentForm = () => {
-  const [newType, setNewType] = useState<ComponentType>("heading");
+export const useCreateComponentForm = (
+  componentRegistry: ComponentRegistry,
+) => {
+  const [newType, setNewType] = useState<RegistryComponentType>("heading");
   const [newComponentName, setNewComponentName] = useState("");
   const [newProps, setNewProps] = useState<Record<string, unknown>>(() =>
-    structuredClone(componentRegistry.heading.defaultProps)
+    structuredClone(componentRegistry.heading.defaultProps),
+  );
+  const makeComponentByType = useCallback(
+    (
+      type: RegistryComponentType,
+      props: Record<string, unknown> = {},
+      name?: string,
+    ): LayoutComponent => {
+      const definition = componentRegistry[type];
+      const mergedProps = {
+        ...structuredClone(definition.defaultProps),
+        ...props,
+      };
+      const component = definition.createComponent(
+        crypto.randomUUID(),
+        mergedProps,
+      );
+      return {
+        ...component,
+        name: name?.trim() || component.name,
+      } as LayoutComponent;
+    },
+    [componentRegistry],
   );
 
   const resetCreateForm = useCallback(() => {
     setNewType("textarea");
     setNewComponentName("");
-    setNewProps(structuredClone(componentRegistry[newType].defaultProps));
-  }, [newType]);
-
-  const changeNewType = useCallback((type: ComponentType) => {
-    setNewType(type);
-    setNewProps(structuredClone(componentRegistry[type].defaultProps));
-  }, []);
-
-  const makeNewComponent = useCallback(() => {
-    return createComponentFromProps(newType, newProps, newComponentName);
-  }, [newType, newProps, newComponentName]);
-
-  const makeComponentByType = useCallback(
-    (type: ComponentType): LayoutComponent => {
-      return createDefaultComponent(type);
+    setNewProps(structuredClone(componentRegistry.textarea.defaultProps));
+  }, [componentRegistry]);
+  const changeNewType = useCallback(
+    (type: RegistryComponentType) => {
+      setNewType(type);
+      setNewProps(structuredClone(componentRegistry[type].defaultProps));
     },
-    [],
+    [componentRegistry],
   );
+
+  const makeNewComponent = useCallback((): LayoutComponent => {
+    return makeComponentByType(newType, newProps, newComponentName);
+  }, [makeComponentByType, newType, newProps, newComponentName]);
 
   return {
     newType,

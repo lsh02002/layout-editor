@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 import type { LoginContextValue } from "./LoginContext";
 import type { ModalManagerContextValue } from "./ModalContext";
+import type { EditorConfig } from "../components/editor/registry/componentRegistry";
 
 export const LoginContext = createContext<LoginContextValue | undefined>(
   undefined,
@@ -21,6 +22,18 @@ export function useModalManager() {
 
   if (!context) {
     throw new Error("useModalManager must be used inside <ModalProvider>");
+  }
+
+  return context;
+}
+
+export const EditorConfigContext = createContext<EditorConfig | null>(null);
+
+export function useEditorConfig() {
+  const context = useContext(EditorConfigContext);
+
+  if (!context) {
+    throw new Error("EditorConfigProvider is missing");
   }
 
   return context;

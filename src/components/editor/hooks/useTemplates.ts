@@ -15,6 +15,7 @@ import {
 import { isObject, validateComponent } from "../utils/componentValidation";
 import { convertComponentsForSave } from "../utils/projectUtils";
 import { isTauri } from "../utils/projectUtils";
+import type { ComponentRegistry } from "../registry/componentRegistry";
 
 type Options = {
   components: LayoutComponent[];
@@ -158,6 +159,7 @@ const downloadTemplateFile = async (
 };
 
 const validateTemplateFile = (
+  componentRegistry: ComponentRegistry,
   value: unknown,
 ):
   | {
@@ -206,6 +208,7 @@ const validateTemplateFile = (
 
     for (let index = 0; index < value.components.length; index += 1) {
       const error = validateComponent(
+        componentRegistry,
         value.components[index],
         `components[${index}]`,
       );
@@ -220,7 +223,11 @@ const validateTemplateFile = (
   }
 
   if (value.templateType === "component") {
-    const error = validateComponent(value.component, "component");
+    const error = validateComponent(
+      componentRegistry,
+      value.component,
+      "component",
+    );
 
     if (error) {
       return {
@@ -416,7 +423,7 @@ export const useTemplates = ({
   );
 
   const applyTemplateText = useCallback(
-    (text: string) => {
+    (componentRegistry: ComponentRegistry, text: string) => {
       if (!text.trim()) {
         throw new Error("빈 템플릿 파일입니다.");
       }
@@ -429,7 +436,7 @@ export const useTemplates = ({
         throw new Error("JSON 형식이 깨져 있습니다.");
       }
 
-      const validation = validateTemplateFile(parsed);
+      const validation = validateTemplateFile(componentRegistry, parsed);
 
       if (!validation.valid) {
         throw new Error(validation.error);
@@ -445,7 +452,10 @@ export const useTemplates = ({
   );
 
   const loadTemplateFileWeb = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
+    (
+      componentRegistry: ComponentRegistry,
+      event: ChangeEvent<HTMLInputElement>,
+    ) => {
       const file = event.target.files?.[0];
 
       if (!file) {
@@ -476,7 +486,7 @@ export const useTemplates = ({
         try {
           const text = String(reader.result ?? "");
 
-          applyTemplateText(text);
+          applyTemplateText(componentRegistry, text);
         } catch (error) {
           console.error("템플릿 불러오기 실패:", error);
 
@@ -500,62 +510,71 @@ export const useTemplates = ({
     [applyTemplateText],
   );
 
-  const loadTemplateFileTauri = useCallback(async () => {
-    try {
-      const filePath = await open({
-        title: "템플릿 불러오기",
+  const loadTemplateFileTauri = useCallback(
+    async (componentRegistry: ComponentRegistry) => {
+      try {
+        const filePath = await open({
+          title: "템플릿 불러오기",
 
-        multiple: false,
-        directory: false,
+          multiple: false,
+          directory: false,
 
-        filters: [
-          {
-            name: "Page Builder Template",
-            extensions: ["pbtpl", "json"],
-          },
-        ],
-      });
+          filters: [
+            {
+              name: "Page Builder Template",
+              extensions: ["pbtpl", "json"],
+            },
+          ],
+        });
 
-      if (!filePath) {
+        if (!filePath) {
+          return;
+        }
+
+        const text = await readTextFile(filePath);
+
+        if (text.length > MAX_TEMPLATE_FILE_SIZE) {
+          alert("템플릿 파일이 너무 큽니다.");
+
+          return;
+        }
+
+        applyTemplateText(componentRegistry, text);
+      } catch (error) {
+        console.error("템플릿 불러오기 실패:", error);
+
+        const message =
+          error instanceof Error ? error.message : "알 수 없는 오류입니다.";
+
+        alert(`템플릿을 불러올 수 없습니다.\n\n${message}`);
+      }
+    },
+    [applyTemplateText],
+  );
+
+  const openTemplateFile = useCallback(
+    async (componentRegistry: ComponentRegistry) => {
+      if (isLoadingTemplateRef.current) {
         return;
       }
 
-      const text = await readTextFile(filePath);
+      isLoadingTemplateRef.current = true;
 
-      if (text.length > MAX_TEMPLATE_FILE_SIZE) {
-        alert("템플릿 파일이 너무 큽니다.");
-
-        return;
+      try {
+        await loadTemplateFileTauri(componentRegistry);
+      } finally {
+        isLoadingTemplateRef.current = false;
       }
-
-      applyTemplateText(text);
-    } catch (error) {
-      console.error("템플릿 불러오기 실패:", error);
-
-      const message =
-        error instanceof Error ? error.message : "알 수 없는 오류입니다.";
-
-      alert(`템플릿을 불러올 수 없습니다.\n\n${message}`);
-    }
-  }, [applyTemplateText]);
-
-  const openTemplateFile = useCallback(async () => {
-    if (isLoadingTemplateRef.current) {
-      return;
-    }
-
-    isLoadingTemplateRef.current = true;
-
-    try {
-      await loadTemplateFileTauri();
-    } finally {
-      isLoadingTemplateRef.current = false;
-    }
-  }, [loadTemplateFileTauri]);
+    },
+    [loadTemplateFileTauri],
+  );
 
   const loadTemplateFile = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      loadTemplateFileWeb(event);
+    (
+      componentRegistry: ComponentRegistry,
+      event: ChangeEvent<HTMLInputElement>,
+    ) => {
+      loadTemplateFileWeb(componentRegistry, event);
     },
     [loadTemplateFileWeb],
   );

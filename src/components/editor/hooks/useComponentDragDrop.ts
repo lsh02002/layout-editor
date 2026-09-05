@@ -7,8 +7,9 @@ import {
   type PointerEvent,
 } from "react";
 
-import type { ComponentType, LayoutComponent } from "../../../types/types";
+import type { LayoutComponent } from "../../../types/types";
 import type { CommitHistory } from "../../../types/types";
+import type { RegistryComponentType } from "../registry/componentRegistry";
 
 import {
   containsComponent,
@@ -34,7 +35,7 @@ type Options = {
     index: number,
   ) => boolean;
   commitHistory: CommitHistory;
-  makeComponentByType: (type: ComponentType) => LayoutComponent;
+  makeComponentByType: (type: RegistryComponentType) => LayoutComponent;
   setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
@@ -446,7 +447,7 @@ export const useComponentDragDrop = ({
       // 1. ComponentPanel에서 새 컴포넌트 드롭
       const componentType = event.dataTransfer.getData(
         "application/x-component-type",
-      ) as ComponentType;
+      ) as RegistryComponentType;
       if (componentType) {
         const newComponent = makeComponentByType(componentType);
         commitHistory((prev) =>

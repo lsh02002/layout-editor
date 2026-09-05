@@ -4,6 +4,7 @@ import type {
   LayoutComponent,
   CommitHistory,
 } from "../../../types/types";
+import type { ComponentRegistry } from "../registry/componentRegistry";
 
 import {
   cloneComponent,
@@ -15,6 +16,7 @@ import {
 import { canAddComponentType } from "../utils/componentDisplayName";
 
 type Options = {
+  componentRegistry: ComponentRegistry;
   components: LayoutComponent[];
   selectedComponentIds: string[];
   commitHistory: CommitHistory;
@@ -22,6 +24,7 @@ type Options = {
 };
 
 export const useFavoriteComponents = ({
+  componentRegistry,
   components,
   selectedComponentIds,
   commitHistory,
@@ -44,7 +47,7 @@ export const useFavoriteComponents = ({
       return;
     }
 
-    if (!canAddComponentType(components, component.type)) {
+    if (!canAddComponentType(componentRegistry, components, component.type)) {
       alert("더 이상 추가할 수 없는 컴포넌트입니다.");
       return;
     }
@@ -67,13 +70,13 @@ export const useFavoriteComponents = ({
         component: structuredClone(component),
       },
     ]);
-  }, [components, favoriteComponents, primarySelectedId]);
+  }, [componentRegistry, components, favoriteComponents, primarySelectedId]);
 
   const insertFavoriteComponent = useCallback(
     (favorite: FavoriteComponent) => {
       const cloned = cloneComponent(favorite.component);
 
-      if (!canAddComponentType(components, cloned.type)) {
+      if (!canAddComponentType(componentRegistry, components, cloned.type)) {
         alert("더 이상 추가할 수 없는 컴포넌트입니다.");
         return;
       }
@@ -118,7 +121,13 @@ export const useFavoriteComponents = ({
 
       setSelectedComponentIds([cloned.id]);
     },
-    [commitHistory, components, primarySelectedId, setSelectedComponentIds],
+    [
+      commitHistory,
+      componentRegistry,
+      components,
+      primarySelectedId,
+      setSelectedComponentIds,
+    ],
   );
 
   const removeFavoriteComponent = useCallback((favoriteId: string) => {

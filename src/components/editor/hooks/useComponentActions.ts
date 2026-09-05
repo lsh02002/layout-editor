@@ -1,7 +1,7 @@
 import type {
   ComponentLayout,
   LayoutComponent,
-  TemplateItem,
+  TemplateItem,  
 } from "../../../types/types";
 
 import type {
@@ -20,8 +20,10 @@ import { useEditSaveActions } from "./actions/useEditSaveActions";
 import { useTemplateActions } from "./actions/useTemplateActions";
 import { useLayoutActions } from "./actions/useLayoutActions";
 import { useStyleActions } from "./actions/useStyleActions";
+import type { ComponentRegistry, RegistryComponentType } from "../registry/componentRegistry";
 
 type Options = {
+  componentRegistry: ComponentRegistry;
   components: LayoutComponent[];
 
   selectedComponentIds: string[];
@@ -36,8 +38,8 @@ type Options = {
 
   draftComponent: LayoutComponent | null;
 
-  newType: LayoutComponent["type"];
-  setNewType: (type: LayoutComponent["type"]) => void;
+  newType: RegistryComponentType;
+  setNewType: (type: RegistryComponentType) => void;
   resetCreateForm: () => void;
   makeNewComponent: () => LayoutComponent;
 
@@ -59,6 +61,7 @@ type Options = {
 };
 
 export const useComponentActions = ({
+  componentRegistry,
   components,
   draftComponent,
   selectedComponentIds,
@@ -82,6 +85,7 @@ export const useComponentActions = ({
   resetEditForm,
 }: Options) => {
   const createActions = useCreateActions({
+    componentRegistry,
     components,
     insertTarget,
     setInsertTarget,

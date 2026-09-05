@@ -1,5 +1,8 @@
 import type { LayoutComponent } from "../../../types/types";
-import { getComponentSearchText } from "../registry/componentRegistry";
+import {
+  getComponentSearchText,
+  type ComponentRegistry,
+} from "../registry/componentRegistry";
 
 export const normalizeSearchText = (value: string): string =>
   value
@@ -9,20 +12,23 @@ export const normalizeSearchText = (value: string): string =>
     .replace(/\s+/g, " ")
     .trim();
 
-export const filterLayerComponents = (
-  items: LayoutComponent[],
+export function filterLayerComponents(
+  componentRegistry: ComponentRegistry,
+  components: LayoutComponent[],
   search: string,
-): LayoutComponent[] => {
+): LayoutComponent[] {
   const keyword = normalizeSearchText(search);
 
   if (!keyword) {
-    return items;
+    return components;
   }
 
   const filterRecursive = (
     component: LayoutComponent,
   ): LayoutComponent | null => {
-    const searchText = normalizeSearchText(getComponentSearchText(component));
+    const searchText = normalizeSearchText(
+      getComponentSearchText(componentRegistry, component),
+    );
     const selfMatched = searchText.includes(keyword);
 
     if (component.type !== "container") {
@@ -43,7 +49,7 @@ export const filterLayerComponents = (
     return null;
   };
 
-  return items
+  return components
     .map(filterRecursive)
     .filter((component): component is LayoutComponent => component !== null);
-};
+}
