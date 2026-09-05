@@ -497,6 +497,7 @@ export default function FieldRenderer({
   if (field.type === "radio") {
     return (
       <div className="d-flex align-items-center gap-3">
+        <label className="form-label">{field.label}</label>
         {field.options.map((option) => (
           <div className="form-check" key={String(option.value)}>
             <input
