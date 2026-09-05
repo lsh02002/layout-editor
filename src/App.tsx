@@ -1,10 +1,13 @@
 import { createElement } from "react";
 import {
+  AlertCircle,
   AlignLeft,
   ArrowUpToLine,
+  Badge,
   Box,
   Code2,
   Heading1,
+  IdCard,
   ImageIcon,
   Images,
   Link2,
@@ -1174,7 +1177,7 @@ const config = {
     card: {
       label: "Card",
       description: "카드",
-      icon: Box,
+      icon: IdCard,
       supportsDisabled: false,
       propsSchema: z.object({
         title: z.string(),
@@ -1255,7 +1258,7 @@ const config = {
     badge: {
       label: "Badge",
       description: "배지",
-      icon: Box,
+      icon: Badge,
       supportsDisabled: false,
       propsSchema: z.object({
         text: z.string(),
@@ -1341,7 +1344,7 @@ const config = {
     alert: {
       label: "Alert",
       description: "알림 메시지",
-      icon: Box,
+      icon: AlertCircle,
       supportsDisabled: false,
       propsSchema: z.object({
         message: z.string(),
