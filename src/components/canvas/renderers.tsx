@@ -496,28 +496,30 @@ export default function FieldRenderer({
 
   if (field.type === "radio") {
     return (
-      <div className="d-flex align-items-center gap-3">
+      <>
         <label className="form-label">{field.label}</label>
-        {field.options.map((option) => (
-          <div className="form-check" key={String(option.value)}>
-            <input
-              id={`field-${name}-${option.value}`}
-              type="radio"
-              className="form-check-input"
-              name={`field-${name}`}
-              value={String(option.value)}
-              checked={String(value) === String(option.value)}
-              onChange={() => onChange(option.value)}
-            />
-            <label
-              className="form-check-label"
-              htmlFor={`field-${name}-${option.value}`}
-            >
-              {option.label}
-            </label>
-          </div>
-        ))}
-      </div>
+        <div className="d-flex align-items-center gap-3">
+          {field.options.map((option) => (
+            <div className="form-check" key={String(option.value)}>
+              <input
+                id={`field-${name}-${option.value}`}
+                type="radio"
+                className="form-check-input"
+                name={`field-${name}`}
+                value={String(option.value)}
+                checked={String(value) === String(option.value)}
+                onChange={() => onChange(option.value)}
+              />
+              <label
+                className="form-check-label"
+                htmlFor={`field-${name}-${option.value}`}
+              >
+                {option.label}
+              </label>
+            </div>
+          ))}
+        </div>
+      </>
     );
   }
 
