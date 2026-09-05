@@ -222,55 +222,6 @@ export const componentRegistry = {
     exportHtml: exportContainerHtml,
   },
 
-  badge: {
-    label: "Badge",
-    description: "배지",
-    icon: Box,
-    supportsDisabled: false,
-    propsSchema: z.object({
-      text: z.string(),
-      variant: z.enum(["default", "success", "warning"]),
-    }),
-    fields: {
-      text: {
-        type: "text",
-        label: "텍스트",
-        placeholder: "Badge",
-      },
-      variant: {
-        type: "select",
-        label: "스타일",
-        options: [
-          { label: "Default", value: "default" },
-          { label: "Success", value: "success" },
-          { label: "Warning", value: "warning" },
-        ],
-      },
-    },
-    defaultProps: {
-      text: "Badge",
-      variant: "default",
-    },
-    createComponent: (id, props) => ({
-      id,
-      name: "Badge",
-      type: "badge",
-      order: 0,
-      props,
-      style: {
-        display: "inline-block",
-        padding: "4px 8px",
-        borderRadius: 4,
-      },
-    }),
-    editor: (context, fields): ReactNode =>
-      createElement(RegistryFieldsEditor, {
-        ...context,
-        fields,
-      }),
-    exportHtml: () => "",
-  },
-
   heading: {
     label: "Heading",
     description: "제목 텍스트",
@@ -1286,6 +1237,249 @@ export const componentRegistry = {
         .join(" ");
     },
     exportHtml: exportCodeEditorHtml,
+  },
+
+  card: {
+    label: "Card",
+    description: "카드",
+    icon: Box,
+    supportsDisabled: false,
+    propsSchema: z.object({
+      title: z.string(),
+      content: z.string(),
+    }),
+    fields: {
+      title: {
+        type: "text",
+        label: "제목",
+        placeholder: "카드 제목",
+      },
+      content: {
+        type: "textarea",
+        label: "내용",
+        placeholder: "카드 내용을 입력하세요.",
+      },
+    },
+    defaultProps: {
+      title: "Card Title",
+      content: "Card Content",
+    },
+    createComponent: (id, props) => ({
+      id,
+      name: "Card",
+      type: "card",
+      order: 0,
+      props,
+      style: {
+        width: "100%",
+        padding: 16,
+        border: "1px solid #dee2e6",
+        borderRadius: 8,
+      },
+    }),
+    editor: (context, fields) =>
+      createElement(RegistryFieldsEditor, {
+        ...context,
+        fields,
+      }),
+    canvas: (component) => {
+      const props = component.props as {
+        title: string;
+        content: string;
+      };
+      return createElement(
+        "div",
+        null,
+        createElement(
+          "h3",
+          {
+            style: {
+              margin: "0 0 8px",
+            },
+          },
+          props.title,
+        ),
+        createElement("div", null, props.content),
+      );
+    },
+    exportHtml: () => "",
+  },
+
+  badge: {
+    label: "Badge",
+    description: "배지",
+    icon: Box,
+    supportsDisabled: false,
+    propsSchema: z.object({
+      text: z.string(),
+      variant: z.enum(["default", "success", "warning"]),
+    }),
+    fields: {
+      text: {
+        type: "text",
+        label: "텍스트",
+        placeholder: "Badge",
+      },
+      variant: {
+        type: "select",
+        label: "스타일",
+        options: [
+          { label: "Default", value: "default" },
+          { label: "Success", value: "success" },
+          { label: "Warning", value: "warning" },
+        ],
+      },
+    },
+    defaultProps: {
+      text: "Badge",
+      variant: "default",
+    },
+    createComponent: (id, props) => ({
+      id,
+      name: "Badge",
+      type: "badge",
+      order: 0,
+      props,
+      style: {
+        display: "inline-block",
+      },
+    }),
+    editor: (context, fields) =>
+      createElement(RegistryFieldsEditor, {
+        ...context,
+        fields,
+      }),
+    canvas: (component) => {
+      const props = component.props as {
+        text: string;
+        variant: "default" | "success" | "warning";
+      };
+      return createElement(
+        "span",
+        {
+          style: {
+            display: "inline-block",
+            padding: "4px 8px",
+            borderRadius: 4,
+            background:
+              props.variant === "success"
+                ? "#198754"
+                : props.variant === "warning"
+                  ? "#ffc107"
+                  : "#6c757d",
+            color: props.variant === "warning" ? "#000" : "#fff",
+          },
+        },
+        props.text,
+      );
+    },
+    exportHtml: () => "",
+  },
+
+  alert: {
+    label: "Alert",
+    description: "알림 메시지",
+    icon: Box,
+    supportsDisabled: false,
+    propsSchema: z.object({
+      message: z.string(),
+      variant: z.enum(["info", "success", "warning", "error"]),
+      dismissible: z.boolean(),
+    }),
+    fields: {
+      message: {
+        type: "textarea",
+        label: "메시지",
+        placeholder: "알림 메시지를 입력하세요.",
+      },
+      variant: {
+        type: "select",
+        label: "타입",
+        options: [
+          { label: "Info", value: "info" },
+          { label: "Success", value: "success" },
+          { label: "Warning", value: "warning" },
+          { label: "Error", value: "error" },
+        ],
+      },
+      dismissible: {
+        type: "checkbox",
+        label: "닫기 버튼 표시",
+      },
+    },
+    defaultProps: {
+      message: "알림 메시지입니다.",
+      variant: "info",
+      dismissible: true,
+    },
+    createComponent: (id, props) => ({
+      id,
+      name: "Alert",
+      type: "alert",
+      order: 0,
+      props,
+      style: {
+        width: "100%",
+      },
+    }),
+    editor: (context, fields) =>
+      createElement(RegistryFieldsEditor, {
+        ...context,
+        fields,
+      }),
+    canvas: (component) => {
+      const props = component.props as {
+        message: string;
+        variant: "info" | "success" | "warning" | "error";
+        dismissible: boolean;
+      };
+      const background =
+        props.variant === "success"
+          ? "#d1e7dd"
+          : props.variant === "warning"
+            ? "#fff3cd"
+            : props.variant === "error"
+              ? "#f8d7da"
+              : "#cff4fc";
+      const color =
+        props.variant === "success"
+          ? "#0f5132"
+          : props.variant === "warning"
+            ? "#664d03"
+            : props.variant === "error"
+              ? "#842029"
+              : "#055160";
+      return createElement(
+        "div",
+        {
+          style: {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            padding: "12px 16px",
+            borderRadius: 6,
+            background,
+            color,
+          },
+        },
+        createElement("span", null, props.message),
+        props.dismissible
+          ? createElement(
+              "span",
+              {
+                style: {
+                  fontSize: 18,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                },
+              },
+              "×",
+            )
+          : null,
+      );
+    },
+    exportHtml: () => "",
   },
 } satisfies Record<string, ComponentRegistryShape>;
 
