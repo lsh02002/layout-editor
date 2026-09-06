@@ -42,6 +42,11 @@ export type ComponentField =
       type: "radio";
       label: string;
       options: FieldOption[];
+    }
+  | {
+      type: "quill";
+      label: string;
+      placeholder?: string;
     };
 
 export type RegistryCreatedComponent<TType extends string = string> = {

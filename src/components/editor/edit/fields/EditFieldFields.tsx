@@ -1,4 +1,5 @@
 import type { ComponentField } from "../../registry/componentRegistry";
+import QuillEditor from "../../utils/quillEditor";
 
 export default function EditFieldFields({
   name,
@@ -148,6 +149,22 @@ export default function EditFieldFields({
           ))}
         </div>
       </>
+    );
+  }
+
+  if (field.type === "quill") {
+    return (
+      <div className="mb-3">
+        <label className="form-label" htmlFor={`field-${name}`}>
+          {field.label}
+        </label>
+
+        <QuillEditor
+          data={typeof value === "string" ? value : ""}
+          setData={(content) => onChange(content)}
+          placeholder={field.placeholder}
+        />
+      </div>
     );
   }
 
