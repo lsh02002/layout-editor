@@ -35,8 +35,6 @@ import {
   ButtonRenderer,
   CodeEditorRenderer,
   DividerRenderer,
-  FlexRenderer,
-  GridRenderer,
   HeadingRenderer,
   ImageGalleryRenderer,
   ImageRenderer,
@@ -206,16 +204,6 @@ const config = {
           fields,
         }),
 
-      canvas: (component) => {
-        if (component.type !== "grid") {
-          return null;
-        }
-
-        return createElement(GridRenderer, {
-          component,
-        });
-      },
-
       getSearchText: (component) => {
         if (component.type !== "grid") {
           return "";
@@ -373,16 +361,6 @@ const config = {
           ...context,
           fields,
         }),
-
-      canvas: (component) => {
-        if (component.type !== "flex") {
-          return null;
-        }
-
-        return createElement(FlexRenderer, {
-          component,
-        });
-      },
 
       getSearchText: (component) => {
         if (component.type !== "flex") {
