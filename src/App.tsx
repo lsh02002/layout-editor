@@ -68,6 +68,7 @@ import {
   exportVideoHtml,
 } from "./components/editor/utils/htmlexport/htmlExporters";
 import type { EditorConfig } from "./components/editor/registry/componentRegistry";
+import type { AlertVariant, BadgeVariant } from "./types/types";
 
 const config = {
   components: {
@@ -1511,7 +1512,7 @@ const config = {
           "info",
           "light",
           "dark",
-        ]),
+        ] as BadgeVariant[]),
       }),
       fields: {
         text: {
@@ -1556,15 +1557,7 @@ const config = {
       canvas: (component) => {
         const props = component.props as {
           text: string;
-          variant:
-            | "primary"
-            | "secondary"
-            | "success"
-            | "danger"
-            | "warning"
-            | "info"
-            | "light"
-            | "dark";
+          variant: BadgeVariant;
         };
         return createElement(
           "span",
@@ -1601,7 +1594,7 @@ const config = {
       getSearchText: (component) => {
         const props = component.props as {
           text: string;
-          variant: string;
+          variant: BadgeVariant;
         };
         return [props.text, props.variant, "badge", "배지"]
           .filter(Boolean)
@@ -1623,7 +1616,16 @@ const config = {
       supportsDisabled: false,
       propsSchema: z.object({
         message: z.string(),
-        variant: z.enum(["info", "success", "warning", "error"]),
+        variant: z.enum([
+          "primary",
+          "secondary",
+          "success",
+          "danger",
+          "warning",
+          "info",
+          "light",
+          "dark",
+        ] as AlertVariant[]),
         dismissible: z.boolean(),
       }),
       fields: {
@@ -1674,15 +1676,8 @@ const config = {
       canvas: (component) => {
         const props = component.props as {
           message: string;
-          variant:
-            | "primary"
-            | "secondary"
-            | "success"
-            | "danger"
-            | "warning"
-            | "info"
-            | "light"
-            | "dark";
+          variant: AlertVariant;
+
           dismissible: boolean;
         };
         const background =
@@ -1717,7 +1712,7 @@ const config = {
                       : props.variant === "light"
                         ? "#000"
                         : "#fff";
-                        
+
         return createElement(
           "div",
           {
@@ -1751,7 +1746,7 @@ const config = {
       getSearchText: (component) => {
         const props = component.props as {
           message: string;
-          variant: string;
+          variant: AlertVariant;
         };
         return [props.message, props.variant, "alert", "알림"]
           .filter(Boolean)
