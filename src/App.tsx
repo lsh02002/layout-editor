@@ -1502,7 +1502,16 @@ const config = {
       supportsDisabled: false,
       propsSchema: z.object({
         text: z.string(),
-        variant: z.enum(["default", "success", "warning"]),
+        variant: z.enum([
+          "primary",
+          "secondary",
+          "success",
+          "danger",
+          "warning",
+          "info",
+          "light",
+          "dark",
+        ]),
       }),
       fields: {
         text: {
@@ -1514,15 +1523,20 @@ const config = {
           type: "select",
           label: "스타일",
           options: [
-            { label: "Default", value: "default" },
+            { label: "Primary", value: "primary" },
+            { label: "Secondary", value: "secondary" },
             { label: "Success", value: "success" },
+            { label: "Danger", value: "danger" },
             { label: "Warning", value: "warning" },
+            { label: "Info", value: "info" },
+            { label: "Light", value: "light" },
+            { label: "Dark", value: "dark" },
           ],
         },
       },
       defaultProps: {
         text: "Badge",
-        variant: "default",
+        variant: "primary",
       },
       createComponent: (id, props) => ({
         id,
@@ -1542,7 +1556,15 @@ const config = {
       canvas: (component) => {
         const props = component.props as {
           text: string;
-          variant: "default" | "success" | "warning";
+          variant:
+            | "primary"
+            | "secondary"
+            | "success"
+            | "danger"
+            | "warning"
+            | "info"
+            | "light"
+            | "dark";
         };
         return createElement(
           "span",
@@ -1552,12 +1574,25 @@ const config = {
               padding: "4px 8px",
               borderRadius: 4,
               background:
-                props.variant === "success"
-                  ? "#198754"
-                  : props.variant === "warning"
-                    ? "#ffc107"
-                    : "#6c757d",
-              color: props.variant === "warning" ? "#000" : "#fff",
+                props.variant === "primary"
+                  ? "#0d6efd"
+                  : props.variant === "secondary"
+                    ? "#6c757d"
+                    : props.variant === "success"
+                      ? "#198754"
+                      : props.variant === "danger"
+                        ? "#dc3545"
+                        : props.variant === "warning"
+                          ? "#ffc107"
+                          : props.variant === "info"
+                            ? "#0dcaf0"
+                            : props.variant === "light"
+                              ? "#f8f9fa"
+                              : "#212529",
+              color:
+                props.variant === "warning" || props.variant === "light"
+                  ? "#000"
+                  : "#fff",
             },
           },
           props.text,
@@ -1601,10 +1636,14 @@ const config = {
           type: "select",
           label: "타입",
           options: [
-            { label: "Info", value: "info" },
+            { label: "Primary", value: "primary" },
+            { label: "Secondary", value: "secondary" },
             { label: "Success", value: "success" },
+            { label: "Danger", value: "danger" },
             { label: "Warning", value: "warning" },
-            { label: "Error", value: "error" },
+            { label: "Info", value: "info" },
+            { label: "Light", value: "light" },
+            { label: "Dark", value: "dark" },
           ],
         },
         dismissible: {
@@ -1635,25 +1674,50 @@ const config = {
       canvas: (component) => {
         const props = component.props as {
           message: string;
-          variant: "info" | "success" | "warning" | "error";
+          variant:
+            | "primary"
+            | "secondary"
+            | "success"
+            | "danger"
+            | "warning"
+            | "info"
+            | "light"
+            | "dark";
           dismissible: boolean;
         };
         const background =
-          props.variant === "success"
-            ? "#d1e7dd"
-            : props.variant === "warning"
-              ? "#fff3cd"
-              : props.variant === "error"
-                ? "#f8d7da"
-                : "#cff4fc";
+          props.variant === "primary"
+            ? "#0d6efd"
+            : props.variant === "secondary"
+              ? "#6c757d"
+              : props.variant === "success"
+                ? "#d1e7dd"
+                : props.variant === "danger"
+                  ? "#f8d7da"
+                  : props.variant === "warning"
+                    ? "#fff3cd"
+                    : props.variant === "info"
+                      ? "#cff4fc"
+                      : props.variant === "light"
+                        ? "#f8f9fa"
+                        : "#212529";
         const color =
-          props.variant === "success"
-            ? "#0f5132"
-            : props.variant === "warning"
-              ? "#664d03"
-              : props.variant === "error"
-                ? "#842029"
-                : "#055160";
+          props.variant === "primary"
+            ? "#fff"
+            : props.variant === "secondary"
+              ? "#fff"
+              : props.variant === "success"
+                ? "#0f5132"
+                : props.variant === "danger"
+                  ? "#842029"
+                  : props.variant === "warning"
+                    ? "#664d03"
+                    : props.variant === "info"
+                      ? "#055160"
+                      : props.variant === "light"
+                        ? "#000"
+                        : "#fff";
+                        
         return createElement(
           "div",
           {
