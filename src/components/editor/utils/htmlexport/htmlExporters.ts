@@ -1338,7 +1338,7 @@ export const exportCardHtml: HtmlExporter = (component) => {
   } = getExportMeta(component);
 
   const title = component.props.title ?? "";
-  const text = component.props.text ?? "";
+  const content = component.props.content ?? "";
 
   return `
     <div
@@ -1383,7 +1383,7 @@ export const exportCardHtml: HtmlExporter = (component) => {
         }
 
         ${
-          text
+          content
             ? `
           <div
             class="builder-card-text"
@@ -1391,7 +1391,7 @@ export const exportCardHtml: HtmlExporter = (component) => {
               ["font-size:1rem", "line-height:1.5"].join(";"),
             )}"
           >
-            ${escapeHtml(text)}
+            ${escapeHtml(content)}
           </div>`
             : ""
         }
@@ -1412,7 +1412,7 @@ export const exportAlertHtml: HtmlExporter = (component) => {
     wrapperClass,
   } = getExportMeta(component);
 
-  const text = component.props.text ?? "";
+  const message = component.props.message ?? "";
   const variant = component.props.variant ?? "primary";
 
   const variantStyle: Record<string, string> = {
@@ -1491,7 +1491,7 @@ export const exportAlertHtml: HtmlExporter = (component) => {
             .join(";"),
         )}"
       >
-        ${escapeHtml(text)}
+        ${escapeHtml(message)}
       </div>
     </div>`;
 };

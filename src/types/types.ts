@@ -248,7 +248,7 @@ export interface CardComponent extends BaseComponent {
 
   props: {
     title?: string;
-    text?: string;
+    content?: string;
   };
 }
 
@@ -268,7 +268,7 @@ export interface AlertComponent extends BaseComponent {
   type: "alert";
 
   props: {
-    text: string;
+    message: string;
     variant?: AlertVariant;
   };
 }
