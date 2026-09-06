@@ -11,8 +11,8 @@ import {
 
 import EditMenuBox from "./EditMenuBox";
 
-import type { ComponentLayout } from "../../../types/types";
-import { resolveHeight, resolveWidth } from "../utils/layoutSize";
+import type { ComponentLayout } from "../../types/types";
+import { resolveHeight, resolveWidth } from "../editor/utils/layoutSize";
 
 import { GripHorizontal, GripVertical } from "lucide-react";
 
