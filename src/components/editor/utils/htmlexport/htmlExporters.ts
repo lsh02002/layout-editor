@@ -1323,3 +1323,235 @@ export const exportFlexHtml: HtmlExporter = async (component, context) => {
       ${children}
     </div>`;
 };
+
+export const exportCardHtml: HtmlExporter = (component) => {
+  if (component.type !== "card") {
+    return "";
+  }
+
+  const {
+    wrapperStyle,
+    contentStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+  } = getExportMeta(component);
+
+  const title = component.props.title ?? "";
+  const text = component.props.text ?? "";
+
+  return `
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="card"
+      data-component-name="${componentName}"
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <div
+        class="builder-card"
+        style="${escapeAttribute(
+          [
+            "width:100%",
+            "box-sizing:border-box",
+            "border:1px solid #dee2e6",
+            "border-radius:8px",
+            "background-color:#fff",
+            "overflow:hidden",
+            contentStyle,
+          ]
+            .filter(Boolean)
+            .join(";"),
+        )}"
+      >
+        ${
+          title
+            ? `
+          <div
+            class="builder-card-title"
+            style="${escapeAttribute(
+              [
+                "font-size:1.25rem",
+                "font-weight:600",
+                "margin-bottom:8px",
+              ].join(";"),
+            )}"
+          >
+            ${escapeHtml(title)}
+          </div>`
+            : ""
+        }
+
+        ${
+          text
+            ? `
+          <div
+            class="builder-card-text"
+            style="${escapeAttribute(
+              ["font-size:1rem", "line-height:1.5"].join(";"),
+            )}"
+          >
+            ${escapeHtml(text)}
+          </div>`
+            : ""
+        }
+      </div>
+    </div>`;
+};
+
+export const exportAlertHtml: HtmlExporter = (component) => {
+  if (component.type !== "alert") {
+    return "";
+  }
+
+  const {
+    wrapperStyle,
+    contentStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+  } = getExportMeta(component);
+
+  const text = component.props.text ?? "";
+  const variant = component.props.variant ?? "primary";
+
+  const variantStyle: Record<string, string> = {
+    primary: [
+      "color:#084298",
+      "background-color:#cfe2ff",
+      "border-color:#b6d4fe",
+    ].join(";"),
+
+    secondary: [
+      "color:#41464b",
+      "background-color:#e2e3e5",
+      "border-color:#d3d6d8",
+    ].join(";"),
+
+    success: [
+      "color:#0f5132",
+      "background-color:#d1e7dd",
+      "border-color:#badbcc",
+    ].join(";"),
+
+    danger: [
+      "color:#842029",
+      "background-color:#f8d7da",
+      "border-color:#f5c2c7",
+    ].join(";"),
+
+    warning: [
+      "color:#664d03",
+      "background-color:#fff3cd",
+      "border-color:#ffecb5",
+    ].join(";"),
+
+    info: [
+      "color:#055160",
+      "background-color:#cff4fc",
+      "border-color:#b6effb",
+    ].join(";"),
+
+    light: [
+      "color:#636464",
+      "background-color:#fefefe",
+      "border-color:#fdfdfe",
+    ].join(";"),
+
+    dark: [
+      "color:#141619",
+      "background-color:#d3d3d4",
+      "border-color:#bcbebf",
+    ].join(";"),
+  };
+
+  return `
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="alert"
+      data-component-name="${componentName}"
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <div
+        class="builder-alert builder-alert-${escapeAttribute(variant)}"
+        role="alert"
+        style="${escapeAttribute(
+          [
+            "position:relative",
+            "width:100%",
+            "box-sizing:border-box",
+            "padding:1rem",
+            "border:1px solid transparent",
+            "border-radius:6px",
+            variantStyle[variant] ?? variantStyle.primary,
+            contentStyle,
+          ]
+            .filter(Boolean)
+            .join(";"),
+        )}"
+      >
+        ${escapeHtml(text)}
+      </div>
+    </div>`;
+};
+
+export const exportBadgeHtml: HtmlExporter = (component) => {
+  if (component.type !== "badge") {
+    return "";
+  }
+
+  const {
+    wrapperStyle,
+    contentStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+  } = getExportMeta(component);
+
+  const text = component.props.text ?? "";
+  const variant = component.props.variant ?? "primary";
+
+  const variantStyle: Record<string, string> = {
+    primary: "color:#fff;background-color:#0d6efd",
+    secondary: "color:#fff;background-color:#6c757d",
+    success: "color:#fff;background-color:#198754",
+    danger: "color:#fff;background-color:#dc3545",
+    warning: "color:#000;background-color:#ffc107",
+    info: "color:#000;background-color:#0dcaf0",
+    light: "color:#000;background-color:#f8f9fa",
+    dark: "color:#fff;background-color:#212529",
+  };
+
+  return `
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="badge"
+      data-component-name="${componentName}"
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <span
+        class="builder-badge builder-badge-${escapeAttribute(variant)}"
+        style="${escapeAttribute(
+          [
+            "display:inline-block",
+            "padding:0.35em 0.65em",
+            "font-size:0.75em",
+            "font-weight:700",
+            "line-height:1",
+            "text-align:center",
+            "white-space:nowrap",
+            "vertical-align:baseline",
+            "border-radius:0.375rem",
+            variantStyle[variant] ?? variantStyle.primary,
+            contentStyle,
+          ]
+            .filter(Boolean)
+            .join(";"),
+        )}"
+      >
+        ${escapeHtml(text)}
+      </span>
+    </div>`;
+};

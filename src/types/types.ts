@@ -243,6 +243,57 @@ export interface ImageSliderComponent extends BaseComponent {
   };
 }
 
+export interface CardComponent extends BaseComponent {
+  type: "card";
+
+  props: {
+    title?: string;
+    text?: string;
+  };
+}
+
+// Alert
+
+export type AlertVariant =
+  | "primary"
+  | "secondary"
+  | "success"
+  | "danger"
+  | "warning"
+  | "info"
+  | "light"
+  | "dark";
+
+export interface AlertComponent extends BaseComponent {
+  type: "alert";
+
+  props: {
+    text: string;
+    variant?: AlertVariant;
+  };
+}
+
+// Badge
+
+export type BadgeVariant =
+  | "primary"
+  | "secondary"
+  | "success"
+  | "danger"
+  | "warning"
+  | "info"
+  | "light"
+  | "dark";
+
+export interface BadgeComponent extends BaseComponent {
+  type: "badge";
+
+  props: {
+    text: string;
+    variant?: BadgeVariant;
+  };
+}
+
 export type LayoutComponent =
   | ButtonComponent
   | ScrollToTopButtonComponent
@@ -259,6 +310,9 @@ export type LayoutComponent =
   | CodeEditorComponent
   | ImageGalleryComponent
   | ImageSliderComponent
+  | CardComponent
+  | AlertComponent
+  | BadgeComponent
   | ContainerComponent;
 
 export type ChildrenComponent = Extract<

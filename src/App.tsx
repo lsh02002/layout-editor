@@ -47,7 +47,10 @@ import {
   VideoRenderer,
 } from "./components/canvas/renderers";
 import {
+  exportAlertHtml,
+  exportBadgeHtml,
   exportButtonHtml,
+  exportCardHtml,
   exportCodeEditorHtml,
   exportContainerHtml,
   exportDividerHtml,
@@ -1489,7 +1492,7 @@ const config = {
         };
         return props.title?.trim() || component.name?.trim() || "Card";
       },
-      exportHtml: () => "",
+      exportHtml: exportCardHtml,
     },
 
     badge: {
@@ -1575,7 +1578,7 @@ const config = {
         };
         return props.text?.trim() || component.name?.trim() || "Badge";
       },
-      exportHtml: () => "",
+      exportHtml: exportBadgeHtml,
     },
 
     alert: {
@@ -1696,7 +1699,7 @@ const config = {
         };
         return props.message?.trim() || component.name?.trim() || "Alert";
       },
-      exportHtml: () => "",
+      exportHtml: exportAlertHtml,
     },
   } satisfies EditorConfig["components"],
 } satisfies EditorConfig;
