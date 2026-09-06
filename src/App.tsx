@@ -70,7 +70,7 @@ const config = {
   components: {
     container: {
       label: "Container",
-      description: "컴포넌트를 묶는 영역",
+      description: "컴포넌트를 묶는 영역(기존 호환용)",
       icon: Box,
       supportsDisabled: false,
       propsSchema: z.object({
