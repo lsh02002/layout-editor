@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { ComponentLayout, LayoutComponent } from "../../../types/types";
+import { hasChildren } from "../../../types/types";
 import { useEditorConfig } from "../../../context/usehooks";
 import {
   containsComponent,
@@ -58,7 +59,7 @@ export function usePositionParent({
           });
         }
 
-        if (component.type === "container") {
+        if (hasChildren(component)) {
           walk(component.children, depth + 1);
         }
       });

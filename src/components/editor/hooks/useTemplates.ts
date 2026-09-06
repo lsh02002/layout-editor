@@ -1,10 +1,11 @@
 import { useCallback, useRef, type ChangeEvent } from "react";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
-import type {
-  LayoutComponent,
-  TemplateFile,
-  CommitHistory,
+import {
+  type LayoutComponent,
+  type TemplateFile,
+  type CommitHistory,
+  hasChildren,
 } from "../../../types/types";
 import {
   cloneComponent,
@@ -400,7 +401,7 @@ export const useTemplates = ({
 
       const selected = findComponentRecursive(components, primarySelectedId);
 
-      if (selected && selected.type === "container") {
+      if (selected && hasChildren(selected)) {
         commitHistory((prev) =>
           insertComponentRecursive(
             prev,

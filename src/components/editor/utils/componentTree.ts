@@ -1,7 +1,8 @@
-import type {
-  ComponentLayout,
-  ComponentType,
-  LayoutComponent,
+import {
+  hasChildren,
+  type ComponentLayout,
+  type ComponentType,
+  type LayoutComponent,
 } from "../../../types/types";
 
 export const normalizeOrder = (items: LayoutComponent[]): LayoutComponent[] =>
@@ -19,10 +20,7 @@ export function hasComponentType(
       return true;
     }
 
-    if (
-      component.type === "container" &&
-      hasComponentType(component.children, type)
-    ) {
+    if (hasChildren(component) && hasComponentType(component.children, type)) {
       return true;
     }
   }
@@ -49,7 +47,7 @@ export const removeComponentRecursive = (
   for (let index = 0; index < items.length; index += 1) {
     const item = items[index];
 
-    if (item.type !== "container") {
+    if (!hasChildren(item)) {
       continue;
     }
 
@@ -76,26 +74,10 @@ export const removeComponentRecursive = (
   };
 };
 
-export const cloneComponent = (component: LayoutComponent): LayoutComponent => {
+export const cloneComponent = <T extends LayoutComponent>(component: T): T => {
   const newId = crypto.randomUUID();
 
-  if (component.type === "image") {
-    return {
-      ...component,
-      id: newId,
-      props: {
-        ...component.props,
-        urls: [...component.props.urls],
-      },
-      style: component.style ? { ...component.style } : undefined,
-      contentStyle: component.contentStyle
-        ? { ...component.contentStyle }
-        : undefined,
-      layout: component.layout ? { ...component.layout } : undefined,
-    };
-  }
-
-  if (component.type === "container") {
+  if (hasChildren(component)) {
     return {
       ...component,
       id: newId,
@@ -105,8 +87,8 @@ export const cloneComponent = (component: LayoutComponent): LayoutComponent => {
         ? { ...component.contentStyle }
         : undefined,
       layout: component.layout ? { ...component.layout } : undefined,
-      children: component.children.map(cloneComponent),
-    };
+      children: component.children.map((child) => cloneComponent(child)),
+    } as T;
   }
 
   return {
@@ -118,7 +100,7 @@ export const cloneComponent = (component: LayoutComponent): LayoutComponent => {
       ? { ...component.contentStyle }
       : undefined,
     layout: component.layout ? { ...component.layout } : undefined,
-  } as LayoutComponent;
+  } as T;
 };
 
 export const insertComponentRecursive = (
@@ -137,7 +119,7 @@ export const insertComponentRecursive = (
   }
 
   return items.map((item) => {
-    if (item.type === "container" && item.id === parentId) {
+    if (hasChildren(item) && item.id === parentId) {
       const children = [...item.children];
       const safeIndex = Math.max(0, Math.min(index, children.length));
 
@@ -149,7 +131,7 @@ export const insertComponentRecursive = (
       };
     }
 
-    if (item.type === "container") {
+    if (hasChildren(item)) {
       return {
         ...item,
         children: insertComponentRecursive(
@@ -177,7 +159,7 @@ export const findComponentLocation = (
       return { parentId, index };
     }
 
-    if (item.type === "container") {
+    if (hasChildren(item)) {
       const found = findComponentLocation(item.children, id, item.id);
 
       if (found) {
@@ -198,7 +180,7 @@ export const findComponentRecursive = (
       return item;
     }
 
-    if (item.type === "container") {
+    if (hasChildren(item)) {
       const found = findComponentRecursive(item.children, id);
 
       if (found) {
@@ -218,7 +200,7 @@ export const containsComponent = (
     return true;
   }
 
-  if (component.type !== "container") {
+  if (!hasChildren(component)) {
     return false;
   }
 
@@ -245,7 +227,7 @@ export const updateLayoutRecursive = (
       };
     }
 
-    if (item.type === "container") {
+    if (hasChildren(item)) {
       const nextChildren = updateLayoutRecursive(item.children, id, newLayout);
 
       if (nextChildren !== item.children) {
@@ -274,7 +256,7 @@ export const updateComponentRecursive = (
       return updater(component);
     }
 
-    if (component.type === "container") {
+    if (hasChildren(component)) {
       return {
         ...component,
         children: updateComponentRecursive(component.children, id, updater),

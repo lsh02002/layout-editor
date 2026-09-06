@@ -149,6 +149,36 @@ export interface ContainerComponent extends BaseComponent {
   children: LayoutComponent[];
 }
 
+export interface GridComponent extends BaseComponent {
+  type: "grid";
+  props: {
+    columns?: number;
+    gap?: number;
+  };
+  children: LayoutComponent[];
+}
+
+export interface FlexComponent extends BaseComponent {
+  type: "flex";
+
+  props: {
+    direction?: "row" | "column";
+    gap?: number;
+
+    justifyContent?:
+      | "flex-start"
+      | "center"
+      | "flex-end"
+      | "space-between"
+      | "space-around"
+      | "space-evenly";
+
+    alignItems?: "flex-start" | "center" | "flex-end" | "stretch";
+  };
+
+  children: LayoutComponent[];
+}
+
 export interface DividerComponent extends BaseComponent {
   type: "divider";
 
@@ -221,6 +251,8 @@ export type LayoutComponent =
   | QuillComponent
   | ImageComponent
   | LinkComponent
+  | GridComponent
+  | FlexComponent
   | DividerComponent
   | SpacerComponent
   | VideoComponent
@@ -228,6 +260,17 @@ export type LayoutComponent =
   | ImageGalleryComponent
   | ImageSliderComponent
   | ContainerComponent;
+
+export type ChildrenComponent = Extract<
+  LayoutComponent,
+  { children: LayoutComponent[] }
+>;
+
+export function hasChildren(
+  component: LayoutComponent,
+): component is ChildrenComponent {
+  return "children" in component && Array.isArray(component.children);
+}
 
 export interface HistoryState {
   past: LayoutComponent[][];

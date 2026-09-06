@@ -7,7 +7,7 @@ import {
   type PointerEvent,
 } from "react";
 
-import type { LayoutComponent } from "../../../types/types";
+import { type LayoutComponent, hasChildren } from "../../../types/types";
 import type { CommitHistory } from "../../../types/types";
 import type { RegistryComponentType } from "../registry/componentRegistry";
 
@@ -195,7 +195,7 @@ export const useComponentDragDrop = ({
         for (const component of sorted) {
           orderMap.set(component.id, order++);
 
-          if (component.type === "container") {
+          if (hasChildren(component)) {
             walk(component.children);
           }
         }

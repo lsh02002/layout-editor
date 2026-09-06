@@ -3,6 +3,7 @@ import {
   getComponentSearchText,
   type ComponentRegistry,
 } from "../registry/componentRegistry";
+import { hasChildren } from "../../../types/types";
 
 export const normalizeSearchText = (value: string): string =>
   value
@@ -31,7 +32,7 @@ export function filterLayerComponents(
     );
     const selfMatched = searchText.includes(keyword);
 
-    if (component.type !== "container") {
+    if (!hasChildren(component)) {
       return selfMatched ? component : null;
     }
 

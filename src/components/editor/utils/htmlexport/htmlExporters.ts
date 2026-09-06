@@ -1239,3 +1239,87 @@ export const exportLinkHtml: HtmlExporter = (component) => {
       </a>
     </div>`;
 };
+
+export const exportGridHtml: HtmlExporter = async (component, context) => {
+  if (component.type !== "grid") {
+    return "";
+  }
+
+  const { wrapperStyle, componentId, componentName, wrapperClass } =
+    getExportMeta(component);
+
+  const columns = component.props.columns ?? 2;
+  const gap = component.props.gap ?? 8;
+
+  const children = (
+    await Promise.all(
+      [...component.children]
+        .sort((a, b) => a.order - b.order)
+        .map(context.renderComponent),
+    )
+  ).join("\n");
+
+  return `
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="grid"
+      data-component-name="${componentName}"
+      style="${escapeAttribute(
+        [
+          "display:grid",
+          `grid-template-columns:repeat(${columns}, minmax(0, 1fr))`,
+          `gap:${gap}px`,
+          wrapperStyle,
+        ]
+          .filter(Boolean)
+          .join(";"),
+      )}"
+    >
+      ${children}
+    </div>`;
+};
+
+export const exportFlexHtml: HtmlExporter = async (component, context) => {
+  if (component.type !== "flex") {
+    return "";
+  }
+
+  const { wrapperStyle, componentId, componentName, wrapperClass } =
+    getExportMeta(component);
+
+  const direction = component.props.direction ?? "row";
+  const gap = component.props.gap ?? 8;
+  const justifyContent = component.props.justifyContent ?? "flex-start";
+  const alignItems = component.props.alignItems ?? "stretch";
+
+  const children = (
+    await Promise.all(
+      [...component.children]
+        .sort((a, b) => a.order - b.order)
+        .map(context.renderComponent),
+    )
+  ).join("\n");
+
+  return `
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="flex"
+      data-component-name="${componentName}"
+      style="${escapeAttribute(
+        [
+          "display:flex",
+          `flex-direction:${direction}`,
+          `gap:${gap}px`,
+          `justify-content:${justifyContent}`,
+          `align-items:${alignItems}`,
+          wrapperStyle,
+        ]
+          .filter(Boolean)
+          .join(";"),
+      )}"
+    >
+      ${children}
+    </div>`;
+};

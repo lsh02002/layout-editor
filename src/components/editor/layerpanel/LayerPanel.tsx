@@ -1,5 +1,5 @@
 import React, { memo, useMemo, useRef } from "react";
-import type { LayoutComponent } from "../../../types/types";
+import { hasChildren, type LayoutComponent } from "../../../types/types";
 import { getComponentDisplayName } from "../utils/componentDisplayName";
 import { useEditorConfig } from "../../../context/usehooks";
 
@@ -206,7 +206,7 @@ function LayerPanel({
         {renderDropZone(parentId, 0, depth)}
 
         {sorted.map((component, index) => {
-          const isContainer = component.type === "container";
+          const isParent = hasChildren(component);
           const isSelected = selectedComponentIds.includes(component.id);
           const isDragging = draggingIds.includes(component.id);
           return (
@@ -390,7 +390,7 @@ function LayerPanel({
                 </button>
 
                 <span style={{ width: 14, textAlign: "center", flexShrink: 0 }}>
-                  {isContainer ? "▾" : "•"}
+                  {isParent ? "▾" : "•"}
                 </span>
 
                 <span
@@ -401,7 +401,7 @@ function LayerPanel({
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
                     fontSize: 13,
-                    fontWeight: isContainer ? 600 : 400,
+                    fontWeight: isParent ? 600 : 400,
                   }}
                 >
                   {highlightSearchText(
@@ -418,7 +418,7 @@ function LayerPanel({
                 </small>
               </div>
 
-              {isContainer && (
+              {isParent && (
                 <div>
                   {renderTree(component.children, component.id, depth + 1)}
                 </div>

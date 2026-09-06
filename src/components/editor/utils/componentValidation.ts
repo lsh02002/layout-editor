@@ -73,20 +73,28 @@ export const validateComponent = (
     }
     return formatIssue(`${path}.props`, issue);
   }
-  if (component.type === "container") {
+  if (
+    component.type === "container" ||
+    component.type === "grid" ||
+    component.type === "flex"
+  ) {
     if (!isObject(value)) {
-      return `${path}: container 형식이 올바르지 않습니다.`;
+      return `${path}: component 형식이 올바르지 않습니다.`;
     }
+
     const children = value.children;
+
     if (!Array.isArray(children)) {
-      return `${path}.children: container.children이 배열이 아닙니다.`;
+      return `${path}.children: children이 배열이 아닙니다.`;
     }
+
     for (let index = 0; index < children.length; index += 1) {
       const error = validateComponent(
         componentRegistry,
         children[index],
         `${path}.children[${index}]`,
       );
+
       if (error) {
         return error;
       }

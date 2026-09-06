@@ -1,4 +1,4 @@
-import type { LayoutComponent } from "../../../types/types";
+import { hasChildren, type LayoutComponent } from "../../../types/types";
 import {
   type ComponentRegistry,
   type ComponentRegistryShape,
@@ -48,7 +48,7 @@ export function canAddComponentType(
         count += 1;
       }
 
-      if (component.type === "container") {
+      if (hasChildren(component)) {
         walk(component.children);
       }
     }

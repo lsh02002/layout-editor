@@ -1,4 +1,4 @@
-import type { LayoutComponent } from "../../../types/types";
+import { hasChildren, type LayoutComponent } from "../../../types/types";
 
 export const buildComponentCustomCss = (component: LayoutComponent): string => {
   const css = component.customCss?.trim();
@@ -17,7 +17,7 @@ export const collectComponentCustomCss = (items: LayoutComponent[]): string =>
     .flatMap((component) => {
       const own = buildComponentCustomCss(component);
 
-      if (component.type === "container") {
+      if (hasChildren(component)) {
         return [own, collectComponentCustomCss(component.children)];
       }
 

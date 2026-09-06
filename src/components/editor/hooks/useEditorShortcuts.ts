@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { hasChildren } from "../../../types/types";
 
 import type { LayoutComponent, CommitHistory } from "../../../types/types";
 
@@ -42,7 +43,7 @@ const removeSelectedComponents = (
   return items
     .filter((component) => !selectedIds.has(component.id))
     .map((component) => {
-      if (component.type !== "container") {
+      if (!hasChildren(component)) {
         return component;
       }
 
@@ -115,7 +116,7 @@ export const useEditorShortcuts = ({
           for (const component of sorted) {
             orderMap.set(component.id, order++);
 
-            if (component.type === "container") {
+            if (hasChildren(component)) {
               walk(component.children);
             }
           }
@@ -160,7 +161,7 @@ export const useEditorShortcuts = ({
 
       const selected = findComponentRecursive(components, primarySelectedId);
 
-      if (selected && selected.type === "container") {
+      if (selected && hasChildren(selected)) {
         commitHistory((prev) => {
           let next = prev;
 

@@ -35,6 +35,8 @@ import {
   ButtonRenderer,
   CodeEditorRenderer,
   DividerRenderer,
+  FlexRenderer,
+  GridRenderer,
   HeadingRenderer,
   ImageGalleryRenderer,
   ImageRenderer,
@@ -51,6 +53,8 @@ import {
   exportCodeEditorHtml,
   exportContainerHtml,
   exportDividerHtml,
+  exportFlexHtml,
+  exportGridHtml,
   exportHeadingHtml,
   exportImageGalleryHtml,
   exportImageHtml,
@@ -150,6 +154,261 @@ const config = {
         return "container 컨테이너";
       },
       exportHtml: exportContainerHtml,
+    },
+
+    grid: {
+      label: "Grid",
+      description: "Grid 레이아웃",
+      icon: Box,
+      supportsDisabled: false,
+
+      propsSchema: z.object({
+        columns: z.number().int().min(1).optional(),
+        gap: z.number().finite().min(0).optional(),
+      }),
+
+      fields: {
+        columns: {
+          type: "number",
+          label: "열 개수",
+          min: 1,
+          max: 12,
+        },
+        gap: {
+          type: "number",
+          label: "간격",
+          min: 0,
+        },
+      },
+
+      defaultProps: {
+        columns: 2,
+        gap: 8,
+      },
+
+      createComponent: (id, props) => ({
+        id,
+        name: "Grid",
+        type: "grid" as const,
+        order: 0,
+        props,
+        style: {
+          width: "100%",
+          minHeight: 100,
+          padding: 12,
+        },
+        children: [],
+      }),
+
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, {
+          ...context,
+          fields,
+        }),
+
+      canvas: (component) => {
+        if (component.type !== "grid") {
+          return null;
+        }
+
+        return createElement(GridRenderer, {
+          component,
+        });
+      },
+
+      getSearchText: (component) => {
+        if (component.type !== "grid") {
+          return "";
+        }
+
+        return [
+          "grid",
+          "그리드",
+          "레이아웃",
+          component.name,
+          `${component.props.columns ?? 2} columns`,
+        ]
+          .filter(Boolean)
+          .join(" ");
+      },
+
+      getDisplayName: (component) => {
+        if (component.type !== "grid") {
+          return "";
+        }
+
+        return component.name?.trim() || "Grid";
+      },
+
+      exportHtml: exportGridHtml,
+    },
+
+    flex: {
+      label: "Flex",
+      description: "Flex 레이아웃",
+      icon: Box,
+      supportsDisabled: false,
+
+      propsSchema: z.object({
+        direction: z.enum(["row", "column"]).optional(),
+
+        gap: z.number().finite().min(0).optional(),
+
+        justifyContent: z
+          .enum([
+            "flex-start",
+            "center",
+            "flex-end",
+            "space-between",
+            "space-around",
+            "space-evenly",
+          ])
+          .optional(),
+
+        alignItems: z
+          .enum(["flex-start", "center", "flex-end", "stretch"])
+          .optional(),
+      }),
+
+      fields: {
+        direction: {
+          type: "select",
+          label: "방향",
+          options: [
+            {
+              label: "가로",
+              value: "row",
+            },
+            {
+              label: "세로",
+              value: "column",
+            },
+          ],
+        },
+
+        gap: {
+          type: "number",
+          label: "간격",
+          min: 0,
+        },
+
+        justifyContent: {
+          type: "select",
+          label: "주축 정렬",
+          options: [
+            {
+              label: "Start",
+              value: "flex-start",
+            },
+            {
+              label: "Center",
+              value: "center",
+            },
+            {
+              label: "End",
+              value: "flex-end",
+            },
+            {
+              label: "Space Between",
+              value: "space-between",
+            },
+            {
+              label: "Space Around",
+              value: "space-around",
+            },
+            {
+              label: "Space Evenly",
+              value: "space-evenly",
+            },
+          ],
+        },
+
+        alignItems: {
+          type: "select",
+          label: "교차축 정렬",
+          options: [
+            {
+              label: "Stretch",
+              value: "stretch",
+            },
+            {
+              label: "Start",
+              value: "flex-start",
+            },
+            {
+              label: "Center",
+              value: "center",
+            },
+            {
+              label: "End",
+              value: "flex-end",
+            },
+          ],
+        },
+      },
+
+      defaultProps: {
+        direction: "row",
+        gap: 8,
+        justifyContent: "flex-start",
+        alignItems: "stretch",
+      },
+
+      createComponent: (id, props) => ({
+        id,
+        name: "Flex",
+        type: "flex" as const,
+        order: 0,
+        props,
+        style: {
+          width: "100%",
+          minHeight: 100,
+          padding: 12,
+        },
+        children: [],
+      }),
+
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, {
+          ...context,
+          fields,
+        }),
+
+      canvas: (component) => {
+        if (component.type !== "flex") {
+          return null;
+        }
+
+        return createElement(FlexRenderer, {
+          component,
+        });
+      },
+
+      getSearchText: (component) => {
+        if (component.type !== "flex") {
+          return "";
+        }
+
+        return [
+          "flex",
+          "플렉스",
+          "레이아웃",
+          component.name,
+          component.props.direction,
+        ]
+          .filter(Boolean)
+          .join(" ");
+      },
+
+      getDisplayName: (component) => {
+        if (component.type !== "flex") {
+          return "";
+        }
+
+        return component.name?.trim() || "Flex";
+      },
+
+      exportHtml: exportFlexHtml,
     },
 
     heading: {

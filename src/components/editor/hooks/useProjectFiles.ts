@@ -6,7 +6,7 @@ import {
   type ChangeEvent,
 } from "react";
 import { isTauri } from "../utils/projectUtils";
-import type { LayoutComponent } from "../../../types/types";
+import { type LayoutComponent } from "../../../types/types";
 import type { ComponentRegistry } from "../registry/componentRegistry";
 import { isObject, validateComponent } from "../utils/componentValidation";
 import { downloadProjectFile } from "../utils/projectUtils";
@@ -87,7 +87,7 @@ const validateProjectFile = (
         ids.add(item.id);
       }
 
-      if (item.type === "container" && Array.isArray(item.children)) {
+      if (Array.isArray(item.children)) {
         const error = checkIds(item.children, `${path}[${index}].children`);
 
         if (error) {

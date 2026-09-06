@@ -11,10 +11,11 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import DivBox from "../editor/layout/DivBox";
-import type {
-  ComponentLayout,
-  ContainerDirection,
-  LayoutComponent,
+import {
+  hasChildren,
+  type ComponentLayout,
+  type ContainerDirection,
+  type LayoutComponent,
 } from "../../types/types";
 import CanvasComponentContent from "./CanvasComponentContent";
 import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
@@ -268,7 +269,7 @@ function LayoutComponentNode({
         style={{
           position: "absolute",
           left: 0,
-          top: component.type === "container" ? "-14px" : 0,
+          top: hasChildren(component) ? "-14px" : 0,
           transform: "translate(-50%, -50%)",
           zIndex: 120,
         }}
@@ -277,21 +278,167 @@ function LayoutComponentNode({
       </div>
     ) : null;
 
-  const containerChildren =
-    component.type === "container" ? component.children : null;
+  const componentChildren = hasChildren(component) ? component.children : null;
 
   const sortedChildren = useMemo(() => {
-    if (!containerChildren) {
+    if (!componentChildren) {
       return [];
     }
 
-    return [...containerChildren].sort((a, b) => a.order - b.order);
-  }, [containerChildren]);
+    return [...componentChildren].sort((a, b) => a.order - b.order);
+  }, [componentChildren]);
 
-  if (component.type === "container") {
+  const renderChildNode = (child: LayoutComponent) => (
+    <LayoutComponentNode
+      previewMode={previewMode}
+      component={child}
+      selectedComponentIds={selectedComponentIds}
+      draggingIds={draggingIds}
+      droppedIds={droppedIds}
+      layerSearch={layerSearch}
+      activeDropTarget={activeDropTarget}
+      setActiveDropTarget={setActiveDropTarget}
+      onLayoutChange={onLayoutChange}
+      onSelect={onSelect}
+      onEdit={onEdit}
+      onCopy={onCopy}
+      onDelete={onDelete}
+      onCreate={onCreate}
+      onDrop={onDrop}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onPointerDragStart={onPointerDragStart}
+      onPointerDragMove={onPointerDragMove}
+      onPointerDragEnd={onPointerDragEnd}
+      onPointerDragCancel={onPointerDragCancel}
+      snapLayout={snapLayout}
+    />
+  );
+
+  if (component.type === "grid") {
     const children = sortedChildren;
-    const direction: ContainerDirection = component.props.direction ?? "column";
+    const columns = Math.max(1, component.props.columns ?? 2);
+    const gap = component.props.gap ?? 8;
+
+    return renderWithPositionParent(
+      <div
+        ref={handleComponentRef}
+        data-component-id={component.id}
+        style={nodeStyle}
+      >
+        <DivBox
+          previewMode={previewMode}
+          isSelected={isPrimarySelected}
+          positionContextId={component.id}
+          layout={component.layout}
+          onLayoutChange={(layout, recordHistory) =>
+            onLayoutChange(component.id, layout, recordHistory)
+          }
+          onComponentSelect={(multiSelect) =>
+            onSelect(component.id, false, multiSelect)
+          }
+          onEdit={() => onEdit(component.id)}
+          onCopy={() => onCopy(component.id)}
+          onDelete={() => onDelete(component.id)}
+          onToolbarVisibleChange={setEditToolbarVisible}
+          snapLayout={snapLayout}
+          style={{
+            ...component.style,
+            border: !previewMode ? "1px dashed #adb5bd" : "none",
+            transition: "opacity 120ms ease",
+            outline:
+              !previewMode && isSelected
+                ? "2px solid #0d6efd"
+                : component.style?.outline,
+            outlineOffset:
+              !previewMode && isSelected
+                ? "2px"
+                : component.style?.outlineOffset,
+          }}
+        >
+          <div style={{ position: "relative", width: "100%" }}>
+            {dragHandleView}
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+                gap,
+                width: "100%",
+                minWidth: 0,
+              }}
+            >
+              {!previewMode && (
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <CanvasDropZone
+                    previewMode={previewMode}
+                    parentId={component.id}
+                    index={0}
+                    direction="column"
+                    draggingIds={draggingIds}
+                    activeDropTarget={activeDropTarget}
+                    setActiveDropTarget={setActiveDropTarget}
+                    onDrop={onDrop}
+                    onCreate={onCreate}
+                  />
+                </div>
+              )}
+
+              {children.map((child, index) => {
+                const childIsAbsolute = child.layout?.position === "absolute";
+
+                if (childIsAbsolute) {
+                  return (
+                    <div key={child.id} style={{ display: "contents" }}>
+                      {renderChildNode(child)}
+                    </div>
+                  );
+                }
+
+                return (
+                  <div
+                    key={child.id}
+                    style={{
+                      minWidth: 0,
+                      maxWidth: "100%",
+                      width: "100%",
+                    }}
+                  >
+                    {renderChildNode(child)}
+
+                    {child.type !== "scrollToTopButton" && (
+                      <CanvasDropZone
+                        previewMode={previewMode}
+                        parentId={component.id}
+                        index={index + 1}
+                        direction="column"
+                        draggingIds={draggingIds}
+                        activeDropTarget={activeDropTarget}
+                        setActiveDropTarget={setActiveDropTarget}
+                        onDrop={onDrop}
+                        onCreate={onCreate}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </DivBox>
+      </div>,
+    );
+  }
+
+  if (component.type === "container" || component.type === "flex") {
+    const children = sortedChildren;
+    const direction: ContainerDirection =
+      component.props.direction ??
+      (component.type === "flex" ? "row" : "column");
     const isRow = direction === "row";
+    const justifyContent =
+      component.props.justifyContent ??
+      (component.type === "flex" ? "flex-start" : "space-between");
+    const alignItems = component.props.alignItems ?? "stretch";
 
     return renderWithPositionParent(
       <div
@@ -339,9 +486,8 @@ function LayoutComponentNode({
                 gap: component.props.gap ?? 8,
                 width: "100%",
                 minWidth: 0,
-                justifyContent:
-                  component.props.justifyContent ?? "space-between",
-                alignItems: component.props.alignItems ?? "stretch",
+                justifyContent,
+                alignItems,
               }}
             >
               <CanvasDropZone
@@ -355,6 +501,7 @@ function LayoutComponentNode({
                 onDrop={onDrop}
                 onCreate={onCreate}
               />
+
               {children.map((child, index) => {
                 const childIsAbsolute = child.layout?.position === "absolute";
                 const widthMode =
@@ -370,7 +517,6 @@ function LayoutComponentNode({
                     }
                   : isRow
                     ? {
-                        // row의 직계 자식일 때만 flex sizing 적용
                         width:
                           widthMode === "fixed"
                             ? childWidth
@@ -387,7 +533,6 @@ function LayoutComponentNode({
                         maxWidth: "100%",
                       }
                     : {
-                        // column / 일반 부모에서는 그냥 부모 폭 사용
                         width:
                           widthMode === "fixed"
                             ? childWidth
@@ -400,30 +545,8 @@ function LayoutComponentNode({
 
                 return (
                   <div key={child.id} style={childWrapperStyle}>
-                    <LayoutComponentNode
-                      previewMode={previewMode}
-                      component={child}
-                      selectedComponentIds={selectedComponentIds}
-                      draggingIds={draggingIds}
-                      droppedIds={droppedIds}
-                      layerSearch={layerSearch}
-                      activeDropTarget={activeDropTarget}
-                      setActiveDropTarget={setActiveDropTarget}
-                      onLayoutChange={onLayoutChange}
-                      onSelect={onSelect}
-                      onEdit={onEdit}
-                      onCopy={onCopy}
-                      onDelete={onDelete}
-                      onCreate={onCreate}
-                      onDrop={onDrop}
-                      onDragStart={onDragStart}
-                      onDragEnd={onDragEnd}
-                      onPointerDragStart={onPointerDragStart}
-                      onPointerDragMove={onPointerDragMove}
-                      onPointerDragEnd={onPointerDragEnd}
-                      onPointerDragCancel={onPointerDragCancel}
-                      snapLayout={snapLayout}
-                    />
+                    {renderChildNode(child)}
+
                     {!childIsAbsolute &&
                       child.type !== "scrollToTopButton" &&
                       !isRow && (
@@ -442,6 +565,7 @@ function LayoutComponentNode({
                   </div>
                 );
               })}
+
               {isRow && (
                 <CanvasDropZone
                   previewMode={previewMode}
