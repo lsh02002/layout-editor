@@ -47,6 +47,10 @@ export type ComponentField =
       type: "quill";
       label: string;
       placeholder?: string;
+    }
+  | {
+      type: "color";
+      label: string;
     };
 
 export type RegistryCreatedComponent<TType extends string = string> = {

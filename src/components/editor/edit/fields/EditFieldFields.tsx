@@ -168,5 +168,34 @@ export default function EditFieldFields({
     );
   }
 
+  if (field.type === "color") {
+    return (
+      <div className="mb-3">
+        <label className="form-label">{field.label}</label>
+
+        <div className="d-flex align-items-center gap-2">
+          <input
+            type="color"
+            className="form-control form-control-color"
+            value={
+              typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value)
+                ? value
+                : "#000000"
+            }
+            onChange={(event) => onChange(event.target.value)}
+          />
+
+          <input
+            type="text"
+            className="form-control"
+            value={typeof value === "string" ? value : ""}
+            placeholder="#000000"
+            onChange={(event) => onChange(event.target.value)}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return null;
 }
