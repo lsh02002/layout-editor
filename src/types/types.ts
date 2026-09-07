@@ -11,8 +11,8 @@ export type SizeMode = "auto" | "fill" | "fixed";
 
 export interface ComponentLayout {
   position?: "relative" | "absolute";
-  widthMode?: "fixed" | "auto" | "fill";
-  heightMode?: "fixed" | "auto" | "fill";
+  widthMode?: SizeMode;
+  heightMode?: SizeMode;
   width?: number | string;
   height?: number | string;
   x?: number;
