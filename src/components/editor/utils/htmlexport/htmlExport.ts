@@ -79,6 +79,52 @@ export const buildHtmlDocument = async (
 </html>`;
 };
 
+const fallbackDownloadHtml = (html: string, fileName: string) => {
+  const blob = new Blob([html], {
+    type: "text/html;charset=utf-8",
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = fileName;
+
+  document.body.appendChild(anchor);
+
+  anchor.click();
+  anchor.remove();
+
+  URL.revokeObjectURL(url);
+};
+
+interface FilePickerAcceptType {
+  description?: string;
+
+  accept: Record<string, string[]>;
+}
+
+interface SaveFilePickerOptions {
+  suggestedName?: string;
+
+  types?: FilePickerAcceptType[];
+
+  excludeAcceptAllOption?: boolean;
+}
+
+interface Window {
+  showSaveFilePicker(
+    options?: SaveFilePickerOptions,
+  ): Promise<FileSystemFileHandle>;
+}
+
+type SaveFilePickerWindow = Window & {
+  showSaveFilePicker: (
+    options?: SaveFilePickerOptions,
+  ) => Promise<FileSystemFileHandle>;
+};
+
 export const downloadHtmlFile = async (
   componentRegistry: ComponentRegistry,
   components: LayoutComponent[],
@@ -91,24 +137,39 @@ export const downloadHtmlFile = async (
       projectCustomCss,
     );
 
-    const blob = new Blob([html], {
-      type: "text/html;charset=utf-8",
-    });
+    const fileName = "page.html";
 
-    const url = URL.createObjectURL(blob);
+    if ("showSaveFilePicker" in window) {
+      const pickerWindow = window as SaveFilePickerWindow;
+      const handle = await pickerWindow.showSaveFilePicker({
+        suggestedName: fileName,
 
-    const anchor = document.createElement("a");
+        types: [
+          {
+            description: "HTML File",
+            accept: {
+              "text/html": [".html"],
+            },
+          },
+        ],
 
-    anchor.href = url;
-    anchor.download = "page.html";
+        excludeAcceptAllOption: false,
+      });
 
-    document.body.appendChild(anchor);
+      const writable = await handle.createWritable();
 
-    anchor.click();
-    anchor.remove();
+      await writable.write(html);
+      await writable.close();
 
-    URL.revokeObjectURL(url);
+      return;
+    }
+
+    fallbackDownloadHtml(html, fileName);
   } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      return;
+    }
+
     console.error("HTML 저장 실패:", error);
 
     alert("HTML 저장 중 오류가 발생했습니다.");
