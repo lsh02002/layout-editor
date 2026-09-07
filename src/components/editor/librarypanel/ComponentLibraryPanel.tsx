@@ -44,44 +44,45 @@ function ComponentLibraryPanel({
     "favorites",
   );
 
+  const tabMenu = [
+    { value: "favorites", label: "즐겨찾기" },
+    { value: "templates", label: "템플릿" },    
+  ];
+
   return (
     <>
       <div className="p-2">
         <ul className="nav nav-tabs">
-          <li className="nav-item">
-            <button
-              type="button"
-              className={`nav-link ${panelTab === "favorites" ? "active" : ""}`}
-              onClick={() => setPanelTab("favorites")}
-            >
-              즐겨찾기
-            </button>
-          </li>
-
-          <li className="nav-item">
-            <button
-              type="button"
-              className={`nav-link ${panelTab === "templates" ? "active" : ""}`}
-              onClick={() => setPanelTab("templates")}
-            >
-              템플릿
-            </button>
-          </li>
+          {tabMenu.map((tab) => (
+            <li key={tab.value} className="nav-item">
+              <button
+                type="button"
+                className={`nav-link ${panelTab === tab.value ? "active" : ""}`}
+                onClick={() =>
+                  setPanelTab(tab.value as "favorites" | "templates")
+                }
+              >
+                {tab.label}
+              </button>
+            </li>
+          ))}
         </ul>
       </div>
 
       {panelTab === "favorites" && (
-        <FavoritePanel
-          favorites={favorites}
-          hasSelectedComponent={hasSelectedComponent}
-          onAddSelected={onAddSelected}
-          onInsert={onInsert}
-          onRemove={onRemove}
-        />
+        <div style={{ padding: 8, minHeight: 260 }}>
+          <FavoritePanel
+            favorites={favorites}
+            hasSelectedComponent={hasSelectedComponent}
+            onAddSelected={onAddSelected}
+            onInsert={onInsert}
+            onRemove={onRemove}
+          />
+        </div>
       )}
 
       {panelTab === "templates" && (
-        <div style={{ padding: 8 }}>
+        <div style={{ padding: 8, minHeight: 260 }}>
           <TemplatePreviewListPanel
             templateFiles={templateFiles}
             setTemplateFiles={setTemplateFiles}
