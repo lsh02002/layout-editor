@@ -506,8 +506,7 @@ function LayoutEditorContent() {
         }}
       >
         <ProjectToolbar
-          previewMode={previewMode}
-          componentRegistry={componentRegistry}
+          previewMode={previewMode}          
           isMobile={isMobile}
           canvasViewport={canvasViewport}
           onCanvasViewportChange={setCanvasViewport}

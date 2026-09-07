@@ -1,21 +1,17 @@
+import { useEditorConfig } from "../../../../context/usehooks";
 import type { LayoutComponent } from "../../../../types/types";
-import type { ComponentRegistry } from "../../registry/componentRegistry";
 import { renderComponentEditor } from "../../registry/componentRegistry";
 
 type Props = {
-  componentRegistry: ComponentRegistry;
   component: LayoutComponent;
-
   updateComponent: (
     updater: (component: LayoutComponent) => LayoutComponent,
   ) => void;
 };
 
-function EditBasicTab({
-  componentRegistry,
-  component,
-  updateComponent,
-}: Props) {
+function EditBasicTab({ component, updateComponent }: Props) {
+  const { components: componentRegistry } = useEditorConfig();
+  
   return (
     <>
       <div className="mb-3">

@@ -1,11 +1,10 @@
 import React, { memo } from "react";
 import type { CanvasViewport } from "../../../types/types";
 import type { ComponentRegistry } from "../registry/componentRegistry";
+import { useEditorConfig } from "../../../context/usehooks";
 
 type ProjectToolbarProps = {
   previewMode: boolean;
-
-  componentRegistry: ComponentRegistry;
 
   isMobile: boolean;
   canvasViewport: CanvasViewport;
@@ -38,7 +37,6 @@ type ProjectToolbarProps = {
 
 function ProjectToolbar({
   previewMode,
-  componentRegistry,
   isMobile,
   canvasViewport,
   onCanvasViewportChange,
@@ -63,6 +61,8 @@ function ProjectToolbar({
   onOpenSelectedTemplate,
   onLoadTemplate,
 }: ProjectToolbarProps) {
+  const { components: componentRegistry } = useEditorConfig();
+  
   return (
     <div
       className="d-flex flex-wrap align-items-center gap-2 mb-3 p-2 border rounded bg-light"
