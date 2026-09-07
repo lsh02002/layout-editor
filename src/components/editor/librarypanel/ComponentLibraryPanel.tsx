@@ -44,16 +44,16 @@ function ComponentLibraryPanel({
     "favorites",
   );
 
-  const tabMenu = [
+  const tabMenus = [
     { value: "favorites", label: "즐겨찾기" },
-    { value: "templates", label: "템플릿" },    
+    { value: "templates", label: "템플릿" },
   ];
 
   return (
     <>
       <div className="p-2">
         <ul className="nav nav-tabs">
-          {tabMenu.map((tab) => (
+          {tabMenus.map((tab) => (
             <li key={tab.value} className="nav-item">
               <button
                 type="button"
