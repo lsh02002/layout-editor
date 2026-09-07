@@ -11,8 +11,7 @@ type Props = {
   draggingIds: string[];
   droppedIds: string[];
   layerSearch: string;
-  activeDropTarget: CanvasDropTarget | null;
-  setPreviewMode: React.Dispatch<React.SetStateAction<boolean>>;
+  activeDropTarget: CanvasDropTarget | null;  
   setActiveDropTarget: (target: CanvasDropTarget | null) => void;
   onLayoutChange: (
     id: string,

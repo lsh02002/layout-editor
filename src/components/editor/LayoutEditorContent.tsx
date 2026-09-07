@@ -541,8 +541,7 @@ function LayoutEditorContent() {
           selectedComponentIds={selectedComponentIds}
           draggingIds={draggingIds}
           layerSearch={layerSearch}
-          activeDropTarget={activeDropTarget}
-          setPreviewMode={setPreviewMode}
+          activeDropTarget={activeDropTarget}          
           setActiveDropTarget={setActiveDropTarget}
           onLayoutChange={updateLayout}
           onSelect={selectComponent}
