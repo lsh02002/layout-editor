@@ -17,13 +17,13 @@ type Options = {
   insertTarget: InsertTarget;
   setInsertTarget: InsertTargetSetter;
   setShowCreateModal: BooleanSetter;
-  setShowEditModal: BooleanSetter;
+  // setShowEditModal: BooleanSetter;
   setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
   newType: RegistryComponentType;
   setNewType: (type: RegistryComponentType) => void;
   resetCreateForm: () => void;
   makeNewComponent: () => LayoutComponent;
-  loadComponentToEdit: (component: LayoutComponent) => void;
+  // loadComponentToEdit: (component: LayoutComponent) => void;
   commitHistory: CommitHistory;
 };
 
@@ -34,12 +34,12 @@ export const useCreateActions = ({
   setSelectedComponentIds,
   setInsertTarget,
   setShowCreateModal,
-  setShowEditModal,
+  // setShowEditModal,
   newType,
   setNewType,
   resetCreateForm,
   makeNewComponent,
-  loadComponentToEdit,
+  // loadComponentToEdit,
   commitHistory,
 }: Options) => {
   const closeCreateModal = useCallback(() => {
@@ -72,20 +72,20 @@ export const useCreateActions = ({
 
     setSelectedComponentIds([newComponent.id]);
 
-    loadComponentToEdit(newComponent);
+    // loadComponentToEdit(newComponent);
 
-    setShowEditModal(true);
+    // setShowEditModal(true);
   }, [
     closeCreateModal,
     commitHistory,
     componentRegistry,
     components,
     insertTarget,
-    loadComponentToEdit,
+    // loadComponentToEdit,
     makeNewComponent,
     newType,
     setSelectedComponentIds,
-    setShowEditModal,
+    // setShowEditModal,
   ]);
 
   const openCreateModal = useCallback(
