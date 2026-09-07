@@ -45,6 +45,7 @@ export default function EditFieldFields({
           value={typeof value === "string" ? value : ""}
           placeholder={field.placeholder}
           onChange={(event) => onChange(event.target.value)}
+          rows={5}
         />
       </div>
     );
