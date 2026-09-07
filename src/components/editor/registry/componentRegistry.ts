@@ -15,8 +15,6 @@ export type ComponentField =
       type: "text";
       label: string;
       placeholder?: string;
-      getValue?: (value: unknown) => string;
-      setValue?: (value: string) => unknown;
     }
   | {
       type: "textarea";
@@ -46,6 +44,12 @@ export type ComponentField =
   | {
       type: "quill";
       label: string;
+      placeholder?: string;
+    }
+  | {
+      type: "code";
+      label: string;
+      language?: string;
       placeholder?: string;
     }
   | {

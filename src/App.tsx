@@ -21,14 +21,9 @@ import { z } from "zod";
 import LayoutEditor from "./components/editor/LayoutEditor";
 import { FAKE_IMAGE_SLIDER_URLS, FAKE_IMAGE_URL } from "./data/data";
 import RegistryFieldsEditor, {
-  CodeEditorEditor,
-  ContainerEditor,
   ImageEditor,
   ImageGalleryEditor,
   ImageSliderEditor,
-  LinkEditor,
-  QuillEditor,
-  ScrollToTopButtonEditor,
   VideoEditor,
 } from "./components/editor/edit/componentEditors";
 import {
@@ -90,8 +85,8 @@ const config = {
       }),
       fields: {
         direction: {
-          type: "select",
-          label: "방향",
+          type: "radio",
+          label: "배치 방향",
           options: [
             { label: "가로", value: "row" },
             { label: "세로", value: "column" },
@@ -148,7 +143,8 @@ const config = {
         },
         children: [],
       }),
-      editor: (context) => createElement(ContainerEditor, context),
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, { ...context, fields }),
       getSearchText: (component) => {
         if (component.type !== "container") {
           return "";
@@ -583,8 +579,8 @@ const config = {
 
       fields: {
         value: {
-          type: "textarea",
-          label: "초기 내용",
+          type: "quill",
+          label: "내용",
           placeholder: "본문을 입력하세요.",
         },
         placeholder: {
@@ -612,7 +608,8 @@ const config = {
           width: "100%",
         },
       }),
-      editor: (context) => createElement(QuillEditor, context),
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, { ...context, fields }),
       canvas: (component) => {
         if (component.type !== "quill") {
           return null;
@@ -784,7 +781,8 @@ const config = {
           zIndex: 1400,
         },
       }),
-      editor: (context) => createElement(ScrollToTopButtonEditor, context),
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, { ...context, fields }),
       canvas: (component) => {
         if (component.type !== "scrollToTopButton") {
           return null;
@@ -837,11 +835,6 @@ const config = {
           type: "text",
           label: "이미지 URL",
           placeholder: "https://example.com/image.jpg",
-          getValue: (value) =>
-            Array.isArray(value) && typeof value[0] === "string"
-              ? value[0]
-              : "",
-          setValue: (value) => (value.trim() ? [value] : []),
         },
         disabled: {
           type: "checkbox",
@@ -1135,21 +1128,21 @@ const config = {
       fields: {
         title: {
           type: "text",
-          label: "링크명",
+          label: "표시할 텍스트",
           placeholder: "링크",
         },
         linkType: {
           type: "select",
-          label: "링크 타입",
+          label: "링크 종류",
           options: [
-            { label: "URL", value: "url" },
+            { label: "Url", value: "url" },
             { label: "Email", value: "email" },
             { label: "Tel", value: "tel" },
           ],
         },
         value: {
           type: "text",
-          label: "링크 값",
+          label: "URL",
           placeholder: "https://example.com",
         },
         newWindow: {
@@ -1183,7 +1176,8 @@ const config = {
           cursor: "pointer",
         },
       }),
-      editor: (context) => createElement(LinkEditor, context),
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, { ...context, fields }),
       canvas: (component) => {
         if (component.type !== "link") {
           return null;
@@ -1350,7 +1344,7 @@ const config = {
       }),
       fields: {
         value: {
-          type: "textarea",
+          type: "code",
           label: "초기 코드",
           placeholder: "코드를 입력하세요",
         },
@@ -1388,7 +1382,8 @@ const config = {
           width: "100%",
         },
       }),
-      editor: (context) => createElement(CodeEditorEditor, context),
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, { ...context, fields }),
       canvas: (component) => {
         if (component.type !== "codeEditor") {
           return null;

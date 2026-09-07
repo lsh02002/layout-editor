@@ -1,4 +1,6 @@
 import type { ComponentField } from "../../registry/componentRegistry";
+import CodeEditor from "../../utils/codeEditor";
+import type { CodeLanguage } from "../../utils/codeHighlight";
 import QuillEditor from "../../utils/quillEditor";
 
 export default function EditFieldFields({
@@ -13,11 +15,7 @@ export default function EditFieldFields({
   onChange: (value: unknown) => void;
 }) {
   if (field.type === "text") {
-    const fieldValue = field.getValue
-      ? field.getValue(value)
-      : typeof value === "string"
-        ? value
-        : "";
+    const fieldValue = typeof value === "string" ? value : "";
     return (
       <div className="mb-3">
         <label className="form-label" htmlFor={`field-${name}`}>
@@ -29,13 +27,7 @@ export default function EditFieldFields({
           className="form-control"
           value={fieldValue}
           placeholder={field.placeholder}
-          onChange={(event) =>
-            onChange(
-              field.setValue
-                ? field.setValue(event.target.value)
-                : event.target.value,
-            )
-          }
+          onChange={(event) => onChange(event.target.value)}
         />
       </div>
     );
@@ -162,6 +154,23 @@ export default function EditFieldFields({
         <QuillEditor
           data={typeof value === "string" ? value : ""}
           setData={(content) => onChange(content)}
+          placeholder={field.placeholder}
+        />
+      </div>
+    );
+  }
+
+  if (field.type === "code") {
+    return (
+      <div className="mb-3">
+        <label className="form-label" htmlFor={`field-${name}`}>
+          {field.label}
+        </label>
+
+        <CodeEditor
+          data={typeof value === "string" ? value : ""}
+          setData={(code) => onChange(code)}
+          language={field.language as CodeLanguage}
           placeholder={field.placeholder}
         />
       </div>
