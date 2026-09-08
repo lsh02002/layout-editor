@@ -39,6 +39,7 @@ type Props = {
     id: string,
     openEditPanel?: boolean,
     multiSelect?: boolean,
+    scrollToComponent?: boolean,
   ) => void;
   onEdit: (id: string) => void;
   onCopy: (id: string) => void;
@@ -337,7 +338,7 @@ function LayoutComponentNode({
             onLayoutChange(component.id, layout, recordHistory)
           }
           onComponentSelect={(multiSelect) =>
-            onSelect(component.id, false, multiSelect)
+            onSelect(component.id, false, multiSelect, false)
           }
           onEdit={() => onEdit(component.id)}
           onCopy={() => onCopy(component.id)}
@@ -457,7 +458,7 @@ function LayoutComponentNode({
             onLayoutChange(component.id, layout, recordHistory)
           }
           onComponentSelect={(multiSelect) =>
-            onSelect(component.id, false, multiSelect)
+            onSelect(component.id, false, multiSelect, false)
           }
           onEdit={() => onEdit(component.id)}
           onCopy={() => onCopy(component.id)}
@@ -606,7 +607,7 @@ function LayoutComponentNode({
           onLayoutChange(component.id, layout, recordHistory)
         }
         onComponentSelect={(multiSelect) =>
-          onSelect(component.id, false, multiSelect)
+          onSelect(component.id, false, multiSelect, false)
         }
         onEdit={() => onEdit(component.id)}
         onCopy={() => onCopy(component.id)}
