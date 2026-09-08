@@ -18,12 +18,12 @@ type LayerPanelProps = {
   search: string;
   activeDropTarget: DropTarget;
   setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
+  scrollToCanvasComponent: (id: string) => void;
   onSearchChange: (value: string) => void;
   onSelect: (
     id: string,
     openEditPanel?: boolean,
     multiSelect?: boolean,
-    scrollToComponent?: boolean,
   ) => void;
   onEdit: (id: string) => void;
   onAddFavorite: () => void;
@@ -96,6 +96,7 @@ function LayerPanel({
   search,
   activeDropTarget,
   setSelectedComponentIds,
+  scrollToCanvasComponent,
   onSearchChange,
   onSelect,
   onEdit,
@@ -218,8 +219,6 @@ function LayerPanel({
                     return;
                   }
 
-                  onSelect(component.id, false, false, true);
-
                   event.preventDefault();
                   event.stopPropagation();
 
@@ -260,6 +259,7 @@ function LayerPanel({
                   // Ctrl / Cmd + 클릭
                   const multiSelect = event.ctrlKey || event.metaKey;
                   onSelect(currentId, false, multiSelect);
+                  scrollToCanvasComponent(currentId);
                   // Shift 범위 선택의 anchor
                   lastSelectedIdRef.current = currentId;
                 }}

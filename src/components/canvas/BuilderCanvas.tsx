@@ -22,7 +22,6 @@ type Props = {
     id: string,
     openEditPanel?: boolean,
     multiSelect?: boolean,
-    scrollToComponent?: boolean,
   ) => void;
   onEdit: (id: string) => void;
   onCopy: (id: string) => void;

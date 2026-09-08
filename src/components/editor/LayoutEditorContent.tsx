@@ -227,6 +227,7 @@ function LayoutEditorContent() {
     createComponent,
     deleteComponent,
     copyComponent,
+    scrollToCanvasComponent,
     selectComponent,
     editComponent,
     resetEditPanelToSelected,
@@ -447,6 +448,7 @@ function LayoutEditorContent() {
                   draggingIds={draggingIds}
                   search={layerSearch}
                   activeDropTarget={activeDropTarget}
+                  scrollToCanvasComponent={scrollToCanvasComponent}
                   setSelectedComponentIds={setSelectedComponentIds}
                   onSearchChange={setLayerSearch}
                   onSelect={selectComponent}
@@ -506,7 +508,7 @@ function LayoutEditorContent() {
         }}
       >
         <ProjectToolbar
-          previewMode={previewMode}          
+          previewMode={previewMode}
           isMobile={isMobile}
           canvasViewport={canvasViewport}
           onCanvasViewportChange={setCanvasViewport}
@@ -540,7 +542,7 @@ function LayoutEditorContent() {
           selectedComponentIds={selectedComponentIds}
           draggingIds={draggingIds}
           layerSearch={layerSearch}
-          activeDropTarget={activeDropTarget}          
+          activeDropTarget={activeDropTarget}
           setActiveDropTarget={setActiveDropTarget}
           onLayoutChange={updateLayout}
           onSelect={selectComponent}

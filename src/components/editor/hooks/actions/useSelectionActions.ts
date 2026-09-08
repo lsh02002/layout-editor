@@ -20,61 +20,53 @@ export const useSelectionActions = ({
   loadComponentToEdit,
 }: Options) => {
   const primarySelectedId = selectedComponentIds.at(-1) ?? null;
+
+  const scrollToCanvasComponent = useCallback((id: string) => {
+    requestAnimationFrame(() => {
+      const canvas = document.querySelector<HTMLElement>(
+        "[data-builder-canvas]",
+      );
+
+      if (!canvas) {
+        return;
+      }
+
+      const element = canvas.querySelector<HTMLElement>(
+        `[data-component-id="${CSS.escape(id)}"]`,
+      );
+
+      if (!element) {
+        return;
+      }
+
+      const rect = element.getBoundingClientRect();
+
+      const margin = 150;
+      const isVisible =
+        rect.top >= margin &&
+        rect.left >= margin &&
+        rect.bottom <= window.innerHeight - margin &&
+        rect.right <= window.innerWidth - margin;
+
+      if (isVisible) {
+        return;
+      }
+
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        inline: "nearest",
+      });
+    });
+  }, []);
+
   const selectComponent = useCallback(
-    (
-      id: string,
-      openEditPanel = false,
-      multiSelect = false,
-      scrollToComponent = false,
-    ) => {
+    (id: string, openEditPanel = false, multiSelect = false) => {
       const component = findComponentRecursive(components, id);
 
       if (!component) {
         return;
       }
-
-      const scrollToCanvasComponent = () => {
-        if (!scrollToComponent) {
-          return;
-        }
-
-        requestAnimationFrame(() => {
-          const canvas = document.querySelector<HTMLElement>(
-            "[data-builder-canvas]",
-          );
-
-          if (!canvas) {
-            return;
-          }
-
-          const element = canvas.querySelector<HTMLElement>(
-            `[data-component-id="${CSS.escape(id)}"]`,
-          );
-
-          if (!element) {
-            return;
-          }
-
-          const rect = element.getBoundingClientRect();
-
-          const margin = 150;
-          const isVisible =
-            rect.top >= margin &&
-            rect.left >= margin &&
-            rect.bottom <= window.innerHeight - margin &&
-            rect.right <= window.innerWidth - margin;
-
-          if (isVisible) {
-            return;
-          }
-
-          element.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-            inline: "nearest",
-          });
-        });
-      };
 
       if (!multiSelect) {
         setSelectedComponentIds([id]);
@@ -84,8 +76,6 @@ export const useSelectionActions = ({
         if (openEditPanel) {
           setShowEditModal(true);
         }
-
-        scrollToCanvasComponent();
 
         return;
       }
@@ -123,7 +113,6 @@ export const useSelectionActions = ({
       if (openEditPanel) {
         setShowEditModal(true);
       }
-      scrollToCanvasComponent();
     },
     [
       components,
@@ -157,6 +146,7 @@ export const useSelectionActions = ({
   }, [components, loadComponentToEdit, primarySelectedId]);
 
   return {
+    scrollToCanvasComponent,
     selectComponent,
     editComponent,
     resetEditPanelToSelected,
