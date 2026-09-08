@@ -261,6 +261,8 @@ function LayoutComponentNode({
     transition: !isAbsolute
       ? "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)"
       : undefined,
+
+    scrollMarginTop: "150px",
   };
 
   const dragHandleView =

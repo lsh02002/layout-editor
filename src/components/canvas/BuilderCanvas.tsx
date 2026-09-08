@@ -11,7 +11,7 @@ type Props = {
   draggingIds: string[];
   droppedIds: string[];
   layerSearch: string;
-  activeDropTarget: CanvasDropTarget | null;  
+  activeDropTarget: CanvasDropTarget | null;
   setActiveDropTarget: (target: CanvasDropTarget | null) => void;
   onLayoutChange: (
     id: string,
@@ -76,6 +76,7 @@ function BuilderCanvas({
 
   return (
     <div
+      data-builder-canvas
       className="builder-preview"
       style={{ maxWidth: canvasWidth }}
       onDragStart={(event) => {
@@ -105,7 +106,7 @@ function BuilderCanvas({
           <div
             key={component.id}
             data-component-id={component.id}
-            style={{ position: "relative" }}
+            style={{ position: "relative", scrollMarginTop: "150px" }}
           >
             <LayoutComponentNode
               previewMode={previewMode}

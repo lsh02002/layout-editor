@@ -23,6 +23,7 @@ type LayerPanelProps = {
     id: string,
     openEditPanel?: boolean,
     multiSelect?: boolean,
+    scrollToComponent?: boolean,
   ) => void;
   onEdit: (id: string) => void;
   onAddFavorite: () => void;
@@ -216,6 +217,8 @@ function LayerPanel({
                   if (previewMode) {
                     return;
                   }
+
+                  onSelect(component.id, false, false, true);
 
                   event.preventDefault();
                   event.stopPropagation();
