@@ -2,7 +2,7 @@
   "version": 1,
   "components": [
     {
-      "id": "2932a78e-a92f-4323-9e19-cdc7f3bcd350",
+      "id": "d16c791c-abb6-4ed5-acdb-1a829af5b51f",
       "name": "템플릿 컨테이너",
       "type": "container",
       "order": 0,
@@ -17,7 +17,7 @@
       },
       "children": [
         {
-          "id": "04ea17f4-a640-4796-80f4-1fc8aea7bdae",
+          "id": "431d0eef-0a74-4b94-84a1-32f50b9457b9",
           "type": "container",
           "order": 0,
           "props": {
@@ -31,7 +31,7 @@
           },
           "children": [
             {
-              "id": "74c841bf-865e-4bda-b209-bc25d7c8d989",
+              "id": "d70932df-6fd8-4624-8f3d-9122163efa58",
               "name": "제목",
               "type": "heading",
               "order": 0,
@@ -57,7 +57,7 @@
           }
         },
         {
-          "id": "758a1da8-8889-4edf-bd1c-156f028546fb",
+          "id": "523cb731-4481-41e8-9b11-d05bb8b2ef4e",
           "name": "Textarea",
           "type": "textarea",
           "order": 1,
@@ -75,7 +75,7 @@
           }
         },
         {
-          "id": "9ffafc51-7a23-40c9-bae0-5c216b54e938",
+          "id": "59753b95-07cc-4625-a947-34b3610af848",
           "name": "ImageGallery",
           "type": "imageGallery",
           "order": 2,
@@ -99,7 +99,7 @@
           }
         },
         {
-          "id": "915d9b7f-6781-4bb0-8490-6f803c065bd8",
+          "id": "bd6e4c51-2d94-45df-91b6-4b7e0946dfb9",
           "name": "RichText",
           "type": "quill",
           "order": 3,
@@ -117,7 +117,7 @@
           }
         },
         {
-          "id": "56671913-54b9-401a-9ea1-28b8f45ca9bf",
+          "id": "6273f326-cfe4-4aa1-9971-b8e8cf3d8475",
           "name": "Textarea",
           "type": "textarea",
           "order": 4,
@@ -136,7 +136,7 @@
           }
         },
         {
-          "id": "12919be0-3d57-4988-8713-3d3bd0b3eb7d",
+          "id": "c68e6921-00ed-4e69-8566-cd30de8b0944",
           "name": "Container",
           "type": "container",
           "order": 5,
@@ -153,7 +153,7 @@
           },
           "children": [
             {
-              "id": "1baddbc1-96c0-4f19-8e4c-9c0a7a91b45d",
+              "id": "d49e91f4-0608-4e42-a5a2-711bea7d5d72",
               "name": "Image",
               "type": "image",
               "order": 0,
@@ -168,12 +168,11 @@
                 "width": "100%"
               },
               "layout": {
-                "widthMode": "fixed",
-                "width": 270
+                "widthMode": "fill"
               }
             },
             {
-              "id": "4e5dad28-2033-49d2-9b0e-3d0081e04edd",
+              "id": "9c58fc64-c2f1-49ad-aecd-4a349bab1222",
               "name": "Textarea",
               "type": "textarea",
               "order": 1,
@@ -188,12 +187,13 @@
               },
               "layout": {
                 "position": "relative",
-                "widthMode": "fixed",
-                "width": 310
+                "widthMode": "fill",
+                "heightMode": "fill"
               },
               "contentStyle": {
                 "fontSize": "16px",
-                "color": "#ae00ff"
+                "color": "#ae00ff",
+                "textAlign": "center"
               }
             }
           ],
@@ -205,5 +205,5 @@
     }
   ],
   "projectCustomCss": "",
-  "savedAt": "2026-09-06T07:19:14.773Z"
+  "savedAt": "2026-09-08T16:45:58.997Z"
 }
