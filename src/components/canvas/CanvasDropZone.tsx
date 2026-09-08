@@ -83,7 +83,7 @@ function CanvasDropZone({
 
         event.preventDefault();
         event.stopPropagation();
-        activate();
+
         const isTemplate = event.dataTransfer.types.includes(
           "application/x-pagebuilder-template",
         );
