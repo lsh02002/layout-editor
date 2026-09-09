@@ -1,8 +1,8 @@
 import type { CSSProperties, Dispatch, SetStateAction } from "react";
 
-export const DISPLAY_TYPES = ["container", "grid", "flex"] as const;
-export type DisplayType = (typeof DISPLAY_TYPES)[number];
-export type CanvasComponent = Exclude<LayoutComponent, { type: DisplayType }>;
+export const CONTAINER_TYPES = ["container", "grid", "flex"] as const;
+export type ContainerType = (typeof CONTAINER_TYPES)[number];
+export type CanvasComponent = Exclude<LayoutComponent, { type: ContainerType }>;
 
 export type CanvasViewport = "desktop" | "tablet" | "mobile";
 export type LeftPanelTab = "components" | "layers";

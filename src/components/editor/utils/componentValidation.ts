@@ -4,6 +4,7 @@ import type {
   RegistryComponentType,
   RegisteredLayoutComponent,
 } from "../registry/componentRegistry";
+import { CONTAINER_TYPES, type ContainerType } from "../../../types/types";
 
 const baseComponentSchema = z.object({
   id: z.string().trim().min(1, "id가 올바르지 않습니다."),
@@ -73,11 +74,7 @@ export const validateComponent = (
     }
     return formatIssue(`${path}.props`, issue);
   }
-  if (
-    component.type === "container" ||
-    component.type === "grid" ||
-    component.type === "flex"
-  ) {
+  if (CONTAINER_TYPES.includes(component.type as ContainerType)) {
     if (!isObject(value)) {
       return `${path}: component 형식이 올바르지 않습니다.`;
     }

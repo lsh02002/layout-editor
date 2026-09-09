@@ -11,8 +11,8 @@ import {
   type LayoutComponent,
   type TemplateItem,
   type ComponentType,
-  DISPLAY_TYPES,
-  type DisplayType,
+  CONTAINER_TYPES,
+  type ContainerType,
 } from "../../../types/types";
 
 import type { EditTab } from "../hooks/useEditComponentForm";
@@ -181,8 +181,8 @@ function EditComponentPanel({
 
   const isChildrenComponent = (
     type: LayoutComponent["type"] | null | undefined,
-  ): type is DisplayType => {
-    return !!type && DISPLAY_TYPES.includes(type as DisplayType);
+  ): type is ContainerType => {
+    return !!type && CONTAINER_TYPES.includes(type as ContainerType);
   };
 
   return (
