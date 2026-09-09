@@ -13,7 +13,7 @@ import {
   insertComponentRecursive,
   normalizeOrder,
 } from "../utils/componentTree";
-import { hasChildren } from "../../../types/types";
+import { isLayoutContainer } from "../../../types/types";
 import { canAddComponentType } from "../utils/componentDisplayName";
 
 type Options = {
@@ -91,7 +91,7 @@ export const useFavoriteComponents = ({
 
       const selected = findComponentRecursive(components, primarySelectedId);
 
-      if (selected && hasChildren(selected)) {
+      if (selected && isLayoutContainer(selected)) {
         commitHistory((prev) =>
           insertComponentRecursive(
             prev,

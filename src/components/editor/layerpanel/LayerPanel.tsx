@@ -1,5 +1,5 @@
 import React, { memo, useMemo, useRef } from "react";
-import { hasChildren, type LayoutComponent } from "../../../types/types";
+import { isLayoutContainer, type LayoutComponent } from "../../../types/types";
 import { getComponentDisplayName } from "../utils/componentDisplayName";
 import { useEditorConfig } from "../../../context/usehooks";
 
@@ -208,7 +208,7 @@ function LayerPanel({
         {renderDropZone(parentId, 0, depth)}
 
         {sorted.map((component, index) => {
-          const isParent = hasChildren(component);
+          const isParent = isLayoutContainer(component);
           const isSelected = selectedComponentIds.includes(component.id);
           const isDragging = draggingIds.includes(component.id);
           return (

@@ -3,7 +3,7 @@ import { writeTextFile } from "@tauri-apps/plugin-fs";
 
 import {
   AUTOSAVE_KEY,
-  hasChildren,
+  isLayoutContainer,
   type AutoSaveData,
   type LayoutComponent,
 } from "../../../types/types";
@@ -87,7 +87,7 @@ export const convertComponentsForSave = async (
         };
       }
 
-      if (hasChildren(component)) {
+      if (isLayoutContainer(component)) {
         return {
           ...component,
           children: await convertComponentsForSave(component.children),

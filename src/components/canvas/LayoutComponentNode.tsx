@@ -12,7 +12,7 @@ import {
 import { createPortal } from "react-dom";
 import DivBox from "./DivBox";
 import {
-  hasChildren,
+  isLayoutContainer,
   type ComponentLayout,
   type ContainerDirection,
   type LayoutComponent,
@@ -271,7 +271,7 @@ function LayoutComponentNode({
         style={{
           position: "absolute",
           left: 0,
-          top: hasChildren(component) ? "-14px" : 0,
+          top: isLayoutContainer(component) ? "-14px" : 0,
           transform: "translate(-50%, -50%)",
           zIndex: 120,
         }}
@@ -280,7 +280,7 @@ function LayoutComponentNode({
       </div>
     ) : null;
 
-  const componentChildren = hasChildren(component) ? component.children : null;
+  const componentChildren = isLayoutContainer(component) ? component.children : null;
 
   const sortedChildren = useMemo(() => {
     if (!componentChildren) {

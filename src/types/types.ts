@@ -324,7 +324,7 @@ export type ChildrenComponent = Extract<
   { children: LayoutComponent[] }
 >;
 
-export function hasChildren(
+export function isLayoutContainer(
   component: LayoutComponent,
 ): component is ChildrenComponent {
   return (

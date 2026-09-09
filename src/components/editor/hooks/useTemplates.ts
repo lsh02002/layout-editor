@@ -5,7 +5,7 @@ import {
   type LayoutComponent,
   type TemplateFile,
   type CommitHistory,
-  hasChildren,
+  isLayoutContainer,
 } from "../../../types/types";
 import {
   cloneComponent,
@@ -401,7 +401,7 @@ export const useTemplates = ({
 
       const selected = findComponentRecursive(components, primarySelectedId);
 
-      if (selected && hasChildren(selected)) {
+      if (selected && isLayoutContainer(selected)) {
         commitHistory((prev) =>
           insertComponentRecursive(
             prev,

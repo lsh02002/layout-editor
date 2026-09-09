@@ -1,5 +1,5 @@
 import {
-  hasChildren,
+  isLayoutContainer,
   type ComponentLayout,
   type ComponentType,
   type LayoutComponent,
@@ -20,7 +20,7 @@ export function hasComponentType(
       return true;
     }
 
-    if (hasChildren(component) && hasComponentType(component.children, type)) {
+    if (isLayoutContainer(component) && hasComponentType(component.children, type)) {
       return true;
     }
   }
@@ -47,7 +47,7 @@ export const removeComponentRecursive = (
   for (let index = 0; index < items.length; index += 1) {
     const item = items[index];
 
-    if (!hasChildren(item)) {
+    if (!isLayoutContainer(item)) {
       continue;
     }
 
@@ -77,7 +77,7 @@ export const removeComponentRecursive = (
 export const cloneComponent = <T extends LayoutComponent>(component: T): T => {
   const newId = crypto.randomUUID();
 
-  if (hasChildren(component)) {
+  if (isLayoutContainer(component)) {
     return {
       ...component,
       id: newId,
@@ -119,7 +119,7 @@ export const insertComponentRecursive = (
   }
 
   return items.map((item) => {
-    if (hasChildren(item) && item.id === parentId) {
+    if (isLayoutContainer(item) && item.id === parentId) {
       const children = [...item.children];
       const safeIndex = Math.max(0, Math.min(index, children.length));
 
@@ -131,7 +131,7 @@ export const insertComponentRecursive = (
       };
     }
 
-    if (hasChildren(item)) {
+    if (isLayoutContainer(item)) {
       return {
         ...item,
         children: insertComponentRecursive(
@@ -159,7 +159,7 @@ export const findComponentLocation = (
       return { parentId, index };
     }
 
-    if (hasChildren(item)) {
+    if (isLayoutContainer(item)) {
       const found = findComponentLocation(item.children, id, item.id);
 
       if (found) {
@@ -180,7 +180,7 @@ export const findComponentRecursive = (
       return item;
     }
 
-    if (hasChildren(item)) {
+    if (isLayoutContainer(item)) {
       const found = findComponentRecursive(item.children, id);
 
       if (found) {
@@ -200,7 +200,7 @@ export const containsComponent = (
     return true;
   }
 
-  if (!hasChildren(component)) {
+  if (!isLayoutContainer(component)) {
     return false;
   }
 
@@ -227,7 +227,7 @@ export const updateLayoutRecursive = (
       };
     }
 
-    if (hasChildren(item)) {
+    if (isLayoutContainer(item)) {
       const nextChildren = updateLayoutRecursive(item.children, id, newLayout);
 
       if (nextChildren !== item.children) {
@@ -256,7 +256,7 @@ export const updateComponentRecursive = (
       return updater(component);
     }
 
-    if (hasChildren(component)) {
+    if (isLayoutContainer(component)) {
       return {
         ...component,
         children: updateComponentRecursive(component.children, id, updater),

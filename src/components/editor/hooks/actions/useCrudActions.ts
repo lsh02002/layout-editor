@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { hasChildren } from "../../../../types/types";
+import { isLayoutContainer } from "../../../../types/types";
 
 import type { LayoutComponent } from "../../../../types/types";
 
@@ -61,7 +61,7 @@ export const useCrudActions = ({
           .filter((component) => !selectedSet.has(component.id))
           // 컨테이너 자식도 재귀 삭제
           .map((component) => {
-            if (!hasChildren(component)) {
+            if (!isLayoutContainer(component)) {
               return component;
             }
 
