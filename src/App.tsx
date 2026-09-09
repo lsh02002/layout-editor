@@ -260,7 +260,7 @@ const config = {
 
       fields: {
         direction: {
-          type: "select",
+          type: "radio",
           label: "방향",
           options: [
             {
