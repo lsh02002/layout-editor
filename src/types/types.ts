@@ -327,7 +327,11 @@ export type ChildrenComponent = Extract<
 export function hasChildren(
   component: LayoutComponent,
 ): component is ChildrenComponent {
-  return "children" in component && Array.isArray(component.children);
+  return (
+    CONTAINER_TYPES.includes(component.type as ContainerType) &&
+    "children" in component &&
+    Array.isArray(component.children)
+  );
 }
 
 export interface HistoryState {
