@@ -1,16 +1,13 @@
 import type { JSX } from "react";
-import type { LayoutComponent } from "../../types/types";
 import ImageGallery from "../editor/utils/ImageGallery";
 import ImageSlider from "../editor/utils/ImageSlider";
 import CodeEditor from "../editor/utils/codeEditor";
 import { getLinkHref } from "../editor/utils/linkUtils";
 import { FAKE_IMAGE_URL } from "../../data/data";
+import type { CanvasComponent } from "../../types/types";
 
-export type CanvasComponent = Exclude<
-  LayoutComponent,
-  { type: "container" | "grid" | "flex" }
->;
 export type CanvasComponentType = CanvasComponent["type"];
+
 export type ComponentOf<T extends CanvasComponentType> = Extract<
   CanvasComponent,
   { type: T }

@@ -1,12 +1,7 @@
 import { memo } from "react";
 import { renderComponentCanvas } from "../editor/registry/componentRegistry";
-import type { LayoutComponent } from "../../types/types";
+import type { CanvasComponent } from "../../types/types";
 import { useEditorConfig } from "../../context/usehooks";
-
-type CanvasComponent = Exclude<
-  LayoutComponent,
-  { type: "container" | "grid" | "flex" }
->;
 
 type Props = {
   component: CanvasComponent;
