@@ -410,48 +410,6 @@ export type InsertTarget = {
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
-export type EditValues = {
-  editingComponentId: string | null;
-  editTitle: string;
-  editValue: string;
-  editPlaceholder: string;
-  editDirection: "row" | "column";
-  editDisabled: boolean;
-  editStyle: CSSProperties;
-  editContentStyle: CSSProperties;
-  editCustomCss: string;
-  editImageUrl: string;
-  editGalleryUrls: string[];
-  editGalleryColumns: number;
-  editGalleryGap: number;
-  editGalleryObjectFit: "cover" | "contain" | "fill";
-  editGalleryBorderRadius: number;
-  editSliderUrls: string[];
-  editSliderAutoplay: boolean;
-  editSliderInterval: number;
-  editSliderShowArrows: boolean;
-  editSliderShowDots: boolean;
-  editSliderLoop: boolean;
-  editLinkType: LinkType;
-  editLinkNewWindow: boolean;
-  editComponentName: string;
-  editHeadingLevel: HeadingLevel;
-  editLayout: ComponentLayout;
-  editDividerThickness: number;
-  editDividerColor: string;
-  editDividerLineStyle: "solid" | "dashed" | "dotted";
-  editSpacerHeight: number;
-  editContainerGap: number;
-  editContainerJustifyContent: ContainerJustifyContent;
-  editContainerAlignItems: ContainerAlignItems;
-  editContainerMaxWidth: number | undefined;
-  editVideoControls: boolean;
-  editVideoAutoplay: boolean;
-  editVideoMuted: boolean;
-  editVideoLoop: boolean;
-  editCodeLanguage: CodeLanguage;
-};
-
 export type SelectionSetter = Dispatch<SetStateAction<string | null>>;
 export type BooleanSetter = Dispatch<SetStateAction<boolean>>;
 export type InsertTargetSetter = Dispatch<SetStateAction<InsertTarget>>;
