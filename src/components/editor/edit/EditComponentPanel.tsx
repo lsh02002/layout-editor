@@ -5,12 +5,14 @@ import {
   type SetStateAction,
 } from "react";
 
-import type {
-  ComponentLayout,
-  FavoriteComponent,
-  LayoutComponent,
-  TemplateItem,
-  ComponentType,
+import {
+  type ComponentLayout,
+  type FavoriteComponent,
+  type LayoutComponent,
+  type TemplateItem,
+  type ComponentType,
+  DISPLAY_TYPES,
+  type DisplayType,
 } from "../../../types/types";
 
 import type { EditTab } from "../hooks/useEditComponentForm";
@@ -177,19 +179,10 @@ function EditComponentPanel({
     return null;
   }
 
-  const childrenComponentTypes = new Set([
-    "container",
-    "grid",
-    "flex",
-  ] as const);
-
   const isChildrenComponent = (
     type: LayoutComponent["type"] | null | undefined,
-  ) => {
-    return (
-      !!type &&
-      childrenComponentTypes.has(type as "container" | "grid" | "flex")
-    );
+  ): type is DisplayType => {
+    return !!type && DISPLAY_TYPES.includes(type as DisplayType);
   };
 
   return (
