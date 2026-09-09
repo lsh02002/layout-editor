@@ -394,10 +394,6 @@ export type CommitHistory = (
   updater: (prev: LayoutComponent[]) => LayoutComponent[],
 ) => void;
 
-// export type SetComponents = (
-//   updater: (prev: LayoutComponent[]) => LayoutComponent[],
-// ) => void;
-
 export type SetComponents = (
   updater: LayoutComponent[] | ((prev: LayoutComponent[]) => LayoutComponent[]),
   recordHistory?: boolean,
