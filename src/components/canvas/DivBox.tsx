@@ -600,7 +600,7 @@ function DivBox({
     <div
       data-layout-box
       data-position-context-id={positionContextId}
-      className={`
+      className={`${isSelected ? "is-selected" : undefined}
         ${layout?.widthMode === "auto" ? "d-inline-block" : "d-block"} 
         ${className}        
       `}

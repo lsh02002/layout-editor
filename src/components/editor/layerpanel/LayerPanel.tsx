@@ -129,6 +129,22 @@ function LayerPanel({
     return null;
   }
 
+  const setCanvasHover = (componentId: string, hovered: boolean) => {
+    const element = document.querySelector<HTMLElement>(
+      `.builder-preview [data-component-id="${CSS.escape(componentId)}"] [data-layout-box]`,
+    );
+
+    if (!element) {
+      return;
+    }
+
+    if (hovered) {
+      element.dataset.layerHover = "true";
+    } else {
+      delete element.dataset.layerHover;
+    }
+  };
+
   const renderDropZone = (
     parentId: string | null,
     index: number,
@@ -214,6 +230,7 @@ function LayerPanel({
           return (
             <React.Fragment key={component.id}>
               <div
+                className="layer-tree-item"
                 onClick={(event) => {
                   if (previewMode) {
                     return;
@@ -272,6 +289,12 @@ function LayerPanel({
                   event.stopPropagation();
 
                   onEdit(component.id);
+                }}
+                onMouseEnter={() => {
+                  setCanvasHover(component.id, true);
+                }}
+                onMouseLeave={() => {
+                  setCanvasHover(component.id, false);
                 }}
                 style={{
                   marginLeft: depth * 14,

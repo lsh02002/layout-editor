@@ -9,8 +9,9 @@ function LayoutEditorStyles() {
           border-color 120ms ease;
       }
 
-      .layer-tree-item:hover {
-        background: #f1f5f9;
+      .layer-tree-item:hover {        
+        outline: 1px solid #6f42c1;
+        outline-offset: -1px;
       }
 
       .editor-side-panel {
@@ -174,6 +175,17 @@ function LayoutEditorStyles() {
           rgba(15, 23, 42, 0.08);
 
         box-sizing: border-box;
+      }
+
+      .builder-preview [data-layout-box][data-layer-hover="true"] {
+        outline: 1px solid #6f42c1 !important;
+        outline-offset: -1px !important;
+      }
+
+      .builder-preview [data-layout-box].is-selected,
+      .builder-preview [data-layout-box].is-selected[data-layer-hover="true"] {
+        outline: 2px solid #0d6efd !important;
+        outline-offset: 2px !important;
       }
 
       .component-drag-handle,
