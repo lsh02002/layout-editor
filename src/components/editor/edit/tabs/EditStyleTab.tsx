@@ -30,7 +30,7 @@ type Props = {
 
   // 컨테이너면 배경 관련 스타일은 style에,
   // 일반 컴포넌트면 contentStyle에 적용합니다.
-  isContainer: boolean;
+  isParentComponent: boolean;
 
   onApply: (
     target: StyleTarget,
@@ -55,7 +55,7 @@ function EditStyleTab({
   editLayout,
   setEditLayout,
   onLayoutChange,
-  isContainer = false,
+  isParentComponent = false,
   onApply,
   positionParentOptions,
   onPositionParentChange,
@@ -88,14 +88,16 @@ function EditStyleTab({
     }));
   };
 
-  const backgroundStyle = isContainer ? editStyle : editContentStyle;
-  const backgroundTarget: StyleTarget = isContainer ? "style" : "contentStyle";
+  const backgroundStyle = isParentComponent ? editStyle : editContentStyle;
+  const backgroundTarget: StyleTarget = isParentComponent
+    ? "style"
+    : "contentStyle";
 
   const updateBackgroundStyle = (
     key: keyof CSSProperties,
     value: CSSProperties[keyof CSSProperties],
   ) => {
-    if (isContainer) {
+    if (isParentComponent) {
       updateStyle(key, value);
       return;
     }
@@ -233,7 +235,7 @@ function EditStyleTab({
       />
 
       <EditTextStyleFields
-        label={isContainer ? "컨테이너 배경 이미지" : "배경 이미지"}
+        label={isParentComponent ? "컨테이너 배경 이미지" : "배경 이미지"}
         colClassName="col-md-12"
         placeholder="https://example.com/image.jpg"
         value={

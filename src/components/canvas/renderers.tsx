@@ -6,7 +6,10 @@ import CodeEditor from "../editor/utils/codeEditor";
 import { getLinkHref } from "../editor/utils/linkUtils";
 import { FAKE_IMAGE_URL } from "../../data/data";
 
-export type CanvasComponent = Exclude<LayoutComponent, { type: "container" }>;
+export type CanvasComponent = Exclude<
+  LayoutComponent,
+  { type: "container" | "grid" | "flex" }
+>;
 export type CanvasComponentType = CanvasComponent["type"];
 export type ComponentOf<T extends CanvasComponentType> = Extract<
   CanvasComponent,

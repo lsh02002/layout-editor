@@ -6,7 +6,7 @@ import {
 } from "react";
 
 import type {
-  ComponentLayout,  
+  ComponentLayout,
   FavoriteComponent,
   LayoutComponent,
   TemplateItem,
@@ -177,6 +177,21 @@ function EditComponentPanel({
     return null;
   }
 
+  const childrenComponentTypes = new Set([
+    "container",
+    "grid",
+    "flex",
+  ] as const);
+
+  const isChildrenComponent = (
+    type: LayoutComponent["type"] | null | undefined,
+  ) => {
+    return (
+      !!type &&
+      childrenComponentTypes.has(type as "container" | "grid" | "flex")
+    );
+  };
+
   return (
     <>
       {isMobile && showEditModal && (
@@ -301,7 +316,7 @@ function EditComponentPanel({
               {editTab === "basic" &&
                 (draftComponent && updateDraftComponent ? (
                   <EditBasicTab
-                    key={`${draftComponent.id}-${editorSyncKey}`}                    
+                    key={`${draftComponent.id}-${editorSyncKey}`}
                     component={draftComponent}
                     updateComponent={updateDraftComponent}
                   />
@@ -324,7 +339,7 @@ function EditComponentPanel({
                   editContentStyle={editContentStyle}
                   setEditContentStyle={setEditContentStyle}
                   editLayout={editLayout}
-                  isContainer={editType === "container"}
+                  isParentComponent={isChildrenComponent(editType)}
                   setEditLayout={setEditLayout}
                   onLayoutChange={(layout) => {
                     if (!primarySelectedId) {
