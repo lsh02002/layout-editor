@@ -1426,43 +1426,49 @@ export const exportGridHtml: HtmlExporter = async (component, context) => {
   ).join("\n");
 
   return `
-    <div
-      class="${wrapperClass}"
-      data-component-id="${componentId}"
-      data-component-type="grid"
-      data-component-name="${componentName}"
-      style="${escapeAttribute(wrapperStyle)}"
-    >
-      <div
-        style="${escapeAttribute(
-          [
-            "display:flex",
-            "flex-direction:column",
-            `gap:${gap}px`,
-            "width:100%",
-            "min-width:0",
-          ].join(";"),
-        )}"
-      >
-        ${dropZoneSpacer}
-      </div>
+  <div
+    class="${wrapperClass}"
+    data-component-id="${componentId}"
+    data-component-type="grid"
+    data-component-name="${componentName}"
+    style="${escapeAttribute(wrapperStyle)}"
+  >
+    ${
+      children?.length === 0
+        ? `
+          <div
+            style="${escapeAttribute(
+              [
+                "display:flex",
+                "flex-direction:column",
+                `gap:${gap}px`,
+                "width:100%",
+                "min-width:0",
+              ].join(";"),
+            )}"
+          >
+            ${dropZoneSpacer}
+          </div>
+        `
+        : ""
+    }
 
-      <div
-        style="${escapeAttribute(
-          [
-            "display:grid",
-            `grid-template-columns:repeat(${columns}, minmax(0, 1fr))`,
-            `gap:${gap}px`,
-            "width:100%",
-            "min-width:0",
-            "position:relative",
-          ].join(";"),
-        )}"
-      >
-        ${children}
-      </div>
+    <div
+      style="${escapeAttribute(
+        [
+          "display:grid",
+          `grid-template-columns:repeat(${columns}, minmax(0, 1fr))`,
+          `gap:${gap}px`,
+          "width:100%",
+          "min-width:0",
+          "position:relative",
+        ].join(";"),
+      )}"
+    >
+      ${children ?? ""}
     </div>
-  `;
+  </div>
+`;
 };
 
 export const exportFlexHtml: HtmlExporter = async (component, context) => {
