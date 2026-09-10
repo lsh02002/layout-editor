@@ -1496,11 +1496,15 @@ export const exportFlexHtml: HtmlExporter = async (component, context) => {
   const gap = component.props.gap ?? 8;
   const justifyContent = component.props.justifyContent ?? "flex-start";
   const alignItems = component.props.alignItems ?? "stretch";
+
   const children = await renderContainerChildren(component, context, direction);
+
+  const directionClass =
+    direction === "row" ? "builder-direction-row" : "builder-direction-column";
 
   return `
     <div
-      class="${wrapperClass}"
+      class="${wrapperClass} ${directionClass}"
       data-component-id="${componentId}"
       data-component-type="flex"
       data-component-name="${componentName}"
@@ -1511,7 +1515,11 @@ export const exportFlexHtml: HtmlExporter = async (component, context) => {
           `gap:${gap}px`,
           `justify-content:${justifyContent}`,
           `align-items:${alignItems}`,
+          "width:100%",
+          "max-width:100%",
+          "min-width:0",
           "min-height:20px",
+          "box-sizing:border-box",
           wrapperStyle,
         ]
           .filter(Boolean)
@@ -1519,7 +1527,8 @@ export const exportFlexHtml: HtmlExporter = async (component, context) => {
       )}"
     >
       ${children}
-    </div>`;
+    </div>
+  `;
 };
 
 export const exportCardHtml: HtmlExporter = (component) => {
