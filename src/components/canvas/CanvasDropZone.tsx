@@ -138,7 +138,7 @@ function CanvasDropZone({
 
       <button
         type="button"
-        className="btn btn-light btn-sm rounded-circle"
+        className="btn btn-light btn-sm"
         style={{
           width: 24,
           height: 24,
@@ -146,6 +146,7 @@ function CanvasDropZone({
           minHeight: 24,
           padding: 0,
           border: !previewMode ? "1px solid #cbd5e1" : "1px solid transparent",
+          borderRadius: 6,
           color: "#64748b",
           pointerEvents: draggingIds.length > 0 ? "none" : "auto",
           transform: hovered || isActive ? "scale(1.08)" : "scale(1)",
