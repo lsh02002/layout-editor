@@ -616,12 +616,17 @@ function DivBox({
         maxWidth: isAbsolute ? "none" : "100%",
         position: "relative",
         outline:
-          style?.outline ??
-          (!previewMode && over
-            ? "1px solid #6f42c1"
-            : "1px solid transparent"),
+          !previewMode && isSelected
+            ? "2px solid #0d6efd"
+            : !previewMode && over
+              ? "1px solid #6f42c1"
+              : style?.outline,
         outlineOffset:
-          style?.outlineOffset ?? (!previewMode && over ? "-1px" : undefined),
+          !previewMode && isSelected
+            ? "2px"
+            : !previewMode && over
+              ? "-1px"
+              : style?.outlineOffset,
       }}
     >
       {!previewMode && isAbsolute && (

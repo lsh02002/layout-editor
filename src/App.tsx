@@ -125,7 +125,7 @@ const config = {
       },
       defaultProps: {
         direction: "column",
-        gap: 8,
+        gap: 0,
         justifyContent: "space-between",
         alignItems: "stretch",
         maxWidth: undefined,

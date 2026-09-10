@@ -102,7 +102,7 @@ function CanvasDropZone({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        visibility: previewMode ? "hidden" : "visible",        
+        visibility: previewMode ? "hidden" : "visible",
 
         display: "flex",
         flexDirection: isRow ? "column" : "row",
@@ -111,7 +111,7 @@ function CanvasDropZone({
         minHeight: isRow ? undefined : draggingIds.length > 0 ? 32 : 14,
         minWidth: isRow ? (draggingIds.length > 0 ? 32 : 14) : undefined,
         flexShrink: 0,
-        margin: isRow ? "0 3px" : "3px 0",
+        margin: 0,
         borderRadius: 6,
         position: "relative",
 

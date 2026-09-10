@@ -98,6 +98,7 @@ export function TextareaRenderer({
       value={component.props.value ?? ""}
       placeholder={component.props.placeholder ?? "내용을 입력하세요."}
       disabled={component.props.disabled ?? false}
+      rows={1}
       readOnly
       tabIndex={-1}
       ref={(element) => {
@@ -154,21 +155,31 @@ export function QuillRenderer({
   const isEmpty = isQuillEmpty(component.props.value ?? "");
 
   return (
-    <div
-      style={{
-        ...component.contentStyle,
-        pointerEvents: "none",
-        wordBreak: "break-word",
-        minHeight: "1.5em",
-      }}
-      dangerouslySetInnerHTML={{
-        __html: isEmpty
-          ? `<span style="color:#6c757d">${
-              component.props.placeholder || "본문을 입력하세요."
-            }</span>`
-          : component.props.value,
-      }}
-    />
+    <>
+      <style>{`
+        .quill-renderer p,
+        .quill-renderer blockquote,
+        .quill-renderer ul,
+        .quill-renderer ol {
+          margin: 0;
+        }
+    `}</style>
+      <div
+        className="quill-renderer"
+        style={{
+          ...component.contentStyle,
+          pointerEvents: "none",
+          wordBreak: "break-word",
+        }}
+        dangerouslySetInnerHTML={{
+          __html: isEmpty
+            ? `<span style="color:#6c757d">${
+                component.props.placeholder || "본문을 입력하세요."
+              }</span>`
+            : component.props.value,
+        }}
+      />
+    </>
   );
 }
 

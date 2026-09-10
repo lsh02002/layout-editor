@@ -8,12 +8,12 @@
       "order": 0,
       "props": {
         "direction": "column",
-        "gap": 8
+        "gap": 0
       },
       "style": {
         "width": "100%",
-        "minHeight": 100,
-        "padding": 12
+        "minHeight": 0,
+        "padding": 0
       },
       "children": [
         {
@@ -22,12 +22,13 @@
           "order": 0,
           "props": {
             "direction": "row",
-            "gap": 16,
+            "gap": 0,
             "justifyContent": "center"
           },
           "style": {
             "width": "100%",
-            "padding": 16
+            "minHeight": 0,
+            "padding": 0
           },
           "children": [
             {
@@ -142,14 +143,14 @@
           "order": 5,
           "props": {
             "direction": "row",
-            "gap": 8,
+            "gap": 0,
             "justifyContent": "space-between",
             "alignItems": "center"
           },
           "style": {
             "width": "100%",
-            "minHeight": 100,
-            "padding": 12
+            "minHeight": 0,
+            "padding": 0
           },
           "children": [
             {
