@@ -280,7 +280,9 @@ function LayoutComponentNode({
       </div>
     ) : null;
 
-  const componentChildren = isLayoutContainer(component) ? component.children : null;
+  const componentChildren = isLayoutContainer(component)
+    ? component.children
+    : null;
 
   const sortedChildren = useMemo(() => {
     if (!componentChildren) {
@@ -346,85 +348,89 @@ function LayoutComponentNode({
           snapLayout={snapLayout}
           style={{
             ...component.style,
-            border: !previewMode ? "1px dashed #adb5bd" : "none",
             transition: "opacity 120ms ease",
             outline:
               !previewMode && isSelected
                 ? "2px solid #0d6efd"
-                : component.style?.outline,
-            outlineOffset:
-              !previewMode && isSelected
-                ? "2px"
-                : component.style?.outlineOffset,
+                : !previewMode
+                  ? "1px dashed #adb5bd"
+                  : component.style?.outline,
+            outlineOffset: !previewMode && isSelected ? "2px" : "-1px",
           }}
         >
-          <div style={{ position: "relative", width: "100%" }}>
-            {dragHandleView}
-
+          {!previewMode && (
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-                gap,
-                width: "100%",
-                minWidth: 0,
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 80,
+                transform: "translateY(-50%)",
               }}
             >
-              {!previewMode && (
-                <div style={{ gridColumn: "1 / -1" }}>
-                  <CanvasDropZone
-                    previewMode={previewMode}
-                    parentId={component.id}
-                    index={0}
-                    direction="column"
-                    draggingIds={draggingIds}
-                    activeDropTarget={activeDropTarget}
-                    setActiveDropTarget={setActiveDropTarget}
-                    onDrop={onDrop}
-                    onCreate={onCreate}
-                  />
-                </div>
-              )}
+              <CanvasDropZone
+                previewMode={previewMode}
+                parentId={component.id}
+                index={0}
+                direction="column"
+                draggingIds={draggingIds}
+                activeDropTarget={activeDropTarget}
+                setActiveDropTarget={setActiveDropTarget}
+                onDrop={onDrop}
+                onCreate={onCreate}
+              />
+            </div>
+          )}
 
-              {children.map((child, index) => {
-                const childIsAbsolute = child.layout?.position === "absolute";
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+              gap,
+              width: "100%",
+              minWidth: 0,
+              position: "relative",
+            }}
+          >
+            {children.map((child, index) => {
+              const childIsAbsolute = child.layout?.position === "absolute";
 
-                if (childIsAbsolute) {
-                  return (
-                    <div key={child.id} style={{ display: "contents" }}>
-                      {renderChildNode(child)}
-                    </div>
-                  );
-                }
-
+              if (childIsAbsolute) {
                 return (
-                  <div
-                    key={child.id}
-                    style={{
-                      minWidth: 0,
-                      maxWidth: "100%",
-                      width: "100%",
-                    }}
-                  >
+                  <div key={child.id} style={{ display: "contents" }}>
                     {renderChildNode(child)}
-
-                    {child.type !== "scrollToTopButton" && (
-                      <CanvasDropZone
-                        previewMode={previewMode}
-                        parentId={component.id}
-                        index={index + 1}
-                        direction="column"
-                        draggingIds={draggingIds}
-                        activeDropTarget={activeDropTarget}
-                        setActiveDropTarget={setActiveDropTarget}
-                        onDrop={onDrop}
-                        onCreate={onCreate}
-                      />
-                    )}
                   </div>
                 );
-              })}
-            </div>
+              }
+
+              return (
+                <div
+                  key={child.id}
+                  style={{
+                    minWidth: 0,
+                    maxWidth: "100%",
+                    width: "100%",
+                  }}
+                >
+                  {renderChildNode(child)}
+
+                  {child.type !== "scrollToTopButton" && (
+                    <CanvasDropZone
+                      previewMode={previewMode}
+                      parentId={component.id}
+                      index={index + 1}
+                      direction="column"
+                      draggingIds={draggingIds}
+                      activeDropTarget={activeDropTarget}
+                      setActiveDropTarget={setActiveDropTarget}
+                      onDrop={onDrop}
+                      onCreate={onCreate}
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </DivBox>
       </div>,
@@ -466,16 +472,14 @@ function LayoutComponentNode({
           snapLayout={snapLayout}
           style={{
             ...component.style,
-            border: !previewMode ? "1px dashed #adb5bd" : "none",
             transition: "opacity 120ms ease",
             outline:
               !previewMode && isSelected
                 ? "2px solid #0d6efd"
-                : component.style?.outline,
-            outlineOffset:
-              !previewMode && isSelected
-                ? "2px"
-                : component.style?.outlineOffset,
+                : !previewMode
+                  ? "1px dashed #adb5bd"
+                  : component.style?.outline,
+            outlineOffset: !previewMode && isSelected ? "2px" : "-1px",
           }}
         >
           <div style={{ position: "relative", width: "100%" }}>

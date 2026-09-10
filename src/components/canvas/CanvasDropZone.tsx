@@ -45,10 +45,6 @@ function CanvasDropZone({
   const activate = () =>
     setActiveDropTarget({ parentId, index, area: "canvas" });
 
-  if (previewMode) {
-    return null;
-  }
-
   const isValidDrag = (event: DragEvent<HTMLElement>) => {
     const types = event.dataTransfer.types;
     const isTemplate = types.includes("application/x-pagebuilder-template");
@@ -106,6 +102,8 @@ function CanvasDropZone({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
+        visibility: previewMode ? "hidden" : "visible",        
+
         display: "flex",
         flexDirection: isRow ? "column" : "row",
         alignItems: "center",
@@ -116,10 +114,13 @@ function CanvasDropZone({
         margin: isRow ? "0 3px" : "3px 0",
         borderRadius: 6,
         position: "relative",
+
+        background: isActive ? "rgba(13, 110, 253, 0.16)" : "transparent",
+        outline: "2px dashed",
+        outlineColor: isActive ? "#0d6efd" : "transparent",
+
         transition:
           "min-height 120ms ease, min-width 120ms ease, background 120ms ease",
-        background: isActive ? "rgba(13, 110, 253, 0.16)" : "transparent",
-        outline: isActive ? "2px dashed #0d6efd" : "2px dashed transparent",
       }}
     >
       {!isRow && (
@@ -141,19 +142,11 @@ function CanvasDropZone({
           height: 28,
           minWidth: 28,
           padding: 0,
-          border: "1px solid #cbd5e1",
+          border: !previewMode ? "1px solid #cbd5e1" : "1px solid transparent",
           color: "#64748b",
-          opacity: 1,
-          visibility: "visible",
           pointerEvents: draggingIds.length > 0 ? "none" : "auto",
           transform: hovered || isActive ? "scale(1.08)" : "scale(1)",
           touchAction: "manipulation",
-          transition: `
-        opacity 120ms ease,
-        transform 120ms ease,
-        visibility 120ms ease
-      `,
-
           zIndex: 10,
         }}
         onClick={(event) => {
