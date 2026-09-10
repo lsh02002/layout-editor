@@ -1,5 +1,8 @@
 import type { CSSProperties } from "react";
-import type { LayoutComponent } from "../../../../types/types";
+import type {
+  ContainerDirection,
+  LayoutComponent,
+} from "../../../../types/types";
 import type { HtmlExporter } from "./htmlExportTypes";
 import { compressImageUrl } from "../projectUtils";
 import { highlightCode, normalizeCodeLanguage } from "../codeHighlight";
@@ -78,15 +81,49 @@ const styleToCss = (style?: CSSProperties) => {
     .join(";");
 };
 
+const layoutToCss = (component: LayoutComponent) => {
+  const layout = component.layout;
+
+  if (!layout) return "";
+
+  const width =
+    layout.widthMode === "fixed"
+      ? layout.width
+      : layout.widthMode === "auto"
+        ? "auto"
+        : "100%";
+
+  const height =
+    layout.heightMode === "fixed"
+      ? layout.height
+      : layout.heightMode === "auto"
+        ? "auto"
+        : layout.heightMode === "fill"
+          ? "100%"
+          : undefined;
+
+  return styleToCss({
+    width,
+    height,
+    boxSizing: "border-box",
+    maxWidth: layout.position === "absolute" ? "none" : "100%",
+
+    ...(layout.position === "absolute"
+      ? {
+          position: "absolute",
+          left: layout.x ?? 0,
+          top: layout.y ?? 0,
+          zIndex: layout.zIndex ?? 100,
+        }
+      : {}),
+  });
+};
+
 const getExportMeta = (component: LayoutComponent) => {
-  const wrapperStyle = styleToCss(component.style);
-
+  const wrapperStyle = layoutToCss(component);
   const contentStyle = styleToCss(component.contentStyle);
-
   const componentId = escapeAttribute(component.id);
-
   const componentName = escapeAttribute(component.name ?? component.type);
-
   const wrapperClass = [
     "builder-component",
     `builder-component-${component.type}`,
@@ -99,6 +136,94 @@ const getExportMeta = (component: LayoutComponent) => {
     componentName,
     wrapperClass,
   };
+};
+
+const exportDropZoneSpacer = (direction: ContainerDirection) => {
+  const isRow = direction === "row";
+
+  return `<div  aria-hidden="true"
+      style="${escapeAttribute(
+        [
+          "visibility:hidden",
+          "display:flex",
+          "align-items:center",
+          "justify-content:center",
+          isRow ? "min-width:24px" : "min-height:24px",
+          "flex-shrink:0",
+          "margin:0",
+          "position:relative",
+        ].join(";"),
+      )}"></div>`;
+};
+
+const renderContainerChildren = async (
+  component: Extract<LayoutComponent, { type: "container" | "flex" }>,
+  context: Parameters<HtmlExporter>[1],
+  direction: ContainerDirection,
+) => {
+  const isRow = direction === "row";
+  const dropZone = exportDropZoneSpacer(direction);
+
+  const children = [...component.children].sort((a, b) => a.order - b.order);
+
+  const rendered = await Promise.all(
+    children.map(async (child) => {
+      const childHtml = await context.renderComponent(child);
+
+      if (child.layout?.position === "absolute") {
+        return childHtml;
+      }
+
+      const widthMode =
+        child.layout?.widthMode ??
+        (child.type === "image" || child.type === "imageSlider"
+          ? "fill"
+          : undefined);
+
+      const childWidth = child.layout?.width;
+
+      const wrapperStyle = isRow
+        ? {
+            width:
+              widthMode === "fixed"
+                ? childWidth
+                : widthMode === "fill"
+                  ? 0
+                  : "auto",
+            flex:
+              widthMode === "fixed"
+                ? "0 0 auto"
+                : widthMode === "fill"
+                  ? "1 1 0"
+                  : "0 0 auto",
+            minWidth: 0,
+            maxWidth: "100%",
+          }
+        : {
+            width:
+              widthMode === "fixed"
+                ? childWidth
+                : widthMode === "auto"
+                  ? "auto"
+                  : "100%",
+            minWidth: 0,
+            maxWidth: "100%",
+          };
+
+      return `
+        <div style="${styleToCss(wrapperStyle)}">
+          ${childHtml}
+          ${!isRow && child.type !== "scrollToTopButton" ? dropZone : ""}
+        </div>
+      `;
+    }),
+  );
+
+  if (isRow) {
+    return `${dropZone}${rendered.join("")}${dropZone}`;
+  }
+
+  return `${dropZone}${rendered.join("")}`;
 };
 
 export const exportButtonHtml: HtmlExporter = (component) => {
@@ -248,49 +373,47 @@ export const exportTextareaHtml: HtmlExporter = (component) => {
     return "";
   }
 
-  const {
-    wrapperStyle,
-    contentStyle,
-    componentId,
-    componentName,
-    wrapperClass,
-  } = getExportMeta(component);
-
-  const text = component.props.value || component.props.placeholder || "";
+  const { contentStyle } = getExportMeta(component);
 
   return `
-    <div
-      class="${wrapperClass}"
-      data-component-id="${componentId}"
-      data-component-type="textarea"
-      data-component-name="${componentName}"
-      style="${escapeAttribute(wrapperStyle)}"
-    >
-      <div
-        class="builder-textarea"
-        style="${escapeAttribute(
-          [
-            "display:block",
-            "box-sizing:border-box",
-            "width:100%",
-            "max-width:100%",
-            "overflow:visible",
-            "font-family:inherit",
-            "font-size:inherit",
-            "font-weight:inherit",
-            "font-style:inherit",
-            "line-height:inherit",
-            "letter-spacing:inherit",
-            "color:inherit",
-            "border:none",
-            "word-break:break-word",
-            contentStyle,
-          ]
-            .filter(Boolean)
-            .join(";"),
-        )}"
-      >${escapeHtml(text)}</div>
-    </div>`;
+  <textarea
+    class="builder-textarea"
+    value="${escapeAttribute(component.props.value || "")}"
+    placeholder="${escapeAttribute(component.props.placeholder || "")}"
+    ${component.props.disabled ? "disabled" : ""}
+    rows="1"
+    readonly
+    tabindex="-1"
+    class="builder-textarea"
+    style="${escapeAttribute(
+      [
+        "display:block",
+        "box-sizing:border-box",
+        "width:100%",
+        "max-width:100%",
+        "overflow:hidden",
+        "resize:none",
+
+        "font-family:inherit",
+        "font-size:inherit",
+        "font-weight:inherit",
+        "font-style:inherit",
+        "line-height:inherit",
+        "letter-spacing:inherit",
+        "color:inherit",
+
+        "border:none",
+        "word-break:break-word",
+
+        contentStyle,
+
+        "pointer-events:none",
+      ]
+        .filter(Boolean)
+        .join(";"),
+    )}"
+  >${escapeHtml(component.props.value || "")}</textarea>
+`;
 };
 
 export const exportQuillHtml: HtmlExporter = (component) => {
@@ -419,10 +542,22 @@ export const exportImageGalleryHtml: HtmlExporter = (component) => {
 
   const images = urls
     .map(
-      (url) => `
+      (url, index) => `
+      <div
+        style="${escapeAttribute(
+          [
+            "width:100%",
+            "aspect-ratio:1 / 1",
+            "overflow:hidden",
+            `border-radius:${borderRadius}px`,
+          ].join(";"),
+        )}"
+      >
         <img
           src="${escapeAttribute(url)}"
-          alt=""
+          alt="${escapeAttribute(
+            `${component.name ?? "Gallery"} ${index + 1}`,
+          )}"
           loading="lazy"
           style="${escapeAttribute(
             [
@@ -430,11 +565,11 @@ export const exportImageGalleryHtml: HtmlExporter = (component) => {
               "width:100%",
               "height:100%",
               `object-fit:${objectFit}`,
-              `border-radius:${borderRadius}px`,
             ].join(";"),
           )}"
         />
-      `,
+      </div>
+    `,
     )
     .join("");
 
@@ -1154,23 +1289,12 @@ export const exportContainerHtml: HtmlExporter = async (component, context) => {
   const { wrapperStyle, componentId, componentName, wrapperClass } =
     getExportMeta(component);
 
-  const direction = component.props.direction ?? "column";
-
+  const direction = component.props.direction ?? "row";
   const gap = component.props.gap ?? 8;
-
   const justifyContent = component.props.justifyContent ?? "space-between";
-
   const alignItems = component.props.alignItems ?? "stretch";
-
-  const maxWidth = component.props.maxWidth;
-
-  const children = (
-    await Promise.all(
-      [...component.children]
-        .sort((a, b) => a.order - b.order)
-        .map(context.renderComponent),
-    )
-  ).join("\n");
+  const maxWidth = component.props.maxWidth ?? "100%";
+  const children = await renderContainerChildren(component, context, direction);
 
   return `
     <div
@@ -1188,6 +1312,7 @@ export const exportContainerHtml: HtmlExporter = async (component, context) => {
           maxWidth ? `max-width:${maxWidth}px` : "",
           maxWidth ? "margin-left:auto" : "",
           maxWidth ? "margin-right:auto" : "",
+          "min-height:20px",
           wrapperStyle,
         ]
           .filter(Boolean)
@@ -1248,14 +1373,55 @@ export const exportGridHtml: HtmlExporter = async (component, context) => {
   const { wrapperStyle, componentId, componentName, wrapperClass } =
     getExportMeta(component);
 
-  const columns = component.props.columns ?? 2;
+  const columns = Math.max(1, component.props.columns ?? 2);
   const gap = component.props.gap ?? 8;
+
+  const dropZoneSpacer = `
+    <div
+      aria-hidden="true"
+      style="${escapeAttribute(
+        [
+          "visibility:hidden",
+          "display:flex",
+          "flex-direction:row",
+          "align-items:center",
+          "justify-content:center",
+          "min-height:24px",
+          "flex-shrink:0",
+          "margin:0",
+          "position:relative",
+        ].join(";"),
+      )}"
+    ></div>
+  `;
 
   const children = (
     await Promise.all(
       [...component.children]
         .sort((a, b) => a.order - b.order)
-        .map(context.renderComponent),
+        .map(async (child) => {
+          const childHtml = await context.renderComponent(child);
+
+          if (child.layout?.position === "absolute") {
+            return `
+              <div style="display:contents">
+                ${childHtml}
+              </div>
+            `;
+          }
+
+          return `
+            <div
+              style="${escapeAttribute(
+                ["min-width:0", "max-width:100%", "width:100%"].join(";"),
+              )}"
+            >
+              ${childHtml}
+
+              ${child.type !== "scrollToTopButton" ? dropZoneSpacer : ""}
+            </div>
+          `;
+        }),
     )
   ).join("\n");
 
@@ -1265,19 +1431,38 @@ export const exportGridHtml: HtmlExporter = async (component, context) => {
       data-component-id="${componentId}"
       data-component-type="grid"
       data-component-name="${componentName}"
-      style="${escapeAttribute(
-        [
-          "display:grid",
-          `grid-template-columns:repeat(${columns}, minmax(0, 1fr))`,
-          `gap:${gap}px`,
-          wrapperStyle,
-        ]
-          .filter(Boolean)
-          .join(";"),
-      )}"
+      style="${escapeAttribute(wrapperStyle)}"
     >
-      ${children}
-    </div>`;
+      <div
+        style="${escapeAttribute(
+          [
+            "display:flex",
+            "flex-direction:column",
+            `gap:${gap}px`,
+            "width:100%",
+            "min-width:0",
+          ].join(";"),
+        )}"
+      >
+        ${dropZoneSpacer}
+      </div>
+
+      <div
+        style="${escapeAttribute(
+          [
+            "display:grid",
+            `grid-template-columns:repeat(${columns}, minmax(0, 1fr))`,
+            `gap:${gap}px`,
+            "width:100%",
+            "min-width:0",
+            "position:relative",
+          ].join(";"),
+        )}"
+      >
+        ${children}
+      </div>
+    </div>
+  `;
 };
 
 export const exportFlexHtml: HtmlExporter = async (component, context) => {
@@ -1292,14 +1477,7 @@ export const exportFlexHtml: HtmlExporter = async (component, context) => {
   const gap = component.props.gap ?? 8;
   const justifyContent = component.props.justifyContent ?? "flex-start";
   const alignItems = component.props.alignItems ?? "stretch";
-
-  const children = (
-    await Promise.all(
-      [...component.children]
-        .sort((a, b) => a.order - b.order)
-        .map(context.renderComponent),
-    )
-  ).join("\n");
+  const children = await renderContainerChildren(component, context, direction);
 
   return `
     <div
@@ -1314,6 +1492,7 @@ export const exportFlexHtml: HtmlExporter = async (component, context) => {
           `gap:${gap}px`,
           `justify-content:${justifyContent}`,
           `align-items:${alignItems}`,
+          "min-height:20px",
           wrapperStyle,
         ]
           .filter(Boolean)

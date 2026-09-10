@@ -50,9 +50,13 @@ export const buildHtmlDocument = async (
       box-sizing: border-box;
     }
 
+    html,
     body {
       margin: 0;
-      padding: 16px;
+      padding: 0;
+    }
+
+    body {
       font-family: Arial, Helvetica, sans-serif;
     }
 
@@ -60,11 +64,27 @@ export const buildHtmlDocument = async (
       max-width: 100%;
     }
 
+    #page-root { 
+    position: relative;
+      width: 100%;
+      min-width: 0;
+      padding: 24px;
+    }
+
+    .builder-rich-text p,
+    .builder-rich-text blockquote,
+    .builder-rich-text ul,
+    .builder-rich-text ol {
+      margin: 0;
+      padding: 0;
+    }
+
     ${codeHighlight}
 
     ${projectCustomCss}
 
     ${collectComponentCustomCss(components)}
+
   </style>
 </head>
 
@@ -75,6 +95,12 @@ export const buildHtmlDocument = async (
   >
     ${body}
   </main>
+  <script>
+  document.querySelectorAll(".builder-textarea").forEach(function (element) {
+    element.style.height = "auto";
+    element.style.height = element.scrollHeight + "px";
+  });
+</script>
 </body>
 </html>`;
 };

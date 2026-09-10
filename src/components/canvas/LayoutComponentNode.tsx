@@ -358,30 +358,27 @@ function LayoutComponentNode({
             outlineOffset: !previewMode && isSelected ? "2px" : "-1px",
           }}
         >
-          {!previewMode && (
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                zIndex: 80,
-                transform: "translateY(-50%)",
-              }}
-            >
-              <CanvasDropZone
-                previewMode={previewMode}
-                parentId={component.id}
-                index={0}
-                direction="column"
-                draggingIds={draggingIds}
-                activeDropTarget={activeDropTarget}
-                setActiveDropTarget={setActiveDropTarget}
-                onDrop={onDrop}
-                onCreate={onCreate}
-              />
-            </div>
-          )}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: component.props.gap ?? 8,
+              width: "100%",
+              minWidth: 0,
+            }}
+          >
+            <CanvasDropZone
+              previewMode={previewMode}
+              parentId={component.id}
+              index={0}
+              direction="column"
+              draggingIds={draggingIds}
+              activeDropTarget={activeDropTarget}
+              setActiveDropTarget={setActiveDropTarget}
+              onDrop={onDrop}
+              onCreate={onCreate}
+            />
+          </div>
 
           <div
             style={{

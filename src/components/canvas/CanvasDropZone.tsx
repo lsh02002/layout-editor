@@ -102,14 +102,14 @@ function CanvasDropZone({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        visibility: previewMode ? "hidden" : "visible",
-
         display: "flex",
-        flexDirection: isRow ? "column" : "row",
+        flexDirection: isRow ? "row" : "column",
         alignItems: "center",
         justifyContent: "center",
-        minHeight: isRow ? undefined : draggingIds.length > 0 ? 32 : 14,
-        minWidth: isRow ? (draggingIds.length > 0 ? 32 : 14) : undefined,
+        minHeight: isRow ? undefined : draggingIds.length > 0 ? 32 : 24,
+        minWidth: isRow ? (draggingIds.length > 0 ? 32 : 24) : undefined,
+        height: isRow ? undefined : draggingIds.length > 0 ? 32 : 24,
+        width: isRow ? (draggingIds.length > 0 ? 32 : 24) : undefined,
         flexShrink: 0,
         margin: 0,
         borderRadius: 6,
@@ -121,6 +121,8 @@ function CanvasDropZone({
 
         transition:
           "min-height 120ms ease, min-width 120ms ease, background 120ms ease",
+
+        visibility: previewMode ? "hidden" : "visible",
       }}
     >
       {!isRow && (
@@ -138,9 +140,10 @@ function CanvasDropZone({
         type="button"
         className="btn btn-light btn-sm rounded-circle"
         style={{
-          width: 28,
-          height: 28,
-          minWidth: 28,
+          width: 24,
+          height: 24,
+          minWidth: 24,
+          minHeight: 24,
           padding: 0,
           border: !previewMode ? "1px solid #cbd5e1" : "1px solid transparent",
           color: "#64748b",

@@ -12,7 +12,7 @@
       },
       "style": {
         "width": "100%",
-        "minHeight": 0,
+        "minHeight": 20,
         "padding": 0
       },
       "children": [
@@ -27,7 +27,7 @@
           },
           "style": {
             "width": "100%",
-            "minHeight": 0,
+            "minHeight": 20,
             "padding": 0
           },
           "children": [
@@ -149,7 +149,7 @@
           },
           "style": {
             "width": "100%",
-            "minHeight": 0,
+            "minHeight": 20,
             "padding": 0
           },
           "children": [
