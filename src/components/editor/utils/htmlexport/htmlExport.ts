@@ -87,8 +87,7 @@ export const buildHtmlDocument = async (
     }
 
     .builder-drop-zone-spacer {
-      visibility: hidden;
-      flex-shrink: 0;
+      visibility: hidden;      
     }
 
     /* 모바일 */
@@ -131,8 +130,7 @@ export const buildHtmlDocument = async (
       }
 
       .builder-drop-zone-spacer {
-        visibility: visible !important;
-        opacity: 1 !important;
+        visibility: hidden !important;        
       }
 
       .builder-drop-zone-spacer.is-row {
