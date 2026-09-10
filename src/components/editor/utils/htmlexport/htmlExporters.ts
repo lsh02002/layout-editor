@@ -120,13 +120,18 @@ const layoutToCss = (component: LayoutComponent) => {
 };
 
 const getExportMeta = (component: LayoutComponent) => {
-  const wrapperStyle = layoutToCss(component);
+  const componentStyle = styleToCss(component.style);
+  const layoutStyle = layoutToCss(component);
+  const wrapperStyle = [componentStyle, layoutStyle].filter(Boolean).join(";");
   const contentStyle = styleToCss(component.contentStyle);
   const componentId = escapeAttribute(component.id);
   const componentName = escapeAttribute(component.name ?? component.type);
   const wrapperClass = [
     "builder-component",
     `builder-component-${component.type}`,
+    component.layout?.position === "absolute"
+      ? "builder-position-absolute"
+      : "builder-position-normal",
   ].join(" ");
 
   return {
@@ -1293,12 +1298,20 @@ export const exportContainerHtml: HtmlExporter = async (component, context) => {
   const gap = component.props.gap ?? 8;
   const justifyContent = component.props.justifyContent ?? "space-between";
   const alignItems = component.props.alignItems ?? "stretch";
-  const maxWidth = component.props.maxWidth ?? "100%";
+  const maxWidth = component.props.maxWidth;
   const children = await renderContainerChildren(component, context, direction);
+
+  const maxWidthCss =
+    typeof maxWidth === "number"
+      ? `max-width:${maxWidth}px`
+      : maxWidth || "100%";
+
+  const directionCss =
+    direction === "row" ? "builder-direction-row" : "builder-direction-column";
 
   return `
     <div
-      class="${wrapperClass}"
+      class="${wrapperClass} ${directionCss}"
       data-component-id="${componentId}"
       data-component-type="container"
       data-component-name="${componentName}"
@@ -1309,7 +1322,7 @@ export const exportContainerHtml: HtmlExporter = async (component, context) => {
           `gap:${gap}px`,
           `justify-content:${justifyContent}`,
           `align-items:${alignItems}`,
-          maxWidth ? `max-width:${maxWidth}px` : "",
+          `max-width:${maxWidthCss}`,
           maxWidth ? "margin-left:auto" : "",
           maxWidth ? "margin-right:auto" : "",
           "min-height:20px",

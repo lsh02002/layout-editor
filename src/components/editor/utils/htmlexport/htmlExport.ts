@@ -69,6 +69,13 @@ export const buildHtmlDocument = async (
       width: 100%;
       min-width: 0;
       padding: 24px;
+      overflow-x: clip;
+    }
+
+    .builder-component img,
+    .builder-component video,
+    .builder-component iframe {
+      max-width: 100%;
     }
 
     .builder-rich-text p,
@@ -77,6 +84,47 @@ export const buildHtmlDocument = async (
     .builder-rich-text ol {
       margin: 0;
       padding: 0;
+    }
+
+    /* 모바일 */
+    @media (max-width: 767.98px) {
+      #page-root {
+        padding: 12px;
+      }
+
+      .builder-component {
+        max-width: 100% !important;
+      }
+
+      .builder-component-container,
+      .builder-component-flex {
+        min-width: 0;
+      }
+
+      .builder-container-child {
+        min-width: 0 !important;
+        max-width: 100% !important;
+      }
+
+      .builder-image,
+      .builder-video {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto;
+      }
+
+      .builder-component-container.builder-direction-row,
+      .builder-component-flex.builder-direction-row {
+        flex-direction: column !important;
+      }
+
+      .builder-component-container.builder-direction-row > .builder-container-child,
+      .builder-component-flex.builder-direction-row > .builder-container-child {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 auto !important;
+      }
+
     }
 
     ${codeHighlight}
