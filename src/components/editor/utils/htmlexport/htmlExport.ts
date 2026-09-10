@@ -86,6 +86,11 @@ export const buildHtmlDocument = async (
       padding: 0;
     }
 
+    .builder-drop-zone-spacer {
+      visibility: hidden;
+      flex-shrink: 0;
+    }
+
     /* 모바일 */
     @media (max-width: 767.98px) {
       #page-root {
@@ -125,6 +130,22 @@ export const buildHtmlDocument = async (
         flex: 0 0 auto !important;
       }
 
+      .builder-drop-zone-spacer {
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+
+      .builder-drop-zone-spacer.is-row {
+        min-width: 24px !important;
+        width: 24px;
+        min-height: 100%;
+      }
+
+      .builder-drop-zone-spacer.is-column {
+        min-height: 24px !important;
+        height: 24px;
+        width: 100%;
+      }
     }
 
     ${codeHighlight}

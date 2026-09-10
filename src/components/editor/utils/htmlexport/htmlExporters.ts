@@ -146,7 +146,9 @@ const getExportMeta = (component: LayoutComponent) => {
 const exportDropZoneSpacer = (direction: ContainerDirection) => {
   const isRow = direction === "row";
 
-  return `<div  aria-hidden="true"
+  return `<div
+      class="builder-drop-zone-spacer ${isRow ? "is-row" : "is-column"}"
+      aria-hidden="true"
       style="${escapeAttribute(
         [
           "visibility:hidden",
