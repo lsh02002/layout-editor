@@ -264,7 +264,7 @@ function ProjectToolbar({
                 : "btn btn-outline-secondary btn-sm"
             }
             onClick={() => onCanvasViewportChange("mobile")}
-            title="Mobile - 390px"
+            title="Mobile - 420px"
           >
             <i className="bi bi-phone" />
           </button>

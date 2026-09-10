@@ -23,6 +23,8 @@ import ComponentDragHandle from "./ComponentDragHandle";
 
 type Props = {
   previewMode: boolean;
+  canvasWidth: number;
+  isMobile: boolean;
   component: LayoutComponent;
   selectedComponentIds: string[];
   draggingIds: string[];
@@ -63,6 +65,8 @@ type Props = {
 
 function LayoutComponentNode({
   previewMode,
+  canvasWidth,
+  isMobile,
   component,
   selectedComponentIds,
   draggingIds,
@@ -295,6 +299,8 @@ function LayoutComponentNode({
   const renderChildNode = (child: LayoutComponent) => (
     <LayoutComponentNode
       previewMode={previewMode}
+      canvasWidth={canvasWidth}
+      isMobile={isMobile}
       component={child}
       selectedComponentIds={selectedComponentIds}
       draggingIds={draggingIds}
@@ -438,9 +444,17 @@ function LayoutComponentNode({
 
   if (component.type === "container" || component.type === "flex") {
     const children = sortedChildren;
-    const direction: ContainerDirection =
+    const originalDirection: ContainerDirection =
       component.props.direction ??
-      (component.type === "flex" ? "row" : "column");
+      (component.type === "container" || component.type === "flex"
+        ? "row"
+        : "column");
+
+    const direction: ContainerDirection =
+      (isMobile || canvasWidth <= 420) && originalDirection === "row"
+        ? "column"
+        : originalDirection;
+
     const isRow = direction === "row";
     const justifyContent =
       component.props.justifyContent ??
@@ -520,33 +534,41 @@ function LayoutComponentNode({
                   ? {
                       display: "contents",
                     }
-                  : isRow
+                  : isMobile
                     ? {
-                        width:
-                          widthMode === "fixed"
-                            ? childWidth
-                            : widthMode === "fill"
-                              ? 0
-                              : "auto",
-                        flex:
-                          widthMode === "fixed"
-                            ? "0 0 auto"
-                            : widthMode === "fill"
-                              ? "1 1 0"
-                              : "0 0 auto",
+                        width: "100%",
                         minWidth: 0,
                         maxWidth: "100%",
+                        flex: "0 0 auto",
                       }
-                    : {
-                        width:
-                          widthMode === "fixed"
-                            ? childWidth
-                            : widthMode === "auto"
-                              ? "auto"
-                              : "100%",
-                        minWidth: 0,
-                        maxWidth: "100%",
-                      };
+                    : isRow
+                      ? {
+                          width:
+                            widthMode === "fixed"
+                              ? childWidth
+                              : widthMode === "fill"
+                                ? 0
+                                : "auto",
+                          flex:
+                            widthMode === "fixed"
+                              ? "0 0 auto"
+                              : widthMode === "fill"
+                                ? "1 1 0"
+                                : "0 1 auto",
+
+                          minWidth: 0,
+                          maxWidth: "100%",
+                        }
+                      : {
+                          width:
+                            widthMode === "fixed"
+                              ? childWidth
+                              : widthMode === "auto"
+                                ? "auto"
+                                : "100%",
+                          minWidth: 0,
+                          maxWidth: "100%",
+                        };
 
                 return (
                   <div key={child.id} style={childWrapperStyle}>

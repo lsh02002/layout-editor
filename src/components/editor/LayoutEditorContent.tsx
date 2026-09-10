@@ -43,7 +43,7 @@ function LayoutEditorContent() {
   const canvasWidthMap: Record<CanvasViewport, number> = {
     desktop: 1100,
     tablet: 768,
-    mobile: 390,
+    mobile: 420,
   };
 
   const canvasWidth = canvasWidthMap[canvasViewport];
@@ -537,6 +537,7 @@ function LayoutEditorContent() {
         <BuilderCanvas
           previewMode={previewMode}
           canvasWidth={canvasWidth}
+          isMobile={isMobile}
           components={components}
           droppedIds={droppedIds}
           selectedComponentIds={selectedComponentIds}

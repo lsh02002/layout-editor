@@ -1,11 +1,15 @@
 import { memo, useMemo, type DragEvent, type PointerEvent } from "react";
-import type { ComponentLayout, LayoutComponent } from "../../types/types";
+import type {  
+  ComponentLayout,
+  LayoutComponent,
+} from "../../types/types";
 import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import LayoutComponentNode from "./LayoutComponentNode";
 
 type Props = {
   previewMode: boolean;
-  canvasWidth: number;
+  canvasWidth: number;  
+  isMobile: boolean;
   components: LayoutComponent[];
   selectedComponentIds: string[];
   draggingIds: string[];
@@ -46,7 +50,8 @@ type Props = {
 
 function BuilderCanvas({
   previewMode,
-  canvasWidth,
+  canvasWidth, 
+  isMobile,
   components,
   selectedComponentIds,
   draggingIds,
@@ -110,6 +115,8 @@ function BuilderCanvas({
           >
             <LayoutComponentNode
               previewMode={previewMode}
+              canvasWidth={canvasWidth}
+              isMobile={isMobile}
               component={component}
               selectedComponentIds={selectedComponentIds}
               draggingIds={draggingIds}
