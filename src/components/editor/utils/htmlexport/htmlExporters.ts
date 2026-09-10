@@ -200,7 +200,7 @@ const renderContainerChildren = async (
                 ? "0 0 auto"
                 : widthMode === "fill"
                   ? "1 1 0"
-                  : "0 0 auto",
+                  : "0 1 auto",
             minWidth: 0,
             maxWidth: "100%",
           }
@@ -216,7 +216,7 @@ const renderContainerChildren = async (
           };
 
       return `
-        <div style="${styleToCss(wrapperStyle)}">
+        <div class="builder-container-child" style="${styleToCss(wrapperStyle)}">
           ${childHtml}
           ${!isRow && child.type !== "scrollToTopButton" ? dropZone : ""}
         </div>
