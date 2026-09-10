@@ -103,7 +103,7 @@ function CanvasDropZone({
       onMouseLeave={() => setHovered(false)}
       style={{
         display: "flex",
-        flexDirection: isRow ? "row" : "column",
+        flexDirection: isRow ? "column" : "row",
         alignItems: "center",
         justifyContent: "center",
         minHeight: isRow ? undefined : draggingIds.length > 0 ? 32 : 24,
