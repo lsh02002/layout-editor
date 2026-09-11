@@ -133,6 +133,30 @@ function LayoutComponentNode({
       }
     };
 
+    const getFormElement = (id: string) => {
+      const root = getElement(id);
+
+      if (!root) {
+        return null;
+      }
+
+      if (
+        root instanceof HTMLInputElement ||
+        root instanceof HTMLTextAreaElement ||
+        root instanceof HTMLSelectElement ||
+        root instanceof HTMLButtonElement
+      ) {
+        return root;
+      }
+
+      return root.querySelector<
+        | HTMLInputElement
+        | HTMLTextAreaElement
+        | HTMLSelectElement
+        | HTMLButtonElement
+      >("input, textarea, select, button");
+    };
+
     return {
       getElement,
       hide(id: string) {
@@ -248,6 +272,82 @@ function LayoutComponentNode({
           behavior,
           block: "start",
         });
+      },
+      setValue(id: string, value: string) {
+        const element = getFormElement(id);
+
+        if (
+          element instanceof HTMLInputElement ||
+          element instanceof HTMLTextAreaElement ||
+          element instanceof HTMLSelectElement
+        ) {
+          element.value = value;
+
+          element.dispatchEvent(
+            new Event("input", {
+              bubbles: true,
+            }),
+          );
+
+          element.dispatchEvent(
+            new Event("change", {
+              bubbles: true,
+            }),
+          );
+        }
+      },
+      getValue(id: string) {
+        const element = getFormElement(id);
+
+        if (
+          element instanceof HTMLInputElement ||
+          element instanceof HTMLTextAreaElement ||
+          element instanceof HTMLSelectElement
+        ) {
+          return element.value;
+        }
+
+        return "";
+      },
+      focus(id: string) {
+        getFormElement(id)?.focus();
+      },
+
+      blur(id: string) {
+        getFormElement(id)?.blur();
+      },
+      enable(id: string) {
+        const element = getFormElement(id);
+
+        if (element) {
+          element.disabled = false;
+        }
+      },
+
+      disable(id: string) {
+        const element = getFormElement(id);
+
+        if (element) {
+          element.disabled = true;
+        }
+      },
+      exists(id: string) {
+        return getElement(id) !== null;
+      },
+      isVisible(id: string) {
+        const element = getElement(id);
+        if (!element) {
+          return false;
+        }
+
+        const style = window.getComputedStyle(element);
+
+        return (
+          style.display !== "none" &&
+          style.visibility !== "hidden" &&
+          style.opacity !== "0" &&
+          element.getClientRects().length > 0
+        );
       },
     };
   };

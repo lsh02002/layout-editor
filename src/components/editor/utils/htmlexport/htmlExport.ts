@@ -276,6 +276,26 @@ export const buildHtmlDocument = async (
               '"]'
           );
 
+        const getFormElement = (id) => {
+          const root = getElement(id);
+
+          if (!root) {
+            return null;
+          }
+
+          if (
+            root.matches?.(
+              "input, textarea, select, button"
+            )
+          ) {
+            return root;
+          }
+
+          return root.querySelector(
+            "input, textarea, select, button"
+          );
+        };
+
         return {
           getElement,
 
@@ -402,6 +422,90 @@ export const buildHtmlDocument = async (
               behavior,
               block: "start"
             });
+          },
+
+          setValue(id, value) {
+            const element = getFormElement(id);
+
+            if (
+              !element ||
+              !("value" in element)
+            ) {
+              return;
+            }
+
+            element.value = value;
+
+            element.dispatchEvent(
+              new Event("input", {
+                bubbles: true,
+              })
+            );
+
+            element.dispatchEvent(
+              new Event("change", {
+                bubbles: true,
+              })
+            );
+          },
+
+          getValue(id) {
+            const element = getFormElement(id);
+
+            if (
+              !element ||
+              !("value" in element)
+            ) {
+              return "";
+            }
+
+            return element.value;
+          },
+
+          focus(id) {
+            getFormElement(id)?.focus();
+          },
+
+          blur(id) {
+            getFormElement(id)?.blur();
+          },
+
+          enable(id) {
+            const element = getFormElement(id);
+
+            if (element) {
+              element.disabled = false;
+            }
+          },
+
+          disable(id) {
+            const element = getFormElement(id);
+
+            if (element) {
+              element.disabled = true;
+            }
+          },
+
+          exists(id) {
+            return getElement(id) !== null;
+          },
+
+          isVisible(id) {
+            const element = getElement(id);
+
+            if (!element) {
+              return false;
+            }
+
+            const style =
+              window.getComputedStyle(element);
+
+            return (
+              style.display !== "none" &&
+              style.visibility !== "hidden" &&
+              style.opacity !== "0" &&
+              element.getClientRects().length > 0
+            );
           },
         };
       };

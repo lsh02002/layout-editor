@@ -37,6 +37,7 @@ export const EditJsActionTab = ({
   const { components: componentRegistry } = useEditorConfig();
 
   const [textValue, setTextValue] = useState("");
+  const [valueValue, setValueValue] = useState("");
   const [styleProperty, setStyleProperty] = useState("");
   const [styleValue, setStyleValue] = useState("");
   const [attributeName, setAttributeName] = useState("");
@@ -377,6 +378,101 @@ export const EditJsActionTab = ({
                   }
                 >
                   − Class
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.focus(${JSON.stringify(
+                        action.targetComponentId,
+                      )});`,
+                    )
+                  }
+                >
+                  Focus
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.blur(${JSON.stringify(
+                        action.targetComponentId,
+                      )});`,
+                    )
+                  }
+                >
+                  Blur
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-success btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.enable(${JSON.stringify(
+                        action.targetComponentId,
+                      )});`,
+                    )
+                  }
+                >
+                  Enable
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-danger btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.disable(${JSON.stringify(
+                        action.targetComponentId,
+                      )});`,
+                    )
+                  }
+                >
+                  Disable
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="form-label fw-semibold small">
+                Input Value
+              </label>
+
+              <div className="input-group input-group-sm">
+                <input
+                  type="text"
+                  className="form-control"
+                  value={valueValue}
+                  placeholder="설정할 값"
+                  onChange={(event) => setValueValue(event.target.value)}
+                />
+
+                <button
+                  type="button"
+                  className="btn btn-outline-primary"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.setValue(${JSON.stringify(
+                        action.targetComponentId,
+                      )}, ${JSON.stringify(valueValue)});`,
+                    )
+                  }
+                >
+                  Set Value
                 </button>
               </div>
             </div>
