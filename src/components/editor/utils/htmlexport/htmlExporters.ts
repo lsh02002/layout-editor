@@ -126,6 +126,7 @@ const getExportMeta = (component: LayoutComponent) => {
   const contentStyle = styleToCss(component.contentStyle);
   const componentId = escapeAttribute(component.id);
   const componentName = escapeAttribute(component.name ?? component.type);
+
   const wrapperClass = [
     "builder-component",
     `builder-component-${component.type}`,
@@ -134,12 +135,25 @@ const getExportMeta = (component: LayoutComponent) => {
       : "builder-position-normal",
   ].join(" ");
 
+  // ★ 추가
+  const positionParentId =
+    component.layout?.position === "absolute"
+      ? component.layout.positionParentId
+      : undefined;
+
+  const positionParentAttr = positionParentId
+    ? ` data-position-parent-id="${escapeAttribute(positionParentId)}"`
+    : "";
+
   return {
     wrapperStyle,
     contentStyle,
     componentId,
     componentName,
     wrapperClass,
+
+    // ★ 추가
+    positionParentAttr,
   };
 };
 
@@ -177,6 +191,7 @@ const renderContainerChildren = async (
     children.map(async (child) => {
       const childHtml = await context.renderComponent(child);
 
+      // ★ absolute 자식은 부모에 직접 붙인다.
       if (child.layout?.position === "absolute") {
         return childHtml;
       }
@@ -197,12 +212,14 @@ const renderContainerChildren = async (
                 : widthMode === "fill"
                   ? 0
                   : "auto",
+
             flex:
               widthMode === "fixed"
                 ? "0 0 auto"
                 : widthMode === "fill"
                   ? "1 1 0"
                   : "0 1 auto",
+
             minWidth: 0,
             maxWidth: "100%",
           }
@@ -213,6 +230,7 @@ const renderContainerChildren = async (
                 : widthMode === "auto"
                   ? "auto"
                   : "100%",
+
             minWidth: 0,
             maxWidth: "100%",
           };
@@ -244,6 +262,7 @@ export const exportButtonHtml: HtmlExporter = (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const disabled = component.props.disabled ? " disabled" : "";
@@ -253,7 +272,7 @@ export const exportButtonHtml: HtmlExporter = (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="button"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
       <button
@@ -277,6 +296,7 @@ export const exportScrollToTopHtml: HtmlExporter = (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const disabled = component.props.disabled ? " disabled" : "";
@@ -286,7 +306,8 @@ export const exportScrollToTopHtml: HtmlExporter = (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="scrollToTopButton"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
+      style="${escapeAttribute(wrapperStyle)}"
     >
       <button
         type="button"
@@ -295,11 +316,12 @@ export const exportScrollToTopHtml: HtmlExporter = (component) => {
         onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
         style="${escapeAttribute(
           [
-            wrapperStyle,
             contentStyle,
             "display:flex",
             "align-items:center",
             "justify-content:center",
+            "width:100%",
+            "height:100%",
             "border-radius:50%",
             "color:#fff",
             "background-color:#6c757d",
@@ -317,7 +339,8 @@ export const exportScrollToTopHtml: HtmlExporter = (component) => {
       >
         ${escapeHtml(component.props.title)}
       </button>
-    </div>`;
+    </div>
+  `;
 };
 
 export const exportHeadingHtml: HtmlExporter = (component) => {
@@ -331,6 +354,7 @@ export const exportHeadingHtml: HtmlExporter = (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const tag = `h${component.props.level}`;
@@ -350,7 +374,7 @@ export const exportHeadingHtml: HtmlExporter = (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="heading"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
       <${tag}
@@ -380,47 +404,60 @@ export const exportTextareaHtml: HtmlExporter = (component) => {
     return "";
   }
 
-  const { contentStyle } = getExportMeta(component);
+  const {
+    wrapperStyle,
+    contentStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+    positionParentAttr,
+  } = getExportMeta(component);
 
   return `
-  <textarea
-    class="builder-textarea"
-    value="${escapeAttribute(component.props.value || "")}"
-    placeholder="${escapeAttribute(component.props.placeholder || "")}"
-    ${component.props.disabled ? "disabled" : ""}
-    rows="1"
-    readonly
-    tabindex="-1"
-    class="builder-textarea"
-    style="${escapeAttribute(
-      [
-        "display:block",
-        "box-sizing:border-box",
-        "width:100%",
-        "max-width:100%",
-        "overflow:hidden",
-        "resize:none",
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="textarea"
+      data-component-name="${componentName}"${positionParentAttr}
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <textarea
+        class="builder-textarea"
+        placeholder="${escapeAttribute(component.props.placeholder || "")}"
+        ${component.props.disabled ? "disabled" : ""}
+        rows="1"
+        readonly
+        tabindex="-1"
+        style="${escapeAttribute(
+          [
+            "display:block",
+            "box-sizing:border-box",
+            "width:100%",
+            "max-width:100%",
+            "overflow:hidden",
+            "resize:none",
 
-        "font-family:inherit",
-        "font-size:inherit",
-        "font-weight:inherit",
-        "font-style:inherit",
-        "line-height:inherit",
-        "letter-spacing:inherit",
-        "color:inherit",
+            "font-family:inherit",
+            "font-size:inherit",
+            "font-weight:inherit",
+            "font-style:inherit",
+            "line-height:inherit",
+            "letter-spacing:inherit",
+            "color:inherit",
 
-        "border:none",
-        "word-break:break-word",
+            "border:none",
+            "word-break:break-word",
 
-        contentStyle,
+            contentStyle,
 
-        "pointer-events:none",
-      ]
-        .filter(Boolean)
-        .join(";"),
-    )}"
-  >${escapeHtml(component.props.value || "")}</textarea>
-`;
+            "pointer-events:none",
+          ]
+            .filter(Boolean)
+            .join(";"),
+        )}"
+      >${escapeHtml(component.props.value || "")}</textarea>
+    </div>
+  `;
 };
 
 export const exportQuillHtml: HtmlExporter = (component) => {
@@ -434,6 +471,7 @@ export const exportQuillHtml: HtmlExporter = (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const html =
@@ -447,7 +485,7 @@ export const exportQuillHtml: HtmlExporter = (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="quill"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
       <div
@@ -472,6 +510,7 @@ export const exportImageHtml: HtmlExporter = async (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const originalUrl = component.props.urls?.[0] ?? "";
@@ -482,7 +521,7 @@ export const exportImageHtml: HtmlExporter = async (component) => {
         class="${wrapperClass}"
         data-component-id="${componentId}"
         data-component-type="image"
-        data-component-name="${componentName}"
+        data-component-name="${componentName}"${positionParentAttr}
         style="${escapeAttribute(wrapperStyle)}"
       ></div>`;
   }
@@ -500,7 +539,7 @@ export const exportImageHtml: HtmlExporter = async (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="image"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
       <img
@@ -535,6 +574,7 @@ export const exportImageGalleryHtml: HtmlExporter = (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const urls = component.props.urls?.filter(Boolean) ?? [];
@@ -585,7 +625,7 @@ export const exportImageGalleryHtml: HtmlExporter = (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="imageGallery"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
       <div
@@ -612,8 +652,13 @@ export const exportImageSliderHtml: HtmlExporter = (component) => {
     return "";
   }
 
-  const { wrapperStyle, componentId, componentName, wrapperClass } =
-    getExportMeta(component);
+  const {
+    wrapperStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+    positionParentAttr,
+  } = getExportMeta(component);
 
   const urls = component.props.urls?.filter(Boolean) ?? [];
 
@@ -623,7 +668,7 @@ export const exportImageSliderHtml: HtmlExporter = (component) => {
         class="${wrapperClass}"
         data-component-id="${componentId}"
         data-component-type="imageSlider"
-        data-component-name="${componentName}"
+        data-component-name="${componentName}"${positionParentAttr}
         style="${escapeAttribute(wrapperStyle)}"
       ></div>
     `;
@@ -784,20 +829,23 @@ export const exportImageSliderHtml: HtmlExporter = (component) => {
       `
       : "";
 
+  const sliderPositionStyle =
+    component.layout?.position === "absolute" ? "" : "position:relative";
+
   return `
     <div
       id="${sliderId}"
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="imageSlider"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       data-slider-loop="${loop}"
       data-slider-autoplay="${autoplay}"
       data-slider-interval="${interval}"
       data-slider-count="${urls.length}"
       data-slider-index="${startIndex}"
       style="${escapeAttribute(
-        [wrapperStyle, "position:relative", "overflow:hidden"]
+        [wrapperStyle, sliderPositionStyle, "overflow:hidden"]
           .filter(Boolean)
           .join(";"),
       )}"
@@ -1114,6 +1162,7 @@ export const exportVideoHtml: HtmlExporter = (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const src = component.props.src ?? "";
@@ -1135,7 +1184,7 @@ export const exportVideoHtml: HtmlExporter = (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="video"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
       <video
@@ -1167,6 +1216,7 @@ export const exportDividerHtml: HtmlExporter = (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const thickness = component.props.thickness ?? 3;
@@ -1180,7 +1230,7 @@ export const exportDividerHtml: HtmlExporter = (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="divider"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
       <hr
@@ -1210,6 +1260,7 @@ export const exportSpacerHtml: HtmlExporter = (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const height = component.props.height ?? 32;
@@ -1219,7 +1270,7 @@ export const exportSpacerHtml: HtmlExporter = (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="spacer"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(
         [
           wrapperStyle,
@@ -1245,6 +1296,7 @@ export const exportCodeEditorHtml: HtmlExporter = (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const code = String(component.props.value ?? "");
@@ -1258,7 +1310,7 @@ export const exportCodeEditorHtml: HtmlExporter = (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="codeEditor"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
       <pre
@@ -1293,30 +1345,35 @@ export const exportContainerHtml: HtmlExporter = async (component, context) => {
     return "";
   }
 
-  const { wrapperStyle, componentId, componentName, wrapperClass } =
-    getExportMeta(component);
+  const {
+    wrapperStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+    positionParentAttr,
+  } = getExportMeta(component);
 
   const direction = component.props.direction ?? "row";
   const gap = component.props.gap ?? 8;
   const justifyContent = component.props.justifyContent ?? "space-between";
   const alignItems = component.props.alignItems ?? "stretch";
+
   const maxWidth = component.props.maxWidth;
+
   const children = await renderContainerChildren(component, context, direction);
 
   const maxWidthCss =
-    typeof maxWidth === "number"
-      ? `max-width:${maxWidth}px`
-      : maxWidth || "100%";
+    typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth || "100%";
 
   const directionCss =
     direction === "row" ? "builder-direction-row" : "builder-direction-column";
 
   return `
     <div
-      class="${wrapperClass} ${directionCss}"
+      class="${wrapperClass} ${directionCss} builder-position-context"
       data-component-id="${componentId}"
       data-component-type="container"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(
         [
           "display:flex",
@@ -1324,10 +1381,23 @@ export const exportContainerHtml: HtmlExporter = async (component, context) => {
           `gap:${gap}px`,
           `justify-content:${justifyContent}`,
           `align-items:${alignItems}`,
+
+          // absolute 자식의 기준 부모
+          "position:relative",
+
           `max-width:${maxWidthCss}`,
           maxWidth ? "margin-left:auto" : "",
           maxWidth ? "margin-right:auto" : "",
+
+          "width:100%",
+          "min-width:0",
           "min-height:20px",
+          "box-sizing:border-box",
+
+          // 중요:
+          // 부모 자체가 absolute라면 여기의
+          // position:absolute가 위 relative를 덮어씀.
+          // absolute 역시 자식의 containing block이 되므로 정상.
           wrapperStyle,
         ]
           .filter(Boolean)
@@ -1335,7 +1405,8 @@ export const exportContainerHtml: HtmlExporter = async (component, context) => {
       )}"
     >
       ${children}
-    </div>`;
+    </div>
+  `;
 };
 
 export const exportLinkHtml: HtmlExporter = (component) => {
@@ -1349,6 +1420,7 @@ export const exportLinkHtml: HtmlExporter = (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const href = getLinkHref(component);
@@ -1367,7 +1439,7 @@ export const exportLinkHtml: HtmlExporter = (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="link"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
       <a
@@ -1385,8 +1457,13 @@ export const exportGridHtml: HtmlExporter = async (component, context) => {
     return "";
   }
 
-  const { wrapperStyle, componentId, componentName, wrapperClass } =
-    getExportMeta(component);
+  const {
+    wrapperStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+    positionParentAttr,
+  } = getExportMeta(component);
 
   const columns = Math.max(1, component.props.columns ?? 2);
   const gap = component.props.gap ?? 8;
@@ -1418,11 +1495,7 @@ export const exportGridHtml: HtmlExporter = async (component, context) => {
           const childHtml = await context.renderComponent(child);
 
           if (child.layout?.position === "absolute") {
-            return `
-              <div style="display:contents">
-                ${childHtml}
-              </div>
-            `;
+            return childHtml;
           }
 
           return `
@@ -1442,12 +1515,22 @@ export const exportGridHtml: HtmlExporter = async (component, context) => {
 
   return `
   <div
-    class="${wrapperClass}"
-    data-component-id="${componentId}"
-    data-component-type="grid"
-    data-component-name="${componentName}"
-    style="${escapeAttribute(wrapperStyle)}"
-  >
+  class="${wrapperClass} builder-position-context"
+  data-component-id="${componentId}"
+  data-component-type="grid"
+  data-component-name="${componentName}"${positionParentAttr}
+  style="${escapeAttribute(
+    [
+      "position:relative",
+      "width:100%",
+      "min-width:0",
+      "box-sizing:border-box",
+      wrapperStyle,
+    ]
+      .filter(Boolean)
+      .join(";"),
+  )}"
+>
     ${
       children?.length === 0
         ? `
@@ -1476,7 +1559,6 @@ export const exportGridHtml: HtmlExporter = async (component, context) => {
           `gap:${gap}px`,
           "width:100%",
           "min-width:0",
-          "position:relative",
         ].join(";"),
       )}"
     >
@@ -1491,8 +1573,13 @@ export const exportFlexHtml: HtmlExporter = async (component, context) => {
     return "";
   }
 
-  const { wrapperStyle, componentId, componentName, wrapperClass } =
-    getExportMeta(component);
+  const {
+    wrapperStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+    positionParentAttr,
+  } = getExportMeta(component);
 
   const direction = component.props.direction ?? "row";
   const gap = component.props.gap ?? 8;
@@ -1501,15 +1588,15 @@ export const exportFlexHtml: HtmlExporter = async (component, context) => {
 
   const children = await renderContainerChildren(component, context, direction);
 
-  const directionClass =
+  const directionCss =
     direction === "row" ? "builder-direction-row" : "builder-direction-column";
 
   return `
     <div
-      class="${wrapperClass} ${directionClass}"
+      class="${wrapperClass} ${directionCss} builder-position-context"
       data-component-id="${componentId}"
       data-component-type="flex"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(
         [
           "display:flex",
@@ -1517,11 +1604,17 @@ export const exportFlexHtml: HtmlExporter = async (component, context) => {
           `gap:${gap}px`,
           `justify-content:${justifyContent}`,
           `align-items:${alignItems}`,
+
+          // absolute 자식 기준
+          "position:relative",
+
           "width:100%",
           "max-width:100%",
           "min-width:0",
           "min-height:20px",
           "box-sizing:border-box",
+
+          // 부모 자체 absolute인 경우 마지막에 덮어씀
           wrapperStyle,
         ]
           .filter(Boolean)
@@ -1544,6 +1637,7 @@ export const exportCardHtml: HtmlExporter = (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const title = component.props.title ?? "";
@@ -1554,7 +1648,7 @@ export const exportCardHtml: HtmlExporter = (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="card"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
       <div
@@ -1619,6 +1713,7 @@ export const exportAlertHtml: HtmlExporter = (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const message = component.props.message ?? "";
@@ -1679,7 +1774,7 @@ export const exportAlertHtml: HtmlExporter = (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="alert"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
       <div
@@ -1716,6 +1811,7 @@ export const exportBadgeHtml: HtmlExporter = (component) => {
     componentId,
     componentName,
     wrapperClass,
+    positionParentAttr,
   } = getExportMeta(component);
 
   const text = component.props.text ?? "";
@@ -1737,7 +1833,7 @@ export const exportBadgeHtml: HtmlExporter = (component) => {
       class="${wrapperClass}"
       data-component-id="${componentId}"
       data-component-type="badge"
-      data-component-name="${componentName}"
+      data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
       <span

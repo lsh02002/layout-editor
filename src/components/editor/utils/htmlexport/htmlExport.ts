@@ -64,8 +64,8 @@ export const buildHtmlDocument = async (
       max-width: 100%;
     }
 
-    #page-root { 
-    position: relative;
+    #page-root {
+      position: relative;
       width: 100%;
       min-width: 0;
       padding: 24px;
@@ -87,7 +87,7 @@ export const buildHtmlDocument = async (
     }
 
     .builder-drop-zone-spacer {
-      visibility: hidden;      
+      visibility: hidden;
     }
 
     /* 모바일 */
@@ -130,7 +130,7 @@ export const buildHtmlDocument = async (
       }
 
       .builder-drop-zone-spacer {
-        visibility: hidden !important;        
+        visibility: hidden !important;
       }
 
       .builder-drop-zone-spacer.is-row {
@@ -151,7 +151,6 @@ export const buildHtmlDocument = async (
     ${projectCustomCss}
 
     ${collectComponentCustomCss(components)}
-
   </style>
 </head>
 
@@ -162,12 +161,67 @@ export const buildHtmlDocument = async (
   >
     ${body}
   </main>
+
   <script>
-  document.querySelectorAll(".builder-textarea").forEach(function (element) {
-    element.style.height = "auto";
-    element.style.height = element.scrollHeight + "px";
-  });
-</script>
+    (() => {
+      document
+        .querySelectorAll(".builder-textarea")
+        .forEach((element) => {
+          element.style.height = "auto";
+          element.style.height =
+            element.scrollHeight + "px";
+        });
+      const attachAbsoluteComponents = () => {
+        const absoluteComponents =
+          document.querySelectorAll(
+            ".builder-position-absolute[data-position-parent-id]"
+          );
+
+        absoluteComponents.forEach((element) => {
+          const parentId =
+            element.getAttribute(
+              "data-position-parent-id"
+            );
+
+          if (!parentId) {
+            return;
+          }
+
+          const parent =
+            document.querySelector(
+              '[data-component-id="' +
+                CSS.escape(parentId) +
+                '"]'
+            );
+
+          if (!parent || parent === element) {
+            return;
+          }
+
+          /*
+           * absolute 기준 부모 보장
+           */
+          const parentPosition =
+            window
+              .getComputedStyle(parent)
+              .position;
+
+          if (parentPosition === "static") {
+            parent.style.position = "relative";
+          }
+
+          /*
+           * 실제 부모가 다르면 이동
+           */
+          if (element.parentElement !== parent) {
+            parent.appendChild(element);
+          }
+        });
+      };
+
+      attachAbsoluteComponents();
+    })();
+  </script>
 </body>
 </html>`;
 };
