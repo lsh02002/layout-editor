@@ -291,8 +291,6 @@ export const useComponentDragDrop = ({
         ? [...selectedComponentIds]
         : [componentId];
 
-      setDraggingIds(nextDraggingIds);
-
       event.dataTransfer.effectAllowed = "move";
 
       event.dataTransfer.setData(
@@ -306,6 +304,10 @@ export const useComponentDragDrop = ({
       );
 
       event.dataTransfer.setData("text/plain", componentId);
+
+      requestAnimationFrame(() => {
+        setDraggingIds(nextDraggingIds);
+      });
     },
     [selectedComponentIds],
   );

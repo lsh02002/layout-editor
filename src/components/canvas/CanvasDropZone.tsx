@@ -52,7 +52,15 @@ function CanvasDropZone({
     const isExistingComponent = types.includes(
       "application/x-layout-component-id",
     );
-    return isTemplate || isNewComponent || isExistingComponent;
+    const isMultiExistingComponent = types.includes(
+      "application/x-layout-component-ids",
+    );
+    return (
+      isTemplate ||
+      isNewComponent ||
+      isExistingComponent ||
+      isMultiExistingComponent
+    );
   };
 
   return (

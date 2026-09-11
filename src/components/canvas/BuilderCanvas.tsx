@@ -162,7 +162,6 @@ function BuilderCanvas({
         return (
           <div
             key={component.id}
-            data-component-id={component.id}
             style={{ position: "relative", scrollMarginTop: "150px" }}
           >
             <LayoutComponentNode
