@@ -60,6 +60,7 @@ export interface ComponentJsAction {
   id: string;
   event: ComponentJsEvent;
   code: string;
+  targetComponentId?: string;
   enabled?: boolean;
   stopPropagation?: boolean;
   preventDefault?: boolean;

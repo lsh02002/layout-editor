@@ -35,7 +35,6 @@ export const EditJsActionTab = ({
   components,
 }: Props) => {
   const { components: componentRegistry } = useEditorConfig();
-  const [targetComponentId, setTargetComponentId] = useState("");
 
   const [textValue, setTextValue] = useState("");
   const [styleProperty, setStyleProperty] = useState("");
@@ -263,8 +262,12 @@ export const EditJsActionTab = ({
               </label>
 
               <select
-                value={targetComponentId}
-                onChange={(event) => setTargetComponentId(event.target.value)}
+                value={action.targetComponentId}
+                onChange={(event) => {
+                  updateAction(action.id, {
+                    targetComponentId: event.target.value,
+                  });
+                }}
                 className="form-select form-select-sm"
               >
                 <option value="">대상 컴포넌트 선택</option>
@@ -276,9 +279,9 @@ export const EditJsActionTab = ({
                 ))}
               </select>
 
-              {targetComponentId && (
+              {action.targetComponentId && (
                 <div className="form-text">
-                  선택된 ID: <code>{targetComponentId}</code>
+                  선택된 ID: <code>{action.targetComponentId}</code>
                 </div>
               )}
             </div>
@@ -291,11 +294,11 @@ export const EditJsActionTab = ({
                 <button
                   type="button"
                   className="btn btn-outline-success btn-sm"
-                  disabled={!targetComponentId}
+                  disabled={!action.targetComponentId}
                   onClick={() =>
                     appendCode(
                       action.id,
-                      `builder.show(${JSON.stringify(targetComponentId)});`,
+                      `builder.show(${JSON.stringify(action.targetComponentId)});`,
                     )
                   }
                 >
@@ -305,11 +308,11 @@ export const EditJsActionTab = ({
                 <button
                   type="button"
                   className="btn btn-outline-secondary btn-sm"
-                  disabled={!targetComponentId}
+                  disabled={!action.targetComponentId}
                   onClick={() =>
                     appendCode(
                       action.id,
-                      `builder.hide(${JSON.stringify(targetComponentId)});`,
+                      `builder.hide(${JSON.stringify(action.targetComponentId)});`,
                     )
                   }
                 >
@@ -319,11 +322,11 @@ export const EditJsActionTab = ({
                 <button
                   type="button"
                   className="btn btn-outline-primary btn-sm"
-                  disabled={!targetComponentId}
+                  disabled={!action.targetComponentId}
                   onClick={() =>
                     appendCode(
                       action.id,
-                      `builder.toggle(${JSON.stringify(targetComponentId)});`,
+                      `builder.toggle(${JSON.stringify(action.targetComponentId)});`,
                     )
                   }
                 >
@@ -333,11 +336,11 @@ export const EditJsActionTab = ({
                 <button
                   type="button"
                   className="btn btn-outline-info btn-sm"
-                  disabled={!targetComponentId}
+                  disabled={!action.targetComponentId}
                   onClick={() =>
                     appendCode(
                       action.id,
-                      `builder.scrollTo(${JSON.stringify(targetComponentId)});`,
+                      `builder.scrollTo(${JSON.stringify(action.targetComponentId)});`,
                     )
                   }
                 >
@@ -347,12 +350,12 @@ export const EditJsActionTab = ({
                 <button
                   type="button"
                   className="btn btn-outline-dark btn-sm"
-                  disabled={!targetComponentId}
+                  disabled={!action.targetComponentId}
                   onClick={() =>
                     appendCode(
                       action.id,
                       `builder.addClass(${JSON.stringify(
-                        targetComponentId,
+                        action.targetComponentId,
                       )}, "active");`,
                     )
                   }
@@ -363,12 +366,12 @@ export const EditJsActionTab = ({
                 <button
                   type="button"
                   className="btn btn-outline-dark btn-sm"
-                  disabled={!targetComponentId}
+                  disabled={!action.targetComponentId}
                   onClick={() =>
                     appendCode(
                       action.id,
                       `builder.removeClass(${JSON.stringify(
-                        targetComponentId,
+                        action.targetComponentId,
                       )}, "active");`,
                     )
                   }
@@ -396,12 +399,12 @@ export const EditJsActionTab = ({
                 <button
                   type="button"
                   className="btn btn-outline-primary"
-                  disabled={!targetComponentId || !textValue}
+                  disabled={!action.targetComponentId || !textValue}
                   onClick={() =>
                     appendCode(
                       action.id,
                       `builder.setText(${JSON.stringify(
-                        targetComponentId,
+                        action.targetComponentId,
                       )}, ${JSON.stringify(textValue)});`,
                     )
                   }
@@ -435,12 +438,12 @@ export const EditJsActionTab = ({
                 <button
                   type="button"
                   className="btn btn-outline-primary"
-                  disabled={!targetComponentId || !styleProperty}
+                  disabled={!action.targetComponentId || !styleProperty}
                   onClick={() =>
                     appendCode(
                       action.id,
                       `builder.setStyle(${JSON.stringify(
-                        targetComponentId,
+                        action.targetComponentId,
                       )}, ${JSON.stringify(styleProperty)}, ${JSON.stringify(
                         styleValue,
                       )});`,
@@ -476,12 +479,12 @@ export const EditJsActionTab = ({
                 <button
                   type="button"
                   className="btn btn-outline-primary"
-                  disabled={!targetComponentId || !attributeName}
+                  disabled={!action.targetComponentId || !attributeName}
                   onClick={() =>
                     appendCode(
                       action.id,
                       `builder.setAttribute(${JSON.stringify(
-                        targetComponentId,
+                        action.targetComponentId,
                       )}, ${JSON.stringify(attributeName)}, ${JSON.stringify(
                         attributeValue,
                       )});`,
@@ -494,12 +497,12 @@ export const EditJsActionTab = ({
                 <button
                   type="button"
                   className="btn btn-outline-danger"
-                  disabled={!targetComponentId || !attributeName}
+                  disabled={!action.targetComponentId || !attributeName}
                   onClick={() =>
                     appendCode(
                       action.id,
                       `builder.removeAttribute(${JSON.stringify(
-                        targetComponentId,
+                        action.targetComponentId,
                       )}, ${JSON.stringify(attributeName)});`,
                     )
                   }
