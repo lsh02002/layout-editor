@@ -120,6 +120,53 @@ function TemplateCanvasPreviewCard({ components }: Props) {
       );
     }
 
+    if (component.type === "form") {
+      const children = [...component.children].sort(
+        (a, b) => a.order - b.order,
+      );
+
+      const direction = component.props.direction ?? "column";
+
+      const justifyContent = component.props.justifyContent ?? "flex-start";
+
+      const alignItems = component.props.alignItems ?? "stretch";
+
+      return (
+        <form
+          key={component.id}
+          action={component.props.action || undefined}
+          method={component.props.method ?? "post"}
+          onSubmit={(event) => {
+            event.preventDefault();
+          }}
+          style={{
+            ...component.style,
+            display: "flex",
+            flexDirection: direction,
+            justifyContent,
+            alignItems,
+            gap: component.props.gap ?? 8,
+            position:
+              component.layout?.position === "absolute"
+                ? "absolute"
+                : "relative",
+            left:
+              component.layout?.position === "absolute"
+                ? (component.layout?.x ?? 0)
+                : undefined,
+            top:
+              component.layout?.position === "absolute"
+                ? (component.layout?.y ?? 0)
+                : undefined,
+            width: component.layout?.width,
+            height: component.layout?.height,
+          }}
+        >
+          {children.map(renderComponent)}
+        </form>
+      );
+    }
+
     return (
       <div
         key={component.id}
