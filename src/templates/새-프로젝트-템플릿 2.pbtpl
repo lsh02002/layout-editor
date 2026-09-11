@@ -130,7 +130,7 @@
       "type": "alert",
       "order": 4,
       "props": {
-        "message": "이 메시지를 클릭해보세요",
+        "message": "미리보기 모드에서 이 메시지를 클릭해보세요",
         "variant": "info",
         "dismissible": true
       },
