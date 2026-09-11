@@ -1,4 +1,7 @@
-import type { LayoutComponent } from "../../../../types/types";
+import {
+  isLayoutContainer,
+  type LayoutComponent,
+} from "../../../../types/types";
 import type {
   ComponentRegistry,
   ComponentRegistryShape,
@@ -6,6 +9,41 @@ import type {
 } from "../../registry/componentRegistry";
 import { codeHighlight } from "../codeHighlight";
 import { collectComponentCustomCss } from "../customCssUtils";
+
+const collectComponentJsActions = (components: LayoutComponent[]) => {
+  const result: Record<
+    string,
+    {
+      event: string;
+      code: string;
+      stopPropagation: boolean;
+      preventDefault: boolean;
+    }[]
+  > = {};
+
+  const visit = (component: LayoutComponent) => {
+    const actions = (component.jsActions ?? [])
+      .filter((action) => action.enabled !== false && action.code.trim())
+      .map((action) => ({
+        event: action.event,
+        code: action.code,
+        stopPropagation: action.stopPropagation === true,
+        preventDefault: action.preventDefault === true,
+      }));
+
+    if (actions.length > 0) {
+      result[component.id] = actions;
+    }
+
+    if (isLayoutContainer(component)) {
+      component.children.forEach(visit);
+    }
+  };
+
+  components.forEach(visit);
+
+  return result;
+};
 
 export async function renderComponentToHtml(
   componentRegistry: ComponentRegistry,
@@ -25,6 +63,14 @@ export const buildHtmlDocument = async (
   components: LayoutComponent[],
   projectCustomCss: string,
 ) => {
+  const componentJsActions = collectComponentJsActions(components);
+  const componentJsActionsJson = JSON.stringify(componentJsActions)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+
   const body = (
     await Promise.all(
       [...components]
@@ -220,6 +266,217 @@ export const buildHtmlDocument = async (
       };
 
       attachAbsoluteComponents();
+
+      const createBuilderApi = () => {
+      const getElement = (id) =>
+        document.querySelector(
+          '[data-component-id="' +
+            CSS.escape(id) +
+            '"]'
+        );
+
+      return {
+        getElement,
+
+        show(id) {
+          const element = getElement(id);
+
+          if (!element) {
+            return;
+          }
+
+          element.style.display = "";
+        },
+
+        hide(id) {
+          const element = getElement(id);
+
+          if (!element) {
+            return;
+          }
+
+          element.style.display = "none";
+        },
+
+        toggle(id) {
+          const element = getElement(id);
+
+          if (!element) {
+            return;
+          }
+
+          const isHidden =
+            window
+              .getComputedStyle(element)
+              .display === "none";
+
+          element.style.display =
+            isHidden ? "" : "none";
+        },
+
+        setText(id, text) {
+          const element = getElement(id);
+
+          if (!element) {
+            return;
+          }
+
+          element.textContent = text;
+        },
+
+        setStyle(id, property, value) {
+          const element = getElement(id);
+
+          if (!element) {
+            return;
+          }
+
+          element.style.setProperty(
+            property,
+            value
+          );
+        },
+
+        addClass(id, className) {
+          const element = getElement(id);
+
+          if (!element) {
+            return;
+          }
+
+          element.classList.add(className);
+        },
+
+        removeClass(id, className) {
+          const element = getElement(id);
+
+          if (!element) {
+            return;
+          }
+
+          element.classList.remove(className);
+        },
+
+        toggleClass(id, className) {
+          const element = getElement(id);
+
+          if (!element) {
+            return;
+          }
+
+          element.classList.toggle(className);
+        },
+
+        setAttribute(id, name, value) {
+          const element = getElement(id);
+
+          if (!element) {
+            return;
+          }
+
+          element.setAttribute(
+            name,
+            value
+          );
+        },
+
+        removeAttribute(id, name) {
+          const element = getElement(id);
+
+          if (!element) {
+            return;
+          }
+
+          element.removeAttribute(name);
+        },
+
+        scrollTo(id, behavior = "smooth") {
+          const element = getElement(id);
+
+          if (!element) {
+            return;
+          }
+
+          element.scrollIntoView({
+            behavior,
+            block: "start"
+          });
+        },
+      };
+
+      const componentJsActions =
+        ${componentJsActionsJson};
+
+      Object.entries(
+        componentJsActions
+      ).forEach(
+        ([componentId, actions]) => {
+          const element =
+            document.querySelector(
+              '[data-component-id="' +
+                CSS.escape(componentId) +
+                '"]'
+            );
+
+          if (!element) {
+            return;
+          }
+
+          actions.forEach((action) => {
+            /*
+             * React의 onFocus/onBlur는
+             * bubbling처럼 동작하므로
+             * export에서도 focusin/out으로 맞춘다.
+             */
+            const eventName =
+              action.event === "focus"
+                ? "focusin"
+                : action.event === "blur"
+                  ? "focusout"
+                  : action.event;
+
+            element.addEventListener(
+              eventName,
+              (event) => {
+                if (action.preventDefault) {
+                  event.preventDefault();
+                }
+                if (action.stopPropagation) {
+                  event.stopPropagation();
+                }
+
+                try {
+                  const fn =
+                    new Function(
+                      "event",
+                      "element",
+                      "component",
+                      "builder",
+                      action.code
+                    );
+
+                  fn(
+                    event,
+                    element,
+                    {
+                      id: componentId,
+                      element: element,
+                    },
+                    createBuilderApi()
+                  );
+                } catch (error) {
+                  console.error(
+                    "JS Action 실행 실패:",
+                    componentId,
+                    action.event,
+                    error
+                  );
+                }
+              }
+            );
+          });
+        }
+      );
     })();
   </script>
 </body>

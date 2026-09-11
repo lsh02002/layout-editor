@@ -46,6 +46,25 @@ export type CodeLanguage =
   | "typescript"
   | "json";
 
+export type ComponentJsEvent =
+  | "click"
+  | "dblclick"
+  | "mouseenter"
+  | "mouseleave"
+  | "focus"
+  | "blur"
+  | "input"
+  | "change";
+
+export interface ComponentJsAction {
+  id: string;
+  event: ComponentJsEvent;
+  code: string;
+  enabled?: boolean;
+  stopPropagation?: boolean;
+  preventDefault?: boolean;
+}
+
 export type BaseComponent<
   TType extends string = string,
   TProps = Record<string, unknown>,
@@ -58,6 +77,7 @@ export type BaseComponent<
   layout?: ComponentLayout;
   style?: CSSProperties;
   contentStyle?: CSSProperties;
+  jsActions?: ComponentJsAction[];
   customCss?: string;
 };
 export interface ButtonComponent extends BaseComponent {

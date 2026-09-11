@@ -21,8 +21,10 @@ import EditStyleTab from "./tabs/EditStyleTab";
 import EditCssTab from "./tabs/EditCssTab";
 import ComponentLibraryPanel from "../librarypanel/ComponentLibraryPanel";
 import { useLogin } from "../../../context/usehooks";
+import { EditJsActionTab } from "./tabs/EditJsActionTab";
 
 type Props = {
+  components: LayoutComponent[];
   isMobile: boolean;
   showEditModal: boolean;
   setShowEditModal: Dispatch<SetStateAction<boolean>>;
@@ -99,6 +101,7 @@ type Props = {
 };
 
 function EditComponentPanel({
+  components,
   isMobile,
   showEditModal,
   setShowEditModal,
@@ -159,6 +162,10 @@ function EditComponentPanel({
     {
       key: "css",
       label: "Custom CSS",
+    },
+    {
+      key: "js-actions",
+      label: "JS Actions",
     },
   ];
 
@@ -352,6 +359,19 @@ function EditComponentPanel({
                   value={editCustomCss}
                   onValueChange={setEditCustomCss}
                   onApply={() => onCustomCssApply(editCustomCss)}
+                />
+              )}
+
+              {editTab === "js-actions" && draftComponent && (
+                <EditJsActionTab
+                  components={components}
+                  actions={draftComponent?.jsActions ?? []}
+                  onChange={(jsActions) =>
+                    updateDraftComponent?.((current) => ({
+                      ...current,
+                      jsActions,
+                    }))
+                  }
                 />
               )}
             </>

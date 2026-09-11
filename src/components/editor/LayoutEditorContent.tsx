@@ -619,6 +619,7 @@ function LayoutEditorContent() {
         onCreate={createComponent}
       />
       <EditComponentPanel
+        components={components}
         isMobile={isMobile}
         showEditModal={showEditModal}
         setShowEditModal={setShowEditModal}

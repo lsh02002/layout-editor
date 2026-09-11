@@ -7,7 +7,7 @@ import type {
 } from "../../../types/types";
 import { updateComponentRecursive } from "../utils/componentTree";
 
-export type EditTab = "basic" | "style" | "css";
+export type EditTab = "basic" | "style" | "css" | "js-actions";
 
 export const useEditComponentForm = ({
   setComponents,

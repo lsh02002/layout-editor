@@ -8,6 +8,7 @@ import {
   type DragEvent,
   type PointerEvent,
   type ReactNode,
+  type SyntheticEvent,
 } from "react";
 import { createPortal } from "react-dom";
 import DivBox from "./DivBox";
@@ -97,6 +98,223 @@ function LayoutComponentNode({
   const isSelected = selectedComponentIds.includes(component.id);
   const isPrimarySelected = selectedComponentIds.at(-1) === component.id;
   const isAbsolute = component.layout?.position === "absolute";
+
+  const createBuilderApi = () => {
+    const getElement = (id: string) =>
+      document.querySelector<HTMLElement>(
+        `[data-component-id="${CSS.escape(id)}"]`,
+      );
+
+    const saveOriginalClass = (element: HTMLElement) => {
+      if (element.dataset.builderOriginalClass === undefined) {
+        element.dataset.builderOriginalClass =
+          element.getAttribute("class") ?? "";
+      }
+    };
+
+    const saveOriginalStyle = (element: HTMLElement) => {
+      if (element.dataset.builderOriginalStyle === undefined) {
+        element.dataset.builderOriginalStyle =
+          element.getAttribute("style") ?? "";
+      }
+    };
+
+    const saveOriginalAttribute = (element: HTMLElement, name: string) => {
+      const saved = element.dataset.builderOriginalAttributes
+        ? JSON.parse(element.dataset.builderOriginalAttributes)
+        : {};
+
+      if (!(name in saved)) {
+        saved[name] = element.hasAttribute(name)
+          ? element.getAttribute(name)
+          : null;
+
+        element.dataset.builderOriginalAttributes = JSON.stringify(saved);
+      }
+    };
+
+    return {
+      getElement,
+      hide(id: string) {
+        const element = getElement(id);
+        if (!element) {
+          return;
+        }
+        saveOriginalClass(element);
+
+        element.classList.add("builder-js-hidden");
+      },
+      show(id: string) {
+        const element = getElement(id);
+        if (!element) {
+          return;
+        }
+
+        saveOriginalClass(element);
+
+        element.classList.remove("builder-js-hidden");
+      },
+      toggle(id: string) {
+        const element = getElement(id);
+        if (!element) {
+          return;
+        }
+
+        saveOriginalClass(element);
+
+        element.classList.toggle("builder-js-hidden");
+      },
+
+      setText(id: string, text: string) {
+        console.warn("Preview에서는 setText를 지원하지 않습니다.", id, text);
+      },
+
+      setStyle(id: string, property: string, value: string) {
+        const element = getElement(id);
+        if (!element) {
+          return;
+        }
+
+        saveOriginalStyle(element);
+
+        element.style.setProperty(property, value);
+      },
+      addClass(id: string, className: string) {
+        const element = getElement(id);
+        if (!element) {
+          return;
+        }
+
+        saveOriginalClass(element);
+
+        element.classList.add(className);
+      },
+      removeClass(id: string, className: string) {
+        const element = getElement(id);
+        if (!element) {
+          return;
+        }
+
+        saveOriginalClass(element);
+
+        element.classList.remove(className);
+      },
+      toggleClass(id: string, className: string) {
+        const element = getElement(id);
+        if (!element) {
+          return;
+        }
+
+        saveOriginalClass(element);
+
+        element.classList.toggle(className);
+      },
+      setAttribute(id: string, name: string, value: string) {
+        const element = getElement(id);
+        if (!element) {
+          return;
+        }
+        if (name === "style" || name === "class") {
+          console.warn(`builder.setAttribute("${name}")는 지원하지 않습니다.`);
+          return;
+        }
+
+        saveOriginalAttribute(element, name);
+        element.setAttribute(name, value);
+      },
+
+      removeAttribute(id: string, name: string) {
+        const element = getElement(id);
+        if (!element) {
+          return;
+        }
+        if (name === "style" || name === "class") {
+          console.warn(
+            `builder.removeAttribute("${name}")는 지원하지 않습니다.`,
+          );
+          return;
+        }
+
+        saveOriginalAttribute(element, name);
+        element.removeAttribute(name);
+      },
+      scrollTo(id: string, behavior: ScrollBehavior = "smooth") {
+        const element = getElement(id);
+        if (!element) {
+          return;
+        }
+
+        element.scrollIntoView({
+          behavior,
+          block: "start",
+        });
+      },
+    };
+  };
+
+  const executeJsActions = useCallback(
+    (eventName: string, event: SyntheticEvent<HTMLElement>) => {
+      if (!previewMode) {
+        return;
+      }
+
+      const actions = component.jsActions ?? [];
+      const matchedActions = actions.filter(
+        (action) =>
+          action.enabled !== false &&
+          action.event === eventName &&
+          action.code.trim(),
+      );
+
+      if (matchedActions.length === 0) {
+        return;
+      }
+
+      matchedActions.forEach((action) => {
+        if (action.preventDefault) {
+          event.preventDefault();
+        }
+        if (action.stopPropagation) {
+          event.stopPropagation();
+        }
+
+        try {
+          const fn = new Function(
+            "event",
+            "element",
+            "component",
+            "builder",
+            action.code,
+          );
+          fn(event, event.currentTarget, component, createBuilderApi());
+        } catch (error) {
+          console.error(`JS Action 실행 실패: ${eventName}`, error);
+        }
+      });
+    },
+    [component, previewMode],
+  );
+
+  const jsEventProps = previewMode
+    ? {
+        onClick: (event: SyntheticEvent<HTMLElement>) =>
+          executeJsActions("click", event),
+        onDoubleClick: (event: SyntheticEvent<HTMLElement>) =>
+          executeJsActions("dblclick", event),
+        onMouseEnter: (event: SyntheticEvent<HTMLElement>) =>
+          executeJsActions("mouseenter", event),
+        onMouseLeave: (event: SyntheticEvent<HTMLElement>) =>
+          executeJsActions("mouseleave", event),
+        onFocus: (event: SyntheticEvent<HTMLElement>) =>
+          executeJsActions("focus", event),
+        onBlur: (event: SyntheticEvent<HTMLElement>) =>
+          executeJsActions("blur", event),
+        onInput: (event: SyntheticEvent<HTMLElement>) =>
+          executeJsActions("input", event),
+        onChange: (event: SyntheticEvent<HTMLElement>) =>
+          executeJsActions("change", event),
+      }
+    : {};
 
   const positionParentId = component.layout?.positionParentId ?? null;
 
@@ -335,6 +553,7 @@ function LayoutComponentNode({
         ref={handleComponentRef}
         data-component-id={component.id}
         style={nodeStyle}
+        {...jsEventProps}
       >
         <DivBox
           previewMode={previewMode}
@@ -466,6 +685,7 @@ function LayoutComponentNode({
         ref={handleComponentRef}
         data-component-id={component.id}
         style={nodeStyle}
+        {...jsEventProps}
       >
         <DivBox
           previewMode={previewMode}
@@ -618,6 +838,7 @@ function LayoutComponentNode({
       ref={handleComponentRef}
       data-component-id={component.id}
       style={nodeStyle}
+      {...jsEventProps}
     >
       <DivBox
         previewMode={previewMode}

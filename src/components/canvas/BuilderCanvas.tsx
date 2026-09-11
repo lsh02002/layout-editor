@@ -1,14 +1,17 @@
-import { memo, useMemo, type DragEvent, type PointerEvent } from "react";
-import type {  
-  ComponentLayout,
-  LayoutComponent,
-} from "../../types/types";
+import {
+  memo,
+  useEffect,
+  useMemo,
+  type DragEvent,
+  type PointerEvent,
+} from "react";
+import type { ComponentLayout, LayoutComponent } from "../../types/types";
 import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import LayoutComponentNode from "./LayoutComponentNode";
 
 type Props = {
   previewMode: boolean;
-  canvasWidth: number;  
+  canvasWidth: number;
   isMobile: boolean;
   components: LayoutComponent[];
   selectedComponentIds: string[];
@@ -50,7 +53,7 @@ type Props = {
 
 function BuilderCanvas({
   previewMode,
-  canvasWidth, 
+  canvasWidth,
   isMobile,
   components,
   selectedComponentIds,
@@ -78,6 +81,55 @@ function BuilderCanvas({
     () => [...components].sort((a, b) => a.order - b.order),
     [components],
   );
+
+  useEffect(() => {
+    if (previewMode) {
+      return;
+    }
+
+    const canvas = document.querySelector("[data-builder-canvas]");
+
+    canvas
+      ?.querySelectorAll<HTMLElement>("[data-component-id]")
+      .forEach((element) => {
+        // style 복원
+        if (element.dataset.builderOriginalStyle !== undefined) {
+          const originalStyle = element.dataset.builderOriginalStyle;
+          if (originalStyle) {
+            element.setAttribute("style", originalStyle);
+          } else {
+            element.removeAttribute("style");
+          }
+          delete element.dataset.builderOriginalStyle;
+        }
+        // class 복원
+        if (element.dataset.builderOriginalClass !== undefined) {
+          const originalClass = element.dataset.builderOriginalClass;
+          if (originalClass) {
+            element.setAttribute("class", originalClass);
+          } else {
+            element.removeAttribute("class");
+          }
+          delete element.dataset.builderOriginalClass;
+        }
+        // attribute 복원
+        if (element.dataset.builderOriginalAttributes) {
+          const originalAttributes = JSON.parse(
+            element.dataset.builderOriginalAttributes,
+          ) as Record<string, string | null>;
+          Object.entries(originalAttributes).forEach(
+            ([name, originalValue]) => {
+              if (originalValue === null) {
+                element.removeAttribute(name);
+              } else {
+                element.setAttribute(name, originalValue);
+              }
+            },
+          );
+          delete element.dataset.builderOriginalAttributes;
+        }
+      });
+  }, [previewMode]);
 
   return (
     <div

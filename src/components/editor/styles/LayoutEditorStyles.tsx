@@ -208,6 +208,10 @@ function LayoutEditorStyles() {
         display: none;
       }
 
+      .builder-js-hidden {
+        display: none !important;
+      }
+
       @media (max-width: 767.98px) {
         .editor-side-panel {
           width: min(88vw, 340px);
