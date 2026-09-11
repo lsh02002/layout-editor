@@ -38,6 +38,8 @@ export const EditJsActionTab = ({
 
   const [textValue, setTextValue] = useState("");
   const [valueValue, setValueValue] = useState("");
+  const [urlValue, setUrlValue] = useState("");
+  const [delayValue, setDelayValue] = useState("");
   const [styleProperty, setStyleProperty] = useState("");
   const [styleValue, setStyleValue] = useState("");
   const [attributeName, setAttributeName] = useState("");
@@ -442,6 +444,166 @@ export const EditJsActionTab = ({
                 >
                   Disable
                 </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-warning btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.toggleDisabled(${JSON.stringify(
+                        action.targetComponentId,
+                      )});`,
+                    )
+                  }
+                >
+                  Toggle Disabled
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-success btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.setChecked(${JSON.stringify(
+                        action.targetComponentId,
+                      )}, true);`,
+                    )
+                  }
+                >
+                  Check
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.setChecked(${JSON.stringify(
+                        action.targetComponentId,
+                      )}, false);`,
+                    )
+                  }
+                >
+                  Uncheck
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.trigger(${JSON.stringify(
+                        action.targetComponentId,
+                      )}, "click");`,
+                    )
+                  }
+                >
+                  Trigger Click
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-success btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.submit(${JSON.stringify(
+                        action.targetComponentId,
+                      )});`,
+                    )
+                  }
+                >
+                  Submit
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-warning btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.reset(${JSON.stringify(
+                        action.targetComponentId,
+                      )});`,
+                    )
+                  }
+                >
+                  Reset
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-info btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.toggleChecked(${JSON.stringify(
+                        action.targetComponentId,
+                      )});`,
+                    )
+                  }
+                >
+                  Toggle Check
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-dark btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `if (builder.hasClass(${JSON.stringify(
+                        action.targetComponentId,
+                      )}, "active")) {\n  \n}`,
+                    )
+                  }
+                >
+                  If Has Class
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-dark btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `if (builder.isVisible(${JSON.stringify(
+                        action.targetComponentId,
+                      )})) {\n  \n}`,
+                    )
+                  }
+                >
+                  If Visible
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-dark btn-sm"
+                  disabled={!action.targetComponentId}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `if (builder.getChecked(${JSON.stringify(
+                        action.targetComponentId,
+                      )})) {\n  \n}`,
+                    )
+                  }
+                >
+                  If Checked
+                </button>
               </div>
             </div>
 
@@ -506,6 +668,20 @@ export const EditJsActionTab = ({
                   }
                 >
                   Set Text
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-info"
+                  disabled={!textValue}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.copy(${JSON.stringify(textValue)});`,
+                    )
+                  }
+                >
+                  Copy
                 </button>
               </div>
             </div>
@@ -604,6 +780,79 @@ export const EditJsActionTab = ({
                   }
                 >
                   Remove
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="form-label fw-semibold small">URL</label>
+
+              <input
+                type="text"
+                className="form-control form-control-sm"
+                value={urlValue}
+                placeholder="https://example.com"
+                onChange={(event) => setUrlValue(event.target.value)}
+              />
+
+              <div className="d-flex flex-wrap gap-2 mt-2">
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm"
+                  disabled={!urlValue}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.navigate(${JSON.stringify(urlValue)});`,
+                    )
+                  }
+                >
+                  Navigate
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  disabled={!urlValue}
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.open(${JSON.stringify(urlValue)});`,
+                    )
+                  }
+                >
+                  Open New
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="form-label fw-semibold small">Delay</label>
+
+              <div className="input-group input-group-sm">
+                <input
+                  type="number"
+                  min="0"
+                  className="form-control"
+                  value={delayValue}
+                  onChange={(event) => setDelayValue(event.target.value)}
+                />
+
+                <span className="input-group-text">ms</span>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-primary"
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `builder.delay(${
+                        Number(delayValue) || 0
+                      }, () => {\n  \n});`,
+                    )
+                  }
+                >
+                  Delay
                 </button>
               </div>
             </div>

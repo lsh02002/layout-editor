@@ -129,6 +129,40 @@ function BuilderCanvas({
           delete element.dataset.builderOriginalAttributes;
         }
       });
+
+    // form 상태 복원
+    canvas
+      ?.querySelectorAll<
+        | HTMLInputElement
+        | HTMLTextAreaElement
+        | HTMLSelectElement
+        | HTMLButtonElement
+      >("input, textarea, select, button")
+      .forEach((element) => {
+        // disabled 복원
+        if (element.dataset.builderOriginalDisabled !== undefined) {
+          element.disabled = element.dataset.builderOriginalDisabled === "true";
+
+          delete element.dataset.builderOriginalDisabled;
+        }
+        // value 복원
+        if (
+          element.dataset.builderOriginalValue !== undefined &&
+          "value" in element
+        ) {
+          element.value = element.dataset.builderOriginalValue;
+
+          delete element.dataset.builderOriginalValue;
+        }
+        // checked 복원
+        if (
+          element instanceof HTMLInputElement &&
+          element.dataset.builderOriginalChecked !== undefined
+        ) {
+          element.checked = element.dataset.builderOriginalChecked === "true";
+          delete element.dataset.builderOriginalChecked;
+        }
+      });
   }, [previewMode]);
 
   return (

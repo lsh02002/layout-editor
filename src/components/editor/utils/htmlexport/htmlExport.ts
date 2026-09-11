@@ -296,6 +296,26 @@ export const buildHtmlDocument = async (
           );
         };
 
+        const getCheckableElement = (id) => {
+          const root = getElement(id);
+
+          if (!root) {
+            return null;
+          }
+
+          if (
+            root.matches?.(
+              'input[type="checkbox"], input[type="radio"]'
+            )
+          ) {
+            return root;
+          }
+
+          return root.querySelector(
+            'input[type="checkbox"], input[type="radio"]'
+          );
+        };
+
         return {
           getElement,
 
@@ -506,6 +526,169 @@ export const buildHtmlDocument = async (
               style.opacity !== "0" &&
               element.getClientRects().length > 0
             );
+          },
+
+          setChecked(id, checked) {
+            const element =
+              getCheckableElement(id);
+
+            if (!element) {
+              return;
+            }
+
+            element.checked = checked;
+
+            element.dispatchEvent(
+              new Event("change", {
+                bubbles: true,
+              })
+            );
+          },
+
+          getChecked(id) {
+            return (
+              getCheckableElement(id)?.checked ??
+              false
+            );
+          },
+
+          trigger(id, eventName) {
+            const root = getElement(id);
+
+            if (!root) {
+              return;
+            }
+
+            const target =
+              root.matches?.(
+                "button, input, select, textarea, a"
+              )
+                ? root
+                : root.querySelector(
+                    "button, input, select, textarea, a"
+                  ) || root;
+
+            if (
+              eventName === "click" &&
+              typeof target.click === "function"
+            ) {
+              target.click();
+              return;
+            }
+
+            target.dispatchEvent(
+              new Event(eventName, {
+                bubbles: true,
+                cancelable: true,
+              })
+            );
+          },
+
+          submit(id) {
+            const root = getElement(id);
+
+            const form =
+              root?.matches?.("form")
+                ? root
+                : root?.querySelector("form");
+
+            form?.requestSubmit();
+          },
+
+          reset(id) {
+            const root = getElement(id);
+
+            const form =
+              root?.matches?.("form")
+                ? root
+                : root?.querySelector("form");
+
+            form?.reset();
+          },
+
+          toggleChecked(id) {
+            const element =
+              getCheckableElement(id);
+
+            if (!element) {
+              return;
+            }
+
+            element.checked =
+              !element.checked;
+
+            element.dispatchEvent(
+              new Event("change", {
+                bubbles: true
+              })
+            );
+          },
+
+          // setHtml(id, html) {
+          //   const element = getElement(id);
+
+          //   if (!element) {
+          //     return;
+          //   }
+
+          //   element.innerHTML = html;
+          // },
+
+          getText(id) {
+            const element = getElement(id);
+
+            return element?.textContent ?? "";
+          },
+
+          getAttribute(id, name) {
+            const element = getElement(id);
+
+            return (
+              element?.getAttribute(name) ??
+              null
+            );
+          },
+
+          hasClass(id, className) {
+            const element = getElement(id);
+
+            return (
+              element?.classList.contains(
+                className
+              ) ?? false
+            );
+          },
+          delay(ms, callback) {
+            window.setTimeout(() => {
+              callback();
+            }, ms);
+          },
+
+          navigate(url) {
+            window.location.href = url;
+          },
+
+          open(url, target = "_blank") {
+            window.open(url, target);
+          },
+
+          async copy(text) {
+            try {
+              await navigator.clipboard.writeText(text);
+              return true;
+            } catch {
+              return false;
+            }
+          },
+
+          toggleDisabled(id) {
+            const element = getFormElement(id);
+
+            if (!element) {
+              return;
+            }
+
+            element.disabled = !element.disabled;
           },
         };
       };

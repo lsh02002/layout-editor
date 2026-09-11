@@ -157,6 +157,51 @@ function LayoutComponentNode({
       >("input, textarea, select, button");
     };
 
+    const getCheckableElement = (id: string) => {
+      const root = getElement(id);
+
+      if (!root) {
+        return null;
+      }
+
+      if (
+        root instanceof HTMLInputElement &&
+        (root.type === "checkbox" || root.type === "radio")
+      ) {
+        return root;
+      }
+
+      return root.querySelector<HTMLInputElement>(
+        'input[type="checkbox"], input[type="radio"]',
+      );
+    };
+
+    const saveOriginalFormState = (
+      element:
+        | HTMLInputElement
+        | HTMLTextAreaElement
+        | HTMLSelectElement
+        | HTMLButtonElement,
+    ) => {
+      if (element.dataset.builderOriginalDisabled === undefined) {
+        element.dataset.builderOriginalDisabled = String(element.disabled);
+      }
+
+      if (
+        "value" in element &&
+        element.dataset.builderOriginalValue === undefined
+      ) {
+        element.dataset.builderOriginalValue = element.value;
+      }
+
+      if (
+        element instanceof HTMLInputElement &&
+        element.dataset.builderOriginalChecked === undefined
+      ) {
+        element.dataset.builderOriginalChecked = String(element.checked);
+      }
+    };
+
     return {
       getElement,
       hide(id: string) {
@@ -281,6 +326,8 @@ function LayoutComponentNode({
           element instanceof HTMLTextAreaElement ||
           element instanceof HTMLSelectElement
         ) {
+          saveOriginalFormState(element);
+
           element.value = value;
 
           element.dispatchEvent(
@@ -320,6 +367,7 @@ function LayoutComponentNode({
         const element = getFormElement(id);
 
         if (element) {
+          saveOriginalFormState(element);
           element.disabled = false;
         }
       },
@@ -328,6 +376,7 @@ function LayoutComponentNode({
         const element = getFormElement(id);
 
         if (element) {
+          saveOriginalFormState(element);
           element.disabled = true;
         }
       },
@@ -348,6 +397,144 @@ function LayoutComponentNode({
           style.opacity !== "0" &&
           element.getClientRects().length > 0
         );
+      },
+      setChecked(id: string, checked: boolean) {
+        const element = getCheckableElement(id);
+
+        if (!element) {
+          return;
+        }
+
+        saveOriginalFormState(element);
+
+        element.checked = checked;
+
+        element.dispatchEvent(
+          new Event("change", {
+            bubbles: true,
+          }),
+        );
+      },
+      getChecked(id: string) {
+        return getCheckableElement(id)?.checked ?? false;
+      },
+      trigger(id: string, eventName: string) {
+        const root = getElement(id);
+        if (!root) {
+          return;
+        }
+
+        const target = root.matches("button, input, select, textarea, a")
+          ? root
+          : (root.querySelector<HTMLElement>(
+              "button, input, select, textarea, a",
+            ) ?? root);
+
+        if (eventName === "click" && typeof target.click === "function") {
+          target.click();
+          return;
+        }
+
+        target.dispatchEvent(
+          new Event(eventName, {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+      },
+      submit(id: string) {
+        const root = getElement(id);
+        const form =
+          root instanceof HTMLFormElement
+            ? root
+            : root?.querySelector<HTMLFormElement>("form");
+
+        if (!form) {
+          return;
+        }
+
+        form.requestSubmit();
+      },
+      reset(id: string) {
+        const root = getElement(id);
+        const form =
+          root instanceof HTMLFormElement
+            ? root
+            : root?.querySelector<HTMLFormElement>("form");
+
+        if (!form) {
+          return;
+        }
+
+        form.reset();
+      },
+      toggleChecked(id: string) {
+        const element = getCheckableElement(id);
+
+        if (!element) {
+          return;
+        }
+
+        saveOriginalFormState(element);
+
+        element.checked = !element.checked;
+
+        element.dispatchEvent(
+          new Event("change", {
+            bubbles: true,
+          }),
+        );
+      },
+      // setHtml(id: string, html: string) {
+      //   const element = getElement(id);
+      //   if (!element) {
+      //     return;
+      //   }
+
+      //   element.innerHTML = html;
+      // },
+      getText(id: string) {
+        const element = getElement(id);
+        return element?.textContent ?? "";
+      },
+      getAttribute(id: string, name: string) {
+        const element = getElement(id);
+        return element?.getAttribute(name) ?? null;
+      },
+
+      hasClass(id: string, className: string) {
+        const element = getElement(id);
+        return element?.classList.contains(className) ?? false;
+      },
+      delay(ms: number, callback: () => void) {
+        window.setTimeout(() => {
+          callback();
+        }, ms);
+      },
+      navigate(url: string) {
+        window.location.href = url;
+      },
+      open(url: string, target = "_blank") {
+        window.open(url, target);
+      },
+      async copy(text: string) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      toggleDisabled(id: string) {
+        const element = getFormElement(id);
+
+        if (!element) {
+          return;
+        }
+
+        saveOriginalFormState(element);
+
+        element.disabled = !element.disabled;
       },
     };
   };
