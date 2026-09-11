@@ -91,8 +91,8 @@ export const cloneComponent = <T extends LayoutComponent>(component: T): T => {
     const newId = idMap.get(item.id) ?? crypto.randomUUID();
     const oldPositionParentId = item.layout?.positionParentId ?? null;
     const newPositionParentId = oldPositionParentId
-      ? (idMap.get(oldPositionParentId) ?? oldPositionParentId)
-      : oldPositionParentId;
+      ? (idMap.get(oldPositionParentId) ?? null)
+      : null;
     const layout = item.layout
       ? {
           ...item.layout,
