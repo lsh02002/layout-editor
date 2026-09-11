@@ -6,6 +6,8 @@ import {
 } from "../../../../types/types";
 import { useMemo, useState } from "react";
 import CodeEditor from "../../utils/codeEditor";
+import { getComponentDisplayName } from "../../utils/componentDisplayName";
+import { useEditorConfig } from "../../../../context/usehooks";
 
 type Props = {
   components: LayoutComponent[];
@@ -32,6 +34,7 @@ export const EditJsActionTab = ({
   onChange,
   components,
 }: Props) => {
+  const { components: componentRegistry } = useEditorConfig();
   const [targetComponentId, setTargetComponentId] = useState("");
 
   const [textValue, setTextValue] = useState("");
@@ -50,7 +53,7 @@ export const EditJsActionTab = ({
       items.forEach((item) => {
         result.push({
           id: item.id,
-          label: `${"　".repeat(depth)}${item.type} - ${item.id.slice(0, 8)}`,
+          label: `${"　".repeat(depth)}${getComponentDisplayName(componentRegistry, item)} - ${item.type}`,
         });
 
         if (isLayoutContainer(item)) {
@@ -62,7 +65,7 @@ export const EditJsActionTab = ({
     walk(components);
 
     return result;
-  }, [components]);
+  }, [componentRegistry, components]);
 
   const updateActions = (nextActions: ComponentJsAction[]) => {
     onChange(nextActions);
