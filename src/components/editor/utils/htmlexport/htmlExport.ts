@@ -217,6 +217,7 @@ export const buildHtmlDocument = async (
           element.style.height =
             element.scrollHeight + "px";
         });
+
       const attachAbsoluteComponents = () => {
         const absoluteComponents =
           document.querySelectorAll(
@@ -268,140 +269,141 @@ export const buildHtmlDocument = async (
       attachAbsoluteComponents();
 
       const createBuilderApi = () => {
-      const getElement = (id) =>
-        document.querySelector(
-          '[data-component-id="' +
-            CSS.escape(id) +
-            '"]'
-        );
-
-      return {
-        getElement,
-
-        show(id) {
-          const element = getElement(id);
-
-          if (!element) {
-            return;
-          }
-
-          element.style.display = "";
-        },
-
-        hide(id) {
-          const element = getElement(id);
-
-          if (!element) {
-            return;
-          }
-
-          element.style.display = "none";
-        },
-
-        toggle(id) {
-          const element = getElement(id);
-
-          if (!element) {
-            return;
-          }
-
-          const isHidden =
-            window
-              .getComputedStyle(element)
-              .display === "none";
-
-          element.style.display =
-            isHidden ? "" : "none";
-        },
-
-        setText(id, text) {
-          const element = getElement(id);
-
-          if (!element) {
-            return;
-          }
-
-          element.textContent = text;
-        },
-
-        setStyle(id, property, value) {
-          const element = getElement(id);
-
-          if (!element) {
-            return;
-          }
-
-          element.style.setProperty(
-            property,
-            value
+        const getElement = (id) =>
+          document.querySelector(
+            '[data-component-id="' +
+              CSS.escape(id) +
+              '"]'
           );
-        },
 
-        addClass(id, className) {
-          const element = getElement(id);
+        return {
+          getElement,
 
-          if (!element) {
-            return;
-          }
+          show(id) {
+            const element = getElement(id);
 
-          element.classList.add(className);
-        },
+            if (!element) {
+              return;
+            }
 
-        removeClass(id, className) {
-          const element = getElement(id);
+            element.style.display = "";
+          },
 
-          if (!element) {
-            return;
-          }
+          hide(id) {
+            const element = getElement(id);
 
-          element.classList.remove(className);
-        },
+            if (!element) {
+              return;
+            }
 
-        toggleClass(id, className) {
-          const element = getElement(id);
+            element.style.display = "none";
+          },
 
-          if (!element) {
-            return;
-          }
+          toggle(id) {
+            const element = getElement(id);
 
-          element.classList.toggle(className);
-        },
+            if (!element) {
+              return;
+            }
 
-        setAttribute(id, name, value) {
-          const element = getElement(id);
+            const isHidden =
+              window
+                .getComputedStyle(element)
+                .display === "none";
 
-          if (!element) {
-            return;
-          }
+            element.style.display =
+              isHidden ? "" : "none";
+          },
 
-          element.setAttribute(
-            name,
-            value
-          );
-        },
+          setText(id, text) {
+            const element = getElement(id);
 
-        removeAttribute(id, name) {
-          const element = getElement(id);
+            if (!element) {
+              return;
+            }
 
-          if (!element) {
-            return;
-          }
+            element.textContent = text;
+          },
 
-          element.removeAttribute(name);
-        },
+          setStyle(id, property, value) {
+            const element = getElement(id);
 
-        scrollTo(id, behavior = "smooth") {
-          const element = getElement(id);
+            if (!element) {
+              return;
+            }
 
-          if (!element) {
-            return;
-          }
+            element.style.setProperty(
+              property,
+              value
+            );
+          },
 
-          element.scrollIntoView({
-            behavior,
-            block: "start"
-          });
-        },
+          addClass(id, className) {
+            const element = getElement(id);
+
+            if (!element) {
+              return;
+            }
+
+            element.classList.add(className);
+          },
+
+          removeClass(id, className) {
+            const element = getElement(id);
+
+            if (!element) {
+              return;
+            }
+
+            element.classList.remove(className);
+          },
+
+          toggleClass(id, className) {
+            const element = getElement(id);
+
+            if (!element) {
+              return;
+            }
+
+            element.classList.toggle(className);
+          },
+
+          setAttribute(id, name, value) {
+            const element = getElement(id);
+
+            if (!element) {
+              return;
+            }
+
+            element.setAttribute(
+              name,
+              value
+            );
+          },
+
+          removeAttribute(id, name) {
+            const element = getElement(id);
+
+            if (!element) {
+              return;
+            }
+
+            element.removeAttribute(name);
+          },
+
+          scrollTo(id, behavior = "smooth") {
+            const element = getElement(id);
+
+            if (!element) {
+              return;
+            }
+
+            element.scrollIntoView({
+              behavior,
+              block: "start"
+            });
+          },
+        };
       };
 
       const componentJsActions =
