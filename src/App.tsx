@@ -1419,6 +1419,171 @@ const config = {
       exportHtml: exportCodeEditorHtml,
     },
 
+    form: {
+      label: "Form",
+      description: "폼 컨테이너",
+      icon: Box,
+      supportsDisabled: false,
+
+      propsSchema: z.object({
+        direction: z.enum(["row", "column"]).optional(),
+
+        gap: z.number().finite().min(0).optional(),
+
+        justifyContent: z
+          .enum([
+            "flex-start",
+            "center",
+            "flex-end",
+            "space-between",
+            "space-around",
+            "space-evenly",
+          ])
+          .optional(),
+
+        alignItems: z
+          .enum(["stretch", "flex-start", "center", "flex-end"])
+          .optional(),
+
+        action: z.string().optional(),
+
+        method: z.enum(["get", "post"]).optional(),
+      }),
+
+      fields: {
+        direction: {
+          type: "radio",
+          label: "배치 방향",
+          options: [
+            {
+              label: "가로",
+              value: "row",
+            },
+            {
+              label: "세로",
+              value: "column",
+            },
+          ],
+        },
+
+        gap: {
+          type: "number",
+          label: "간격",
+          min: 0,
+        },
+
+        justifyContent: {
+          type: "select",
+          label: "정렬",
+          options: [
+            {
+              label: "Start",
+              value: "flex-start",
+            },
+            {
+              label: "Center",
+              value: "center",
+            },
+            {
+              label: "End",
+              value: "flex-end",
+            },
+            {
+              label: "Space Between",
+              value: "space-between",
+            },
+          ],
+        },
+
+        alignItems: {
+          type: "select",
+          label: "세로 정렬",
+          options: [
+            {
+              label: "Stretch",
+              value: "stretch",
+            },
+            {
+              label: "Start",
+              value: "flex-start",
+            },
+            {
+              label: "Center",
+              value: "center",
+            },
+            {
+              label: "End",
+              value: "flex-end",
+            },
+          ],
+        },
+
+        action: {
+          type: "text",
+          label: "Action URL",
+          placeholder: "/api/contact",
+        },
+
+        method: {
+          type: "select",
+          label: "Method",
+          options: [
+            {
+              label: "POST",
+              value: "post",
+            },
+            {
+              label: "GET",
+              value: "get",
+            },
+          ],
+        },
+      },
+
+      defaultProps: {
+        direction: "column",
+        gap: 8,
+        justifyContent: "flex-start",
+        alignItems: "stretch",
+        action: "",
+        method: "post",
+      },
+
+      createComponent: (id, props) => ({
+        id,
+        name: "Form",
+        type: "form" as const,
+        order: 0,
+        props,
+
+        style: {
+          width: "100%",
+          minHeight: 40,
+          padding: 12,
+        },
+
+        children: [],
+      }),
+
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, {
+          ...context,
+          fields,
+        }),
+
+      getSearchText: () => "form 폼 입력 양식",
+
+      getDisplayName: (component) => {
+        if (component.type !== "form") {
+          return "";
+        }
+
+        return component.name?.trim() || "Form";
+      },
+
+      exportHtml: exportFormHtml,
+    },
+
     input: {
       label: "Input",
       description: "입력 필드",
@@ -1826,171 +1991,6 @@ const config = {
       },
 
       exportHtml: exportRadioHtml,
-    },
-
-    form: {
-      label: "Form",
-      description: "폼 컨테이너",
-      icon: Box,
-      supportsDisabled: false,
-
-      propsSchema: z.object({
-        direction: z.enum(["row", "column"]).optional(),
-
-        gap: z.number().finite().min(0).optional(),
-
-        justifyContent: z
-          .enum([
-            "flex-start",
-            "center",
-            "flex-end",
-            "space-between",
-            "space-around",
-            "space-evenly",
-          ])
-          .optional(),
-
-        alignItems: z
-          .enum(["stretch", "flex-start", "center", "flex-end"])
-          .optional(),
-
-        action: z.string().optional(),
-
-        method: z.enum(["get", "post"]).optional(),
-      }),
-
-      fields: {
-        direction: {
-          type: "radio",
-          label: "배치 방향",
-          options: [
-            {
-              label: "가로",
-              value: "row",
-            },
-            {
-              label: "세로",
-              value: "column",
-            },
-          ],
-        },
-
-        gap: {
-          type: "number",
-          label: "간격",
-          min: 0,
-        },
-
-        justifyContent: {
-          type: "select",
-          label: "정렬",
-          options: [
-            {
-              label: "Start",
-              value: "flex-start",
-            },
-            {
-              label: "Center",
-              value: "center",
-            },
-            {
-              label: "End",
-              value: "flex-end",
-            },
-            {
-              label: "Space Between",
-              value: "space-between",
-            },
-          ],
-        },
-
-        alignItems: {
-          type: "select",
-          label: "세로 정렬",
-          options: [
-            {
-              label: "Stretch",
-              value: "stretch",
-            },
-            {
-              label: "Start",
-              value: "flex-start",
-            },
-            {
-              label: "Center",
-              value: "center",
-            },
-            {
-              label: "End",
-              value: "flex-end",
-            },
-          ],
-        },
-
-        action: {
-          type: "text",
-          label: "Action URL",
-          placeholder: "/api/contact",
-        },
-
-        method: {
-          type: "select",
-          label: "Method",
-          options: [
-            {
-              label: "POST",
-              value: "post",
-            },
-            {
-              label: "GET",
-              value: "get",
-            },
-          ],
-        },
-      },
-
-      defaultProps: {
-        direction: "column",
-        gap: 8,
-        justifyContent: "flex-start",
-        alignItems: "stretch",
-        action: "",
-        method: "post",
-      },
-
-      createComponent: (id, props) => ({
-        id,
-        name: "Form",
-        type: "form" as const,
-        order: 0,
-        props,
-
-        style: {
-          width: "100%",
-          minHeight: 40,
-          padding: 12,
-        },
-
-        children: [],
-      }),
-
-      editor: (context, fields) =>
-        createElement(RegistryFieldsEditor, {
-          ...context,
-          fields,
-        }),
-
-      getSearchText: () => "form 폼 입력 양식",
-
-      getDisplayName: (component) => {
-        if (component.type !== "form") {
-          return "";
-        }
-
-        return component.name?.trim() || "Form";
-      },
-
-      exportHtml: exportFormHtml,
     },
 
     card: {
