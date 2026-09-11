@@ -121,27 +121,29 @@ export const EditJsActionTab = ({
       {/* 헤더 */}
       <div className="d-flex align-items-center justify-content-between">
         <div>
-          <div className="d-flex align-items-center gap-2">
-            <h6 className="mb-0 fw-bold">JS Actions</h6>
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <div className="d-flex align-items-center gap-2">
+              <h6 className="mb-0 fw-bold">JS Actions</h6>
 
-            <span className="badge text-bg-secondary rounded-pill">
-              {actions.length}
-            </span>
+              <span className="badge text-bg-secondary rounded-pill">
+                {actions.length}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-primary btn-sm d-flex align-items-center gap-1"
+              onClick={addAction}
+            >
+              <span className="fw-bold">+</span>
+              Action 추가
+            </button>
           </div>
 
           <small className="text-body-secondary">
             컴포넌트 이벤트에 JavaScript 동작을 연결합니다.
           </small>
         </div>
-
-        <button
-          type="button"
-          className="btn btn-primary btn-sm d-flex align-items-center gap-1"
-          onClick={addAction}
-        >
-          <span className="fw-bold">+</span>
-          Action 추가
-        </button>
       </div>
 
       {/* Action 목록 */}
