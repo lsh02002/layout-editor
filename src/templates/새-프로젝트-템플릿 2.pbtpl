@@ -2,10 +2,10 @@
   "version": 1,
   "templateType": "project",
   "name": "새 프로젝트 템플릿",
-  "createdAt": "2026-09-11T04:33:34.167Z",
+  "createdAt": "2026-09-11T20:59:01.537Z",
   "components": [
     {
-      "id": "bf50619e-3789-4862-a694-49e20e9388b6",
+      "id": "1744465c-0a14-4bd4-a204-f96d107ceb55",
       "name": "Heading",
       "type": "heading",
       "order": 0,
@@ -14,14 +14,15 @@
         "level": 2
       },
       "layout": {
-        "widthMode": "fill"
+        "widthMode": "fill",
+        "positionParentId": null
       },
       "contentStyle": {
         "textAlign": "center"
       }
     },
     {
-      "id": "103a4bd2-dea2-47c4-9635-820864622020",
+      "id": "26a5a0a2-d933-4642-b727-5209579e56b4",
       "name": "Textarea",
       "type": "textarea",
       "order": 1,
@@ -39,7 +40,7 @@
       }
     },
     {
-      "id": "9a474901-c6cc-4129-853b-4fdc7dcaf6af",
+      "id": "9f39a399-8040-4f8e-821d-eb00fd9fef1c",
       "name": "ImageGallery",
       "type": "imageGallery",
       "order": 2,
@@ -56,14 +57,15 @@
       },
       "layout": {
         "widthMode": "fill",
-        "heightMode": "auto"
+        "heightMode": "auto",
+        "positionParentId": null
       },
       "style": {
         "width": "100%"
       }
     },
     {
-      "id": "01ac9fbd-0960-462c-a920-a1b08b186eeb",
+      "id": "c8699e17-4449-4371-b074-7485445ce536",
       "name": "Container",
       "type": "container",
       "order": 3,
@@ -79,7 +81,7 @@
       },
       "children": [
         {
-          "id": "c69bffad-baf4-449f-b8b0-cbb1d112a656",
+          "id": "134af77a-0c61-425d-bede-f7480372f4f5",
           "name": "RichText",
           "type": "quill",
           "order": 0,
@@ -97,11 +99,12 @@
           },
           "layout": {
             "widthMode": "fixed",
-            "width": 300
+            "width": 300,
+            "positionParentId": null
           }
         },
         {
-          "id": "5d947ba9-5120-494c-a684-bf79f30fbc82",
+          "id": "f10cd03d-9663-4a40-a70c-6cbbd31e7ae1",
           "name": "Badge",
           "type": "badge",
           "order": 1,
@@ -116,18 +119,18 @@
             "position": "absolute",
             "x": 270,
             "y": -20,
-            "positionParentId": "c69bffad-baf4-449f-b8b0-cbb1d112a656"
+            "positionParentId": "134af77a-0c61-425d-bede-f7480372f4f5"
           }
         }
       ]
     },
     {
-      "id": "6360e69e-8b3d-4dd7-b0f0-d0e464a30f94",
+      "id": "58da8760-6a68-4c3c-b0b9-c79e52f7a9ab",
       "name": "Alert",
       "type": "alert",
       "order": 4,
       "props": {
-        "message": "알림 메시지입니다.",
+        "message": "이 메시지를 클릭해보세요",
         "variant": "info",
         "dismissible": true
       },
@@ -136,8 +139,20 @@
         "margin": "0"
       },
       "layout": {
-        "widthMode": "fill"
-      }
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "jsActions": [
+        {
+          "id": "03cc54ba-a360-4d42-9e4d-ac5343dd072a",
+          "event": "click",
+          "code": "builder.toggle(\"f10cd03d-9663-4a40-a70c-6cbbd31e7ae1\");",
+          "enabled": true,
+          "stopPropagation": false,
+          "preventDefault": false,
+          "targetComponentId": "f10cd03d-9663-4a40-a70c-6cbbd31e7ae1"
+        }
+      ]
     }
   ]
 }

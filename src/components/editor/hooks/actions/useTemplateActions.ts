@@ -1,7 +1,10 @@
 import { useCallback } from "react";
 import type { DragEvent } from "react";
 import type { LayoutComponent } from "../../../../types/types";
-import { insertComponentRecursive } from "../../utils/componentTree";
+import {
+  insertComponentRecursive,
+  cloneComponents,
+} from "../../utils/componentTree";
 
 type TemplateItem = {
   id: string;
@@ -19,58 +22,6 @@ type Options = {
   ) => void;
 };
 
-const cloneTemplateComponent = (
-  component: LayoutComponent,
-): LayoutComponent => {
-  const idMap = new Map<string, string>();
-
-  const createIdMap = (item: LayoutComponent) => {
-    idMap.set(item.id, crypto.randomUUID());
-
-    if ("children" in item && Array.isArray(item.children)) {
-      item.children.forEach(createIdMap);
-    }
-  };
-
-  const clone = (item: LayoutComponent): LayoutComponent => {
-    const id = idMap.get(item.id) ?? crypto.randomUUID();
-    const oldPositionParentId = item.layout?.positionParentId ?? null;
-    const positionParentId = oldPositionParentId
-      ? (idMap.get(oldPositionParentId) ?? oldPositionParentId)
-      : oldPositionParentId;
-
-    if ("children" in item && Array.isArray(item.children)) {
-      return {
-        ...item,
-        id,
-        layout: item.layout
-          ? {
-              ...item.layout,
-              positionParentId,
-            }
-          : undefined,
-
-        children: item.children.map(clone),
-      };
-    }
-
-    return {
-      ...item,
-      id,
-      layout: item.layout
-        ? {
-            ...item.layout,
-            positionParentId,
-          }
-        : undefined,
-    };
-  };
-
-  createIdMap(component);
-
-  return clone(component);
-};
-
 export const useTemplateActions = ({
   templates,
   setSelectedTemplateId,
@@ -83,7 +34,7 @@ export const useTemplateActions = ({
       if (!template) {
         return;
       }
-      const newComponents = template.components.map(cloneTemplateComponent);
+      const newComponents = cloneComponents(template.components);
 
       commitHistory((prev) => {
         let next = prev;

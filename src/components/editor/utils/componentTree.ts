@@ -77,14 +77,35 @@ export const removeComponentRecursive = (
   };
 };
 
-export const cloneComponent = <T extends LayoutComponent>(component: T): T => {
+export const cloneComponents = <T extends LayoutComponent>(
+  components: T[],
+): T[] => {
   const idMap = new Map<string, string>();
 
+  // 1. 먼저 모든 기존 ID -> 새 ID 생성
   const createIdMap = (item: LayoutComponent) => {
     idMap.set(item.id, crypto.randomUUID());
+
     if (isLayoutContainer(item)) {
-      item.children.forEach(createIdMap);
+      item.children.forEach((child) => {
+        createIdMap(child);
+      });
     }
+  };
+
+  // 2. 전체 컴포넌트 ID 맵 생성
+  components.forEach((component) => {
+    createIdMap(component);
+  });
+
+  const remapCode = (code: string) => {
+    let nextCode = code;
+
+    idMap.forEach((newId, oldId) => {
+      nextCode = nextCode.split(oldId).join(newId);
+    });
+
+    return nextCode;
   };
 
   const clone = <C extends LayoutComponent>(item: C): C => {
@@ -100,6 +121,14 @@ export const cloneComponent = <T extends LayoutComponent>(component: T): T => {
         }
       : undefined;
 
+    const jsActions = item.jsActions?.map((action) => ({
+      ...action,
+      targetComponentId: action.targetComponentId
+        ? idMap.get(action.targetComponentId)
+        : undefined,
+      code: remapCode(action.code),
+    }));
+
     if (isLayoutContainer(item)) {
       return {
         ...item,
@@ -107,6 +136,7 @@ export const cloneComponent = <T extends LayoutComponent>(component: T): T => {
         style: item.style ? { ...item.style } : undefined,
         contentStyle: item.contentStyle ? { ...item.contentStyle } : undefined,
         layout,
+        jsActions,
         children: item.children.map((child) => clone(child)),
       } as C;
     }
@@ -117,12 +147,15 @@ export const cloneComponent = <T extends LayoutComponent>(component: T): T => {
       style: item.style ? { ...item.style } : undefined,
       contentStyle: item.contentStyle ? { ...item.contentStyle } : undefined,
       layout,
+      jsActions,
     } as C;
   };
 
-  createIdMap(component);
+  return components.map((component) => clone(component));
+};
 
-  return clone(component);
+export const cloneComponent = <T extends LayoutComponent>(component: T): T => {
+  return cloneComponents([component])[0];
 };
 
 export const insertComponentRecursive = (

@@ -9,6 +9,7 @@ import {
 } from "../../../types/types";
 import {
   cloneComponent,
+  cloneComponents,
   findComponentRecursive,
   insertComponentRecursive,
   normalizeOrder,
@@ -365,7 +366,7 @@ export const useTemplates = ({
           `취소: 현재 프로젝트 뒤에 추가`,
       );
 
-      const cloned = template.components.map(cloneComponent);
+      const cloned = cloneComponents(template.components);
 
       if (replace) {
         commitHistory(() => normalizeOrder(cloned));
