@@ -22,20 +22,51 @@ type Options = {
 const cloneTemplateComponent = (
   component: LayoutComponent,
 ): LayoutComponent => {
+  const idMap = new Map<string, string>();
+
+  const createIdMap = (item: LayoutComponent) => {
+    idMap.set(item.id, crypto.randomUUID());
+
+    if ("children" in item && Array.isArray(item.children)) {
+      item.children.forEach(createIdMap);
+    }
+  };
+
   const clone = (item: LayoutComponent): LayoutComponent => {
-    const id = crypto.randomUUID();
+    const id = idMap.get(item.id) ?? crypto.randomUUID();
+    const oldPositionParentId = item.layout?.positionParentId ?? null;
+    const positionParentId = oldPositionParentId
+      ? (idMap.get(oldPositionParentId) ?? oldPositionParentId)
+      : oldPositionParentId;
+
     if ("children" in item && Array.isArray(item.children)) {
       return {
         ...item,
         id,
+        layout: item.layout
+          ? {
+              ...item.layout,
+              positionParentId,
+            }
+          : undefined,
+
         children: item.children.map(clone),
       };
     }
+
     return {
       ...item,
       id,
+      layout: item.layout
+        ? {
+            ...item.layout,
+            positionParentId,
+          }
+        : undefined,
     };
   };
+
+  createIdMap(component);
 
   return clone(component);
 };

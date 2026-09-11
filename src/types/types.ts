@@ -29,7 +29,9 @@ export type ContainerJustifyContent =
   | "flex-start"
   | "center"
   | "flex-end"
-  | "space-between";
+  | "space-between"
+  | "space-around"
+  | "space-evenly";
 
 export type ContainerAlignItems =
   | "stretch"

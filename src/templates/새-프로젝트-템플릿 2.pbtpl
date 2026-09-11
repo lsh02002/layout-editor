@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "templateType": "project",
+  "name": "새 프로젝트 템플릿",
+  "createdAt": "2026-09-11T04:33:34.167Z",
+  "components": [
+    {
+      "id": "bf50619e-3789-4862-a694-49e20e9388b6",
+      "name": "Heading",
+      "type": "heading",
+      "order": 0,
+      "props": {
+        "text": "템플릿 예제 페이지",
+        "level": 2
+      },
+      "layout": {
+        "widthMode": "fill"
+      },
+      "contentStyle": {
+        "textAlign": "center"
+      }
+    },
+    {
+      "id": "103a4bd2-dea2-47c4-9635-820864622020",
+      "name": "Textarea",
+      "type": "textarea",
+      "order": 1,
+      "props": {
+        "value": "제 홈페이지에 오신걸 환영해요",
+        "rows": 1,
+        "placeholder": "내용을 입력하세요.",
+        "disabled": false
+      },
+      "style": {
+        "width": "100%"
+      },
+      "contentStyle": {
+        "textAlign": "center"
+      }
+    },
+    {
+      "id": "9a474901-c6cc-4129-853b-4fdc7dcaf6af",
+      "name": "ImageGallery",
+      "type": "imageGallery",
+      "order": 2,
+      "props": {
+        "urls": [
+          "https://picsum.photos/id/238/1200/500",
+          "https://picsum.photos/id/239/1200/500",
+          "https://picsum.photos/id/240/1200/500"
+        ],
+        "columns": 3,
+        "gap": 8,
+        "objectFit": "cover",
+        "borderRadius": 8
+      },
+      "layout": {
+        "widthMode": "fill",
+        "heightMode": "auto"
+      },
+      "style": {
+        "width": "100%"
+      }
+    },
+    {
+      "id": "01ac9fbd-0960-462c-a920-a1b08b186eeb",
+      "name": "Container",
+      "type": "container",
+      "order": 3,
+      "props": {
+        "direction": "row",
+        "gap": 0,
+        "justifyContent": "center",
+        "alignItems": "stretch"
+      },
+      "style": {
+        "width": "100%",
+        "minHeight": 20
+      },
+      "children": [
+        {
+          "id": "c69bffad-baf4-449f-b8b0-cbb1d112a656",
+          "name": "RichText",
+          "type": "quill",
+          "order": 0,
+          "props": {
+            "value": "<p><span style=\"color: rgb(0, 138, 0);\">행복</span>하세요</p>",
+            "placeholder": "본문을 입력하세요.",
+            "disabled": false
+          },
+          "style": {
+            "width": "100%"
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "fontSize": "32px"
+          },
+          "layout": {
+            "widthMode": "fixed",
+            "width": 300
+          }
+        },
+        {
+          "id": "5d947ba9-5120-494c-a684-bf79f30fbc82",
+          "name": "Badge",
+          "type": "badge",
+          "order": 1,
+          "props": {
+            "text": "Badge",
+            "variant": "info"
+          },
+          "style": {
+            "display": "inline-block"
+          },
+          "layout": {
+            "position": "absolute",
+            "x": 270,
+            "y": -20,
+            "positionParentId": "c69bffad-baf4-449f-b8b0-cbb1d112a656"
+          }
+        }
+      ]
+    },
+    {
+      "id": "6360e69e-8b3d-4dd7-b0f0-d0e464a30f94",
+      "name": "Alert",
+      "type": "alert",
+      "order": 4,
+      "props": {
+        "message": "알림 메시지입니다.",
+        "variant": "info",
+        "dismissible": true
+      },
+      "style": {
+        "width": "100%",
+        "margin": "0"
+      },
+      "layout": {
+        "widthMode": "fill"
+      }
+    }
+  ]
+}

@@ -20,7 +20,10 @@ export function hasComponentType(
       return true;
     }
 
-    if (isLayoutContainer(component) && hasComponentType(component.children, type)) {
+    if (
+      isLayoutContainer(component) &&
+      hasComponentType(component.children, type)
+    ) {
       return true;
     }
   }
@@ -75,32 +78,51 @@ export const removeComponentRecursive = (
 };
 
 export const cloneComponent = <T extends LayoutComponent>(component: T): T => {
-  const newId = crypto.randomUUID();
+  const idMap = new Map<string, string>();
 
-  if (isLayoutContainer(component)) {
+  const createIdMap = (item: LayoutComponent) => {
+    idMap.set(item.id, crypto.randomUUID());
+    if (isLayoutContainer(item)) {
+      item.children.forEach(createIdMap);
+    }
+  };
+
+  const clone = <C extends LayoutComponent>(item: C): C => {
+    const newId = idMap.get(item.id) ?? crypto.randomUUID();
+    const oldPositionParentId = item.layout?.positionParentId ?? null;
+    const newPositionParentId = oldPositionParentId
+      ? (idMap.get(oldPositionParentId) ?? oldPositionParentId)
+      : oldPositionParentId;
+    const layout = item.layout
+      ? {
+          ...item.layout,
+          positionParentId: newPositionParentId,
+        }
+      : undefined;
+
+    if (isLayoutContainer(item)) {
+      return {
+        ...item,
+        id: newId,
+        style: item.style ? { ...item.style } : undefined,
+        contentStyle: item.contentStyle ? { ...item.contentStyle } : undefined,
+        layout,
+        children: item.children.map((child) => clone(child)),
+      } as C;
+    }
+
     return {
-      ...component,
+      ...item,
       id: newId,
-      props: { ...component.props },
-      style: component.style ? { ...component.style } : undefined,
-      contentStyle: component.contentStyle
-        ? { ...component.contentStyle }
-        : undefined,
-      layout: component.layout ? { ...component.layout } : undefined,
-      children: component.children.map((child) => cloneComponent(child)),
-    } as T;
-  }
+      style: item.style ? { ...item.style } : undefined,
+      contentStyle: item.contentStyle ? { ...item.contentStyle } : undefined,
+      layout,
+    } as C;
+  };
 
-  return {
-    ...component,
-    id: newId,
-    props: { ...component.props },
-    style: component.style ? { ...component.style } : undefined,
-    contentStyle: component.contentStyle
-      ? { ...component.contentStyle }
-      : undefined,
-    layout: component.layout ? { ...component.layout } : undefined,
-  } as T;
+  createIdMap(component);
+
+  return clone(component);
 };
 
 export const insertComponentRecursive = (
