@@ -948,7 +948,11 @@ function LayoutComponentNode({
     );
   }
 
-  if (component.type === "container" || component.type === "flex") {
+  if (
+    component.type === "container" ||
+    component.type === "flex" ||
+    component.type === "form"
+  ) {
     const children = sortedChildren;
     const originalDirection: ContainerDirection =
       component.props.direction ??
@@ -964,8 +968,110 @@ function LayoutComponentNode({
     const isRow = direction === "row";
     const justifyContent =
       component.props.justifyContent ??
-      (component.type === "flex" ? "flex-start" : "space-between");
+      (component.type === "container" ? "space-between" : "flex-start");
     const alignItems = component.props.alignItems ?? "stretch";
+
+    const containerContent = (
+      <>
+        <CanvasDropZone
+          previewMode={previewMode}
+          parentId={component.id}
+          index={0}
+          direction={direction}
+          draggingIds={draggingIds}
+          activeDropTarget={activeDropTarget}
+          setActiveDropTarget={setActiveDropTarget}
+          onDrop={onDrop}
+          onCreate={onCreate}
+        />
+
+        {children.map((child, index) => {
+          const childIsAbsolute = child.layout?.position === "absolute";
+          const widthMode =
+            child.layout?.widthMode ??
+            (child.type === "image" || child.type === "imageSlider"
+              ? "fill"
+              : undefined);
+          const childWidth = child.layout?.width;
+
+          const childWrapperStyle = childIsAbsolute
+            ? {
+                display: "contents",
+              }
+            : isMobile
+              ? {
+                  width: "100%",
+                  minWidth: 0,
+                  maxWidth: "100%",
+                  flex: "0 0 auto",
+                }
+              : isRow
+                ? {
+                    width:
+                      widthMode === "fixed"
+                        ? childWidth
+                        : widthMode === "fill"
+                          ? 0
+                          : "auto",
+                    flex:
+                      widthMode === "fixed"
+                        ? "0 0 auto"
+                        : widthMode === "fill"
+                          ? "1 1 0"
+                          : "0 1 auto",
+
+                    minWidth: 0,
+                    maxWidth: "100%",
+                  }
+                : {
+                    width:
+                      widthMode === "fixed"
+                        ? childWidth
+                        : widthMode === "auto"
+                          ? "auto"
+                          : "100%",
+                    minWidth: 0,
+                    maxWidth: "100%",
+                  };
+
+          return (
+            <div key={child.id} style={childWrapperStyle}>
+              {renderChildNode(child)}
+
+              {!childIsAbsolute &&
+                child.type !== "scrollToTopButton" &&
+                !isRow && (
+                  <CanvasDropZone
+                    previewMode={previewMode}
+                    parentId={component.id}
+                    index={index + 1}
+                    direction={direction}
+                    draggingIds={draggingIds}
+                    activeDropTarget={activeDropTarget}
+                    setActiveDropTarget={setActiveDropTarget}
+                    onDrop={onDrop}
+                    onCreate={onCreate}
+                  />
+                )}
+            </div>
+          );
+        })}
+
+        {isRow && (
+          <CanvasDropZone
+            previewMode={previewMode}
+            parentId={component.id}
+            index={children.length}
+            direction={direction}
+            draggingIds={draggingIds}
+            activeDropTarget={activeDropTarget}
+            setActiveDropTarget={setActiveDropTarget}
+            onDrop={onDrop}
+            onCreate={onCreate}
+          />
+        )}
+      </>
+    );
 
     return renderWithPositionParent(
       <div
@@ -1005,115 +1111,40 @@ function LayoutComponentNode({
           <div style={{ position: "relative", width: "100%" }}>
             {dragHandleView}
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: direction,
-                gap: component.props.gap ?? 8,
-                width: "100%",
-                minWidth: 0,
-                justifyContent,
-                alignItems,
-              }}
-            >
-              <CanvasDropZone
-                previewMode={previewMode}
-                parentId={component.id}
-                index={0}
-                direction={direction}
-                draggingIds={draggingIds}
-                activeDropTarget={activeDropTarget}
-                setActiveDropTarget={setActiveDropTarget}
-                onDrop={onDrop}
-                onCreate={onCreate}
-              />
-
-              {children.map((child, index) => {
-                const childIsAbsolute = child.layout?.position === "absolute";
-                const widthMode =
-                  child.layout?.widthMode ??
-                  (child.type === "image" || child.type === "imageSlider"
-                    ? "fill"
-                    : undefined);
-                const childWidth = child.layout?.width;
-
-                const childWrapperStyle = childIsAbsolute
-                  ? {
-                      display: "contents",
-                    }
-                  : isMobile
-                    ? {
-                        width: "100%",
-                        minWidth: 0,
-                        maxWidth: "100%",
-                        flex: "0 0 auto",
-                      }
-                    : isRow
-                      ? {
-                          width:
-                            widthMode === "fixed"
-                              ? childWidth
-                              : widthMode === "fill"
-                                ? 0
-                                : "auto",
-                          flex:
-                            widthMode === "fixed"
-                              ? "0 0 auto"
-                              : widthMode === "fill"
-                                ? "1 1 0"
-                                : "0 1 auto",
-
-                          minWidth: 0,
-                          maxWidth: "100%",
-                        }
-                      : {
-                          width:
-                            widthMode === "fixed"
-                              ? childWidth
-                              : widthMode === "auto"
-                                ? "auto"
-                                : "100%",
-                          minWidth: 0,
-                          maxWidth: "100%",
-                        };
-
-                return (
-                  <div key={child.id} style={childWrapperStyle}>
-                    {renderChildNode(child)}
-
-                    {!childIsAbsolute &&
-                      child.type !== "scrollToTopButton" &&
-                      !isRow && (
-                        <CanvasDropZone
-                          previewMode={previewMode}
-                          parentId={component.id}
-                          index={index + 1}
-                          direction={direction}
-                          draggingIds={draggingIds}
-                          activeDropTarget={activeDropTarget}
-                          setActiveDropTarget={setActiveDropTarget}
-                          onDrop={onDrop}
-                          onCreate={onCreate}
-                        />
-                      )}
-                  </div>
-                );
-              })}
-
-              {isRow && (
-                <CanvasDropZone
-                  previewMode={previewMode}
-                  parentId={component.id}
-                  index={children.length}
-                  direction={direction}
-                  draggingIds={draggingIds}
-                  activeDropTarget={activeDropTarget}
-                  setActiveDropTarget={setActiveDropTarget}
-                  onDrop={onDrop}
-                  onCreate={onCreate}
-                />
-              )}
-            </div>
+            {component.type === "form" ? (
+              <form
+                action={component.props.action || undefined}
+                method={component.props.method ?? "post"}
+                onSubmit={(event) => {
+                  event.preventDefault();
+                }}
+                style={{
+                  display: "flex",
+                  flexDirection: direction,
+                  gap: component.props.gap ?? 8,
+                  width: "100%",
+                  minWidth: 0,
+                  justifyContent,
+                  alignItems,
+                }}
+              >
+                {containerContent}
+              </form>
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: direction,
+                  gap: component.props.gap ?? 8,
+                  width: "100%",
+                  minWidth: 0,
+                  justifyContent,
+                  alignItems,
+                }}
+              >
+                {containerContent}
+              </div>
+            )}
           </div>
         </DivBox>
       </div>,

@@ -28,15 +28,19 @@ import RegistryFieldsEditor, {
 } from "./components/editor/edit/componentEditors";
 import {
   ButtonRenderer,
+  CheckboxRenderer,
   CodeEditorRenderer,
   DividerRenderer,
   HeadingRenderer,
   ImageGalleryRenderer,
   ImageRenderer,
   ImageSliderRenderer,
+  InputRenderer,
   LinkRenderer,
   QuillRenderer,
+  RadioRenderer,
   ScrollToTopRenderer,
+  SelectRenderer,
   SpacerRenderer,
   TextareaRenderer,
   VideoRenderer,
@@ -46,18 +50,23 @@ import {
   exportBadgeHtml,
   exportButtonHtml,
   exportCardHtml,
+  exportCheckboxHtml,
   exportCodeEditorHtml,
   exportContainerHtml,
   exportDividerHtml,
   exportFlexHtml,
+  exportFormHtml,
   exportGridHtml,
   exportHeadingHtml,
   exportImageGalleryHtml,
   exportImageHtml,
   exportImageSliderHtml,
+  exportInputHtml,
   exportLinkHtml,
   exportQuillHtml,
+  exportRadioHtml,
   exportScrollToTopHtml,
+  exportSelectHtml,
   exportSpacerHtml,
   exportTextareaHtml,
   exportVideoHtml,
@@ -1408,6 +1417,580 @@ const config = {
           .join(" ");
       },
       exportHtml: exportCodeEditorHtml,
+    },
+
+    input: {
+      label: "Input",
+      description: "입력 필드",
+      icon: AlignLeft,
+      supportsDisabled: true,
+
+      propsSchema: z.object({
+        value: z.string(),
+        inputType: z
+          .enum(["text", "email", "password", "number", "tel", "url"])
+          .optional(),
+
+        placeholder: z.string().optional(),
+        name: z.string().optional(),
+        disabled: z.boolean().optional(),
+      }),
+
+      fields: {
+        value: {
+          type: "text",
+          label: "기본값",
+        },
+
+        inputType: {
+          type: "select",
+          label: "Input Type",
+          options: [
+            { label: "Text", value: "text" },
+            { label: "Email", value: "email" },
+            { label: "Password", value: "password" },
+            { label: "Number", value: "number" },
+            { label: "Tel", value: "tel" },
+            { label: "URL", value: "url" },
+          ],
+        },
+
+        placeholder: {
+          type: "text",
+          label: "Placeholder",
+        },
+
+        name: {
+          type: "text",
+          label: "Name",
+        },
+
+        disabled: {
+          type: "checkbox",
+          label: "비활성화",
+        },
+      },
+
+      defaultProps: {
+        value: "",
+        inputType: "text",
+        placeholder: "입력하세요.",
+        name: "",
+        disabled: false,
+      },
+
+      createComponent: (id, props) => ({
+        id,
+        name: "Input",
+        type: "input" as const,
+        order: 0,
+        props,
+        style: {
+          width: "100%",
+        },
+      }),
+
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, {
+          ...context,
+          fields,
+        }),
+
+      canvas: (component) => {
+        if (component.type !== "input") {
+          return null;
+        }
+
+        return createElement(InputRenderer, {
+          component,
+        });
+      },
+
+      getSearchText: (component) => {
+        if (component.type !== "input") {
+          return "";
+        }
+
+        return [
+          component.props.value,
+          component.props.placeholder,
+          component.props.name,
+          "input",
+          "입력",
+        ]
+          .filter(Boolean)
+          .join(" ");
+      },
+
+      getDisplayName: (component) => {
+        if (component.type !== "input") {
+          return "";
+        }
+
+        return (
+          component.props.name?.trim() ||
+          component.props.placeholder?.trim() ||
+          component.name?.trim() ||
+          "Input"
+        );
+      },
+
+      exportHtml: exportInputHtml,
+    },
+
+    select: {
+      label: "Select",
+      description: "선택 박스",
+      icon: MoveVertical,
+      supportsDisabled: true,
+
+      propsSchema: z.object({
+        value: z.string(),
+        options: z.string(),
+        name: z.string().optional(),
+        disabled: z.boolean().optional(),
+      }),
+
+      fields: {
+        value: {
+          type: "text",
+          label: "선택값",
+        },
+
+        options: {
+          type: "textarea",
+          label: "옵션",
+          placeholder: "서울\n부산\n대구",
+        },
+
+        name: {
+          type: "text",
+          label: "Name",
+        },
+
+        disabled: {
+          type: "checkbox",
+          label: "비활성화",
+        },
+      },
+
+      defaultProps: {
+        value: "",
+        options: "옵션 1\n옵션 2\n옵션 3",
+        name: "",
+        disabled: false,
+      },
+
+      createComponent: (id, props) => ({
+        id,
+        name: "Select",
+        type: "select" as const,
+        order: 0,
+        props,
+        style: {
+          width: "100%",
+        },
+      }),
+
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, {
+          ...context,
+          fields,
+        }),
+
+      canvas: (component) => {
+        if (component.type !== "select") {
+          return null;
+        }
+
+        return createElement(SelectRenderer, {
+          component,
+        });
+      },
+
+      getSearchText: (component) => {
+        if (component.type !== "select") {
+          return "";
+        }
+
+        return [component.props.options, component.props.name, "select", "선택"]
+          .filter(Boolean)
+          .join(" ");
+      },
+
+      getDisplayName: (component) => {
+        if (component.type !== "select") {
+          return "";
+        }
+
+        return (
+          component.props.name?.trim() || component.name?.trim() || "Select"
+        );
+      },
+
+      exportHtml: exportSelectHtml,
+    },
+
+    checkbox: {
+      label: "Checkbox",
+      description: "체크박스",
+      icon: MousePointerClick,
+      supportsDisabled: true,
+
+      propsSchema: z.object({
+        label: z.string(),
+        checked: z.boolean().optional(),
+        name: z.string().optional(),
+        value: z.string().optional(),
+        disabled: z.boolean().optional(),
+      }),
+
+      fields: {
+        label: {
+          type: "text",
+          label: "Label",
+        },
+
+        checked: {
+          type: "checkbox",
+          label: "기본 체크",
+        },
+
+        name: {
+          type: "text",
+          label: "Name",
+        },
+
+        value: {
+          type: "text",
+          label: "Value",
+        },
+
+        disabled: {
+          type: "checkbox",
+          label: "비활성화",
+        },
+      },
+
+      defaultProps: {
+        label: "체크박스",
+        checked: false,
+        name: "",
+        value: "on",
+        disabled: false,
+      },
+
+      createComponent: (id, props) => ({
+        id,
+        name: "Checkbox",
+        type: "checkbox" as const,
+        order: 0,
+        props,
+      }),
+
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, {
+          ...context,
+          fields,
+        }),
+
+      canvas: (component) => {
+        if (component.type !== "checkbox") {
+          return null;
+        }
+
+        return createElement(CheckboxRenderer, {
+          component,
+        });
+      },
+
+      getSearchText: (component) => {
+        if (component.type !== "checkbox") {
+          return "";
+        }
+
+        return [
+          component.props.label,
+          component.props.name,
+          "checkbox",
+          "체크박스",
+        ]
+          .filter(Boolean)
+          .join(" ");
+      },
+
+      getDisplayName: (component) => {
+        if (component.type !== "checkbox") {
+          return "";
+        }
+
+        return (
+          component.props.label?.trim() || component.name?.trim() || "Checkbox"
+        );
+      },
+
+      exportHtml: exportCheckboxHtml,
+    },
+
+    radio: {
+      label: "Radio",
+      description: "라디오 버튼",
+      icon: Badge,
+      supportsDisabled: true,
+
+      propsSchema: z.object({
+        label: z.string(),
+        checked: z.boolean().optional(),
+        name: z.string().optional(),
+        value: z.string().optional(),
+        disabled: z.boolean().optional(),
+      }),
+
+      fields: {
+        label: {
+          type: "text",
+          label: "Label",
+        },
+
+        checked: {
+          type: "checkbox",
+          label: "기본 선택",
+        },
+
+        name: {
+          type: "text",
+          label: "Group Name",
+        },
+
+        value: {
+          type: "text",
+          label: "Value",
+        },
+
+        disabled: {
+          type: "checkbox",
+          label: "비활성화",
+        },
+      },
+
+      defaultProps: {
+        label: "라디오",
+        checked: false,
+        name: "radio-group",
+        value: "option",
+        disabled: false,
+      },
+
+      createComponent: (id, props) => ({
+        id,
+        name: "Radio",
+        type: "radio" as const,
+        order: 0,
+        props,
+      }),
+
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, {
+          ...context,
+          fields,
+        }),
+
+      canvas: (component) => {
+        if (component.type !== "radio") {
+          return null;
+        }
+
+        return createElement(RadioRenderer, {
+          component,
+        });
+      },
+
+      getSearchText: (component) => {
+        if (component.type !== "radio") {
+          return "";
+        }
+
+        return [component.props.label, component.props.name, "radio", "라디오"]
+          .filter(Boolean)
+          .join(" ");
+      },
+
+      getDisplayName: (component) => {
+        if (component.type !== "radio") {
+          return "";
+        }
+
+        return (
+          component.props.label?.trim() || component.name?.trim() || "Radio"
+        );
+      },
+
+      exportHtml: exportRadioHtml,
+    },
+
+    form: {
+      label: "Form",
+      description: "폼 컨테이너",
+      icon: Box,
+      supportsDisabled: false,
+
+      propsSchema: z.object({
+        direction: z.enum(["row", "column"]).optional(),
+
+        gap: z.number().finite().min(0).optional(),
+
+        justifyContent: z
+          .enum([
+            "flex-start",
+            "center",
+            "flex-end",
+            "space-between",
+            "space-around",
+            "space-evenly",
+          ])
+          .optional(),
+
+        alignItems: z
+          .enum(["stretch", "flex-start", "center", "flex-end"])
+          .optional(),
+
+        action: z.string().optional(),
+
+        method: z.enum(["get", "post"]).optional(),
+      }),
+
+      fields: {
+        direction: {
+          type: "radio",
+          label: "배치 방향",
+          options: [
+            {
+              label: "가로",
+              value: "row",
+            },
+            {
+              label: "세로",
+              value: "column",
+            },
+          ],
+        },
+
+        gap: {
+          type: "number",
+          label: "간격",
+          min: 0,
+        },
+
+        justifyContent: {
+          type: "select",
+          label: "정렬",
+          options: [
+            {
+              label: "Start",
+              value: "flex-start",
+            },
+            {
+              label: "Center",
+              value: "center",
+            },
+            {
+              label: "End",
+              value: "flex-end",
+            },
+            {
+              label: "Space Between",
+              value: "space-between",
+            },
+          ],
+        },
+
+        alignItems: {
+          type: "select",
+          label: "세로 정렬",
+          options: [
+            {
+              label: "Stretch",
+              value: "stretch",
+            },
+            {
+              label: "Start",
+              value: "flex-start",
+            },
+            {
+              label: "Center",
+              value: "center",
+            },
+            {
+              label: "End",
+              value: "flex-end",
+            },
+          ],
+        },
+
+        action: {
+          type: "text",
+          label: "Action URL",
+          placeholder: "/api/contact",
+        },
+
+        method: {
+          type: "select",
+          label: "Method",
+          options: [
+            {
+              label: "POST",
+              value: "post",
+            },
+            {
+              label: "GET",
+              value: "get",
+            },
+          ],
+        },
+      },
+
+      defaultProps: {
+        direction: "column",
+        gap: 8,
+        justifyContent: "flex-start",
+        alignItems: "stretch",
+        action: "",
+        method: "post",
+      },
+
+      createComponent: (id, props) => ({
+        id,
+        name: "Form",
+        type: "form" as const,
+        order: 0,
+        props,
+
+        style: {
+          width: "100%",
+          minHeight: 40,
+          padding: 12,
+        },
+
+        children: [],
+      }),
+
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, {
+          ...context,
+          fields,
+        }),
+
+      getSearchText: () => "form 폼 입력 양식",
+
+      getDisplayName: (component) => {
+        if (component.type !== "form") {
+          return "";
+        }
+
+        return component.name?.trim() || "Form";
+      },
+
+      exportHtml: exportFormHtml,
     },
 
     card: {

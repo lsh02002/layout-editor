@@ -379,3 +379,108 @@ export function CodeEditorRenderer({
     </div>
   );
 }
+
+export function InputRenderer({
+  component,
+}: {
+  component: ComponentOf<"input">;
+}) {
+  return (
+    <input
+      type={component.props.inputType ?? "text"}
+      defaultValue={component.props.value ?? ""}
+      placeholder={component.props.placeholder ?? ""}
+      name={component.props.name ?? ""}
+      disabled={component.props.disabled ?? false}
+      className="form-control"
+      style={{
+        width: "100%",
+        ...component.contentStyle,
+      }}
+    />
+  );
+}
+
+export function SelectRenderer({
+  component,
+}: {
+  component: ComponentOf<"select">;
+}) {
+  const options = (component.props.options ?? "")
+    .split("\n")
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return (
+    <select
+      defaultValue={component.props.value ?? ""}
+      name={component.props.name ?? ""}
+      disabled={component.props.disabled ?? false}
+      className="form-select"
+      style={{
+        width: "100%",
+        ...component.contentStyle,
+      }}
+    >
+      {options.map((option) => (
+        <option key={option} value={option}>
+          {option}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+export function CheckboxRenderer({
+  component,
+}: {
+  component: ComponentOf<"checkbox">;
+}) {
+  return (
+    <label
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        ...component.contentStyle,
+      }}
+    >
+      <input
+        type="checkbox"
+        defaultChecked={component.props.checked ?? false}
+        name={component.props.name ?? ""}
+        value={component.props.value ?? "on"}
+        disabled={component.props.disabled ?? false}
+      />
+
+      <span>{component.props.label}</span>
+    </label>
+  );
+}
+
+export function RadioRenderer({
+  component,
+}: {
+  component: ComponentOf<"radio">;
+}) {
+  return (
+    <label
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        ...component.contentStyle,
+      }}
+    >
+      <input
+        type="radio"
+        defaultChecked={component.props.checked ?? false}
+        name={component.props.name ?? ""}
+        value={component.props.value ?? "on"}
+        disabled={component.props.disabled ?? false}
+      />
+
+      <span>{component.props.label}</span>
+    </label>
+  );
+}

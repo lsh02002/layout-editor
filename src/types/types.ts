@@ -1,6 +1,6 @@
 import type { CSSProperties, Dispatch, SetStateAction } from "react";
 
-export const CONTAINER_TYPES = ["container", "grid", "flex"] as const;
+export const CONTAINER_TYPES = ["container", "grid", "flex", "form"] as const;
 export type ContainerType = (typeof CONTAINER_TYPES)[number];
 export type CanvasComponent = Exclude<LayoutComponent, { type: ContainerType }>;
 
@@ -113,6 +113,68 @@ export interface TextAreaComponent extends BaseComponent {
     placeholder?: string;
     disabled?: boolean;
   };
+}
+
+export interface InputComponent extends BaseComponent {
+  type: "input";
+
+  props: {
+    value: string;
+    inputType?: "text" | "email" | "password" | "number" | "tel" | "url";
+    placeholder?: string;
+    name?: string;
+    disabled?: boolean;
+  };
+}
+
+export interface SelectComponent extends BaseComponent {
+  type: "select";
+
+  props: {
+    value: string;
+    options: string;
+    name?: string;
+    disabled?: boolean;
+  };
+}
+
+export interface CheckboxComponent extends BaseComponent {
+  type: "checkbox";
+
+  props: {
+    label: string;
+    checked?: boolean;
+    name?: string;
+    value?: string;
+    disabled?: boolean;
+  };
+}
+
+export interface RadioComponent extends BaseComponent {
+  type: "radio";
+
+  props: {
+    label: string;
+    checked?: boolean;
+    name?: string;
+    value?: string;
+    disabled?: boolean;
+  };
+}
+
+export interface FormComponent extends BaseComponent {
+  type: "form";
+
+  props: {
+    direction?: "row" | "column";
+    gap?: number;
+    justifyContent?: ContainerJustifyContent;
+    alignItems?: ContainerAlignItems;
+    action?: string;
+    method?: "get" | "post";
+  };
+
+  children: LayoutComponent[];
 }
 
 export interface ScrollToTopButtonComponent extends BaseComponent {
@@ -326,6 +388,11 @@ export type LayoutComponent =
   | ScrollToTopButtonComponent
   | HeadingComponent
   | TextAreaComponent
+  | InputComponent
+  | SelectComponent
+  | CheckboxComponent
+  | RadioComponent
+  | FormComponent
   | QuillComponent
   | ImageComponent
   | LinkComponent

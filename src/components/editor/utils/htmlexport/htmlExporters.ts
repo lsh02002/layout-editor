@@ -178,7 +178,7 @@ const exportDropZoneSpacer = (direction: ContainerDirection) => {
 };
 
 const renderContainerChildren = async (
-  component: Extract<LayoutComponent, { type: "container" | "flex" }>,
+  component: Extract<LayoutComponent, { type: "container" | "flex" | "form" }>,
   context: Parameters<HtmlExporter>[1],
   direction: ContainerDirection,
 ) => {
@@ -1859,4 +1859,238 @@ export const exportBadgeHtml: HtmlExporter = (component) => {
         ${escapeHtml(text)}
       </span>
     </div>`;
+};
+
+export const exportInputHtml: HtmlExporter = (component) => {
+  if (component.type !== "input") {
+    return "";
+  }
+
+  const {
+    wrapperStyle,
+    contentStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+    positionParentAttr,
+  } = getExportMeta(component);
+
+  return `
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="input"
+      data-component-name="${componentName}"${positionParentAttr}
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <input
+        type="${escapeAttribute(component.props.inputType ?? "text")}"
+        value="${escapeAttribute(component.props.value ?? "")}"
+        placeholder="${escapeAttribute(component.props.placeholder ?? "")}"
+        name="${escapeAttribute(component.props.name ?? "")}"
+        ${component.props.disabled ? "disabled" : ""}
+        class="form-control builder-input"
+        style="${escapeAttribute(contentStyle)}"
+      />
+    </div>
+  `;
+};
+
+export const exportSelectHtml: HtmlExporter = (component) => {
+  if (component.type !== "select") {
+    return "";
+  }
+
+  const {
+    wrapperStyle,
+    contentStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+    positionParentAttr,
+  } = getExportMeta(component);
+
+  const value = component.props.value ?? "";
+
+  const options = (component.props.options ?? "")
+    .split("\n")
+    .map((option) => option.trim())
+    .filter(Boolean)
+    .map(
+      (option) => `
+        <option
+          value="${escapeAttribute(option)}"
+          ${option === value ? "selected" : ""}
+        >
+          ${escapeHtml(option)}
+        </option>
+      `,
+    )
+    .join("");
+
+  return `
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="select"
+      data-component-name="${componentName}"${positionParentAttr}
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <select
+        name="${escapeAttribute(component.props.name ?? "")}"
+        ${component.props.disabled ? "disabled" : ""}
+        class="form-select builder-select"
+        style="${escapeAttribute(contentStyle)}"
+      >
+        ${options}
+      </select>
+    </div>
+  `;
+};
+
+export const exportCheckboxHtml: HtmlExporter = (component) => {
+  if (component.type !== "checkbox") {
+    return "";
+  }
+
+  const {
+    wrapperStyle,
+    contentStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+    positionParentAttr,
+  } = getExportMeta(component);
+
+  return `
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="checkbox"
+      data-component-name="${componentName}"${positionParentAttr}
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <label
+        style="${escapeAttribute(
+          ["display:inline-flex", "align-items:center", "gap:8px", contentStyle]
+            .filter(Boolean)
+            .join(";"),
+        )}"
+      >
+        <input
+          type="checkbox"
+          name="${escapeAttribute(component.props.name ?? "")}"
+          value="${escapeAttribute(component.props.value ?? "on")}"
+          ${component.props.checked ? "checked" : ""}
+          ${component.props.disabled ? "disabled" : ""}
+        />
+
+        <span>
+          ${escapeHtml(component.props.label ?? "")}
+        </span>
+      </label>
+    </div>
+  `;
+};
+
+export const exportRadioHtml: HtmlExporter = (component) => {
+  if (component.type !== "radio") {
+    return "";
+  }
+
+  const {
+    wrapperStyle,
+    contentStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+    positionParentAttr,
+  } = getExportMeta(component);
+
+  return `
+    <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="radio"
+      data-component-name="${componentName}"${positionParentAttr}
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <label
+        style="${escapeAttribute(
+          ["display:inline-flex", "align-items:center", "gap:8px", contentStyle]
+            .filter(Boolean)
+            .join(";"),
+        )}"
+      >
+        <input
+          type="radio"
+          name="${escapeAttribute(component.props.name ?? "")}"
+          value="${escapeAttribute(component.props.value ?? "on")}"
+          ${component.props.checked ? "checked" : ""}
+          ${component.props.disabled ? "disabled" : ""}
+        />
+
+        <span>
+          ${escapeHtml(component.props.label ?? "")}
+        </span>
+      </label>
+    </div>
+  `;
+};
+
+export const exportFormHtml: HtmlExporter = async (component, context) => {
+  if (component.type !== "form") {
+    return "";
+  }
+
+  const {
+    wrapperStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+    positionParentAttr,
+  } = getExportMeta(component);
+
+  const direction = component.props.direction ?? "column";
+
+  const gap = component.props.gap ?? 8;
+
+  const justifyContent = component.props.justifyContent ?? "flex-start";
+
+  const alignItems = component.props.alignItems ?? "stretch";
+
+  const children = await renderContainerChildren(component, context, direction);
+
+  return `
+    <form
+      class="${wrapperClass} builder-form builder-position-context"
+      data-component-id="${componentId}"
+      data-component-type="form"
+      data-component-name="${componentName}"${positionParentAttr}
+
+      action="${escapeAttribute(component.props.action ?? "")}"
+
+      method="${escapeAttribute(component.props.method ?? "post")}"
+
+      style="${escapeAttribute(
+        [
+          "display:flex",
+          `flex-direction:${direction}`,
+          `gap:${gap}px`,
+          `justify-content:${justifyContent}`,
+          `align-items:${alignItems}`,
+          "position:relative",
+          "width:100%",
+          "min-width:0",
+          "min-height:20px",
+          "box-sizing:border-box",
+          wrapperStyle,
+        ]
+          .filter(Boolean)
+          .join(";"),
+      )}"
+    >
+      ${children}
+    </form>
+  `;
 };
