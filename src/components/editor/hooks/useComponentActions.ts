@@ -89,14 +89,12 @@ export const useComponentActions = ({
     components,
     insertTarget,
     setInsertTarget,
-    setShowCreateModal,
-    // setShowEditModal,
+    setShowCreateModal,    
     setSelectedComponentIds,
     newType,
     setNewType,
     resetCreateForm,
-    makeNewComponent,
-    // loadComponentToEdit,
+    makeNewComponent,    
     commitHistory,
   });
 
