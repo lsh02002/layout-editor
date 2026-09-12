@@ -91,10 +91,11 @@ function BuilderCanvas({
 
     canvas
       ?.querySelectorAll<HTMLElement>(
-        `[data-component-id],
+        `
         [data-builder-original-style],
         [data-builder-original-class],
-        [data-builder-original-attributes]`,
+        [data-builder-original-attributes]
+        `,
       )
       .forEach((element) => {
         // style 복원
