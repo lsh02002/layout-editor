@@ -1,0 +1,263 @@
+{
+  "version": 1,
+  "templateType": "project",
+  "name": "간단 설문 이벤트 예제",
+  "createdAt": "2026-09-12T03:57:00.000Z",
+  "components": [
+    {
+      "id": "r1111111-1111-4111-8111-111111111111",
+      "name": "Survey Title",
+      "type": "heading",
+      "order": 0,
+      "props": {
+        "text": "2026 취향 설문 이벤트",
+        "level": 1
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "contentStyle": {
+        "textAlign": "center",
+        "fontSize": "40px"
+      }
+    },
+    {
+      "id": "r2222222-2222-4222-8222-222222222222",
+      "name": "Survey Intro",
+      "type": "quill",
+      "order": 1,
+      "props": {
+        "value": "<p style=\"text-align:center;\">간단한 선택 몇 개로 나의 취향을 확인해보세요.</p><p style=\"text-align:center;\">미리보기 모드에서 선택값과 동작을 테스트할 수 있습니다.</p>",
+        "placeholder": "본문을 입력하세요.",
+        "disabled": false
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%"
+      },
+      "contentStyle": {
+        "textAlign": "center"
+      }
+    },
+    {
+      "id": "r3333333-3333-4333-8333-333333333333",
+      "name": "Survey Gallery",
+      "type": "imageGallery",
+      "order": 2,
+      "props": {
+        "urls": [
+          "https://picsum.photos/id/1060/1200/700",
+          "https://picsum.photos/id/1050/1200/700",
+          "https://picsum.photos/id/1040/1200/700"
+        ],
+        "columns": 3,
+        "gap": 10,
+        "objectFit": "cover",
+        "borderRadius": 12
+      },
+      "layout": {
+        "widthMode": "fill",
+        "heightMode": "auto",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%"
+      }
+    },
+    {
+      "id": "r4000000-0000-4000-8000-000000000000",
+      "name": "Survey Form",
+      "type": "form",
+      "order": 3,
+      "props": {
+        "direction": "column",
+        "gap": 12,
+        "justifyContent": "flex-start",
+        "alignItems": "stretch",
+        "action": "",
+        "method": "post"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "padding": 20,
+        "border": "1px solid #dee2e6",
+        "borderRadius": "12px"
+      },
+      "children": [
+        {
+          "id": "r4111111-1111-4111-8111-111111111111",
+          "name": "Survey Heading",
+          "type": "heading",
+          "order": 0,
+          "props": {
+            "text": "나의 취향 선택",
+            "level": 2
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          }
+        },
+        {
+          "id": "r4222222-2222-4222-8222-222222222222",
+          "name": "Nickname",
+          "type": "input",
+          "order": 1,
+          "props": {
+            "value": "",
+            "inputType": "text",
+            "placeholder": "닉네임",
+            "name": "nickname",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          }
+        },
+        {
+          "id": "r4333333-3333-4333-8333-333333333333",
+          "name": "Color Select",
+          "type": "select",
+          "order": 2,
+          "props": {
+            "value": "블루",
+            "options": "블루\n그린\n오렌지\n퍼플",
+            "name": "color",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          },
+          "jsActions": [
+            {
+              "id": "ra111111-1111-4111-8111-111111111111",
+              "event": "change",
+              "code": "const value = builder.getValue(\"r4333333-3333-4333-8333-333333333333\");\nif (value === \"블루\") {\n  builder.setStyle(\"r5000000-0000-4000-8000-000000000000\", \"border\", \"2px solid #0d6efd\");\n} else if (value === \"그린\") {\n  builder.setStyle(\"r5000000-0000-4000-8000-000000000000\", \"border\", \"2px solid #198754\");\n} else if (value === \"오렌지\") {\n  builder.setStyle(\"r5000000-0000-4000-8000-000000000000\", \"border\", \"2px solid #fd7e14\");\n} else {\n  builder.setStyle(\"r5000000-0000-4000-8000-000000000000\", \"border\", \"2px solid #6f42c1\");\n}",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "targetComponentId": "r5000000-0000-4000-8000-000000000000"
+            }
+          ]
+        },
+        {
+          "id": "r4444444-4444-4444-8444-444444444444",
+          "name": "Morning Radio",
+          "type": "radio",
+          "order": 3,
+          "props": {
+            "label": "아침형",
+            "checked": true,
+            "name": "rhythm",
+            "value": "morning",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "auto",
+            "positionParentId": null
+          }
+        },
+        {
+          "id": "r4555555-5555-4555-8555-555555555555",
+          "name": "Night Radio",
+          "type": "radio",
+          "order": 4,
+          "props": {
+            "label": "저녁형",
+            "checked": false,
+            "name": "rhythm",
+            "value": "night",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "auto",
+            "positionParentId": null
+          }
+        },
+        {
+          "id": "r4666666-6666-4666-8666-666666666666",
+          "name": "Event Agree",
+          "type": "checkbox",
+          "order": 5,
+          "props": {
+            "label": "이벤트 참여 및 결과 확인에 동의합니다.",
+            "checked": false,
+            "name": "agree",
+            "value": "yes",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "auto",
+            "positionParentId": null
+          }
+        },
+        {
+          "id": "r4777777-7777-4777-8777-777777777777",
+          "name": "Result Button Alert",
+          "type": "alert",
+          "order": 6,
+          "props": {
+            "message": "클릭해서 결과 카드 활성화",
+            "variant": "success",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "cursor": "pointer"
+          },
+          "jsActions": [
+            {
+              "id": "ra222222-2222-4222-8222-222222222222",
+              "event": "click",
+              "code": "const nickname = builder.getValue(\"r4222222-2222-4222-8222-222222222222\").trim();\nconst agree = builder.getChecked(\"r4666666-6666-4666-8666-666666666666\");\nif (!nickname) {\n  builder.focus(\"r4222222-2222-4222-8222-222222222222\");\n  return;\n}\nif (!agree) {\n  builder.setStyle(\"r4666666-6666-4666-8666-666666666666\", \"outline\", \"2px solid #dc3545\");\n  return;\n}\nbuilder.show(\"r5000000-0000-4000-8000-000000000000\");\nbuilder.setStyle(\"r5000000-0000-4000-8000-000000000000\", \"opacity\", \"1\");\nbuilder.scrollTo(\"r5000000-0000-4000-8000-000000000000\");",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "targetComponentId": "r5000000-0000-4000-8000-000000000000"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r5000000-0000-4000-8000-000000000000",
+      "name": "Result Card",
+      "type": "alert",
+      "order": 4,
+      "props": {
+        "message": "결과 카드: 선택한 컬러에 따라 테두리가 바뀌고, 폼 검증 후 여기로 이동합니다.",
+        "variant": "info",
+        "dismissible": false
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "opacity": "0.35",
+        "border": "2px solid #0d6efd"
+      }
+    }
+  ]
+}

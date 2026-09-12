@@ -1,0 +1,233 @@
+{
+  "version": 1,
+  "templateType": "project",
+  "name": "제품 런칭 랜딩페이지 예제",
+  "createdAt": "2026-09-12T03:55:00.000Z",
+  "components": [
+    {
+      "id": "p1111111-1111-4111-8111-111111111111",
+      "name": "Launch Title",
+      "type": "heading",
+      "order": 0,
+      "props": {
+        "text": "NOVA X1",
+        "level": 1
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "padding": "28px 16px 4px"
+      },
+      "contentStyle": {
+        "textAlign": "center",
+        "fontSize": "48px"
+      }
+    },
+    {
+      "id": "p2222222-2222-4222-8222-222222222222",
+      "name": "Launch Copy",
+      "type": "quill",
+      "order": 1,
+      "props": {
+        "value": "<p style=\"text-align:center;\"><strong>더 빠르고 더 가벼운 새로운 시작.</strong></p><p style=\"text-align:center;\">NOVA X1의 주요 기능을 확인하고 사전 알림을 신청해보세요.</p>",
+        "placeholder": "본문을 입력하세요.",
+        "disabled": false
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%"
+      },
+      "contentStyle": {
+        "textAlign": "center",
+        "fontSize": "18px"
+      }
+    },
+    {
+      "id": "p3333333-3333-4333-8333-333333333333",
+      "name": "Product Gallery",
+      "type": "imageGallery",
+      "order": 2,
+      "props": {
+        "urls": [
+          "https://picsum.photos/id/180/1200/700",
+          "https://picsum.photos/id/201/1200/700",
+          "https://picsum.photos/id/250/1200/700"
+        ],
+        "columns": 3,
+        "gap": 8,
+        "objectFit": "cover",
+        "borderRadius": 14
+      },
+      "layout": {
+        "widthMode": "fill",
+        "heightMode": "auto",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%"
+      }
+    },
+    {
+      "id": "p4444444-4444-4444-8444-444444444444",
+      "name": "Feature Alert",
+      "type": "alert",
+      "order": 3,
+      "props": {
+        "message": "미리보기에서 이 영역을 클릭하면 아래 사전알림 폼으로 이동합니다.",
+        "variant": "info",
+        "dismissible": false
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "cursor": "pointer"
+      },
+      "jsActions": [
+        {
+          "id": "pa111111-1111-4111-8111-111111111111",
+          "event": "click",
+          "code": "builder.scrollTo(\"p5000000-0000-4000-8000-000000000000\");",
+          "enabled": true,
+          "stopPropagation": false,
+          "preventDefault": false,
+          "targetComponentId": "p5000000-0000-4000-8000-000000000000"
+        }
+      ]
+    },
+    {
+      "id": "p5000000-0000-4000-8000-000000000000",
+      "name": "Notify Form",
+      "type": "form",
+      "order": 4,
+      "props": {
+        "direction": "column",
+        "gap": 12,
+        "justifyContent": "flex-start",
+        "alignItems": "stretch",
+        "action": "",
+        "method": "post"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "padding": 20,
+        "border": "1px solid #dee2e6",
+        "borderRadius": "14px"
+      },
+      "children": [
+        {
+          "id": "p5111111-1111-4111-8111-111111111111",
+          "name": "Notify Heading",
+          "type": "heading",
+          "order": 0,
+          "props": {
+            "text": "사전 알림 신청",
+            "level": 2
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          }
+        },
+        {
+          "id": "p5222222-2222-4222-8222-222222222222",
+          "name": "Notify Email",
+          "type": "input",
+          "order": 1,
+          "props": {
+            "value": "",
+            "inputType": "email",
+            "placeholder": "이메일 주소",
+            "name": "email",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          }
+        },
+        {
+          "id": "p5333333-3333-4333-8333-333333333333",
+          "name": "Model Select",
+          "type": "select",
+          "order": 2,
+          "props": {
+            "value": "NOVA X1",
+            "options": "NOVA X1\nNOVA X1 Pro\nNOVA X1 Mini",
+            "name": "model",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          }
+        },
+        {
+          "id": "p5444444-4444-4444-8444-444444444444",
+          "name": "Marketing Agree",
+          "type": "checkbox",
+          "order": 3,
+          "props": {
+            "label": "출시 소식과 프로모션 알림을 받겠습니다.",
+            "checked": false,
+            "name": "marketing",
+            "value": "yes",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "auto",
+            "positionParentId": null
+          }
+        },
+        {
+          "id": "p5555555-5555-4555-8555-555555555555",
+          "name": "Notify Check",
+          "type": "alert",
+          "order": 4,
+          "props": {
+            "message": "입력 완료 후 클릭해서 신청 상태를 확인하세요.",
+            "variant": "success",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "cursor": "pointer"
+          },
+          "jsActions": [
+            {
+              "id": "pa222222-2222-4222-8222-222222222222",
+              "event": "click",
+              "code": "const email = builder.getValue(\"p5222222-2222-4222-8222-222222222222\").trim();\nif (!email) {\n  builder.setStyle(\"p5222222-2222-4222-8222-222222222222\", \"outline\", \"2px solid #dc3545\");\n  builder.focus(\"p5222222-2222-4222-8222-222222222222\");\n  return;\n}\nbuilder.setStyle(\"p5000000-0000-4000-8000-000000000000\", \"border\", \"2px solid #198754\");\nbuilder.setStyle(\"p5555555-5555-4555-8555-555555555555\", \"opacity\", \"0.55\");",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "targetComponentId": "p5000000-0000-4000-8000-000000000000"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
