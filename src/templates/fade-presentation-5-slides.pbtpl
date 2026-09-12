@@ -1,11 +1,11 @@
 {
   "version": 1,
   "templateType": "project",
-  "name": "Fade In Out 5장 웹 프레젠테이션",
-  "createdAt": "2026-09-12T06:00:00.000Z",
+  "name": "Fade 5장 웹 프레젠테이션 안정화 버전",
+  "createdAt": "2026-09-12T06:45:00.000Z",
   "components": [
     {
-      "id": "fade-stage",
+      "id": "presentation-stage",
       "name": "Presentation Stage",
       "type": "container",
       "order": 0,
@@ -13,7 +13,8 @@
         "direction": "column",
         "gap": 0,
         "justifyContent": "flex-start",
-        "alignItems": "stretch"
+        "alignItems": "stretch",
+        "presentationSlide": true
       },
       "layout": {
         "widthMode": "fill",
@@ -22,11 +23,12 @@
       "style": {
         "width": "100%",
         "minHeight": "78vh",
-        "position": "relative"
+        "position": "relative",
+        "overflow": "hidden"
       },
       "children": [
         {
-          "id": "s1",
+          "id": "slide-a",
           "name": "Slide 1",
           "type": "container",
           "order": 0,
@@ -34,11 +36,15 @@
             "direction": "column",
             "gap": 18,
             "justifyContent": "center",
-            "alignItems": "stretch"
+            "alignItems": "stretch",
+            "presentationSlide": true
           },
           "layout": {
             "widthMode": "fill",
-            "positionParentId": null
+            "position": "absolute",
+            "x": 0,
+            "y": 0,
+            "positionParentId": "presentation-stage"
           },
           "style": {
             "width": "100%",
@@ -46,11 +52,14 @@
             "padding": "48px 28px",
             "borderRadius": "18px",
             "border": "1px solid #dee2e6",
-            "opacity": "1"
+            "opacity": "1",
+            "zIndex": 2,
+            "pointerEvents": "auto",
+            "transition": "opacity 0.45s ease"
           },
           "children": [
             {
-              "id": "s1-title",
+              "id": "slide-a-title",
               "name": "Slide 1 Title",
               "type": "heading",
               "order": 0,
@@ -68,7 +77,7 @@
               }
             },
             {
-              "id": "s1-body",
+              "id": "slide-a-body",
               "name": "Slide 1 Body",
               "type": "quill",
               "order": 1,
@@ -90,7 +99,7 @@
               }
             },
             {
-              "id": "s1-badge",
+              "id": "slide-a-badge",
               "name": "Slide 1 Badge",
               "type": "alert",
               "order": 2,
@@ -109,7 +118,7 @@
               }
             },
             {
-              "id": "s1-nav",
+              "id": "slide-a-nav",
               "name": "Navigation",
               "type": "container",
               "order": 3,
@@ -117,7 +126,8 @@
                 "direction": "row",
                 "gap": 10,
                 "justifyContent": "center",
-                "alignItems": "stretch"
+                "alignItems": "stretch",
+                "presentationSlide": true
               },
               "layout": {
                 "widthMode": "fill",
@@ -129,7 +139,7 @@
               },
               "children": [
                 {
-                  "id": "s1-next",
+                  "id": "slide-a-next",
                   "name": "Next",
                   "type": "alert",
                   "order": 0,
@@ -149,13 +159,13 @@
                   },
                   "jsActions": [
                     {
-                      "id": "s1-next-a",
+                      "id": "slide-a-next-action",
                       "event": "click",
-                      "code": "builder.setStyle(\"s1\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s1\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s1\");\nbuilder.show(\"s2\");\nbuilder.setStyle(\"s2\", \"opacity\", \"0\");\nbuilder.setStyle(\"s2\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s2\", \"opacity\", \"1\");",
+                      "code": "builder.setStyle(\"slide-a\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-b\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-b\", \"z-index\", \"2\");\nbuilder.setStyle(\"slide-b\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"slide-b\", \"opacity\", \"1\");\nbuilder.setStyle(\"slide-a\", \"opacity\", \"0\");\nbuilder.setStyle(\"slide-a\", \"z-index\", \"1\");\nbuilder.setStyle(\"slide-a\", \"pointer-events\", \"none\");",
                       "enabled": true,
                       "stopPropagation": false,
                       "preventDefault": false,
-                      "targetComponentId": "s2"
+                      "targetComponentId": "slide-b"
                     }
                   ]
                 }
@@ -164,7 +174,7 @@
           ]
         },
         {
-          "id": "s2",
+          "id": "slide-b",
           "name": "Slide 2",
           "type": "container",
           "order": 1,
@@ -172,11 +182,15 @@
             "direction": "column",
             "gap": 18,
             "justifyContent": "center",
-            "alignItems": "stretch"
+            "alignItems": "stretch",
+            "presentationSlide": true
           },
           "layout": {
             "widthMode": "fill",
-            "positionParentId": null
+            "position": "absolute",
+            "x": 0,
+            "y": 0,
+            "positionParentId": "presentation-stage"
           },
           "style": {
             "width": "100%",
@@ -185,11 +199,13 @@
             "borderRadius": "18px",
             "border": "1px solid #dee2e6",
             "opacity": "0",
-            "display": "none"
+            "zIndex": 1,
+            "pointerEvents": "none",
+            "transition": "opacity 0.45s ease"
           },
           "children": [
             {
-              "id": "s2-title",
+              "id": "slide-b-title",
               "name": "Slide 2 Title",
               "type": "heading",
               "order": 0,
@@ -207,7 +223,7 @@
               }
             },
             {
-              "id": "s2-body",
+              "id": "slide-b-body",
               "name": "Slide 2 Body",
               "type": "quill",
               "order": 1,
@@ -229,7 +245,7 @@
               }
             },
             {
-              "id": "s2-badge",
+              "id": "slide-b-badge",
               "name": "Slide 2 Badge",
               "type": "alert",
               "order": 2,
@@ -248,7 +264,7 @@
               }
             },
             {
-              "id": "s2-nav",
+              "id": "slide-b-nav",
               "name": "Navigation",
               "type": "container",
               "order": 3,
@@ -256,7 +272,8 @@
                 "direction": "row",
                 "gap": 10,
                 "justifyContent": "center",
-                "alignItems": "stretch"
+                "alignItems": "stretch",
+                "presentationSlide": true
               },
               "layout": {
                 "widthMode": "fill",
@@ -268,7 +285,7 @@
               },
               "children": [
                 {
-                  "id": "s2-prev",
+                  "id": "slide-b-prev",
                   "name": "Previous",
                   "type": "alert",
                   "order": 0,
@@ -288,18 +305,18 @@
                   },
                   "jsActions": [
                     {
-                      "id": "s2-prev-a",
+                      "id": "slide-b-prev-action",
                       "event": "click",
-                      "code": "builder.setStyle(\"s2\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s2\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s2\");\nbuilder.show(\"s1\");\nbuilder.setStyle(\"s1\", \"opacity\", \"0\");\nbuilder.setStyle(\"s1\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s1\", \"opacity\", \"1\");",
+                      "code": "builder.setStyle(\"slide-b\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-a\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-a\", \"z-index\", \"2\");\nbuilder.setStyle(\"slide-a\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"slide-a\", \"opacity\", \"1\");\nbuilder.setStyle(\"slide-b\", \"opacity\", \"0\");\nbuilder.setStyle(\"slide-b\", \"z-index\", \"1\");\nbuilder.setStyle(\"slide-b\", \"pointer-events\", \"none\");",
                       "enabled": true,
                       "stopPropagation": false,
                       "preventDefault": false,
-                      "targetComponentId": "s1"
+                      "targetComponentId": "slide-a"
                     }
                   ]
                 },
                 {
-                  "id": "s2-next",
+                  "id": "slide-b-next",
                   "name": "Next",
                   "type": "alert",
                   "order": 1,
@@ -319,13 +336,13 @@
                   },
                   "jsActions": [
                     {
-                      "id": "s2-next-a",
+                      "id": "slide-b-next-action",
                       "event": "click",
-                      "code": "builder.setStyle(\"s2\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s2\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s2\");\nbuilder.show(\"s3\");\nbuilder.setStyle(\"s3\", \"opacity\", \"0\");\nbuilder.setStyle(\"s3\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s3\", \"opacity\", \"1\");",
+                      "code": "builder.setStyle(\"slide-b\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-c\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-c\", \"z-index\", \"2\");\nbuilder.setStyle(\"slide-c\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"slide-c\", \"opacity\", \"1\");\nbuilder.setStyle(\"slide-b\", \"opacity\", \"0\");\nbuilder.setStyle(\"slide-b\", \"z-index\", \"1\");\nbuilder.setStyle(\"slide-b\", \"pointer-events\", \"none\");",
                       "enabled": true,
                       "stopPropagation": false,
                       "preventDefault": false,
-                      "targetComponentId": "s3"
+                      "targetComponentId": "slide-c"
                     }
                   ]
                 }
@@ -334,7 +351,7 @@
           ]
         },
         {
-          "id": "s3",
+          "id": "slide-c",
           "name": "Slide 3",
           "type": "container",
           "order": 2,
@@ -342,11 +359,15 @@
             "direction": "column",
             "gap": 18,
             "justifyContent": "center",
-            "alignItems": "stretch"
+            "alignItems": "stretch",
+            "presentationSlide": true
           },
           "layout": {
             "widthMode": "fill",
-            "positionParentId": null
+            "position": "absolute",
+            "x": 0,
+            "y": 0,
+            "positionParentId": "presentation-stage"
           },
           "style": {
             "width": "100%",
@@ -355,11 +376,13 @@
             "borderRadius": "18px",
             "border": "1px solid #dee2e6",
             "opacity": "0",
-            "display": "none"
+            "zIndex": 1,
+            "pointerEvents": "none",
+            "transition": "opacity 0.45s ease"
           },
           "children": [
             {
-              "id": "s3-title",
+              "id": "slide-c-title",
               "name": "Slide 3 Title",
               "type": "heading",
               "order": 0,
@@ -377,7 +400,7 @@
               }
             },
             {
-              "id": "s3-body",
+              "id": "slide-c-body",
               "name": "Slide 3 Body",
               "type": "quill",
               "order": 1,
@@ -399,7 +422,7 @@
               }
             },
             {
-              "id": "s3-badge",
+              "id": "slide-c-badge",
               "name": "Slide 3 Badge",
               "type": "alert",
               "order": 2,
@@ -418,7 +441,7 @@
               }
             },
             {
-              "id": "s3-nav",
+              "id": "slide-c-nav",
               "name": "Navigation",
               "type": "container",
               "order": 3,
@@ -426,7 +449,8 @@
                 "direction": "row",
                 "gap": 10,
                 "justifyContent": "center",
-                "alignItems": "stretch"
+                "alignItems": "stretch",
+                "presentationSlide": true
               },
               "layout": {
                 "widthMode": "fill",
@@ -438,7 +462,7 @@
               },
               "children": [
                 {
-                  "id": "s3-prev",
+                  "id": "slide-c-prev",
                   "name": "Previous",
                   "type": "alert",
                   "order": 0,
@@ -458,18 +482,18 @@
                   },
                   "jsActions": [
                     {
-                      "id": "s3-prev-a",
+                      "id": "slide-c-prev-action",
                       "event": "click",
-                      "code": "builder.setStyle(\"s3\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s3\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s3\");\nbuilder.show(\"s2\");\nbuilder.setStyle(\"s2\", \"opacity\", \"0\");\nbuilder.setStyle(\"s2\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s2\", \"opacity\", \"1\");",
+                      "code": "builder.setStyle(\"slide-c\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-b\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-b\", \"z-index\", \"2\");\nbuilder.setStyle(\"slide-b\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"slide-b\", \"opacity\", \"1\");\nbuilder.setStyle(\"slide-c\", \"opacity\", \"0\");\nbuilder.setStyle(\"slide-c\", \"z-index\", \"1\");\nbuilder.setStyle(\"slide-c\", \"pointer-events\", \"none\");",
                       "enabled": true,
                       "stopPropagation": false,
                       "preventDefault": false,
-                      "targetComponentId": "s2"
+                      "targetComponentId": "slide-b"
                     }
                   ]
                 },
                 {
-                  "id": "s3-next",
+                  "id": "slide-c-next",
                   "name": "Next",
                   "type": "alert",
                   "order": 1,
@@ -489,13 +513,13 @@
                   },
                   "jsActions": [
                     {
-                      "id": "s3-next-a",
+                      "id": "slide-c-next-action",
                       "event": "click",
-                      "code": "builder.setStyle(\"s3\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s3\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s3\");\nbuilder.show(\"s4\");\nbuilder.setStyle(\"s4\", \"opacity\", \"0\");\nbuilder.setStyle(\"s4\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s4\", \"opacity\", \"1\");",
+                      "code": "builder.setStyle(\"slide-c\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-d\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-d\", \"z-index\", \"2\");\nbuilder.setStyle(\"slide-d\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"slide-d\", \"opacity\", \"1\");\nbuilder.setStyle(\"slide-c\", \"opacity\", \"0\");\nbuilder.setStyle(\"slide-c\", \"z-index\", \"1\");\nbuilder.setStyle(\"slide-c\", \"pointer-events\", \"none\");",
                       "enabled": true,
                       "stopPropagation": false,
                       "preventDefault": false,
-                      "targetComponentId": "s4"
+                      "targetComponentId": "slide-d"
                     }
                   ]
                 }
@@ -504,7 +528,7 @@
           ]
         },
         {
-          "id": "s4",
+          "id": "slide-d",
           "name": "Slide 4",
           "type": "container",
           "order": 3,
@@ -512,11 +536,15 @@
             "direction": "column",
             "gap": 18,
             "justifyContent": "center",
-            "alignItems": "stretch"
+            "alignItems": "stretch",
+            "presentationSlide": true
           },
           "layout": {
             "widthMode": "fill",
-            "positionParentId": null
+            "position": "absolute",
+            "x": 0,
+            "y": 0,
+            "positionParentId": "presentation-stage"
           },
           "style": {
             "width": "100%",
@@ -525,11 +553,13 @@
             "borderRadius": "18px",
             "border": "1px solid #dee2e6",
             "opacity": "0",
-            "display": "none"
+            "zIndex": 1,
+            "pointerEvents": "none",
+            "transition": "opacity 0.45s ease"
           },
           "children": [
             {
-              "id": "s4-title",
+              "id": "slide-d-title",
               "name": "Slide 4 Title",
               "type": "heading",
               "order": 0,
@@ -547,7 +577,7 @@
               }
             },
             {
-              "id": "s4-body",
+              "id": "slide-d-body",
               "name": "Slide 4 Body",
               "type": "quill",
               "order": 1,
@@ -569,7 +599,7 @@
               }
             },
             {
-              "id": "s4-badge",
+              "id": "slide-d-badge",
               "name": "Slide 4 Badge",
               "type": "alert",
               "order": 2,
@@ -588,7 +618,7 @@
               }
             },
             {
-              "id": "s4-nav",
+              "id": "slide-d-nav",
               "name": "Navigation",
               "type": "container",
               "order": 3,
@@ -596,7 +626,8 @@
                 "direction": "row",
                 "gap": 10,
                 "justifyContent": "center",
-                "alignItems": "stretch"
+                "alignItems": "stretch",
+                "presentationSlide": true
               },
               "layout": {
                 "widthMode": "fill",
@@ -608,7 +639,7 @@
               },
               "children": [
                 {
-                  "id": "s4-prev",
+                  "id": "slide-d-prev",
                   "name": "Previous",
                   "type": "alert",
                   "order": 0,
@@ -628,18 +659,18 @@
                   },
                   "jsActions": [
                     {
-                      "id": "s4-prev-a",
+                      "id": "slide-d-prev-action",
                       "event": "click",
-                      "code": "builder.setStyle(\"s4\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s4\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s4\");\nbuilder.show(\"s3\");\nbuilder.setStyle(\"s3\", \"opacity\", \"0\");\nbuilder.setStyle(\"s3\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s3\", \"opacity\", \"1\");",
+                      "code": "builder.setStyle(\"slide-d\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-c\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-c\", \"z-index\", \"2\");\nbuilder.setStyle(\"slide-c\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"slide-c\", \"opacity\", \"1\");\nbuilder.setStyle(\"slide-d\", \"opacity\", \"0\");\nbuilder.setStyle(\"slide-d\", \"z-index\", \"1\");\nbuilder.setStyle(\"slide-d\", \"pointer-events\", \"none\");",
                       "enabled": true,
                       "stopPropagation": false,
                       "preventDefault": false,
-                      "targetComponentId": "s3"
+                      "targetComponentId": "slide-c"
                     }
                   ]
                 },
                 {
-                  "id": "s4-next",
+                  "id": "slide-d-next",
                   "name": "Next",
                   "type": "alert",
                   "order": 1,
@@ -659,13 +690,13 @@
                   },
                   "jsActions": [
                     {
-                      "id": "s4-next-a",
+                      "id": "slide-d-next-action",
                       "event": "click",
-                      "code": "builder.setStyle(\"s4\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s4\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s4\");\nbuilder.show(\"s5\");\nbuilder.setStyle(\"s5\", \"opacity\", \"0\");\nbuilder.setStyle(\"s5\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s5\", \"opacity\", \"1\");",
+                      "code": "builder.setStyle(\"slide-d\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-e\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-e\", \"z-index\", \"2\");\nbuilder.setStyle(\"slide-e\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"slide-e\", \"opacity\", \"1\");\nbuilder.setStyle(\"slide-d\", \"opacity\", \"0\");\nbuilder.setStyle(\"slide-d\", \"z-index\", \"1\");\nbuilder.setStyle(\"slide-d\", \"pointer-events\", \"none\");",
                       "enabled": true,
                       "stopPropagation": false,
                       "preventDefault": false,
-                      "targetComponentId": "s5"
+                      "targetComponentId": "slide-e"
                     }
                   ]
                 }
@@ -674,7 +705,7 @@
           ]
         },
         {
-          "id": "s5",
+          "id": "slide-e",
           "name": "Slide 5",
           "type": "container",
           "order": 4,
@@ -682,11 +713,15 @@
             "direction": "column",
             "gap": 18,
             "justifyContent": "center",
-            "alignItems": "stretch"
+            "alignItems": "stretch",
+            "presentationSlide": true
           },
           "layout": {
             "widthMode": "fill",
-            "positionParentId": null
+            "position": "absolute",
+            "x": 0,
+            "y": 0,
+            "positionParentId": "presentation-stage"
           },
           "style": {
             "width": "100%",
@@ -695,11 +730,13 @@
             "borderRadius": "18px",
             "border": "1px solid #dee2e6",
             "opacity": "0",
-            "display": "none"
+            "zIndex": 1,
+            "pointerEvents": "none",
+            "transition": "opacity 0.45s ease"
           },
           "children": [
             {
-              "id": "s5-title",
+              "id": "slide-e-title",
               "name": "Slide 5 Title",
               "type": "heading",
               "order": 0,
@@ -717,7 +754,7 @@
               }
             },
             {
-              "id": "s5-body",
+              "id": "slide-e-body",
               "name": "Slide 5 Body",
               "type": "quill",
               "order": 1,
@@ -739,7 +776,7 @@
               }
             },
             {
-              "id": "s5-badge",
+              "id": "slide-e-badge",
               "name": "Slide 5 Badge",
               "type": "alert",
               "order": 2,
@@ -758,7 +795,7 @@
               }
             },
             {
-              "id": "s5-nav",
+              "id": "slide-e-nav",
               "name": "Navigation",
               "type": "container",
               "order": 3,
@@ -766,7 +803,8 @@
                 "direction": "row",
                 "gap": 10,
                 "justifyContent": "center",
-                "alignItems": "stretch"
+                "alignItems": "stretch",
+                "presentationSlide": true
               },
               "layout": {
                 "widthMode": "fill",
@@ -778,7 +816,7 @@
               },
               "children": [
                 {
-                  "id": "s5-prev",
+                  "id": "slide-e-prev",
                   "name": "Previous",
                   "type": "alert",
                   "order": 0,
@@ -798,18 +836,18 @@
                   },
                   "jsActions": [
                     {
-                      "id": "s5-prev-a",
+                      "id": "slide-e-prev-action",
                       "event": "click",
-                      "code": "builder.setStyle(\"s5\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s5\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s5\");\nbuilder.show(\"s4\");\nbuilder.setStyle(\"s4\", \"opacity\", \"0\");\nbuilder.setStyle(\"s4\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s4\", \"opacity\", \"1\");",
+                      "code": "builder.setStyle(\"slide-e\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-d\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-d\", \"z-index\", \"2\");\nbuilder.setStyle(\"slide-d\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"slide-d\", \"opacity\", \"1\");\nbuilder.setStyle(\"slide-e\", \"opacity\", \"0\");\nbuilder.setStyle(\"slide-e\", \"z-index\", \"1\");\nbuilder.setStyle(\"slide-e\", \"pointer-events\", \"none\");",
                       "enabled": true,
                       "stopPropagation": false,
                       "preventDefault": false,
-                      "targetComponentId": "s4"
+                      "targetComponentId": "slide-d"
                     }
                   ]
                 },
                 {
-                  "id": "s5-next",
+                  "id": "slide-e-next",
                   "name": "Next",
                   "type": "alert",
                   "order": 1,
@@ -829,13 +867,13 @@
                   },
                   "jsActions": [
                     {
-                      "id": "s5-next-a",
+                      "id": "slide-e-next-action",
                       "event": "click",
-                      "code": "builder.setStyle(\"s5\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s5\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s5\");\nbuilder.show(\"s1\");\nbuilder.setStyle(\"s1\", \"opacity\", \"0\");\nbuilder.setStyle(\"s1\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s1\", \"opacity\", \"1\");",
+                      "code": "builder.setStyle(\"slide-e\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-a\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"slide-a\", \"z-index\", \"2\");\nbuilder.setStyle(\"slide-a\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"slide-a\", \"opacity\", \"1\");\nbuilder.setStyle(\"slide-e\", \"opacity\", \"0\");\nbuilder.setStyle(\"slide-e\", \"z-index\", \"1\");\nbuilder.setStyle(\"slide-e\", \"pointer-events\", \"none\");",
                       "enabled": true,
                       "stopPropagation": false,
                       "preventDefault": false,
-                      "targetComponentId": "s1"
+                      "targetComponentId": "slide-a"
                     }
                   ]
                 }

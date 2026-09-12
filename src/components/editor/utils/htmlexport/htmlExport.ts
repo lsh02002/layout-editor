@@ -658,10 +658,10 @@ export const buildHtmlDocument = async (
               ) ?? false
             );
           },
-          delay(ms, callback) {
-            window.setTimeout(() => {
-              callback();
-            }, ms);
+          delay(ms) {
+            return new Promise((resolve) => {
+              window.setTimeout(resolve, ms);
+            });
           },
 
           navigate(url) {
@@ -692,6 +692,11 @@ export const buildHtmlDocument = async (
           },
         };
       };
+
+      const AsyncFunction =
+        Object.getPrototypeOf(
+          async function () {}
+        ).constructor;
 
       const componentJsActions =
         ${componentJsActionsJson};
@@ -736,7 +741,7 @@ export const buildHtmlDocument = async (
 
                 try {
                   const fn =
-                    new Function(
+                    new AsyncFunction(
                       "event",
                       "element",
                       "component",
@@ -744,7 +749,7 @@ export const buildHtmlDocument = async (
                       action.code
                     );
 
-                  fn(
+                  void fn(
                     event,
                     element,
                     {
@@ -752,10 +757,17 @@ export const buildHtmlDocument = async (
                       element: element,
                     },
                     createBuilderApi()
-                  );
+                  ).catch((error) => {
+                    console.error(
+                      "JS Action 실행 실패:",
+                      componentId,
+                      action.event,
+                      error
+                    );
+                  });
                 } catch (error) {
                   console.error(
-                    "JS Action 실행 실패:",
+                    "JS Action 생성 실패:",
                     componentId,
                     action.event,
                     error

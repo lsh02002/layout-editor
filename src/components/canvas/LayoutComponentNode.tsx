@@ -99,11 +99,24 @@ function LayoutComponentNode({
   const isPrimarySelected = selectedComponentIds.at(-1) === component.id;
   const isAbsolute = component.layout?.position === "absolute";
 
+  const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+
   const createBuilderApi = () => {
     const getElement = (id: string) =>
       document.querySelector<HTMLElement>(
         `[data-component-id="${CSS.escape(id)}"]`,
       );
+
+    const getStyleElement = (id: string) => {
+      const root = getElement(id);
+      if (!root) {
+        return null;
+      }
+
+      return root.firstElementChild instanceof HTMLElement
+        ? root.firstElementChild
+        : root;
+    };
 
     const saveOriginalClass = (element: HTMLElement) => {
       if (element.dataset.builderOriginalClass === undefined) {
@@ -239,13 +252,12 @@ function LayoutComponentNode({
       },
 
       setStyle(id: string, property: string, value: string) {
-        const element = getElement(id);
+        const element = getStyleElement(id);
         if (!element) {
           return;
         }
 
         saveOriginalStyle(element);
-
         element.style.setProperty(property, value);
       },
       addClass(id: string, className: string) {
@@ -506,10 +518,10 @@ function LayoutComponentNode({
         const element = getElement(id);
         return element?.classList.contains(className) ?? false;
       },
-      delay(ms: number, callback: () => void) {
-        window.setTimeout(() => {
-          callback();
-        }, ms);
+      delay(ms: number) {
+        return new Promise<void>((resolve) => {
+          setTimeout(resolve, ms);
+        });
       },
       navigate(url: string) {
         window.location.href = url;
@@ -544,7 +556,6 @@ function LayoutComponentNode({
       if (!previewMode) {
         return;
       }
-
       const actions = component.jsActions ?? [];
       const matchedActions = actions.filter(
         (action) =>
@@ -552,34 +563,36 @@ function LayoutComponentNode({
           action.event === eventName &&
           action.code.trim(),
       );
-
       if (matchedActions.length === 0) {
         return;
       }
-
       matchedActions.forEach((action) => {
         if (action.preventDefault) {
           event.preventDefault();
         }
+
         if (action.stopPropagation) {
           event.stopPropagation();
         }
 
-        try {
-          const fn = new Function(
-            "event",
-            "element",
-            "component",
-            "builder",
-            action.code,
-          );
-          fn(event, event.currentTarget, component, createBuilderApi());
-        } catch (error) {
-          console.error(`JS Action 실행 실패: ${eventName}`, error);
-        }
+        const fn = new AsyncFunction(
+          "event",
+          "element",
+          "component",
+          "builder",
+          action.code,
+        );
+        void fn(
+          event,
+          event.currentTarget,
+          component,
+          createBuilderApi(),
+        ).catch((error: unknown) => {
+          console.error(`JS Action 실행 실패: ${action.event}`, error);
+        });
       });
     },
-    [component, previewMode],
+    [AsyncFunction, component, previewMode],
   );
 
   const jsEventProps = previewMode
@@ -739,6 +752,25 @@ function LayoutComponentNode({
     />
   );
 
+  const isPresentationSlide =
+    component.type === "container" &&
+    component.props.presentationSlide === true;
+
+  const presentationEditStyle =
+    isPresentationSlide && !previewMode
+      ? {
+          position: "relative" as const,
+          left: undefined,
+          top: undefined,
+          right: undefined,
+          bottom: undefined,
+          opacity: 1,
+          zIndex: "auto",
+          pointerEvents: "auto" as const,
+          transform: undefined,
+        }
+      : {};
+
   const containerMaxWidth =
     component.type === "container" ? component.props.maxWidth : undefined;
 
@@ -746,7 +778,7 @@ function LayoutComponentNode({
     position: isAbsolute ? ("absolute" as const) : ("relative" as const),
     left: isAbsolute ? (component.layout?.x ?? 0) : undefined,
     top: isAbsolute ? (component.layout?.y ?? 0) : undefined,
-    zIndex: isAbsolute ? 1000 : undefined,
+    zIndex: isAbsolute ? (component.layout?.zIndex ?? 1000) : undefined,
     width: isAbsolute ? "max-content" : "100%",
     minWidth: 0,
     maxWidth: isAbsolute
@@ -772,6 +804,13 @@ function LayoutComponentNode({
       : undefined,
 
     scrollMarginTop: "150px",
+
+    pointerEvents:
+      isPresentationSlide && previewMode
+        ? component.style?.pointerEvents
+        : undefined,
+
+    ...presentationEditStyle,
   };
 
   const dragHandleView =
@@ -1106,6 +1145,8 @@ function LayoutComponentNode({
                   ? "1px dashed #adb5bd"
                   : component.style?.outline,
             outlineOffset: !previewMode && isSelected ? "2px" : "-1px",
+
+            ...presentationEditStyle,
           }}
         >
           <div style={{ position: "relative", width: "100%" }}>

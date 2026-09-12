@@ -90,7 +90,13 @@ function BuilderCanvas({
     const canvas = document.querySelector("[data-builder-canvas]");
 
     canvas
-      ?.querySelectorAll<HTMLElement>("[data-component-id]")
+      ?.querySelectorAll<HTMLElement>(
+          `
+        [data-builder-original-style],
+        [data-builder-original-class],
+        [data-builder-original-attributes]
+      `,
+      )
       .forEach((element) => {
         // style 복원
         if (element.dataset.builderOriginalStyle !== undefined) {

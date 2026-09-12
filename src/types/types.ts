@@ -234,6 +234,8 @@ export interface ContainerComponent extends BaseComponent {
     justifyContent?: ContainerJustifyContent;
     alignItems?: ContainerAlignItems;
     maxWidth?: number;
+
+    presentationSlide?: boolean;
   };
   children: LayoutComponent[];
 }

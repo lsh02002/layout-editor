@@ -848,9 +848,7 @@ export const EditJsActionTab = ({
                   onClick={() =>
                     appendCode(
                       action.id,
-                      `builder.delay(${
-                        Number(delayValue) || 0
-                      }, () => {\n  \n});`,
+                      `await builder.delay(${Number(delayValue) || 0});`,
                     )
                   }
                 >
