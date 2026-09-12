@@ -1,0 +1,559 @@
+{
+  "version": 1,
+  "templateType": "project",
+  "name": "5장 웹 프레젠테이션 예제",
+  "createdAt": "2026-09-12T05:30:00.000Z",
+  "components": [
+    {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "name": "Slide 1",
+      "type": "container",
+      "order": 0,
+      "props": {
+        "direction": "column",
+        "gap": 18,
+        "justifyContent": "center",
+        "alignItems": "stretch"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "minHeight": "78vh",
+        "padding": "48px 28px",
+        "borderRadius": "18px",
+        "border": "1px solid #dee2e6"
+      },
+      "children": [
+        {
+          "id": "11111111-1111-4111-8111-111111111112",
+          "name": "Slide 1 Title",
+          "type": "heading",
+          "order": 0,
+          "props": {
+            "text": "PAGE BUILDER",
+            "level": 1
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "fontSize": "52px"
+          }
+        },
+        {
+          "id": "11111111-1111-4111-8111-111111111113",
+          "name": "Slide 1 Body",
+          "type": "quill",
+          "order": 1,
+          "props": {
+            "value": "<p style=\"text-align:center;\"><strong>아이디어를 인터랙티브 웹페이지로.</strong></p><p style=\"text-align:center;\">컴포넌트, 레이아웃, 폼, JS Action, HTML Export를 하나의 빌더에서 구성합니다.</p>",
+            "placeholder": "본문을 입력하세요.",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "fontSize": "20px"
+          }
+        },
+        {
+          "id": "11111111-1111-4111-8111-111111111114",
+          "name": "Next Slide 2",
+          "type": "alert",
+          "order": 2,
+          "props": {
+            "message": "다음 슬라이드 ↓",
+            "variant": "info",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "cursor": "pointer",
+            "textAlign": "center"
+          },
+          "jsActions": [
+            {
+              "id": "aaaaaaaa-1111-4111-8111-111111111111",
+              "event": "click",
+              "code": "builder.scrollTo(\"22222222-2222-4222-8222-222222222222\");",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "targetComponentId": "22222222-2222-4222-8222-222222222222"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "22222222-2222-4222-8222-222222222222",
+      "name": "Slide 2",
+      "type": "container",
+      "order": 1,
+      "props": {
+        "direction": "column",
+        "gap": 16,
+        "justifyContent": "center",
+        "alignItems": "stretch"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "minHeight": "78vh",
+        "padding": "48px 28px",
+        "borderRadius": "18px",
+        "border": "1px solid #dee2e6"
+      },
+      "children": [
+        {
+          "id": "22222222-2222-4222-8222-222222222223",
+          "name": "Slide 2 Title",
+          "type": "heading",
+          "order": 0,
+          "props": {
+            "text": "문제",
+            "level": 2
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "fontSize": "40px"
+          }
+        },
+        {
+          "id": "22222222-2222-4222-8222-222222222224",
+          "name": "Slide 2 Body",
+          "type": "quill",
+          "order": 1,
+          "props": {
+            "value": "<p style=\"text-align:center;\">기존 웹페이지 제작은 디자인, 코드, 배포가 서로 분리되어 있습니다.</p><p style=\"text-align:center;\">작은 인터랙션 하나를 넣기 위해서도 개발 작업이 필요합니다.</p>",
+            "placeholder": "본문을 입력하세요.",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "fontSize": "19px"
+          }
+        },
+        {
+          "id": "22222222-2222-4222-8222-222222222225",
+          "name": "Slide 2 Alert",
+          "type": "alert",
+          "order": 2,
+          "props": {
+            "message": "핵심 과제: 빠르게 만들면서도 인터랙션과 자유도를 잃지 않는 것",
+            "variant": "warning",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          }
+        },
+        {
+          "id": "22222222-2222-4222-8222-222222222226",
+          "name": "Next Slide 3",
+          "type": "alert",
+          "order": 3,
+          "props": {
+            "message": "다음 슬라이드 ↓",
+            "variant": "info",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "cursor": "pointer",
+            "textAlign": "center"
+          },
+          "jsActions": [
+            {
+              "id": "aaaaaaaa-2222-4222-8222-222222222222",
+              "event": "click",
+              "code": "builder.scrollTo(\"33333333-3333-4333-8333-333333333333\");",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "targetComponentId": "33333333-3333-4333-8333-333333333333"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "33333333-3333-4333-8333-333333333333",
+      "name": "Slide 3",
+      "type": "container",
+      "order": 2,
+      "props": {
+        "direction": "column",
+        "gap": 16,
+        "justifyContent": "center",
+        "alignItems": "stretch"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "minHeight": "78vh",
+        "padding": "48px 28px",
+        "borderRadius": "18px",
+        "border": "1px solid #dee2e6"
+      },
+      "children": [
+        {
+          "id": "33333333-3333-4333-8333-333333333334",
+          "name": "Slide 3 Title",
+          "type": "heading",
+          "order": 0,
+          "props": {
+            "text": "핵심 기능",
+            "level": 2
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "fontSize": "40px"
+          }
+        },
+        {
+          "id": "33333333-3333-4333-8333-333333333335",
+          "name": "Slide 3 Gallery",
+          "type": "imageGallery",
+          "order": 1,
+          "props": {
+            "urls": [
+              "https://picsum.photos/id/180/1200/700",
+              "https://picsum.photos/id/20/1200/700",
+              "https://picsum.photos/id/29/1200/700"
+            ],
+            "columns": 3,
+            "gap": 10,
+            "objectFit": "cover",
+            "borderRadius": 12
+          },
+          "layout": {
+            "widthMode": "fill",
+            "heightMode": "auto",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          }
+        },
+        {
+          "id": "33333333-3333-4333-8333-333333333336",
+          "name": "Slide 3 Body",
+          "type": "quill",
+          "order": 2,
+          "props": {
+            "value": "<p style=\"text-align:center;\"><strong>Drag & Drop · Nested Layout · Forms · JS Actions · Templates · HTML Export</strong></p><p style=\"text-align:center;\">페이지 제작부터 인터랙션까지 하나의 프로젝트에서 관리합니다.</p>",
+            "placeholder": "본문을 입력하세요.",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "fontSize": "18px"
+          }
+        },
+        {
+          "id": "33333333-3333-4333-8333-333333333337",
+          "name": "Next Slide 4",
+          "type": "alert",
+          "order": 3,
+          "props": {
+            "message": "다음 슬라이드 ↓",
+            "variant": "info",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "cursor": "pointer",
+            "textAlign": "center"
+          },
+          "jsActions": [
+            {
+              "id": "aaaaaaaa-3333-4333-8333-333333333333",
+              "event": "click",
+              "code": "builder.scrollTo(\"44444444-4444-4444-8444-444444444444\");",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "targetComponentId": "44444444-4444-4444-8444-444444444444"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "44444444-4444-4444-8444-444444444444",
+      "name": "Slide 4",
+      "type": "container",
+      "order": 3,
+      "props": {
+        "direction": "column",
+        "gap": 16,
+        "justifyContent": "center",
+        "alignItems": "stretch"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "minHeight": "78vh",
+        "padding": "48px 28px",
+        "borderRadius": "18px",
+        "border": "1px solid #dee2e6"
+      },
+      "children": [
+        {
+          "id": "44444444-4444-4444-8444-444444444445",
+          "name": "Slide 4 Title",
+          "type": "heading",
+          "order": 0,
+          "props": {
+            "text": "인터랙션",
+            "level": 2
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "fontSize": "40px"
+          }
+        },
+        {
+          "id": "44444444-4444-4444-8444-444444444446",
+          "name": "Slide 4 Demo",
+          "type": "alert",
+          "order": 1,
+          "props": {
+            "message": "이 박스를 클릭해보세요",
+            "variant": "success",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "cursor": "pointer",
+            "textAlign": "center",
+            "padding": "28px"
+          },
+          "jsActions": [
+            {
+              "id": "aaaaaaaa-4444-4444-8444-444444444444",
+              "event": "click",
+              "code": "builder.toggle(\"44444444-4444-4444-8444-444444444447\");\nbuilder.setStyle(\"44444444-4444-4444-8444-444444444446\", \"border\", \"3px solid #198754\");",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "targetComponentId": "44444444-4444-4444-8444-444444444447"
+            }
+          ]
+        },
+        {
+          "id": "44444444-4444-4444-8444-444444444447",
+          "name": "Slide 4 Hidden Detail",
+          "type": "alert",
+          "order": 2,
+          "props": {
+            "message": "JS Action으로 컴포넌트 표시/숨김, 스타일 변경, 스크롤 이동 등을 연결할 수 있습니다.",
+            "variant": "info",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          }
+        },
+        {
+          "id": "44444444-4444-4444-8444-444444444448",
+          "name": "Next Slide 5",
+          "type": "alert",
+          "order": 3,
+          "props": {
+            "message": "마지막 슬라이드 ↓",
+            "variant": "info",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "cursor": "pointer",
+            "textAlign": "center"
+          },
+          "jsActions": [
+            {
+              "id": "aaaaaaaa-5555-4555-8555-555555555555",
+              "event": "click",
+              "code": "builder.scrollTo(\"55555555-5555-4555-8555-555555555555\");",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "targetComponentId": "55555555-5555-4555-8555-555555555555"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "55555555-5555-4555-8555-555555555555",
+      "name": "Slide 5",
+      "type": "container",
+      "order": 4,
+      "props": {
+        "direction": "column",
+        "gap": 18,
+        "justifyContent": "center",
+        "alignItems": "stretch"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "minHeight": "78vh",
+        "padding": "48px 28px",
+        "borderRadius": "18px",
+        "border": "1px solid #dee2e6"
+      },
+      "children": [
+        {
+          "id": "55555555-5555-4555-8555-555555555556",
+          "name": "Slide 5 Title",
+          "type": "heading",
+          "order": 0,
+          "props": {
+            "text": "BUILD. INTERACT. EXPORT.",
+            "level": 1
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "fontSize": "46px"
+          }
+        },
+        {
+          "id": "55555555-5555-4555-8555-555555555557",
+          "name": "Slide 5 Body",
+          "type": "quill",
+          "order": 1,
+          "props": {
+            "value": "<p style=\"text-align:center;\"><strong>페이지에서 끝나지 않는 페이지 빌더.</strong></p><p style=\"text-align:center;\">랜딩페이지, 폼, 포트폴리오, 프레젠테이션, 간단한 미니게임까지.</p>",
+            "placeholder": "본문을 입력하세요.",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "fontSize": "20px"
+          }
+        },
+        {
+          "id": "55555555-5555-4555-8555-555555555558",
+          "name": "Back To Top",
+          "type": "alert",
+          "order": 2,
+          "props": {
+            "message": "처음으로 ↑",
+            "variant": "success",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "cursor": "pointer",
+            "textAlign": "center"
+          },
+          "jsActions": [
+            {
+              "id": "aaaaaaaa-6666-4666-8666-666666666666",
+              "event": "click",
+              "code": "builder.scrollTo(\"11111111-1111-4111-8111-111111111111\");",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "targetComponentId": "11111111-1111-4111-8111-111111111111"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
