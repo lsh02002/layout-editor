@@ -23,8 +23,7 @@
       "style": {
         "width": "100%",
         "minHeight": "78vh",
-        "position": "relative",
-        "overflow": "hidden"
+        "position": "relative"        
       },
       "children": [
         {
