@@ -21,6 +21,7 @@ import {
 import CanvasComponentContent from "./CanvasComponentContent";
 import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import ComponentDragHandle from "./ComponentDragHandle";
+import { builderState } from "../editor/utils/builderState";
 
 type Props = {
   previewMode: boolean;
@@ -216,6 +217,7 @@ function LayoutComponentNode({
     };
 
     return {
+      state: builderState,
       getElement,
       hide(id: string) {
         const element = getElement(id);

@@ -1,0 +1,890 @@
+{
+  "version": 1,
+  "templateType": "project",
+  "name": "State City Simulation - 12 Turns",
+  "createdAt": "2026-09-12T20:19:12.836062Z",
+  "components": [
+    {
+      "id": "city-stage-9a86e9db",
+      "name": "City Simulation Stage",
+      "type": "container",
+      "order": 0,
+      "props": {
+        "direction": "column",
+        "gap": 0,
+        "justifyContent": "flex-start",
+        "alignItems": "stretch"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "minHeight": "720px",
+        "position": "relative",
+        "overflow": "hidden"
+      },
+      "children": [
+        {
+          "id": "intro-c66b9761",
+          "name": "Intro",
+          "type": "container",
+          "order": 0,
+          "props": {
+            "direction": "column",
+            "gap": 18,
+            "justifyContent": "center",
+            "alignItems": "stretch",
+            "presentationSlide": true
+          },
+          "layout": {
+            "widthMode": "fill",
+            "position": "absolute",
+            "x": 0,
+            "y": 0,
+            "positionParentId": "city-stage-9a86e9db"
+          },
+          "style": {
+            "width": "100%",
+            "minHeight": "720px",
+            "padding": "38px 26px",
+            "boxSizing": "border-box",
+            "opacity": "1",
+            "pointerEvents": "auto",
+            "zIndex": 2,
+            "transition": "opacity 0.25s ease"
+          },
+          "children": [
+            {
+              "id": "heading-c09ed481",
+              "name": "작은 도시 12턴",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "작은 도시 12턴",
+                "level": 1
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "40px"
+              }
+            },
+            {
+              "id": "quill-26eeb4d0",
+              "name": "Rules",
+              "type": "quill",
+              "order": 1,
+              "props": {
+                "value": "<p>당신은 황무지에 세워진 작은 정착지의 시장입니다.</p><p><strong>12턴 안에 인구 90+, 행복도 55+, 자금 120+</strong>을 달성하세요.</p><p>자금·식량·행복도가 바닥나면 즉시 실패합니다.</p>",
+                "placeholder": "",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "16px"
+              }
+            },
+            {
+              "id": "container-f97387be",
+              "name": "Start Controls",
+              "type": "container",
+              "order": 2,
+              "props": {
+                "direction": "row",
+                "gap": 12,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "children": [
+                {
+                  "id": "button-2acaf11f",
+                  "name": "도시 경영 시작",
+                  "type": "button",
+                  "order": 0,
+                  "props": {
+                    "title": "도시 경영 시작",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "auto",
+                    "minWidth": "145px",
+                    "padding": "12px 16px",
+                    "borderRadius": "10px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-cb1d5843",
+                      "event": "click",
+                      "code": "builder.state.reset();\n\nbuilder.state.set(\"money\", 150);\nbuilder.state.set(\"population\", 45);\nbuilder.state.set(\"food\", 70);\nbuilder.state.set(\"happiness\", 60);\nbuilder.state.set(\"turn\", 1);\n\nbuilder.setValue(\"money-b973cf91\", \"💰 자금: \" + builder.state.get(\"money\", 0));\nbuilder.setValue(\"population-26dd6263\", \"👥 인구: \" + builder.state.get(\"population\", 0));\nbuilder.setValue(\"food-172bd344\", \"🌾 식량: \" + builder.state.get(\"food\", 0));\nbuilder.setValue(\"happiness-0f7c6ec7\", \"😊 행복도: \" + builder.state.get(\"happiness\", 0));\nbuilder.setValue(\"turn-64a4838e\", \"📅 턴: \" + builder.state.get(\"turn\", 1) + \" / 12\");\nbuilder.setValue(\"log-038a8cac\", \"작은 정착지가 세워졌습니다. 12턴 안에 도시를 성장시키세요.\");\n\nbuilder.setStyle(\"intro-c66b9761\", \"opacity\", \"0\");\nbuilder.setStyle(\"intro-c66b9761\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"intro-c66b9761\", \"z-index\", \"1\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"2\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"game-ee1d4908\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "game-ee1d4908",
+          "name": "City Simulation",
+          "type": "container",
+          "order": 1,
+          "props": {
+            "direction": "column",
+            "gap": 18,
+            "justifyContent": "center",
+            "alignItems": "stretch",
+            "presentationSlide": true
+          },
+          "layout": {
+            "widthMode": "fill",
+            "position": "absolute",
+            "x": 0,
+            "y": 0,
+            "positionParentId": "city-stage-9a86e9db"
+          },
+          "style": {
+            "width": "100%",
+            "minHeight": "720px",
+            "padding": "38px 26px",
+            "boxSizing": "border-box",
+            "opacity": "0",
+            "pointerEvents": "none",
+            "zIndex": 1,
+            "transition": "opacity 0.25s ease"
+          },
+          "children": [
+            {
+              "id": "heading-505fd8da",
+              "name": "정착지 운영실",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "정착지 운영실",
+                "level": 1
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "34px"
+              }
+            },
+            {
+              "id": "container-d1035e93",
+              "name": "City Status",
+              "type": "container",
+              "order": 1,
+              "props": {
+                "direction": "row",
+                "gap": 10,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "children": [
+                {
+                  "id": "money-b973cf91",
+                  "name": "Money",
+                  "type": "input",
+                  "order": 0,
+                  "props": {
+                    "value": "💰 자금: 150",
+                    "inputType": "text",
+                    "placeholder": "",
+                    "name": "Money",
+                    "disabled": true
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "padding": "10px",
+                    "textAlign": "center",
+                    "borderRadius": "8px"
+                  }
+                },
+                {
+                  "id": "population-26dd6263",
+                  "name": "Population",
+                  "type": "input",
+                  "order": 1,
+                  "props": {
+                    "value": "👥 인구: 45",
+                    "inputType": "text",
+                    "placeholder": "",
+                    "name": "Population",
+                    "disabled": true
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "padding": "10px",
+                    "textAlign": "center",
+                    "borderRadius": "8px"
+                  }
+                },
+                {
+                  "id": "food-172bd344",
+                  "name": "Food",
+                  "type": "input",
+                  "order": 2,
+                  "props": {
+                    "value": "🌾 식량: 70",
+                    "inputType": "text",
+                    "placeholder": "",
+                    "name": "Food",
+                    "disabled": true
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "padding": "10px",
+                    "textAlign": "center",
+                    "borderRadius": "8px"
+                  }
+                },
+                {
+                  "id": "happiness-0f7c6ec7",
+                  "name": "Happiness",
+                  "type": "input",
+                  "order": 3,
+                  "props": {
+                    "value": "😊 행복도: 60",
+                    "inputType": "text",
+                    "placeholder": "",
+                    "name": "Happiness",
+                    "disabled": true
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "padding": "10px",
+                    "textAlign": "center",
+                    "borderRadius": "8px"
+                  }
+                },
+                {
+                  "id": "turn-64a4838e",
+                  "name": "Turn",
+                  "type": "input",
+                  "order": 4,
+                  "props": {
+                    "value": "📅 턴: 1 / 12",
+                    "inputType": "text",
+                    "placeholder": "",
+                    "name": "Turn",
+                    "disabled": true
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "padding": "10px",
+                    "textAlign": "center",
+                    "borderRadius": "8px"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "quill-d1c0078a",
+              "name": "Simulation Hint",
+              "type": "quill",
+              "order": 2,
+              "props": {
+                "value": "<p>매 행동마다 1턴이 흐릅니다. <strong>4턴마다 인구 비례 식량 유지비</strong>가 자동으로 빠집니다.</p><p>정책 결정은 행복도 70 이상이면 이주 장려, 그 미만이면 복지 정책으로 작동합니다.</p>",
+                "placeholder": "",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "16px"
+              }
+            },
+            {
+              "id": "log-038a8cac",
+              "name": "Event Log",
+              "type": "input",
+              "order": 3,
+              "props": {
+                "value": "도시 운영을 시작하세요.",
+                "inputType": "text",
+                "placeholder": "",
+                "name": "Event Log",
+                "disabled": true
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%",
+                "padding": "10px",
+                "textAlign": "center",
+                "borderRadius": "8px"
+              }
+            },
+            {
+              "id": "container-933d283d",
+              "name": "Development Actions",
+              "type": "container",
+              "order": 4,
+              "props": {
+                "direction": "row",
+                "gap": 12,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "children": [
+                {
+                  "id": "button-267ce5ef",
+                  "name": "🌾 농장 확장",
+                  "type": "button",
+                  "order": 0,
+                  "props": {
+                    "title": "🌾 농장 확장",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "auto",
+                    "minWidth": "145px",
+                    "padding": "12px 16px",
+                    "borderRadius": "10px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-d05414ca",
+                      "event": "click",
+                      "code": "builder.state.add(\"money\", -25);\nbuilder.state.add(\"population\", 0);\nbuilder.state.add(\"food\", 35);\nbuilder.state.add(\"happiness\", 2);\n\nbuilder.state.add(\"turn\", 1);\n\nconst currentTurn = builder.state.get(\"turn\", 1);\n\n// 매 4턴 유지비: 인구에 따라 식량 소비\nif ((currentTurn - 1) % 4 === 0) {\n  const upkeep = Math.max(5, Math.floor(builder.state.get(\"population\", 0) / 8));\n  builder.state.add(\"food\", -upkeep);\n}\n\nbuilder.setValue(\"money-b973cf91\", \"💰 자금: \" + builder.state.get(\"money\", 0));\nbuilder.setValue(\"population-26dd6263\", \"👥 인구: \" + builder.state.get(\"population\", 0));\nbuilder.setValue(\"food-172bd344\", \"🌾 식량: \" + builder.state.get(\"food\", 0));\nbuilder.setValue(\"happiness-0f7c6ec7\", \"😊 행복도: \" + builder.state.get(\"happiness\", 0));\nbuilder.setValue(\"turn-64a4838e\", \"📅 턴: \" + builder.state.get(\"turn\", 1) + \" / 12\");\nbuilder.setValue(\"log-038a8cac\", \"농장을 확장했습니다. 식량 +35, 자금 -25\");\nconst money = builder.state.get(\"money\", 0);\nconst population = builder.state.get(\"population\", 0);\nconst food = builder.state.get(\"food\", 0);\nconst happiness = builder.state.get(\"happiness\", 0);\nconst turn = builder.state.get(\"turn\", 1);\n\nif (money < 0 || food < 0 || happiness <= 0 || population <= 0) {\n  await builder.delay(250);\n  builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-329e8e3e\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-329e8e3e\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-329e8e3e\", \"opacity\", \"1\");\n} else if (turn > 12) {\n  await builder.delay(250);\n\n  if (population >= 90 && happiness >= 55 && money >= 120) {\n    builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"win-db783719\", \"z-index\", \"2\");\nbuilder.setStyle(\"win-db783719\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"win-db783719\", \"opacity\", \"1\");\n  } else {\n    builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-329e8e3e\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-329e8e3e\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-329e8e3e\", \"opacity\", \"1\");\n  }\n}",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                },
+                {
+                  "id": "button-761cc9b3",
+                  "name": "🏠 주택 건설",
+                  "type": "button",
+                  "order": 1,
+                  "props": {
+                    "title": "🏠 주택 건설",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "auto",
+                    "minWidth": "145px",
+                    "padding": "12px 16px",
+                    "borderRadius": "10px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-4a21ec83",
+                      "event": "click",
+                      "code": "builder.state.add(\"money\", -40);\nbuilder.state.add(\"population\", 18);\nbuilder.state.add(\"food\", -5);\nbuilder.state.add(\"happiness\", -2);\n\nbuilder.state.add(\"turn\", 1);\n\nconst currentTurn = builder.state.get(\"turn\", 1);\n\n// 매 4턴 유지비: 인구에 따라 식량 소비\nif ((currentTurn - 1) % 4 === 0) {\n  const upkeep = Math.max(5, Math.floor(builder.state.get(\"population\", 0) / 8));\n  builder.state.add(\"food\", -upkeep);\n}\n\nbuilder.setValue(\"money-b973cf91\", \"💰 자금: \" + builder.state.get(\"money\", 0));\nbuilder.setValue(\"population-26dd6263\", \"👥 인구: \" + builder.state.get(\"population\", 0));\nbuilder.setValue(\"food-172bd344\", \"🌾 식량: \" + builder.state.get(\"food\", 0));\nbuilder.setValue(\"happiness-0f7c6ec7\", \"😊 행복도: \" + builder.state.get(\"happiness\", 0));\nbuilder.setValue(\"turn-64a4838e\", \"📅 턴: \" + builder.state.get(\"turn\", 1) + \" / 12\");\nbuilder.setValue(\"log-038a8cac\", \"주택 단지를 건설했습니다. 인구 +18, 자금 -40\");\nconst money = builder.state.get(\"money\", 0);\nconst population = builder.state.get(\"population\", 0);\nconst food = builder.state.get(\"food\", 0);\nconst happiness = builder.state.get(\"happiness\", 0);\nconst turn = builder.state.get(\"turn\", 1);\n\nif (money < 0 || food < 0 || happiness <= 0 || population <= 0) {\n  await builder.delay(250);\n  builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-329e8e3e\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-329e8e3e\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-329e8e3e\", \"opacity\", \"1\");\n} else if (turn > 12) {\n  await builder.delay(250);\n\n  if (population >= 90 && happiness >= 55 && money >= 120) {\n    builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"win-db783719\", \"z-index\", \"2\");\nbuilder.setStyle(\"win-db783719\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"win-db783719\", \"opacity\", \"1\");\n  } else {\n    builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-329e8e3e\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-329e8e3e\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-329e8e3e\", \"opacity\", \"1\");\n  }\n}",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                },
+                {
+                  "id": "button-18796d85",
+                  "name": "🏪 시장 활성화",
+                  "type": "button",
+                  "order": 2,
+                  "props": {
+                    "title": "🏪 시장 활성화",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "auto",
+                    "minWidth": "145px",
+                    "padding": "12px 16px",
+                    "borderRadius": "10px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-d21b412c",
+                      "event": "click",
+                      "code": "builder.state.add(\"money\", 25);\nbuilder.state.add(\"population\", 6);\nbuilder.state.add(\"food\", -4);\nbuilder.state.add(\"happiness\", 4);\n\nbuilder.state.add(\"turn\", 1);\n\nconst currentTurn = builder.state.get(\"turn\", 1);\n\n// 매 4턴 유지비: 인구에 따라 식량 소비\nif ((currentTurn - 1) % 4 === 0) {\n  const upkeep = Math.max(5, Math.floor(builder.state.get(\"population\", 0) / 8));\n  builder.state.add(\"food\", -upkeep);\n}\n\nbuilder.setValue(\"money-b973cf91\", \"💰 자금: \" + builder.state.get(\"money\", 0));\nbuilder.setValue(\"population-26dd6263\", \"👥 인구: \" + builder.state.get(\"population\", 0));\nbuilder.setValue(\"food-172bd344\", \"🌾 식량: \" + builder.state.get(\"food\", 0));\nbuilder.setValue(\"happiness-0f7c6ec7\", \"😊 행복도: \" + builder.state.get(\"happiness\", 0));\nbuilder.setValue(\"turn-64a4838e\", \"📅 턴: \" + builder.state.get(\"turn\", 1) + \" / 12\");\nbuilder.setValue(\"log-038a8cac\", \"시장을 활성화했습니다. 자금 +25, 인구 +6\");\nconst money = builder.state.get(\"money\", 0);\nconst population = builder.state.get(\"population\", 0);\nconst food = builder.state.get(\"food\", 0);\nconst happiness = builder.state.get(\"happiness\", 0);\nconst turn = builder.state.get(\"turn\", 1);\n\nif (money < 0 || food < 0 || happiness <= 0 || population <= 0) {\n  await builder.delay(250);\n  builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-329e8e3e\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-329e8e3e\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-329e8e3e\", \"opacity\", \"1\");\n} else if (turn > 12) {\n  await builder.delay(250);\n\n  if (population >= 90 && happiness >= 55 && money >= 120) {\n    builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"win-db783719\", \"z-index\", \"2\");\nbuilder.setStyle(\"win-db783719\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"win-db783719\", \"opacity\", \"1\");\n  } else {\n    builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-329e8e3e\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-329e8e3e\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-329e8e3e\", \"opacity\", \"1\");\n  }\n}",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "container-1c03ad7a",
+              "name": "Policy Actions",
+              "type": "container",
+              "order": 5,
+              "props": {
+                "direction": "row",
+                "gap": 12,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "children": [
+                {
+                  "id": "button-e3b59203",
+                  "name": "💸 세금 인상",
+                  "type": "button",
+                  "order": 0,
+                  "props": {
+                    "title": "💸 세금 인상",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "auto",
+                    "minWidth": "145px",
+                    "padding": "12px 16px",
+                    "borderRadius": "10px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-9ba00c53",
+                      "event": "click",
+                      "code": "builder.state.add(\"money\", 45);\nbuilder.state.add(\"population\", 0);\nbuilder.state.add(\"food\", 0);\nbuilder.state.add(\"happiness\", -10);\n\nbuilder.state.add(\"turn\", 1);\n\nconst currentTurn = builder.state.get(\"turn\", 1);\n\n// 매 4턴 유지비: 인구에 따라 식량 소비\nif ((currentTurn - 1) % 4 === 0) {\n  const upkeep = Math.max(5, Math.floor(builder.state.get(\"population\", 0) / 8));\n  builder.state.add(\"food\", -upkeep);\n}\n\nbuilder.setValue(\"money-b973cf91\", \"💰 자금: \" + builder.state.get(\"money\", 0));\nbuilder.setValue(\"population-26dd6263\", \"👥 인구: \" + builder.state.get(\"population\", 0));\nbuilder.setValue(\"food-172bd344\", \"🌾 식량: \" + builder.state.get(\"food\", 0));\nbuilder.setValue(\"happiness-0f7c6ec7\", \"😊 행복도: \" + builder.state.get(\"happiness\", 0));\nbuilder.setValue(\"turn-64a4838e\", \"📅 턴: \" + builder.state.get(\"turn\", 1) + \" / 12\");\nbuilder.setValue(\"log-038a8cac\", \"세금을 인상했습니다. 자금 +45, 행복도 -10\");\nconst money = builder.state.get(\"money\", 0);\nconst population = builder.state.get(\"population\", 0);\nconst food = builder.state.get(\"food\", 0);\nconst happiness = builder.state.get(\"happiness\", 0);\nconst turn = builder.state.get(\"turn\", 1);\n\nif (money < 0 || food < 0 || happiness <= 0 || population <= 0) {\n  await builder.delay(250);\n  builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-329e8e3e\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-329e8e3e\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-329e8e3e\", \"opacity\", \"1\");\n} else if (turn > 12) {\n  await builder.delay(250);\n\n  if (population >= 90 && happiness >= 55 && money >= 120) {\n    builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"win-db783719\", \"z-index\", \"2\");\nbuilder.setStyle(\"win-db783719\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"win-db783719\", \"opacity\", \"1\");\n  } else {\n    builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-329e8e3e\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-329e8e3e\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-329e8e3e\", \"opacity\", \"1\");\n  }\n}",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                },
+                {
+                  "id": "button-e8d6558d",
+                  "name": "🎉 축제 개최",
+                  "type": "button",
+                  "order": 1,
+                  "props": {
+                    "title": "🎉 축제 개최",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "auto",
+                    "minWidth": "145px",
+                    "padding": "12px 16px",
+                    "borderRadius": "10px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-34496466",
+                      "event": "click",
+                      "code": "builder.state.add(\"money\", -30);\nbuilder.state.add(\"population\", 0);\nbuilder.state.add(\"food\", -8);\nbuilder.state.add(\"happiness\", 18);\n\nbuilder.state.add(\"turn\", 1);\n\nconst currentTurn = builder.state.get(\"turn\", 1);\n\n// 매 4턴 유지비: 인구에 따라 식량 소비\nif ((currentTurn - 1) % 4 === 0) {\n  const upkeep = Math.max(5, Math.floor(builder.state.get(\"population\", 0) / 8));\n  builder.state.add(\"food\", -upkeep);\n}\n\nbuilder.setValue(\"money-b973cf91\", \"💰 자금: \" + builder.state.get(\"money\", 0));\nbuilder.setValue(\"population-26dd6263\", \"👥 인구: \" + builder.state.get(\"population\", 0));\nbuilder.setValue(\"food-172bd344\", \"🌾 식량: \" + builder.state.get(\"food\", 0));\nbuilder.setValue(\"happiness-0f7c6ec7\", \"😊 행복도: \" + builder.state.get(\"happiness\", 0));\nbuilder.setValue(\"turn-64a4838e\", \"📅 턴: \" + builder.state.get(\"turn\", 1) + \" / 12\");\nbuilder.setValue(\"log-038a8cac\", \"축제를 열었습니다. 행복도 +18, 자금 -30, 식량 -8\");\nconst money = builder.state.get(\"money\", 0);\nconst population = builder.state.get(\"population\", 0);\nconst food = builder.state.get(\"food\", 0);\nconst happiness = builder.state.get(\"happiness\", 0);\nconst turn = builder.state.get(\"turn\", 1);\n\nif (money < 0 || food < 0 || happiness <= 0 || population <= 0) {\n  await builder.delay(250);\n  builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-329e8e3e\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-329e8e3e\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-329e8e3e\", \"opacity\", \"1\");\n} else if (turn > 12) {\n  await builder.delay(250);\n\n  if (population >= 90 && happiness >= 55 && money >= 120) {\n    builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"win-db783719\", \"z-index\", \"2\");\nbuilder.setStyle(\"win-db783719\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"win-db783719\", \"opacity\", \"1\");\n  } else {\n    builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-329e8e3e\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-329e8e3e\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-329e8e3e\", \"opacity\", \"1\");\n  }\n}",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                },
+                {
+                  "id": "button-d81ea956",
+                  "name": "📜 정책 결정",
+                  "type": "button",
+                  "order": 2,
+                  "props": {
+                    "title": "📜 정책 결정",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "auto",
+                    "minWidth": "145px",
+                    "padding": "12px 16px",
+                    "borderRadius": "10px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-7ab8e99c",
+                      "event": "click",
+                      "code": "const happiness = builder.state.get(\"happiness\", 0);\n\nif (happiness >= 70) {\n  builder.state.add(\"population\", 12);\n  builder.state.add(\"money\", 15);\n  builder.setValue(\"log-038a8cac\", \"이주 장려 성공! 인구 +12, 자금 +15\");\n} else {\n  builder.state.add(\"money\", -15);\n  builder.state.add(\"happiness\", 8);\n  builder.setValue(\"log-038a8cac\", \"복지 정책 시행. 행복도 +8, 자금 -15\");\n}\n\nbuilder.state.add(\"turn\", 1);\n\nconst currentTurn = builder.state.get(\"turn\", 1);\nif ((currentTurn - 1) % 4 === 0) {\n  const upkeep = Math.max(\n    5,\n    Math.floor(\n      builder.state.get(\"population\", 0) / 8\n    )\n  );\n  builder.state.add(\"food\", -upkeep);\n}\n\nbuilder.setValue(\"money-b973cf91\", \"💰 자금: \" + builder.state.get(\"money\", 0));\nbuilder.setValue(\"population-26dd6263\", \"👥 인구: \" + builder.state.get(\"population\", 0));\nbuilder.setValue(\"food-172bd344\", \"🌾 식량: \" + builder.state.get(\"food\", 0));\nbuilder.setValue(\"happiness-0f7c6ec7\", \"😊 행복도: \" + builder.state.get(\"happiness\", 0));\nbuilder.setValue(\"turn-64a4838e\", \"📅 턴: \" + builder.state.get(\"turn\", 1) + \" / 12\");\nbuilder.setValue(\"log-038a8cac\", builder.getValue(\"log-038a8cac\"));\nconst money = builder.state.get(\"money\", 0);\nconst population = builder.state.get(\"population\", 0);\nconst food = builder.state.get(\"food\", 0);\nconst happiness = builder.state.get(\"happiness\", 0);\nconst turn = builder.state.get(\"turn\", 1);\n\nif (money < 0 || food < 0 || happiness <= 0 || population <= 0) {\n  await builder.delay(250);\n  builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-329e8e3e\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-329e8e3e\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-329e8e3e\", \"opacity\", \"1\");\n} else if (turn > 12) {\n  await builder.delay(250);\n\n  if (population >= 90 && happiness >= 55 && money >= 120) {\n    builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"win-db783719\", \"z-index\", \"2\");\nbuilder.setStyle(\"win-db783719\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"win-db783719\", \"opacity\", \"1\");\n  } else {\n    builder.setStyle(\"game-ee1d4908\", \"opacity\", \"0\");\nbuilder.setStyle(\"game-ee1d4908\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"game-ee1d4908\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-329e8e3e\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-329e8e3e\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-329e8e3e\", \"opacity\", \"1\");\n  }\n}",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "win-db783719",
+          "name": "Victory",
+          "type": "container",
+          "order": 2,
+          "props": {
+            "direction": "column",
+            "gap": 18,
+            "justifyContent": "center",
+            "alignItems": "stretch",
+            "presentationSlide": true
+          },
+          "layout": {
+            "widthMode": "fill",
+            "position": "absolute",
+            "x": 0,
+            "y": 0,
+            "positionParentId": "city-stage-9a86e9db"
+          },
+          "style": {
+            "width": "100%",
+            "minHeight": "720px",
+            "padding": "38px 26px",
+            "boxSizing": "border-box",
+            "opacity": "0",
+            "pointerEvents": "none",
+            "zIndex": 1,
+            "transition": "opacity 0.25s ease"
+          },
+          "children": [
+            {
+              "id": "heading-14512752",
+              "name": "🏆 번영하는 도시!",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "🏆 번영하는 도시!",
+                "level": 1
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "42px"
+              }
+            },
+            {
+              "id": "quill-65eaa453",
+              "name": "Victory Text",
+              "type": "quill",
+              "order": 1,
+              "props": {
+                "value": "<p>12턴의 위기를 버티고 정착지를 번영하는 도시로 성장시켰습니다.</p><p><strong>STATE 기반 도시 시뮬레이션 성공</strong></p>",
+                "placeholder": "",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "16px"
+              }
+            },
+            {
+              "id": "container-a7b73344",
+              "name": "Win Controls",
+              "type": "container",
+              "order": 2,
+              "props": {
+                "direction": "row",
+                "gap": 12,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "children": [
+                {
+                  "id": "button-e1b159e1",
+                  "name": "다시 플레이",
+                  "type": "button",
+                  "order": 0,
+                  "props": {
+                    "title": "다시 플레이",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "auto",
+                    "minWidth": "145px",
+                    "padding": "12px 16px",
+                    "borderRadius": "10px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-4532ceb3",
+                      "event": "click",
+                      "code": "builder.state.reset();\nbuilder.setStyle(\"win-db783719\", \"opacity\", \"0\");\nbuilder.setStyle(\"win-db783719\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"win-db783719\", \"z-index\", \"1\");\nbuilder.setStyle(\"intro-c66b9761\", \"z-index\", \"2\");\nbuilder.setStyle(\"intro-c66b9761\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"intro-c66b9761\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "lose-329e8e3e",
+          "name": "Defeat",
+          "type": "container",
+          "order": 3,
+          "props": {
+            "direction": "column",
+            "gap": 18,
+            "justifyContent": "center",
+            "alignItems": "stretch",
+            "presentationSlide": true
+          },
+          "layout": {
+            "widthMode": "fill",
+            "position": "absolute",
+            "x": 0,
+            "y": 0,
+            "positionParentId": "city-stage-9a86e9db"
+          },
+          "style": {
+            "width": "100%",
+            "minHeight": "720px",
+            "padding": "38px 26px",
+            "boxSizing": "border-box",
+            "opacity": "0",
+            "pointerEvents": "none",
+            "zIndex": 1,
+            "transition": "opacity 0.25s ease"
+          },
+          "children": [
+            {
+              "id": "heading-b7b61852",
+              "name": "⚠ 도시 운영 실패",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "⚠ 도시 운영 실패",
+                "level": 1
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "42px"
+              }
+            },
+            {
+              "id": "quill-583acf89",
+              "name": "Lose Text",
+              "type": "quill",
+              "order": 1,
+              "props": {
+                "value": "<p>자원 균형이 무너지거나 12턴 목표를 달성하지 못했습니다.</p><p>농장·주택·세금·축제의 타이밍을 바꿔 다시 도전해보세요.</p>",
+                "placeholder": "",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "16px"
+              }
+            },
+            {
+              "id": "container-5c0f3918",
+              "name": "Lose Controls",
+              "type": "container",
+              "order": 2,
+              "props": {
+                "direction": "row",
+                "gap": 12,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "children": [
+                {
+                  "id": "button-144f1080",
+                  "name": "다시 도전",
+                  "type": "button",
+                  "order": 0,
+                  "props": {
+                    "title": "다시 도전",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "auto",
+                    "minWidth": "145px",
+                    "padding": "12px 16px",
+                    "borderRadius": "10px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-0b9914c7",
+                      "event": "click",
+                      "code": "builder.state.reset();\nbuilder.setStyle(\"lose-329e8e3e\", \"opacity\", \"0\");\nbuilder.setStyle(\"lose-329e8e3e\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"lose-329e8e3e\", \"z-index\", \"1\");\nbuilder.setStyle(\"intro-c66b9761\", \"z-index\", \"2\");\nbuilder.setStyle(\"intro-c66b9761\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"intro-c66b9761\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

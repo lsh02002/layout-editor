@@ -9,6 +9,7 @@ import type { ComponentLayout, LayoutComponent } from "../../types/types";
 import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import LayoutComponentNode from "./LayoutComponentNode";
 import { findComponentRecursive } from "../editor/utils/componentTree";
+import { resetBuilderState } from "../editor/utils/builderState";
 
 type Props = {
   previewMode: boolean;
@@ -188,6 +189,13 @@ function BuilderCanvas({
         }
       });
   }, [components, previewMode]);
+
+  useEffect(() => {
+    if (!previewMode) {
+      return;
+    }
+    resetBuilderState();
+  }, [previewMode]);
 
   return (
     <div

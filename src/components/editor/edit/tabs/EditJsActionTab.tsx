@@ -606,6 +606,39 @@ export const EditJsActionTab = ({
                 >
                   If Checked
                 </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={() =>
+                    appendCode(action.id, `builder.state.set("key", "value");`)
+                  }
+                >
+                  State 설정
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-success btn-sm"
+                  onClick={() =>
+                    appendCode(
+                      action.id,
+                      `const value = builder.state.get("key");`,
+                    )
+                  }
+                >
+                  State 가져오기
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={() =>
+                    appendCode(action.id, `builder.state.add("count", 1);`)
+                  }
+                >
+                  State 증감
+                </button>
               </div>
             </div>
 

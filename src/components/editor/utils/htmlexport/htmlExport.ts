@@ -268,6 +268,77 @@ export const buildHtmlDocument = async (
 
       attachAbsoluteComponents();
 
+      const builderStateStore = new Map();
+
+      const builderState = {
+        get(key, fallback) {
+          if (!builderStateStore.has(key)) {
+            return fallback;
+          }
+
+          return builderStateStore.get(key);
+        },
+
+        set(key, value) {
+          builderStateStore.set(key, value);
+          return value;
+        },
+
+        has(key) {
+          return builderStateStore.has(key);
+        },
+
+        add(key, amount = 1) {
+          const current = Number(
+            builderStateStore.get(key) ?? 0
+          );
+
+          const next =
+            (
+              Number.isFinite(current)
+                ? current
+                : 0
+            ) + amount;
+
+          builderStateStore.set(
+            key,
+            next
+          );
+
+          return next;
+        },
+
+        toggle(key) {
+          const next =
+            !Boolean(
+              builderStateStore.get(key)
+            );
+
+          builderStateStore.set(
+            key,
+            next
+          );
+
+          return next;
+        },
+
+        remove(key) {
+          return builderStateStore.delete(
+            key
+          );
+        },
+
+        reset() {
+          builderStateStore.clear();
+        },
+
+        all() {
+          return Object.fromEntries(
+            builderStateStore.entries()
+          );
+        },
+      };
+
       const createBuilderApi = () => {
         const getElement = (id) =>
           document.querySelector(
@@ -317,6 +388,8 @@ export const buildHtmlDocument = async (
         };
 
         return {
+          state: builderState,
+
           getElement,
 
           show(id) {
