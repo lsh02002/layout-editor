@@ -146,16 +146,18 @@ function CanvasDropZone({
 
       <button
         type="button"
-        className="btn btn-light btn-sm"
+        className="btn btn-sm"
         style={{
           width: 24,
           height: 24,
           minWidth: 24,
           minHeight: 24,
           padding: 0,
-          border: !previewMode ? "1px solid #cbd5e1" : "1px solid transparent",
+          border: !previewMode
+            ? `1px solid ${hovered || isActive ? "#3b82f6" : "#cbd5e1"}`
+            : "1px solid transparent",
           borderRadius: 6,
-          color: "#64748b",
+          color: hovered || isActive ? "#2563eb" : "#64748b",
           pointerEvents: draggingIds.length > 0 ? "none" : "auto",
           transform: hovered || isActive ? "scale(1.08)" : "scale(1)",
           touchAction: "manipulation",
