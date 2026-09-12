@@ -911,78 +911,82 @@ function LayoutComponentNode({
             outlineOffset: !previewMode && isSelected ? "2px" : "-1px",
           }}
         >
-          {children.length === 0 && (
+          <div style={{ position: "relative", width: "100%" }}>
+            {dragHandleView}
+
+            {children.length === 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: component.props.gap ?? 8,
+                  width: "100%",
+                  minWidth: 0,
+                }}
+              >
+                <CanvasDropZone
+                  previewMode={previewMode}
+                  parentId={component.id}
+                  index={0}
+                  direction="column"
+                  draggingIds={draggingIds}
+                  activeDropTarget={activeDropTarget}
+                  setActiveDropTarget={setActiveDropTarget}
+                  onDrop={onDrop}
+                  onCreate={onCreate}
+                />
+              </div>
+            )}
+
             <div
               style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: component.props.gap ?? 8,
+                display: "grid",
+                gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+                gap,
                 width: "100%",
                 minWidth: 0,
+                position: "relative",
               }}
             >
-              <CanvasDropZone
-                previewMode={previewMode}
-                parentId={component.id}
-                index={0}
-                direction="column"
-                draggingIds={draggingIds}
-                activeDropTarget={activeDropTarget}
-                setActiveDropTarget={setActiveDropTarget}
-                onDrop={onDrop}
-                onCreate={onCreate}
-              />
-            </div>
-          )}
+              {children.map((child, index) => {
+                const childIsAbsolute = child.layout?.position === "absolute";
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-              gap,
-              width: "100%",
-              minWidth: 0,
-              position: "relative",
-            }}
-          >
-            {children.map((child, index) => {
-              const childIsAbsolute = child.layout?.position === "absolute";
+                if (childIsAbsolute) {
+                  return (
+                    <div key={child.id} style={{ display: "contents" }}>
+                      {renderChildNode(child)}
+                    </div>
+                  );
+                }
 
-              if (childIsAbsolute) {
                 return (
-                  <div key={child.id} style={{ display: "contents" }}>
+                  <div
+                    key={child.id}
+                    style={{
+                      minWidth: 0,
+                      maxWidth: "100%",
+                      width: "100%",
+                    }}
+                  >
                     {renderChildNode(child)}
+
+                    {child.type !== "scrollToTopButton" && (
+                      <CanvasDropZone
+                        previewMode={previewMode}
+                        parentId={component.id}
+                        index={index + 1}
+                        direction="column"
+                        draggingIds={draggingIds}
+                        activeDropTarget={activeDropTarget}
+                        setActiveDropTarget={setActiveDropTarget}
+                        onDrop={onDrop}
+                        onCreate={onCreate}
+                      />
+                    )}
                   </div>
                 );
-              }
-
-              return (
-                <div
-                  key={child.id}
-                  style={{
-                    minWidth: 0,
-                    maxWidth: "100%",
-                    width: "100%",
-                  }}
-                >
-                  {renderChildNode(child)}
-
-                  {child.type !== "scrollToTopButton" && (
-                    <CanvasDropZone
-                      previewMode={previewMode}
-                      parentId={component.id}
-                      index={index + 1}
-                      direction="column"
-                      draggingIds={draggingIds}
-                      activeDropTarget={activeDropTarget}
-                      setActiveDropTarget={setActiveDropTarget}
-                      onDrop={onDrop}
-                      onCreate={onCreate}
-                    />
-                  )}
-                </div>
-              );
-            })}
+              })}
+            </div>
           </div>
         </DivBox>
       </div>,
