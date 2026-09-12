@@ -8,6 +8,7 @@ import {
 import type { ComponentLayout, LayoutComponent } from "../../types/types";
 import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import LayoutComponentNode from "./LayoutComponentNode";
+import { findComponentRecursive } from "../editor/utils/componentTree";
 
 type Props = {
   previewMode: boolean;
@@ -107,6 +108,23 @@ function BuilderCanvas({
             element.removeAttribute("style");
           }
           delete element.dataset.builderOriginalStyle;
+
+          const componentRoot = element.closest<HTMLElement>(
+            "[data-component-id]",
+          );
+
+          const componentId = componentRoot?.dataset.componentId;
+          if (componentId) {
+            const component = findComponentRecursive(components, componentId);
+            if (
+              component?.type === "container" &&
+              component.props.presentationSlide === true
+            ) {
+              element.style.opacity = "1";
+              element.style.pointerEvents = "auto";
+              element.style.zIndex = "auto";
+            }
+          }
         }
         // class 복원
         if (element.dataset.builderOriginalClass !== undefined) {
@@ -169,7 +187,7 @@ function BuilderCanvas({
           delete element.dataset.builderOriginalChecked;
         }
       });
-  }, [previewMode]);
+  }, [components, previewMode]);
 
   return (
     <div
