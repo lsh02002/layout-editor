@@ -1,0 +1,287 @@
+{
+  "version": 1,
+  "templateType": "project",
+  "name": "보물상자 미니게임 예제",
+  "createdAt": "2026-09-12T05:05:00.000Z",
+  "components": [
+    {
+      "id": "g1111111-1111-4111-8111-111111111111",
+      "name": "Game Title",
+      "type": "heading",
+      "order": 0,
+      "props": {
+        "text": "TREASURE BOX GAME",
+        "level": 1
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "padding": "28px 16px 6px"
+      },
+      "contentStyle": {
+        "textAlign": "center",
+        "fontSize": "42px"
+      }
+    },
+    {
+      "id": "g2222222-2222-4222-8222-222222222222",
+      "name": "Game Intro",
+      "type": "quill",
+      "order": 1,
+      "props": {
+        "value": "<p style=\"text-align:center;\"><strong>보물은 세 상자 중 하나에 숨어 있습니다.</strong></p><p style=\"text-align:center;\">미리보기 모드에서 상자 하나를 클릭해보세요.</p>",
+        "placeholder": "본문을 입력하세요.",
+        "disabled": false
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%"
+      },
+      "contentStyle": {
+        "textAlign": "center",
+        "fontSize": "17px"
+      }
+    },
+    {
+      "id": "g3000000-0000-4000-8000-000000000000",
+      "name": "Game Area",
+      "type": "container",
+      "order": 2,
+      "props": {
+        "direction": "row",
+        "gap": 12,
+        "justifyContent": "center",
+        "alignItems": "stretch"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "minHeight": 20
+      },
+      "children": [
+        {
+          "id": "g3111111-1111-4111-8111-111111111111",
+          "name": "Chest A",
+          "type": "alert",
+          "order": 0,
+          "props": {
+            "message": "📦 상자 A",
+            "variant": "info",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "margin": "0",
+            "cursor": "pointer",
+            "textAlign": "center",
+            "padding": "24px"
+          },
+          "jsActions": [
+            {
+              "id": "ga111111-1111-4111-8111-111111111111",
+              "event": "click",
+              "code": "if (!window.__treasureBoxGame) { window.__treasureBoxGame = { answer: Math.floor(Math.random() * 3), locked: false }; }\nconst game = window.__treasureBoxGame;\nif (game.locked) return;\ngame.locked = true;\n['g3111111-1111-4111-8111-111111111111','g3222222-2222-4222-8222-222222222222','g3333333-3333-4333-8333-333333333333'].forEach(id => builder.setStyle(id,'opacity','0.35'));\nbuilder.setStyle('g4111111-1111-4111-8111-111111111111','opacity','0.25');\nbuilder.setStyle('g4222222-2222-4222-8222-222222222222','opacity','0.25');\nif (game.answer === 0) { builder.setStyle('g3111111-1111-4111-8111-111111111111','opacity','1'); builder.setStyle('g3111111-1111-4111-8111-111111111111','border','3px solid #198754'); builder.setStyle('g4111111-1111-4111-8111-111111111111','opacity','1'); builder.setStyle('g4111111-1111-4111-8111-111111111111','border','3px solid #198754'); } else { builder.setStyle('g3111111-1111-4111-8111-111111111111','opacity','1'); builder.setStyle('g3111111-1111-4111-8111-111111111111','border','3px solid #dc3545'); builder.setStyle('g4222222-2222-4222-8222-222222222222','opacity','1'); builder.setStyle('g4222222-2222-4222-8222-222222222222','border','3px solid #dc3545'); const win = game.answer===1 ? 'g3222222-2222-4222-8222-222222222222' : 'g3333333-3333-4333-8333-333333333333'; builder.setStyle(win,'opacity','1'); builder.setStyle(win,'border','3px solid #198754'); }\nbuilder.scrollTo('g4000000-0000-4000-8000-000000000000');",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "targetComponentId": "g4000000-0000-4000-8000-000000000000"
+            }
+          ]
+        },
+        {
+          "id": "g3222222-2222-4222-8222-222222222222",
+          "name": "Chest B",
+          "type": "alert",
+          "order": 1,
+          "props": {
+            "message": "📦 상자 B",
+            "variant": "info",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "margin": "0",
+            "cursor": "pointer",
+            "textAlign": "center",
+            "padding": "24px"
+          },
+          "jsActions": [
+            {
+              "id": "ga222222-2222-4222-8222-222222222222",
+              "event": "click",
+              "code": "if (!window.__treasureBoxGame) { window.__treasureBoxGame = { answer: Math.floor(Math.random() * 3), locked: false }; }\nconst game = window.__treasureBoxGame;\nif (game.locked) return;\ngame.locked = true;\n['g3111111-1111-4111-8111-111111111111','g3222222-2222-4222-8222-222222222222','g3333333-3333-4333-8333-333333333333'].forEach(id => builder.setStyle(id,'opacity','0.35'));\nbuilder.setStyle('g4111111-1111-4111-8111-111111111111','opacity','0.25');\nbuilder.setStyle('g4222222-2222-4222-8222-222222222222','opacity','0.25');\nif (game.answer === 1) { builder.setStyle('g3222222-2222-4222-8222-222222222222','opacity','1'); builder.setStyle('g3222222-2222-4222-8222-222222222222','border','3px solid #198754'); builder.setStyle('g4111111-1111-4111-8111-111111111111','opacity','1'); builder.setStyle('g4111111-1111-4111-8111-111111111111','border','3px solid #198754'); } else { builder.setStyle('g3222222-2222-4222-8222-222222222222','opacity','1'); builder.setStyle('g3222222-2222-4222-8222-222222222222','border','3px solid #dc3545'); builder.setStyle('g4222222-2222-4222-8222-222222222222','opacity','1'); builder.setStyle('g4222222-2222-4222-8222-222222222222','border','3px solid #dc3545'); const win = game.answer===0 ? 'g3111111-1111-4111-8111-111111111111' : 'g3333333-3333-4333-8333-333333333333'; builder.setStyle(win,'opacity','1'); builder.setStyle(win,'border','3px solid #198754'); }\nbuilder.scrollTo('g4000000-0000-4000-8000-000000000000');",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "targetComponentId": "g4000000-0000-4000-8000-000000000000"
+            }
+          ]
+        },
+        {
+          "id": "g3333333-3333-4333-8333-333333333333",
+          "name": "Chest C",
+          "type": "alert",
+          "order": 2,
+          "props": {
+            "message": "📦 상자 C",
+            "variant": "info",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "margin": "0",
+            "cursor": "pointer",
+            "textAlign": "center",
+            "padding": "24px"
+          },
+          "jsActions": [
+            {
+              "id": "ga333333-3333-4333-8333-333333333333",
+              "event": "click",
+              "code": "if (!window.__treasureBoxGame) { window.__treasureBoxGame = { answer: Math.floor(Math.random() * 3), locked: false }; }\nconst game = window.__treasureBoxGame;\nif (game.locked) return;\ngame.locked = true;\n['g3111111-1111-4111-8111-111111111111','g3222222-2222-4222-8222-222222222222','g3333333-3333-4333-8333-333333333333'].forEach(id => builder.setStyle(id,'opacity','0.35'));\nbuilder.setStyle('g4111111-1111-4111-8111-111111111111','opacity','0.25');\nbuilder.setStyle('g4222222-2222-4222-8222-222222222222','opacity','0.25');\nif (game.answer === 2) { builder.setStyle('g3333333-3333-4333-8333-333333333333','opacity','1'); builder.setStyle('g3333333-3333-4333-8333-333333333333','border','3px solid #198754'); builder.setStyle('g4111111-1111-4111-8111-111111111111','opacity','1'); builder.setStyle('g4111111-1111-4111-8111-111111111111','border','3px solid #198754'); } else { builder.setStyle('g3333333-3333-4333-8333-333333333333','opacity','1'); builder.setStyle('g3333333-3333-4333-8333-333333333333','border','3px solid #dc3545'); builder.setStyle('g4222222-2222-4222-8222-222222222222','opacity','1'); builder.setStyle('g4222222-2222-4222-8222-222222222222','border','3px solid #dc3545'); const win = game.answer===0 ? 'g3111111-1111-4111-8111-111111111111' : 'g3222222-2222-4222-8222-222222222222'; builder.setStyle(win,'opacity','1'); builder.setStyle(win,'border','3px solid #198754'); }\nbuilder.scrollTo('g4000000-0000-4000-8000-000000000000');",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "targetComponentId": "g4000000-0000-4000-8000-000000000000"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "g4000000-0000-4000-8000-000000000000",
+      "name": "Result Area",
+      "type": "container",
+      "order": 3,
+      "props": {
+        "direction": "column",
+        "gap": 10,
+        "justifyContent": "flex-start",
+        "alignItems": "stretch"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "minHeight": 20,
+        "padding": "10px 0"
+      },
+      "children": [
+        {
+          "id": "g4111111-1111-4111-8111-111111111111",
+          "name": "Win Result",
+          "type": "alert",
+          "order": 0,
+          "props": {
+            "message": "🎉 정답! 보물을 찾았습니다!",
+            "variant": "success",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "opacity": "0.25"
+          }
+        },
+        {
+          "id": "g4222222-2222-4222-8222-222222222222",
+          "name": "Lose Result",
+          "type": "alert",
+          "order": 1,
+          "props": {
+            "message": "💥 아쉽습니다. 초록 테두리 상자가 정답이었습니다.",
+            "variant": "danger",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "opacity": "0.25"
+          }
+        },
+        {
+          "id": "g4333333-3333-4333-8333-333333333333",
+          "name": "Restart Game",
+          "type": "alert",
+          "order": 2,
+          "props": {
+            "message": "🔄 새 게임 시작",
+            "variant": "info",
+            "dismissible": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "cursor": "pointer",
+            "textAlign": "center"
+          },
+          "jsActions": [
+            {
+              "id": "ga444444-4444-4444-8444-444444444444",
+              "event": "click",
+              "code": "window.__treasureBoxGame = { answer: Math.floor(Math.random() * 3), locked: false };\n['g3111111-1111-4111-8111-111111111111','g3222222-2222-4222-8222-222222222222','g3333333-3333-4333-8333-333333333333'].forEach(id => { builder.setStyle(id,'opacity','1'); builder.setStyle(id,'border',''); });\nbuilder.setStyle('g4111111-1111-4111-8111-111111111111','opacity','0.25');\nbuilder.setStyle('g4222222-2222-4222-8222-222222222222','opacity','0.25');\nbuilder.setStyle('g4111111-1111-4111-8111-111111111111','border','');\nbuilder.setStyle('g4222222-2222-4222-8222-222222222222','border','');\nbuilder.scrollTo('g3000000-0000-4000-8000-000000000000');",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "targetComponentId": "g3000000-0000-4000-8000-000000000000"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "g5000000-0000-4000-8000-000000000000",
+      "name": "How To Play",
+      "type": "quill",
+      "order": 4,
+      "props": {
+        "value": "<p><strong>게임 방법</strong></p><p>1. 미리보기 모드로 전환합니다.</p><p>2. 상자 A/B/C 중 하나를 클릭합니다.</p><p>3. 정답 상자는 초록색, 틀린 선택은 빨간색으로 표시됩니다.</p><p>4. 새 게임 시작을 누르면 정답 위치가 다시 무작위로 정해집니다.</p>",
+        "placeholder": "본문을 입력하세요.",
+        "disabled": false
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "padding": "16px"
+      },
+      "contentStyle": {
+        "fontSize": "15px"
+      }
+    }
+  ]
+}
