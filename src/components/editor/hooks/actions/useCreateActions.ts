@@ -1,7 +1,10 @@
 import { useCallback } from "react";
 import type { LayoutComponent } from "../../../../types/types";
 import { insertComponentRecursive } from "../../utils/componentTree";
-import type { ComponentRegistry, RegistryComponentType } from "../../registry/componentRegistry";
+import type {
+  ComponentRegistry,
+  RegistryComponentType,
+} from "../../registry/componentRegistry";
 
 import type {
   BooleanSetter,
@@ -17,13 +20,11 @@ type Options = {
   insertTarget: InsertTarget;
   setInsertTarget: InsertTargetSetter;
   setShowCreateModal: BooleanSetter;
-  // setShowEditModal: BooleanSetter;
   setSelectedComponentIds: React.Dispatch<React.SetStateAction<string[]>>;
   newType: RegistryComponentType;
   setNewType: (type: RegistryComponentType) => void;
   resetCreateForm: () => void;
   makeNewComponent: () => LayoutComponent;
-  // loadComponentToEdit: (component: LayoutComponent) => void;
   commitHistory: CommitHistory;
 };
 
@@ -34,12 +35,10 @@ export const useCreateActions = ({
   setSelectedComponentIds,
   setInsertTarget,
   setShowCreateModal,
-  // setShowEditModal,
   newType,
   setNewType,
   resetCreateForm,
   makeNewComponent,
-  // loadComponentToEdit,
   commitHistory,
 }: Options) => {
   const closeCreateModal = useCallback(() => {
@@ -69,23 +68,16 @@ export const useCreateActions = ({
     );
 
     closeCreateModal();
-
     setSelectedComponentIds([newComponent.id]);
-
-    // loadComponentToEdit(newComponent);
-
-    // setShowEditModal(true);
   }, [
     closeCreateModal,
     commitHistory,
     componentRegistry,
     components,
     insertTarget,
-    // loadComponentToEdit,
     makeNewComponent,
     newType,
     setSelectedComponentIds,
-    // setShowEditModal,
   ]);
 
   const openCreateModal = useCallback(
