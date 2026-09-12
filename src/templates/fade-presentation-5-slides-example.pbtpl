@@ -1,0 +1,849 @@
+{
+  "version": 1,
+  "templateType": "project",
+  "name": "Fade In Out 5장 웹 프레젠테이션",
+  "createdAt": "2026-09-12T06:00:00.000Z",
+  "components": [
+    {
+      "id": "fade-stage",
+      "name": "Presentation Stage",
+      "type": "container",
+      "order": 0,
+      "props": {
+        "direction": "column",
+        "gap": 0,
+        "justifyContent": "flex-start",
+        "alignItems": "stretch"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "minHeight": "78vh",
+        "position": "relative"
+      },
+      "children": [
+        {
+          "id": "s1",
+          "name": "Slide 1",
+          "type": "container",
+          "order": 0,
+          "props": {
+            "direction": "column",
+            "gap": 18,
+            "justifyContent": "center",
+            "alignItems": "stretch"
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "minHeight": "78vh",
+            "padding": "48px 28px",
+            "borderRadius": "18px",
+            "border": "1px solid #dee2e6",
+            "opacity": "1"
+          },
+          "children": [
+            {
+              "id": "s1-title",
+              "name": "Slide 1 Title",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "FADE PRESENTATION",
+                "level": 1
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "48px"
+              }
+            },
+            {
+              "id": "s1-body",
+              "name": "Slide 1 Body",
+              "type": "quill",
+              "order": 1,
+              "props": {
+                "value": "<p style=\"text-align:center;\"><strong>웹 페이지 빌더로 만드는 5장 프레젠테이션</strong></p>",
+                "placeholder": "본문을 입력하세요.",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "19px"
+              }
+            },
+            {
+              "id": "s1-badge",
+              "name": "Slide 1 Badge",
+              "type": "alert",
+              "order": 2,
+              "props": {
+                "message": "프레젠테이션 시작",
+                "variant": "info",
+                "dismissible": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%",
+                "textAlign": "center"
+              }
+            },
+            {
+              "id": "s1-nav",
+              "name": "Navigation",
+              "type": "container",
+              "order": 3,
+              "props": {
+                "direction": "row",
+                "gap": 10,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%",
+                "minHeight": 20
+              },
+              "children": [
+                {
+                  "id": "s1-next",
+                  "name": "Next",
+                  "type": "alert",
+                  "order": 0,
+                  "props": {
+                    "message": "다음 →",
+                    "variant": "primary",
+                    "dismissible": false
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "cursor": "pointer",
+                    "textAlign": "center"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "s1-next-a",
+                      "event": "click",
+                      "code": "builder.setStyle(\"s1\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s1\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s1\");\nbuilder.show(\"s2\");\nbuilder.setStyle(\"s2\", \"opacity\", \"0\");\nbuilder.setStyle(\"s2\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s2\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false,
+                      "targetComponentId": "s2"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "name": "Slide 2",
+          "type": "container",
+          "order": 1,
+          "props": {
+            "direction": "column",
+            "gap": 18,
+            "justifyContent": "center",
+            "alignItems": "stretch"
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "minHeight": "78vh",
+            "padding": "48px 28px",
+            "borderRadius": "18px",
+            "border": "1px solid #dee2e6",
+            "opacity": "0",
+            "display": "none"
+          },
+          "children": [
+            {
+              "id": "s2-title",
+              "name": "Slide 2 Title",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "01 / 문제",
+                "level": 2
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "40px"
+              }
+            },
+            {
+              "id": "s2-body",
+              "name": "Slide 2 Body",
+              "type": "quill",
+              "order": 1,
+              "props": {
+                "value": "<p style=\"text-align:center;\"><strong>정적인 페이지는 설명은 가능하지만 발표 흐름을 만들기 어렵습니다.</strong></p>",
+                "placeholder": "본문을 입력하세요.",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "19px"
+              }
+            },
+            {
+              "id": "s2-badge",
+              "name": "Slide 2 Badge",
+              "type": "alert",
+              "order": 2,
+              "props": {
+                "message": "페이지 → 프레젠테이션",
+                "variant": "info",
+                "dismissible": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%",
+                "textAlign": "center"
+              }
+            },
+            {
+              "id": "s2-nav",
+              "name": "Navigation",
+              "type": "container",
+              "order": 3,
+              "props": {
+                "direction": "row",
+                "gap": 10,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%",
+                "minHeight": 20
+              },
+              "children": [
+                {
+                  "id": "s2-prev",
+                  "name": "Previous",
+                  "type": "alert",
+                  "order": 0,
+                  "props": {
+                    "message": "← 이전",
+                    "variant": "secondary",
+                    "dismissible": false
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "cursor": "pointer",
+                    "textAlign": "center"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "s2-prev-a",
+                      "event": "click",
+                      "code": "builder.setStyle(\"s2\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s2\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s2\");\nbuilder.show(\"s1\");\nbuilder.setStyle(\"s1\", \"opacity\", \"0\");\nbuilder.setStyle(\"s1\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s1\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false,
+                      "targetComponentId": "s1"
+                    }
+                  ]
+                },
+                {
+                  "id": "s2-next",
+                  "name": "Next",
+                  "type": "alert",
+                  "order": 1,
+                  "props": {
+                    "message": "다음 →",
+                    "variant": "primary",
+                    "dismissible": false
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "cursor": "pointer",
+                    "textAlign": "center"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "s2-next-a",
+                      "event": "click",
+                      "code": "builder.setStyle(\"s2\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s2\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s2\");\nbuilder.show(\"s3\");\nbuilder.setStyle(\"s3\", \"opacity\", \"0\");\nbuilder.setStyle(\"s3\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s3\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false,
+                      "targetComponentId": "s3"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "name": "Slide 3",
+          "type": "container",
+          "order": 2,
+          "props": {
+            "direction": "column",
+            "gap": 18,
+            "justifyContent": "center",
+            "alignItems": "stretch"
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "minHeight": "78vh",
+            "padding": "48px 28px",
+            "borderRadius": "18px",
+            "border": "1px solid #dee2e6",
+            "opacity": "0",
+            "display": "none"
+          },
+          "children": [
+            {
+              "id": "s3-title",
+              "name": "Slide 3 Title",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "02 / 해결 방식",
+                "level": 2
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "40px"
+              }
+            },
+            {
+              "id": "s3-body",
+              "name": "Slide 3 Body",
+              "type": "quill",
+              "order": 1,
+              "props": {
+                "value": "<p style=\"text-align:center;\"><strong>Container + JS Action + Builder API 조합으로 Fade 전환을 구성합니다.</strong></p>",
+                "placeholder": "본문을 입력하세요.",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "19px"
+              }
+            },
+            {
+              "id": "s3-badge",
+              "name": "Slide 3 Badge",
+              "type": "alert",
+              "order": 2,
+              "props": {
+                "message": "현재 앱 기능만으로 구현",
+                "variant": "info",
+                "dismissible": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%",
+                "textAlign": "center"
+              }
+            },
+            {
+              "id": "s3-nav",
+              "name": "Navigation",
+              "type": "container",
+              "order": 3,
+              "props": {
+                "direction": "row",
+                "gap": 10,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%",
+                "minHeight": 20
+              },
+              "children": [
+                {
+                  "id": "s3-prev",
+                  "name": "Previous",
+                  "type": "alert",
+                  "order": 0,
+                  "props": {
+                    "message": "← 이전",
+                    "variant": "secondary",
+                    "dismissible": false
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "cursor": "pointer",
+                    "textAlign": "center"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "s3-prev-a",
+                      "event": "click",
+                      "code": "builder.setStyle(\"s3\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s3\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s3\");\nbuilder.show(\"s2\");\nbuilder.setStyle(\"s2\", \"opacity\", \"0\");\nbuilder.setStyle(\"s2\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s2\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false,
+                      "targetComponentId": "s2"
+                    }
+                  ]
+                },
+                {
+                  "id": "s3-next",
+                  "name": "Next",
+                  "type": "alert",
+                  "order": 1,
+                  "props": {
+                    "message": "다음 →",
+                    "variant": "primary",
+                    "dismissible": false
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "cursor": "pointer",
+                    "textAlign": "center"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "s3-next-a",
+                      "event": "click",
+                      "code": "builder.setStyle(\"s3\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s3\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s3\");\nbuilder.show(\"s4\");\nbuilder.setStyle(\"s4\", \"opacity\", \"0\");\nbuilder.setStyle(\"s4\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s4\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false,
+                      "targetComponentId": "s4"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "name": "Slide 4",
+          "type": "container",
+          "order": 3,
+          "props": {
+            "direction": "column",
+            "gap": 18,
+            "justifyContent": "center",
+            "alignItems": "stretch"
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "minHeight": "78vh",
+            "padding": "48px 28px",
+            "borderRadius": "18px",
+            "border": "1px solid #dee2e6",
+            "opacity": "0",
+            "display": "none"
+          },
+          "children": [
+            {
+              "id": "s4-title",
+              "name": "Slide 4 Title",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "03 / 인터랙션",
+                "level": 2
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "40px"
+              }
+            },
+            {
+              "id": "s4-body",
+              "name": "Slide 4 Body",
+              "type": "quill",
+              "order": 1,
+              "props": {
+                "value": "<p style=\"text-align:center;\"><strong>표시/숨김, 스타일 변경, 폼 입력까지 같은 액션 시스템에서 처리할 수 있습니다.</strong></p>",
+                "placeholder": "본문을 입력하세요.",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "19px"
+              }
+            },
+            {
+              "id": "s4-badge",
+              "name": "Slide 4 Badge",
+              "type": "alert",
+              "order": 2,
+              "props": {
+                "message": "웹 프레젠테이션 + 인터랙션",
+                "variant": "info",
+                "dismissible": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%",
+                "textAlign": "center"
+              }
+            },
+            {
+              "id": "s4-nav",
+              "name": "Navigation",
+              "type": "container",
+              "order": 3,
+              "props": {
+                "direction": "row",
+                "gap": 10,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%",
+                "minHeight": 20
+              },
+              "children": [
+                {
+                  "id": "s4-prev",
+                  "name": "Previous",
+                  "type": "alert",
+                  "order": 0,
+                  "props": {
+                    "message": "← 이전",
+                    "variant": "secondary",
+                    "dismissible": false
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "cursor": "pointer",
+                    "textAlign": "center"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "s4-prev-a",
+                      "event": "click",
+                      "code": "builder.setStyle(\"s4\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s4\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s4\");\nbuilder.show(\"s3\");\nbuilder.setStyle(\"s3\", \"opacity\", \"0\");\nbuilder.setStyle(\"s3\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s3\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false,
+                      "targetComponentId": "s3"
+                    }
+                  ]
+                },
+                {
+                  "id": "s4-next",
+                  "name": "Next",
+                  "type": "alert",
+                  "order": 1,
+                  "props": {
+                    "message": "다음 →",
+                    "variant": "primary",
+                    "dismissible": false
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "cursor": "pointer",
+                    "textAlign": "center"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "s4-next-a",
+                      "event": "click",
+                      "code": "builder.setStyle(\"s4\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s4\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s4\");\nbuilder.show(\"s5\");\nbuilder.setStyle(\"s5\", \"opacity\", \"0\");\nbuilder.setStyle(\"s5\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s5\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false,
+                      "targetComponentId": "s5"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "name": "Slide 5",
+          "type": "container",
+          "order": 4,
+          "props": {
+            "direction": "column",
+            "gap": 18,
+            "justifyContent": "center",
+            "alignItems": "stretch"
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "minHeight": "78vh",
+            "padding": "48px 28px",
+            "borderRadius": "18px",
+            "border": "1px solid #dee2e6",
+            "opacity": "0",
+            "display": "none"
+          },
+          "children": [
+            {
+              "id": "s5-title",
+              "name": "Slide 5 Title",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "BUILD · PRESENT · EXPORT",
+                "level": 1
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "48px"
+              }
+            },
+            {
+              "id": "s5-body",
+              "name": "Slide 5 Body",
+              "type": "quill",
+              "order": 1,
+              "props": {
+                "value": "<p style=\"text-align:center;\"><strong>하나의 빌더에서 만들고, 발표하고, HTML로 내보냅니다.</strong></p>",
+                "placeholder": "본문을 입력하세요.",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "19px"
+              }
+            },
+            {
+              "id": "s5-badge",
+              "name": "Slide 5 Badge",
+              "type": "alert",
+              "order": 2,
+              "props": {
+                "message": "THE END",
+                "variant": "success",
+                "dismissible": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%",
+                "textAlign": "center"
+              }
+            },
+            {
+              "id": "s5-nav",
+              "name": "Navigation",
+              "type": "container",
+              "order": 3,
+              "props": {
+                "direction": "row",
+                "gap": 10,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%",
+                "minHeight": 20
+              },
+              "children": [
+                {
+                  "id": "s5-prev",
+                  "name": "Previous",
+                  "type": "alert",
+                  "order": 0,
+                  "props": {
+                    "message": "← 이전",
+                    "variant": "secondary",
+                    "dismissible": false
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "cursor": "pointer",
+                    "textAlign": "center"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "s5-prev-a",
+                      "event": "click",
+                      "code": "builder.setStyle(\"s5\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s5\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s5\");\nbuilder.show(\"s4\");\nbuilder.setStyle(\"s4\", \"opacity\", \"0\");\nbuilder.setStyle(\"s4\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s4\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false,
+                      "targetComponentId": "s4"
+                    }
+                  ]
+                },
+                {
+                  "id": "s5-next",
+                  "name": "Next",
+                  "type": "alert",
+                  "order": 1,
+                  "props": {
+                    "message": "처음으로 ↺",
+                    "variant": "primary",
+                    "dismissible": false
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "cursor": "pointer",
+                    "textAlign": "center"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "s5-next-a",
+                      "event": "click",
+                      "code": "builder.setStyle(\"s5\", \"transition\", \"opacity 0.45s ease\");\nbuilder.setStyle(\"s5\", \"opacity\", \"0\");\nawait builder.delay(450);\nbuilder.hide(\"s5\");\nbuilder.show(\"s1\");\nbuilder.setStyle(\"s1\", \"opacity\", \"0\");\nbuilder.setStyle(\"s1\", \"transition\", \"opacity 0.45s ease\");\nawait builder.delay(30);\nbuilder.setStyle(\"s1\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false,
+                      "targetComponentId": "s1"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
