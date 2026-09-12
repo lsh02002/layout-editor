@@ -1,0 +1,871 @@
+{
+  "version": 1,
+  "templateType": "project",
+  "name": "Arcane Card Battle - State Demo",
+  "createdAt": "2026-09-12T20:40:21.071347Z",
+  "components": [
+    {
+      "id": "card-stage-5df85cd6",
+      "name": "Arcane Card Battle Stage",
+      "type": "container",
+      "order": 0,
+      "props": {
+        "direction": "column",
+        "gap": 0,
+        "justifyContent": "flex-start",
+        "alignItems": "stretch"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "minHeight": "760px",
+        "position": "relative",
+        "overflow": "hidden"
+      },
+      "children": [
+        {
+          "id": "intro-fab98858",
+          "name": "Intro",
+          "type": "container",
+          "order": 0,
+          "props": {
+            "direction": "column",
+            "gap": 18,
+            "justifyContent": "center",
+            "alignItems": "stretch",
+            "presentationSlide": true
+          },
+          "layout": {
+            "widthMode": "fill",
+            "position": "absolute",
+            "x": 0,
+            "y": 0,
+            "positionParentId": "card-stage-5df85cd6"
+          },
+          "style": {
+            "width": "100%",
+            "minHeight": "760px",
+            "padding": "34px 24px",
+            "boxSizing": "border-box",
+            "opacity": "1",
+            "pointerEvents": "auto",
+            "zIndex": 2,
+            "transition": "opacity 0.22s ease"
+          },
+          "children": [
+            {
+              "id": "heading-5936e02d",
+              "name": "마도 결투: 10턴 카드 배틀",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "마도 결투: 10턴 카드 배틀",
+                "level": 1
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "40px"
+              }
+            },
+            {
+              "id": "quill-61ca1f31",
+              "name": "Rules",
+              "type": "quill",
+              "order": 1,
+              "props": {
+                "value": "<p>고대 마도사를 10턴 안에 쓰러뜨리세요.</p><p><strong>마나·체력·방어막·콤보가 모두 builder.state로 관리됩니다.</strong></p><p>결계 → 화염구는 추가 피해, 화염구 → 흡혈은 마나 회복 콤보가 발생합니다.</p>",
+                "placeholder": "",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "16px"
+              }
+            },
+            {
+              "id": "container-1ae52bc8",
+              "name": "Start",
+              "type": "container",
+              "order": 2,
+              "props": {
+                "direction": "row",
+                "gap": 10,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "children": [
+                {
+                  "id": "button-b63c77ce",
+                  "name": "결투 시작",
+                  "type": "button",
+                  "order": 0,
+                  "props": {
+                    "title": "결투 시작",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "minWidth": "150px",
+                    "padding": "14px 16px",
+                    "borderRadius": "12px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-8063708f",
+                      "event": "click",
+                      "code": "builder.state.reset();\n\nbuilder.state.set(\"playerHp\", 100);\nbuilder.state.set(\"enemyHp\", 120);\nbuilder.state.set(\"mana\", 2);\nbuilder.state.set(\"shield\", 0);\nbuilder.state.set(\"turn\", 1);\nbuilder.state.set(\"combo\", 0);\nbuilder.state.set(\"lastCard\", \"\");\n\nbuilder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"결투 시작! 카드를 선택하세요.\");\n\nbuilder.setStyle(\"intro-fab98858\", \"opacity\", \"0\");\nbuilder.setStyle(\"intro-fab98858\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"intro-fab98858\", \"z-index\", \"1\");\nbuilder.setStyle(\"battle-6238ec95\", \"z-index\", \"2\");\nbuilder.setStyle(\"battle-6238ec95\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"battle-6238ec95\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "battle-6238ec95",
+          "name": "Battle",
+          "type": "container",
+          "order": 1,
+          "props": {
+            "direction": "column",
+            "gap": 18,
+            "justifyContent": "center",
+            "alignItems": "stretch",
+            "presentationSlide": true
+          },
+          "layout": {
+            "widthMode": "fill",
+            "position": "absolute",
+            "x": 0,
+            "y": 0,
+            "positionParentId": "card-stage-5df85cd6"
+          },
+          "style": {
+            "width": "100%",
+            "minHeight": "760px",
+            "padding": "34px 24px",
+            "boxSizing": "border-box",
+            "opacity": "0",
+            "pointerEvents": "none",
+            "zIndex": 1,
+            "transition": "opacity 0.22s ease"
+          },
+          "children": [
+            {
+              "id": "heading-a3d2550c",
+              "name": "고대 마도사와의 결투",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "고대 마도사와의 결투",
+                "level": 1
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "34px"
+              }
+            },
+            {
+              "id": "container-b51bc5fc",
+              "name": "Battle Stats",
+              "type": "container",
+              "order": 1,
+              "props": {
+                "direction": "row",
+                "gap": 8,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "children": [
+                {
+                  "id": "player-hp-7e8cb0a7",
+                  "name": "Player HP",
+                  "type": "input",
+                  "order": 0,
+                  "props": {
+                    "value": "❤️ 내 체력: 100 / 100",
+                    "inputType": "text",
+                    "placeholder": "",
+                    "name": "Player HP",
+                    "disabled": true
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "padding": "10px",
+                    "borderRadius": "10px",
+                    "textAlign": "center"
+                  }
+                },
+                {
+                  "id": "enemy-hp-d0a3e287",
+                  "name": "Enemy HP",
+                  "type": "input",
+                  "order": 1,
+                  "props": {
+                    "value": "👹 적 체력: 120 / 120",
+                    "inputType": "text",
+                    "placeholder": "",
+                    "name": "Enemy HP",
+                    "disabled": true
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "padding": "10px",
+                    "borderRadius": "10px",
+                    "textAlign": "center"
+                  }
+                },
+                {
+                  "id": "mana-8835003e",
+                  "name": "Mana",
+                  "type": "input",
+                  "order": 2,
+                  "props": {
+                    "value": "🔷 마나: 2 / 3",
+                    "inputType": "text",
+                    "placeholder": "",
+                    "name": "Mana",
+                    "disabled": true
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "padding": "10px",
+                    "borderRadius": "10px",
+                    "textAlign": "center"
+                  }
+                },
+                {
+                  "id": "shield-3603b3e7",
+                  "name": "Shield",
+                  "type": "input",
+                  "order": 3,
+                  "props": {
+                    "value": "🛡 방어막: 0",
+                    "inputType": "text",
+                    "placeholder": "",
+                    "name": "Shield",
+                    "disabled": true
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "padding": "10px",
+                    "borderRadius": "10px",
+                    "textAlign": "center"
+                  }
+                },
+                {
+                  "id": "turn-84c2ec6f",
+                  "name": "Turn",
+                  "type": "input",
+                  "order": 4,
+                  "props": {
+                    "value": "⏳ 턴: 1 / 10",
+                    "inputType": "text",
+                    "placeholder": "",
+                    "name": "Turn",
+                    "disabled": true
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "padding": "10px",
+                    "borderRadius": "10px",
+                    "textAlign": "center"
+                  }
+                },
+                {
+                  "id": "combo-5d9627e1",
+                  "name": "Combo",
+                  "type": "input",
+                  "order": 5,
+                  "props": {
+                    "value": "✨ 콤보: 0",
+                    "inputType": "text",
+                    "placeholder": "",
+                    "name": "Combo",
+                    "disabled": true
+                  },
+                  "layout": {
+                    "widthMode": "fill",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "width": "100%",
+                    "padding": "10px",
+                    "borderRadius": "10px",
+                    "textAlign": "center"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "quill-ba694937",
+              "name": "Battle Hint",
+              "type": "quill",
+              "order": 2,
+              "props": {
+                "value": "<p>적 체력이 35 이하가 되면 <strong>광폭화</strong>하여 반격 피해가 증가합니다.</p><p>매 카드 사용 후 적이 반격하고 마나가 1 회복됩니다.</p>",
+                "placeholder": "",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "16px"
+              }
+            },
+            {
+              "id": "log-d070e4b8",
+              "name": "Battle Log",
+              "type": "input",
+              "order": 3,
+              "props": {
+                "value": "카드를 선택하세요.",
+                "inputType": "text",
+                "placeholder": "",
+                "name": "Battle Log",
+                "disabled": true
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%",
+                "padding": "10px",
+                "borderRadius": "10px",
+                "textAlign": "center"
+              }
+            },
+            {
+              "id": "container-4c898876",
+              "name": "Attack Cards",
+              "type": "container",
+              "order": 4,
+              "props": {
+                "direction": "row",
+                "gap": 10,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "children": [
+                {
+                  "id": "button-5317a0a5",
+                  "name": "⚔ 베기 · 0",
+                  "type": "button",
+                  "order": 0,
+                  "props": {
+                    "title": "⚔ 베기 · 0",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "minWidth": "150px",
+                    "padding": "14px 16px",
+                    "borderRadius": "12px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-a4ff878c",
+                      "event": "click",
+                      "code": "const manaBefore = builder.state.get(\"mana\", 0);\n\nif (manaBefore < 0) {\n  builder.setValue(\"log-d070e4b8\", \"마나가 부족합니다. 필요한 마나: 0\");\n  return;\n}\n\nbuilder.state.add(\"mana\", -0);\n\nbuilder.state.add(\"enemyHp\", -12);\n\nconst lastCard =\n  builder.state.get(\"lastCard\", \"\");\n\nif (lastCard === \"strike\") {\n  builder.state.add(\"combo\", 1);\n  builder.state.add(\"enemyHp\", -4);\n} else {\n  builder.state.set(\"combo\", 1);\n}\n\nbuilder.state.set(\"lastCard\", \"strike\");\n\nif (builder.state.get(\"enemyHp\", 0) <= 0) {\n  builder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"⚔ 베기 사용! 적을 쓰러뜨렸습니다.\");\n  await builder.delay(250);\n  builder.setStyle(\"battle-6238ec95\", \"opacity\", \"0\");\nbuilder.setStyle(\"battle-6238ec95\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"battle-6238ec95\", \"z-index\", \"1\");\nbuilder.setStyle(\"win-685f628d\", \"z-index\", \"2\");\nbuilder.setStyle(\"win-685f628d\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"win-685f628d\", \"opacity\", \"1\");\n  return;\n}\n\nlet enemyDamage =\n  8 + Math.floor(Math.random() * 9);\n\nif (builder.state.get(\"enemyHp\", 0) <= 35) {\n  enemyDamage += 5;\n}\n\nlet shield =\n  builder.state.get(\"shield\", 0);\n\nconst blocked =\n  Math.min(shield, enemyDamage);\n\nshield -= blocked;\nenemyDamage -= blocked;\n\nbuilder.state.set(\"shield\", shield);\n\nif (enemyDamage > 0) {\n  builder.state.add(\"playerHp\", -enemyDamage);\n}\n\nbuilder.state.add(\"mana\", 1);\n\nif (builder.state.get(\"mana\", 0) > 3) {\n  builder.state.set(\"mana\", 3);\n}\n\nbuilder.state.add(\"turn\", 1);\n\nconst currentTurn =\n  builder.state.get(\"turn\", 1);\n\nif (\n  builder.state.get(\"playerHp\", 0) <= 0 ||\n  currentTurn > 10\n) {\n  builder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"⚔ 베기 사용 후 적의 반격! \" + (blocked > 0 ? \"방어 \" + blocked + \", \" : \"\") + \"피해 \" + enemyDamage);\n  await builder.delay(250);\n  builder.setStyle(\"battle-6238ec95\", \"opacity\", \"0\");\nbuilder.setStyle(\"battle-6238ec95\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"battle-6238ec95\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-69d92104\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-69d92104\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-69d92104\", \"opacity\", \"1\");\n  return;\n}\n\nbuilder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"⚔ 베기 사용 → 적 반격! \" + (blocked > 0 ? \"방어 \" + blocked + \", \" : \"\") + \"피해 \" + enemyDamage);",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                },
+                {
+                  "id": "button-5354569a",
+                  "name": "🔥 화염구 · 2",
+                  "type": "button",
+                  "order": 1,
+                  "props": {
+                    "title": "🔥 화염구 · 2",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "minWidth": "150px",
+                    "padding": "14px 16px",
+                    "borderRadius": "12px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-af8c7f32",
+                      "event": "click",
+                      "code": "const manaBefore = builder.state.get(\"mana\", 0);\n\nif (manaBefore < 2) {\n  builder.setValue(\"log-d070e4b8\", \"마나가 부족합니다. 필요한 마나: 2\");\n  return;\n}\n\nbuilder.state.add(\"mana\", -2);\n\nlet damage = 24;\n\nconst lastCard =\n  builder.state.get(\"lastCard\", \"\");\n\nif (lastCard === \"barrier\") {\n  damage += 10;\n  builder.state.add(\"combo\", 1);\n} else {\n  builder.state.set(\"combo\", 1);\n}\n\nbuilder.state.add(\"enemyHp\", -damage);\nbuilder.state.set(\"lastCard\", \"fireball\");\n\nif (builder.state.get(\"enemyHp\", 0) <= 0) {\n  builder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"🔥 화염구 사용! 적을 쓰러뜨렸습니다.\");\n  await builder.delay(250);\n  builder.setStyle(\"battle-6238ec95\", \"opacity\", \"0\");\nbuilder.setStyle(\"battle-6238ec95\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"battle-6238ec95\", \"z-index\", \"1\");\nbuilder.setStyle(\"win-685f628d\", \"z-index\", \"2\");\nbuilder.setStyle(\"win-685f628d\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"win-685f628d\", \"opacity\", \"1\");\n  return;\n}\n\nlet enemyDamage =\n  8 + Math.floor(Math.random() * 9);\n\nif (builder.state.get(\"enemyHp\", 0) <= 35) {\n  enemyDamage += 5;\n}\n\nlet shield =\n  builder.state.get(\"shield\", 0);\n\nconst blocked =\n  Math.min(shield, enemyDamage);\n\nshield -= blocked;\nenemyDamage -= blocked;\n\nbuilder.state.set(\"shield\", shield);\n\nif (enemyDamage > 0) {\n  builder.state.add(\"playerHp\", -enemyDamage);\n}\n\nbuilder.state.add(\"mana\", 1);\n\nif (builder.state.get(\"mana\", 0) > 3) {\n  builder.state.set(\"mana\", 3);\n}\n\nbuilder.state.add(\"turn\", 1);\n\nconst currentTurn =\n  builder.state.get(\"turn\", 1);\n\nif (\n  builder.state.get(\"playerHp\", 0) <= 0 ||\n  currentTurn > 10\n) {\n  builder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"🔥 화염구 사용 후 적의 반격! \" + (blocked > 0 ? \"방어 \" + blocked + \", \" : \"\") + \"피해 \" + enemyDamage);\n  await builder.delay(250);\n  builder.setStyle(\"battle-6238ec95\", \"opacity\", \"0\");\nbuilder.setStyle(\"battle-6238ec95\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"battle-6238ec95\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-69d92104\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-69d92104\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-69d92104\", \"opacity\", \"1\");\n  return;\n}\n\nbuilder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"🔥 화염구 사용 → 적 반격! \" + (blocked > 0 ? \"방어 \" + blocked + \", \" : \"\") + \"피해 \" + enemyDamage);",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                },
+                {
+                  "id": "button-52cbb4e6",
+                  "name": "🩸 흡혈 · 2",
+                  "type": "button",
+                  "order": 2,
+                  "props": {
+                    "title": "🩸 흡혈 · 2",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "minWidth": "150px",
+                    "padding": "14px 16px",
+                    "borderRadius": "12px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-603f71c6",
+                      "event": "click",
+                      "code": "const manaBefore = builder.state.get(\"mana\", 0);\n\nif (manaBefore < 2) {\n  builder.setValue(\"log-d070e4b8\", \"마나가 부족합니다. 필요한 마나: 2\");\n  return;\n}\n\nbuilder.state.add(\"mana\", -2);\n\nbuilder.state.add(\"enemyHp\", -16);\nbuilder.state.add(\"playerHp\", 10);\n\nif (builder.state.get(\"playerHp\", 0) > 100) {\n  builder.state.set(\"playerHp\", 100);\n}\n\nconst lastCard =\n  builder.state.get(\"lastCard\", \"\");\n\nif (lastCard === \"fireball\") {\n  builder.state.add(\"mana\", 1);\n  builder.state.add(\"combo\", 1);\n} else {\n  builder.state.set(\"combo\", 1);\n}\n\nbuilder.state.set(\"lastCard\", \"drain\");\n\nif (builder.state.get(\"enemyHp\", 0) <= 0) {\n  builder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"🩸 흡혈 사용! 적을 쓰러뜨렸습니다.\");\n  await builder.delay(250);\n  builder.setStyle(\"battle-6238ec95\", \"opacity\", \"0\");\nbuilder.setStyle(\"battle-6238ec95\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"battle-6238ec95\", \"z-index\", \"1\");\nbuilder.setStyle(\"win-685f628d\", \"z-index\", \"2\");\nbuilder.setStyle(\"win-685f628d\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"win-685f628d\", \"opacity\", \"1\");\n  return;\n}\n\nlet enemyDamage =\n  8 + Math.floor(Math.random() * 9);\n\nif (builder.state.get(\"enemyHp\", 0) <= 35) {\n  enemyDamage += 5;\n}\n\nlet shield =\n  builder.state.get(\"shield\", 0);\n\nconst blocked =\n  Math.min(shield, enemyDamage);\n\nshield -= blocked;\nenemyDamage -= blocked;\n\nbuilder.state.set(\"shield\", shield);\n\nif (enemyDamage > 0) {\n  builder.state.add(\"playerHp\", -enemyDamage);\n}\n\nbuilder.state.add(\"mana\", 1);\n\nif (builder.state.get(\"mana\", 0) > 3) {\n  builder.state.set(\"mana\", 3);\n}\n\nbuilder.state.add(\"turn\", 1);\n\nconst currentTurn =\n  builder.state.get(\"turn\", 1);\n\nif (\n  builder.state.get(\"playerHp\", 0) <= 0 ||\n  currentTurn > 10\n) {\n  builder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"🩸 흡혈 사용 후 적의 반격! \" + (blocked > 0 ? \"방어 \" + blocked + \", \" : \"\") + \"피해 \" + enemyDamage);\n  await builder.delay(250);\n  builder.setStyle(\"battle-6238ec95\", \"opacity\", \"0\");\nbuilder.setStyle(\"battle-6238ec95\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"battle-6238ec95\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-69d92104\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-69d92104\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-69d92104\", \"opacity\", \"1\");\n  return;\n}\n\nbuilder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"🩸 흡혈 사용 → 적 반격! \" + (blocked > 0 ? \"방어 \" + blocked + \", \" : \"\") + \"피해 \" + enemyDamage);",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "container-2a6f6a0c",
+              "name": "Defense Cards",
+              "type": "container",
+              "order": 5,
+              "props": {
+                "direction": "row",
+                "gap": 10,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "children": [
+                {
+                  "id": "button-ba733f50",
+                  "name": "🛡 결계 · 1",
+                  "type": "button",
+                  "order": 0,
+                  "props": {
+                    "title": "🛡 결계 · 1",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "minWidth": "150px",
+                    "padding": "14px 16px",
+                    "borderRadius": "12px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-ed856c57",
+                      "event": "click",
+                      "code": "const manaBefore = builder.state.get(\"mana\", 0);\n\nif (manaBefore < 1) {\n  builder.setValue(\"log-d070e4b8\", \"마나가 부족합니다. 필요한 마나: 1\");\n  return;\n}\n\nbuilder.state.add(\"mana\", -1);\n\nbuilder.state.add(\"shield\", 14);\n\nconst lastCard =\n  builder.state.get(\"lastCard\", \"\");\n\nif (lastCard === \"barrier\") {\n  builder.state.add(\"shield\", 6);\n  builder.state.add(\"combo\", 1);\n} else {\n  builder.state.set(\"combo\", 1);\n}\n\nbuilder.state.set(\"lastCard\", \"barrier\");\n\nif (builder.state.get(\"enemyHp\", 0) <= 0) {\n  builder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"🛡 결계 사용! 적을 쓰러뜨렸습니다.\");\n  await builder.delay(250);\n  builder.setStyle(\"battle-6238ec95\", \"opacity\", \"0\");\nbuilder.setStyle(\"battle-6238ec95\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"battle-6238ec95\", \"z-index\", \"1\");\nbuilder.setStyle(\"win-685f628d\", \"z-index\", \"2\");\nbuilder.setStyle(\"win-685f628d\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"win-685f628d\", \"opacity\", \"1\");\n  return;\n}\n\nlet enemyDamage =\n  8 + Math.floor(Math.random() * 9);\n\nif (builder.state.get(\"enemyHp\", 0) <= 35) {\n  enemyDamage += 5;\n}\n\nlet shield =\n  builder.state.get(\"shield\", 0);\n\nconst blocked =\n  Math.min(shield, enemyDamage);\n\nshield -= blocked;\nenemyDamage -= blocked;\n\nbuilder.state.set(\"shield\", shield);\n\nif (enemyDamage > 0) {\n  builder.state.add(\"playerHp\", -enemyDamage);\n}\n\nbuilder.state.add(\"mana\", 1);\n\nif (builder.state.get(\"mana\", 0) > 3) {\n  builder.state.set(\"mana\", 3);\n}\n\nbuilder.state.add(\"turn\", 1);\n\nconst currentTurn =\n  builder.state.get(\"turn\", 1);\n\nif (\n  builder.state.get(\"playerHp\", 0) <= 0 ||\n  currentTurn > 10\n) {\n  builder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"🛡 결계 사용 후 적의 반격! \" + (blocked > 0 ? \"방어 \" + blocked + \", \" : \"\") + \"피해 \" + enemyDamage);\n  await builder.delay(250);\n  builder.setStyle(\"battle-6238ec95\", \"opacity\", \"0\");\nbuilder.setStyle(\"battle-6238ec95\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"battle-6238ec95\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-69d92104\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-69d92104\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-69d92104\", \"opacity\", \"1\");\n  return;\n}\n\nbuilder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"🛡 결계 사용 → 적 반격! \" + (blocked > 0 ? \"방어 \" + blocked + \", \" : \"\") + \"피해 \" + enemyDamage);",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                },
+                {
+                  "id": "button-120c41e9",
+                  "name": "🔷 명상 · 0",
+                  "type": "button",
+                  "order": 1,
+                  "props": {
+                    "title": "🔷 명상 · 0",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "minWidth": "150px",
+                    "padding": "14px 16px",
+                    "borderRadius": "12px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-1d3f789d",
+                      "event": "click",
+                      "code": "const manaBefore = builder.state.get(\"mana\", 0);\n\nif (manaBefore < 0) {\n  builder.setValue(\"log-d070e4b8\", \"마나가 부족합니다. 필요한 마나: 0\");\n  return;\n}\n\nbuilder.state.add(\"mana\", -0);\n\nbuilder.state.add(\"mana\", 2);\n\nif (builder.state.get(\"mana\", 0) > 3) {\n  builder.state.set(\"mana\", 3);\n}\n\nbuilder.state.add(\"playerHp\", 4);\n\nif (builder.state.get(\"playerHp\", 0) > 100) {\n  builder.state.set(\"playerHp\", 100);\n}\n\nbuilder.state.set(\"combo\", 0);\nbuilder.state.set(\"lastCard\", \"meditate\");\n\nif (builder.state.get(\"enemyHp\", 0) <= 0) {\n  builder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"🔷 명상 사용! 적을 쓰러뜨렸습니다.\");\n  await builder.delay(250);\n  builder.setStyle(\"battle-6238ec95\", \"opacity\", \"0\");\nbuilder.setStyle(\"battle-6238ec95\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"battle-6238ec95\", \"z-index\", \"1\");\nbuilder.setStyle(\"win-685f628d\", \"z-index\", \"2\");\nbuilder.setStyle(\"win-685f628d\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"win-685f628d\", \"opacity\", \"1\");\n  return;\n}\n\nlet enemyDamage =\n  8 + Math.floor(Math.random() * 9);\n\nif (builder.state.get(\"enemyHp\", 0) <= 35) {\n  enemyDamage += 5;\n}\n\nlet shield =\n  builder.state.get(\"shield\", 0);\n\nconst blocked =\n  Math.min(shield, enemyDamage);\n\nshield -= blocked;\nenemyDamage -= blocked;\n\nbuilder.state.set(\"shield\", shield);\n\nif (enemyDamage > 0) {\n  builder.state.add(\"playerHp\", -enemyDamage);\n}\n\nbuilder.state.add(\"mana\", 1);\n\nif (builder.state.get(\"mana\", 0) > 3) {\n  builder.state.set(\"mana\", 3);\n}\n\nbuilder.state.add(\"turn\", 1);\n\nconst currentTurn =\n  builder.state.get(\"turn\", 1);\n\nif (\n  builder.state.get(\"playerHp\", 0) <= 0 ||\n  currentTurn > 10\n) {\n  builder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"🔷 명상 사용 후 적의 반격! \" + (blocked > 0 ? \"방어 \" + blocked + \", \" : \"\") + \"피해 \" + enemyDamage);\n  await builder.delay(250);\n  builder.setStyle(\"battle-6238ec95\", \"opacity\", \"0\");\nbuilder.setStyle(\"battle-6238ec95\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"battle-6238ec95\", \"z-index\", \"1\");\nbuilder.setStyle(\"lose-69d92104\", \"z-index\", \"2\");\nbuilder.setStyle(\"lose-69d92104\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"lose-69d92104\", \"opacity\", \"1\");\n  return;\n}\n\nbuilder.setValue(\"player-hp-7e8cb0a7\", \"❤️ 내 체력: \" + builder.state.get(\"playerHp\", 0) + \" / 100\");\nbuilder.setValue(\"enemy-hp-d0a3e287\", \"👹 적 체력: \" + builder.state.get(\"enemyHp\", 0) + \" / 120\");\nbuilder.setValue(\"mana-8835003e\", \"🔷 마나: \" + builder.state.get(\"mana\", 0) + \" / 3\");\nbuilder.setValue(\"shield-3603b3e7\", \"🛡 방어막: \" + builder.state.get(\"shield\", 0));\nbuilder.setValue(\"turn-84c2ec6f\", \"⏳ 턴: \" + builder.state.get(\"turn\", 1) + \" / 10\");\nbuilder.setValue(\"combo-5d9627e1\", \"✨ 콤보: \" + builder.state.get(\"combo\", 0));\nbuilder.setValue(\"log-d070e4b8\", \"🔷 명상 사용 → 적 반격! \" + (blocked > 0 ? \"방어 \" + blocked + \", \" : \"\") + \"피해 \" + enemyDamage);",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "win-685f628d",
+          "name": "Victory",
+          "type": "container",
+          "order": 2,
+          "props": {
+            "direction": "column",
+            "gap": 18,
+            "justifyContent": "center",
+            "alignItems": "stretch",
+            "presentationSlide": true
+          },
+          "layout": {
+            "widthMode": "fill",
+            "position": "absolute",
+            "x": 0,
+            "y": 0,
+            "positionParentId": "card-stage-5df85cd6"
+          },
+          "style": {
+            "width": "100%",
+            "minHeight": "760px",
+            "padding": "34px 24px",
+            "boxSizing": "border-box",
+            "opacity": "0",
+            "pointerEvents": "none",
+            "zIndex": 1,
+            "transition": "opacity 0.22s ease"
+          },
+          "children": [
+            {
+              "id": "heading-da2f2eac",
+              "name": "🏆 승리!",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "🏆 승리!",
+                "level": 1
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "44px"
+              }
+            },
+            {
+              "id": "quill-196a46d7",
+              "name": "Victory",
+              "type": "quill",
+              "order": 1,
+              "props": {
+                "value": "<p>고대 마도사를 쓰러뜨렸습니다.</p><p>체력·마나·방어막·콤보·마지막 카드가 모두 state로 연결된 카드 배틀 예제입니다.</p>",
+                "placeholder": "",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "16px"
+              }
+            },
+            {
+              "id": "container-b7d270b6",
+              "name": "Win Controls",
+              "type": "container",
+              "order": 2,
+              "props": {
+                "direction": "row",
+                "gap": 10,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "children": [
+                {
+                  "id": "button-15bf416a",
+                  "name": "다시 결투",
+                  "type": "button",
+                  "order": 0,
+                  "props": {
+                    "title": "다시 결투",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "minWidth": "150px",
+                    "padding": "14px 16px",
+                    "borderRadius": "12px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-da8f1d8b",
+                      "event": "click",
+                      "code": "builder.state.reset();\nbuilder.setStyle(\"win-685f628d\", \"opacity\", \"0\");\nbuilder.setStyle(\"win-685f628d\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"win-685f628d\", \"z-index\", \"1\");\nbuilder.setStyle(\"intro-fab98858\", \"z-index\", \"2\");\nbuilder.setStyle(\"intro-fab98858\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"intro-fab98858\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "lose-69d92104",
+          "name": "Defeat",
+          "type": "container",
+          "order": 3,
+          "props": {
+            "direction": "column",
+            "gap": 18,
+            "justifyContent": "center",
+            "alignItems": "stretch",
+            "presentationSlide": true
+          },
+          "layout": {
+            "widthMode": "fill",
+            "position": "absolute",
+            "x": 0,
+            "y": 0,
+            "positionParentId": "card-stage-5df85cd6"
+          },
+          "style": {
+            "width": "100%",
+            "minHeight": "760px",
+            "padding": "34px 24px",
+            "boxSizing": "border-box",
+            "opacity": "0",
+            "pointerEvents": "none",
+            "zIndex": 1,
+            "transition": "opacity 0.22s ease"
+          },
+          "children": [
+            {
+              "id": "heading-f27410bc",
+              "name": "💀 패배",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "💀 패배",
+                "level": 1
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "44px"
+              }
+            },
+            {
+              "id": "quill-3cd8443a",
+              "name": "Defeat",
+              "type": "quill",
+              "order": 1,
+              "props": {
+                "value": "<p>체력이 0이 되었거나 10턴 안에 적을 쓰러뜨리지 못했습니다.</p><p>결계 → 화염구 콤보와 명상 타이밍을 활용해 다시 도전하세요.</p>",
+                "placeholder": "",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "16px"
+              }
+            },
+            {
+              "id": "container-06fb81c2",
+              "name": "Lose Controls",
+              "type": "container",
+              "order": 2,
+              "props": {
+                "direction": "row",
+                "gap": 10,
+                "justifyContent": "center",
+                "alignItems": "stretch"
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "children": [
+                {
+                  "id": "button-60b917e4",
+                  "name": "재도전",
+                  "type": "button",
+                  "order": 0,
+                  "props": {
+                    "title": "재도전",
+                    "disabled": false,
+                    "action": {
+                      "type": "none",
+                      "payload": null
+                    }
+                  },
+                  "layout": {
+                    "widthMode": "auto",
+                    "positionParentId": null
+                  },
+                  "style": {
+                    "minWidth": "150px",
+                    "padding": "14px 16px",
+                    "borderRadius": "12px"
+                  },
+                  "jsActions": [
+                    {
+                      "id": "action-c24b4e41",
+                      "event": "click",
+                      "code": "builder.state.reset();\nbuilder.setStyle(\"lose-69d92104\", \"opacity\", \"0\");\nbuilder.setStyle(\"lose-69d92104\", \"pointer-events\", \"none\");\nbuilder.setStyle(\"lose-69d92104\", \"z-index\", \"1\");\nbuilder.setStyle(\"intro-fab98858\", \"z-index\", \"2\");\nbuilder.setStyle(\"intro-fab98858\", \"pointer-events\", \"auto\");\nbuilder.setStyle(\"intro-fab98858\", \"opacity\", \"1\");",
+                      "enabled": true,
+                      "stopPropagation": false,
+                      "preventDefault": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
