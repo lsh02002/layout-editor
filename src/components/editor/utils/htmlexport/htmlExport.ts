@@ -64,6 +64,33 @@ export const buildHtmlDocument = async (
   projectCustomCss: string,
 ) => {
   const componentJsActions = collectComponentJsActions(components);
+  const componentStateBindings: Record<
+    string,
+    {
+      target: string;
+      stateKey: string;
+    }[]
+  > = {};
+
+  const collectStateBindings = (component: LayoutComponent) => {
+    if ((component.stateBindings ?? []).length > 0) {
+      componentStateBindings[component.id] = component.stateBindings ?? [];
+    }
+
+    if (isLayoutContainer(component)) {
+      component.children.forEach(collectStateBindings);
+    }
+  };
+
+  components.forEach(collectStateBindings);
+
+  const componentStateBindingsJson = JSON.stringify(componentStateBindings)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+
   const componentJsActionsJson = JSON.stringify(componentJsActions)
     .replace(/</g, "\\u003c")
     .replace(/>/g, "\\u003e")
@@ -270,6 +297,105 @@ export const buildHtmlDocument = async (
 
       const builderStateStore = new Map();
 
+      const componentStateBindings =
+        ${componentStateBindingsJson};
+
+      const applyStateBindings = () => {
+        Object.entries(
+          componentStateBindings
+        ).forEach(
+          ([componentId, bindings]) => {
+            const root =
+              document.querySelector(
+                '[data-component-id="' +
+                  CSS.escape(componentId) +
+                  '"]'
+              );
+
+            if (!root) {
+              return;
+            }
+
+            bindings.forEach((binding) => {
+              const hasValue =
+                builderStateStore.has(
+                  binding.stateKey
+                );
+
+              if (
+                binding.target === "visible"
+              ) {
+                const visible =
+                  hasValue
+                    ? Boolean(
+                        builderStateStore.get(
+                          binding.stateKey
+                        )
+                      )
+                    : true;
+
+                root.style.display =
+                  visible ? "" : "none";
+
+                return;
+              }
+
+              if (!hasValue) {
+                return;
+              }
+
+              const value =
+                builderStateStore.get(
+                  binding.stateKey
+                );
+
+              if (
+                binding.target === "text"
+              ) {
+                const target =
+                  root.matches?.(
+                    "h1, h2, h3, h4, h5, h6"
+                  )
+                    ? root
+                    : root.querySelector(
+                        "h1, h2, h3, h4, h5, h6"
+                      ) || root;
+
+                target.textContent =
+                  value == null
+                    ? ""
+                    : String(value);
+
+                return;
+              }
+
+              if (
+                binding.target === "value"
+              ) {
+                const target =
+                  root.matches?.(
+                    "input, textarea, select"
+                  )
+                    ? root
+                    : root.querySelector(
+                        "input, textarea, select"
+                      );
+
+                if (
+                  target &&
+                  "value" in target
+                ) {
+                  target.value =
+                    value == null
+                      ? ""
+                      : String(value);
+                }
+              }
+            });
+          }
+        );
+      };
+
       const builderState = {
         get(key, fallback) {
           if (!builderStateStore.has(key)) {
@@ -281,6 +407,7 @@ export const buildHtmlDocument = async (
 
         set(key, value) {
           builderStateStore.set(key, value);
+          applyStateBindings();
           return value;
         },
 
@@ -305,6 +432,8 @@ export const buildHtmlDocument = async (
             next
           );
 
+          applyStateBindings();
+
           return next;
         },
 
@@ -319,17 +448,25 @@ export const buildHtmlDocument = async (
             next
           );
 
+          applyStateBindings();
+
           return next;
         },
 
         remove(key) {
-          return builderStateStore.delete(
-            key
-          );
+          const result =
+            builderStateStore.delete(
+              key
+            );
+
+          applyStateBindings();
+
+          return result;
         },
 
         reset() {
           builderStateStore.clear();
+          applyStateBindings();
         },
 
         all() {
