@@ -277,7 +277,7 @@ export const exportButtonHtml: HtmlExporter = (component) => {
     >
       <button
         type="button"
-        class="builder-button"
+        class="btn btn-primary builder-button"
         style="${escapeAttribute(contentStyle)}"${disabled}
       >
         ${escapeHtml(component.props.title)}
