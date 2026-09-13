@@ -212,6 +212,14 @@ function LayoutEditorStyles() {
         display: none !important;
       }
 
+      [data-runtime-unit-id][data-runtime-selected="true"] {
+        outline: 3px solid #38bdf8 !important;
+        outline-offset: 4px;
+        box-shadow:
+          0 0 0 2px rgba(56, 189, 248, 0.2),
+          0 0 18px rgba(56, 189, 248, 0.65);
+      }
+
       @media (max-width: 767.98px) {
         .editor-side-panel {
           width: min(88vw, 340px);

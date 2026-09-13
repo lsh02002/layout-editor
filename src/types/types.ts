@@ -274,6 +274,8 @@ export interface FlexComponent extends BaseComponent {
       | "space-evenly";
 
     alignItems?: "flex-start" | "center" | "flex-end" | "stretch";
+
+    presentationSlide?: boolean;
   };
 
   children: LayoutComponent[];

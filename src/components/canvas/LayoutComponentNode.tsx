@@ -24,6 +24,7 @@ import CanvasComponentContent from "./CanvasComponentContent";
 import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import ComponentDragHandle from "./ComponentDragHandle";
 import { builderState } from "../editor/utils/builderState";
+import { runtimeUnits } from "../editor/utils/RuntimeUnitManager";
 
 type Props = {
   previewMode: boolean;
@@ -103,6 +104,17 @@ function LayoutComponentNode({
   const [editToolbarVisible, setEditToolbarVisible] = useState(false);
   const [positionParentElement, setPositionParentElement] =
     useState<HTMLElement | null>(null);
+
+  const [runtimeSelectionStart, setRuntimeSelectionStart] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [runtimeSelectionCurrent, setRuntimeSelectionCurrent] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [runtimeSelectionVisible, setRuntimeSelectionVisible] = useState(false);
+  const runtimeSelectionMoved = useRef(false);
 
   const textBinding = component.stateBindings?.find(
     (binding) => binding.target === "text",
@@ -250,6 +262,43 @@ function LayoutComponentNode({
 
     return {
       state: builderState,
+      units: {
+        spawn(
+          id: string,
+          options?: {
+            x?: number;
+            y?: number;
+            speed?: number;
+            hp?: number;
+          },
+        ) {
+          return runtimeUnits.spawn(id, options);
+        },
+        moveTo(id: string, x: number, y: number) {
+          return runtimeUnits.moveTo(id, x, y);
+        },
+        get(id: string) {
+          return runtimeUnits.get(id);
+        },
+        remove(id: string) {
+          return runtimeUnits.remove(id);
+        },
+        clear() {
+          runtimeUnits.clear();
+        },
+        select(id: string) {
+          return runtimeUnits.select(id);
+        },
+        getSelected() {
+          return runtimeUnits.getSelected();
+        },
+        clearSelected() {
+          runtimeUnits.clearSelected();
+        },
+        moveSelectedTo(x: number, y: number) {
+          return runtimeUnits.moveSelectedTo(x, y);
+        },
+      },
       getElement,
       hide(id: string) {
         const element = getElement(id);
@@ -808,6 +857,16 @@ function LayoutComponentNode({
   const containerMaxWidth =
     component.type === "container" ? component.props.maxWidth : undefined;
 
+  const runtimeSelectionRect =
+    runtimeSelectionStart && runtimeSelectionCurrent
+      ? {
+          left: Math.min(runtimeSelectionStart.x, runtimeSelectionCurrent.x),
+          top: Math.min(runtimeSelectionStart.y, runtimeSelectionCurrent.y),
+          width: Math.abs(runtimeSelectionCurrent.x - runtimeSelectionStart.x),
+          height: Math.abs(runtimeSelectionCurrent.y - runtimeSelectionStart.y),
+        }
+      : null;
+
   const nodeStyle = {
     display: previewMode && !isStateVisible ? "none" : undefined,
 
@@ -1185,6 +1244,164 @@ function LayoutComponentNode({
         data-component-id={component.id}
         style={nodeStyle}
         {...jsEventProps}
+        onClick={(event) => executeJsActions("click", event)}
+        onContextMenu={(event) => {
+          if (!previewMode) {
+            return;
+          }
+
+          if (runtimeUnits.getSelected().length === 0) {
+            return;
+          }
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          const rect = event.currentTarget.getBoundingClientRect();
+          const unitSize = 72;
+          const x = event.clientX - rect.left - unitSize / 2;
+          const y = event.clientY - rect.top - unitSize / 2;
+
+          runtimeUnits.moveSelectedTo(x, y);
+        }}
+        onPointerDown={(event) => {
+          if (!previewMode) {
+            return;
+          }
+
+          if (event.button !== 0) {
+            return;
+          }
+
+          if ((event.target as HTMLElement).closest("[data-runtime-unit-id]")) {
+            return;
+          }
+
+          const rect = event.currentTarget.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
+
+          setRuntimeSelectionStart({
+            x,
+            y,
+          });
+
+          runtimeSelectionMoved.current = false;
+          setRuntimeSelectionVisible(false);
+
+          setRuntimeSelectionCurrent({
+            x,
+            y,
+          });
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          event.currentTarget.setPointerCapture(event.pointerId);
+        }}
+        onPointerMove={(event) => {
+          if (!previewMode || !runtimeSelectionStart) {
+            return;
+          }
+
+          const rect = event.currentTarget.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
+          const distance = Math.hypot(
+            x - runtimeSelectionStart.x,
+            y - runtimeSelectionStart.y,
+          );
+
+          if (!runtimeSelectionMoved.current && distance < 5) {
+            return;
+          }
+
+          runtimeSelectionMoved.current = true;
+          setRuntimeSelectionVisible(true);
+          setRuntimeSelectionCurrent({
+            x,
+            y,
+          });
+        }}
+        onPointerUp={(event) => {
+          if (!previewMode || !runtimeSelectionStart) {
+            return;
+          }
+
+          const currentTarget = event.currentTarget;
+
+          if (!runtimeSelectionMoved.current) {
+            runtimeUnits.clearSelected();
+
+            runtimeSelectionMoved.current = false;
+
+            setRuntimeSelectionStart(null);
+            setRuntimeSelectionCurrent(null);
+            setRuntimeSelectionVisible(false);
+
+            if (currentTarget.hasPointerCapture(event.pointerId)) {
+              currentTarget.releasePointerCapture(event.pointerId);
+            }
+
+            event.stopPropagation();
+
+            return;
+          }
+
+          const mapRect = currentTarget.getBoundingClientRect();
+          const endX = event.clientX - mapRect.left;
+          const endY = event.clientY - mapRect.top;
+          const left = Math.min(runtimeSelectionStart.x, endX);
+          const top = Math.min(runtimeSelectionStart.y, endY);
+          const right = Math.max(runtimeSelectionStart.x, endX);
+          const bottom = Math.max(runtimeSelectionStart.y, endY);
+
+          const selectedIds = Array.from(
+            currentTarget.querySelectorAll<HTMLElement>(
+              "[data-runtime-unit-id]",
+            ),
+          )
+            .filter((element) => {
+              const id = element.dataset.runtimeUnitId;
+              if (!id || !runtimeUnits.get(id)) {
+                return false;
+              }
+
+              const rect = element.getBoundingClientRect();
+              const centerX = rect.left - mapRect.left + rect.width / 2;
+              const centerY = rect.top - mapRect.top + rect.height / 2;
+
+              return (
+                centerX >= left &&
+                centerX <= right &&
+                centerY >= top &&
+                centerY <= bottom
+              );
+            })
+            .map((element) => element.dataset.runtimeUnitId!);
+
+          runtimeUnits.selectMany(selectedIds);
+          runtimeSelectionMoved.current = false;
+
+          setRuntimeSelectionStart(null);
+          setRuntimeSelectionCurrent(null);
+          setRuntimeSelectionVisible(false);
+
+          if (currentTarget.hasPointerCapture(event.pointerId)) {
+            currentTarget.releasePointerCapture(event.pointerId);
+          }
+        }}
+        onPointerCancel={(event) => {
+          runtimeSelectionMoved.current = false;
+          setRuntimeSelectionVisible(false);
+
+          setRuntimeSelectionStart(null);
+          setRuntimeSelectionCurrent(null);
+
+          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+            event.currentTarget.releasePointerCapture(event.pointerId);
+          }
+        }}
       >
         <DivBox
           previewMode={previewMode}
@@ -1218,6 +1435,22 @@ function LayoutComponentNode({
         >
           <div style={{ position: "relative", width: "100%" }}>
             {dragHandleView}
+
+            {previewMode && runtimeSelectionVisible && runtimeSelectionRect && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: runtimeSelectionRect.left,
+                  top: runtimeSelectionRect.top,
+                  width: runtimeSelectionRect.width,
+                  height: runtimeSelectionRect.height,
+                  border: "1px solid #38bdf8",
+                  background: "rgba(56, 189, 248, 0.15)",
+                  pointerEvents: "none",
+                  zIndex: 9999,
+                }}
+              />
+            )}
 
             {component.type === "form" ? (
               <form
@@ -1263,8 +1496,23 @@ function LayoutComponentNode({
     <div
       ref={handleComponentRef}
       data-component-id={component.id}
+      data-runtime-unit-id={component.id}
       style={nodeStyle}
       {...jsEventProps}
+      onClick={(event) => {
+        executeJsActions("click", event);
+
+        if (!previewMode) {
+          return;
+        }
+
+        if (!runtimeUnits.get(component.id)) {
+          return;
+        }
+
+        event.stopPropagation();
+        runtimeUnits.select(component.id, event.shiftKey);
+      }}
     >
       <DivBox
         previewMode={previewMode}
