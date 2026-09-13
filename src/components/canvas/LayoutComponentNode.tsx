@@ -6,9 +6,11 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
+  type Dispatch,
   type DragEvent,
   type PointerEvent,
   type ReactNode,
+  type SetStateAction,
   type SyntheticEvent,
 } from "react";
 import { createPortal } from "react-dom";
@@ -36,6 +38,8 @@ type Props = {
   droppedIds: string[];
   layerSearch: string;
   activeDropTarget: CanvasDropTarget | null;
+  runtimeCommandMode: string | null;
+  setRuntimeCommandMode: Dispatch<SetStateAction<string | null>>;
   setActiveDropTarget: (target: CanvasDropTarget | null) => void;
   onLayoutChange: (
     id: string,
@@ -78,6 +82,8 @@ function LayoutComponentNode({
   droppedIds,
   layerSearch,
   activeDropTarget,
+  runtimeCommandMode,
+  setRuntimeCommandMode,
   setActiveDropTarget,
   onLayoutChange,
   onSelect,
@@ -275,6 +281,7 @@ function LayoutComponentNode({
             attackDamage?: number;
             attackRange?: number;
             attackCooldown?: number;
+            aggroRange?: number;
           },
         ) {
           return runtimeUnits.spawn(id, options);
@@ -314,6 +321,12 @@ function LayoutComponentNode({
         },
         attackSelected(targetId: string) {
           return runtimeUnits.attackSelected(targetId);
+        },
+        attackMove(id: string, x: number, y: number) {
+          return runtimeUnits.attackMove(id, x, y);
+        },
+        attackMoveSelectedTo(x: number, y: number) {
+          return runtimeUnits.attackMoveSelectedTo(x, y);
         },
         clear() {
           runtimeUnits.clear();
@@ -933,6 +946,11 @@ function LayoutComponentNode({
         ? component.style?.pointerEvents
         : undefined,
 
+    cursor:
+      previewMode && runtimeCommandMode === "attackMove"
+        ? "crosshair"
+        : "pointer",
+
     ...presentationEditStyle,
   };
 
@@ -978,6 +996,8 @@ function LayoutComponentNode({
       droppedIds={droppedIds}
       layerSearch={layerSearch}
       activeDropTarget={activeDropTarget}
+      runtimeCommandMode={runtimeCommandMode}
+      setRuntimeCommandMode={setRuntimeCommandMode}
       setActiveDropTarget={setActiveDropTarget}
       onLayoutChange={onLayoutChange}
       onSelect={onSelect}
@@ -1270,7 +1290,6 @@ function LayoutComponentNode({
       <div
         ref={handleComponentRef}
         data-component-id={component.id}
-        data-runtime-map={previewMode ? "true" : undefined}
         style={nodeStyle}
         {...jsEventProps}
         onClick={(event) => executeJsActions("click", event)}
@@ -1290,6 +1309,13 @@ function LayoutComponentNode({
           const x = event.clientX - rect.left;
           const y = event.clientY - rect.top;
 
+          runtimeUnits.showCommandMarker(
+            event.currentTarget as HTMLElement,
+            x,
+            y,
+            "move",
+          );
+
           runtimeUnits.moveSelectedTo(x, y);
         }}
         onPointerDown={(event) => {
@@ -1298,6 +1324,30 @@ function LayoutComponentNode({
           }
 
           if (event.button !== 0) {
+            return;
+          }
+
+          if (runtimeCommandMode === "attackMove" && event.button === 0) {
+            const rect = event.currentTarget.getBoundingClientRect();
+
+            const x = event.clientX - rect.left;
+
+            const y = event.clientY - rect.top;
+
+            runtimeUnits.attackMoveSelectedTo(x, y);
+
+            runtimeUnits.showCommandMarker(
+              event.currentTarget,
+              x,
+              y,
+              "attackMove",
+            );
+
+            setRuntimeCommandMode(null);
+
+            event.preventDefault();
+            event.stopPropagation();
+
             return;
           }
 

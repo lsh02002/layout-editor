@@ -16,6 +16,13 @@ export interface RuntimeUnit {
 
   lastAttackTime: number;
   attackTargetId?: string;
+
+  command: "idle" | "move" | "attack" | "attackMove";
+
+  commandTargetX?: number;
+  commandTargetY?: number;
+
+  aggroRange: number;
 }
 
 const units = new Map<string, RuntimeUnit>();
@@ -72,6 +79,14 @@ const updateUnitHealth = (unit: RuntimeUnit) => {
   if (healthText) {
     healthText.textContent = `${Math.ceil(unit.hp)} / ${Math.ceil(unit.maxHp)}`;
   }
+
+  const overlay = element.querySelector<HTMLElement>(
+    "[data-runtime-health-overlay]",
+  );
+
+  if (overlay) {
+    overlay.style.opacity = ratio >= 1 ? "0" : "1";
+  }
 };
 
 const getUnitSize = (id: string) => {
@@ -92,20 +107,38 @@ const getUnitSize = (id: string) => {
   };
 };
 
-const getRuntimeBounds = (id: string) => {
+const getRuntimeContainer = (id: string) => {
   const element = getUnitElement(id);
 
-  const container = element?.closest<HTMLElement>("[data-runtime-map]");
-
-  if (!element || !container) {
+  if (!element) {
     return null;
   }
 
-  const containerRect = container.getBoundingClientRect();
+  let parent = element.parentElement;
+
+  while (parent) {
+    if (parent.hasAttribute("data-component-id")) {
+      return parent;
+    }
+
+    parent = parent.parentElement;
+  }
+
+  return null;
+};
+
+const getRuntimeBounds = (id: string) => {
+  const container = getRuntimeContainer(id);
+
+  if (!container) {
+    return null;
+  }
+
+  const rect = container.getBoundingClientRect();
 
   return {
-    width: containerRect.width,
-    height: containerRect.height,
+    width: rect.width,
+    height: rect.height,
   };
 };
 
@@ -126,6 +159,184 @@ const clampUnitPosition = (unit: RuntimeUnit, x: number, y: number) => {
   };
 };
 
+const showCommandMarker = (
+  container: HTMLElement,
+  x: number,
+  y: number,
+  type: "move" | "attackMove" | "attack",
+) => {
+  const marker = document.createElement("div");
+  const isAttack = type === "attackMove" || type === "attack";
+
+  marker.setAttribute("data-runtime-command-marker", type);
+  marker.style.position = "absolute";
+  marker.style.left = `${x}px`;
+  marker.style.top = `${y}px`;
+  marker.style.width = "24px";
+  marker.style.height = "24px";
+  marker.style.borderRadius = "9999px";
+  marker.style.transform = "translate(-50%, -50%)";
+  marker.style.pointerEvents = "none";
+  marker.style.zIndex = "99999";
+  marker.style.border = isAttack ? "2px solid #ef4444" : "2px solid #38bdf8";
+  marker.style.boxShadow = isAttack
+    ? "0 0 16px rgba(239,68,68,0.8)"
+    : "0 0 16px rgba(56,189,248,0.8)";
+  marker.style.boxShadow =
+    type === "attackMove"
+      ? "0 0 16px rgba(239,68,68,0.8)"
+      : "0 0 16px rgba(56,189,248,0.8)";
+  marker.style.transition = "opacity 300ms ease, transform 300ms ease";
+
+  container.appendChild(marker);
+
+  requestAnimationFrame(() => {
+    marker.style.opacity = "0";
+
+    marker.style.transform = "translate(-50%, -50%) scale(1.8)";
+  });
+
+  window.setTimeout(() => {
+    marker.remove();
+  }, 320);
+};
+
+const ensureHealthBar = (unit: RuntimeUnit) => {
+  const element = getUnitElement(unit.id);
+
+  if (!element) {
+    return;
+  }
+
+  if (element.querySelector("[data-runtime-health-overlay]")) {
+    return;
+  }
+
+  if (getComputedStyle(element).position === "static") {
+    element.style.position = "relative";
+  }
+
+  const wrapper = document.createElement("div");
+
+  wrapper.setAttribute("data-runtime-health-overlay", "true");
+  wrapper.style.position = "absolute";
+  wrapper.style.left = "10%";
+  wrapper.style.right = "10%";
+  wrapper.style.top = "-10px";
+  wrapper.style.height = "5px";
+  wrapper.style.background = "rgba(0,0,0,0.55)";
+  wrapper.style.borderRadius = "9999px";
+  wrapper.style.overflow = "hidden";
+  wrapper.style.pointerEvents = "none";
+  wrapper.style.zIndex = "9999";
+
+  const bar = document.createElement("div");
+
+  bar.setAttribute("data-runtime-health-bar", "true");
+  bar.style.width = "100%";
+  bar.style.height = "100%";
+  bar.style.background = "#22c55e";
+  bar.style.transition = "width 120ms linear";
+
+  wrapper.appendChild(bar);
+  element.appendChild(wrapper);
+};
+
+const findNearestEnemy = (unit: RuntimeUnit, maxDistance: number) => {
+  const element = getUnitElement(unit.id);
+
+  if (!element) {
+    return undefined;
+  }
+
+  const rect = element.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+
+  let nearest: RuntimeUnit | undefined;
+  let nearestDistance = maxDistance;
+
+  units.forEach((otherUnit) => {
+    if (
+      otherUnit.id === unit.id ||
+      otherUnit.team === unit.team ||
+      otherUnit.hp <= 0
+    ) {
+      return;
+    }
+
+    const otherElement = getUnitElement(otherUnit.id);
+
+    if (!otherElement) {
+      return;
+    }
+
+    const otherRect = otherElement.getBoundingClientRect();
+    const otherCenterX = otherRect.left + otherRect.width / 2;
+    const otherCenterY = otherRect.top + otherRect.height / 2;
+    const distance = Math.hypot(otherCenterX - centerX, otherCenterY - centerY);
+
+    if (distance > nearestDistance) {
+      return;
+    }
+
+    nearestDistance = distance;
+
+    nearest = otherUnit;
+  });
+
+  return nearest;
+};
+
+const updateAggro = () => {
+  let hasAggroActivity = false;
+
+  units.forEach((unit) => {
+    if (unit.command !== "attackMove") {
+      return;
+    }
+
+    if (unit.attackTargetId) {
+      return;
+    }
+
+    const enemy = findNearestEnemy(unit, unit.aggroRange);
+
+    if (!enemy) {
+      return;
+    }
+
+    unit.attackTargetId = enemy.id;
+    hasAggroActivity = true;
+  });
+
+  return hasAggroActivity;
+};
+
+const resumeUnitCommand = (unit: RuntimeUnit) => {
+  unit.attackTargetId = undefined;
+
+  if (
+    unit.command === "attackMove" &&
+    unit.commandTargetX !== undefined &&
+    unit.commandTargetY !== undefined
+  ) {
+    unit.targetX = unit.commandTargetX;
+    unit.targetY = unit.commandTargetY;
+
+    return;
+  }
+
+  unit.targetX = unit.x;
+  unit.targetY = unit.y;
+
+  if (unit.command === "attack") {
+    unit.command = "idle";
+    unit.commandTargetX = undefined;
+    unit.commandTargetY = undefined;
+  }
+};
+
 const updateCombat = (time: number) => {
   let hasCombatActivity = false;
 
@@ -139,13 +350,8 @@ const updateCombat = (time: number) => {
     }
 
     const target = units.get(targetId);
-
     if (!target || target.hp <= 0) {
-      unit.attackTargetId = undefined;
-
-      unit.targetX = unit.x;
-
-      unit.targetY = unit.y;
+      resumeUnitCommand(unit);
 
       return;
     }
@@ -213,8 +419,9 @@ const tick = (time: number) => {
   const arrivalRadius = 2;
   const slowRadius = 120;
   const separationEpsilon = 0.5;
+  const hasAggroActivity = updateAggro();
 
-  let hasActivity = updateCombat(time);
+  let hasActivity = updateCombat(time) || hasAggroActivity;
   const unitList = Array.from(units.values());
 
   unitList.forEach((unit) => {
@@ -225,6 +432,15 @@ const tick = (time: number) => {
     if (distance <= arrivalRadius) {
       unit.x = unit.targetX;
       unit.y = unit.targetY;
+
+      if (
+        (unit.command === "move" || unit.command === "attackMove") &&
+        !unit.attackTargetId
+      ) {
+        unit.command = "idle";
+        unit.commandTargetX = undefined;
+        unit.commandTargetY = undefined;
+      }
 
       return;
     }
@@ -354,21 +570,14 @@ const removeRuntimeUnit = (id: string) => {
 
   if (element) {
     element.removeAttribute("data-runtime-selected");
-
     element.removeAttribute("data-runtime-preview-selected");
-
     element.setAttribute("data-runtime-dead", "true");
-
     element.style.display = "none";
   }
 
   units.forEach((otherUnit) => {
     if (otherUnit.attackTargetId === id) {
-      otherUnit.attackTargetId = undefined;
-
-      otherUnit.targetX = otherUnit.x;
-
-      otherUnit.targetY = otherUnit.y;
+      resumeUnitCommand(otherUnit);
     }
   });
 
@@ -392,6 +601,10 @@ const attackUnit = (attackerId: string, targetId: string) => {
   }
 
   attacker.attackTargetId = targetId;
+  attacker.command = "attack";
+  attacker.commandTargetX = undefined;
+  attacker.commandTargetY = undefined;
+
   ensureLoop();
 
   return true;
@@ -405,6 +618,9 @@ const stopAttackUnit = (id: string) => {
   }
 
   unit.attackTargetId = undefined;
+  unit.command = "idle";
+  unit.commandTargetX = undefined;
+  unit.commandTargetY = undefined;
   unit.targetX = unit.x;
   unit.targetY = unit.y;
 
@@ -423,6 +639,7 @@ export const runtimeUnits = {
       attackDamage?: number;
       attackRange?: number;
       attackCooldown?: number;
+      aggroRange?: number;
     } = {},
   ) {
     const element = document.querySelector<HTMLElement>(
@@ -452,6 +669,10 @@ export const runtimeUnits = {
       attackCooldown: options.attackCooldown ?? 800,
       lastAttackTime: 0,
       attackTargetId: undefined,
+      command: "idle",
+      commandTargetX: undefined,
+      commandTargetY: undefined,
+      aggroRange: options.aggroRange ?? 250,
     };
 
     units.set(id, unit);
@@ -465,7 +686,9 @@ export const runtimeUnits = {
       runtimeElement.style.removeProperty("display");
     }
 
+    ensureHealthBar(unit);
     updateUnitHealth(unit);
+
     ensureLoop();
     console.log("[runtimeUnits] spawned:", unit);
 
@@ -484,6 +707,10 @@ export const runtimeUnits = {
     unit.targetX = target.x;
     unit.targetY = target.y;
 
+    unit.command = "move";
+    unit.commandTargetX = target.x;
+    unit.commandTargetY = target.y;
+
     ensureLoop();
 
     return true;
@@ -495,12 +722,6 @@ export const runtimeUnits = {
     return removeRuntimeUnit(id);
   },
   clear() {
-    selectedUnitIds.forEach((id) => {
-      const element = getUnitElement(id);
-
-      element?.removeAttribute("data-runtime-selected");
-    });
-
     units.forEach((unit) => {
       const element = getUnitElement(unit.id);
 
@@ -512,12 +733,23 @@ export const runtimeUnits = {
       element.removeAttribute("data-runtime-preview-selected");
       element.removeAttribute("data-runtime-dead");
       element.removeAttribute("data-runtime-team");
+      element.removeAttribute("data-runtime-hp");
+      element.removeAttribute("data-runtime-max-hp");
       element.style.removeProperty("display");
       element.style.removeProperty("transform");
+      element.style.removeProperty("--runtime-hp-ratio");
+      element.querySelector("[data-runtime-health-overlay]")?.remove();
     });
 
     units.clear();
     selectedUnitIds.clear();
+
+    if (frameId) {
+      cancelAnimationFrame(frameId);
+
+      frameId = 0;
+      lastTime = 0;
+    }
   },
   select(id: string, append = false) {
     if (!units.has(id)) {
@@ -628,8 +860,10 @@ export const runtimeUnits = {
         target.y + correctionY,
       );
 
+      target.unit.command = "move";
+      target.unit.commandTargetX = next.x;
+      target.unit.commandTargetY = next.y;
       target.unit.targetX = next.x;
-
       target.unit.targetY = next.y;
     });
 
@@ -708,6 +942,9 @@ export const runtimeUnits = {
       }
 
       attacker.attackTargetId = target.id;
+      attacker.command = "attack";
+      attacker.commandTargetX = undefined;
+      attacker.commandTargetY = undefined;
       attackCount += 1;
     });
 
@@ -718,5 +955,102 @@ export const runtimeUnits = {
     ensureLoop();
 
     return true;
+  },
+  attackMove(id: string, x: number, y: number) {
+    const unit = units.get(id);
+
+    if (!unit) {
+      return false;
+    }
+
+    const target = clampUnitPosition(unit, x, y);
+
+    unit.attackTargetId = undefined;
+    unit.command = "attackMove";
+    unit.commandTargetX = target.x;
+    unit.commandTargetY = target.y;
+    unit.targetX = target.x;
+    unit.targetY = target.y;
+
+    ensureLoop();
+
+    return true;
+  },
+  attackMoveSelectedTo(x: number, y: number) {
+    const selected = Array.from(selectedUnitIds)
+      .map((id) => units.get(id))
+      .filter((unit): unit is RuntimeUnit => Boolean(unit));
+
+    if (selected.length === 0) {
+      return false;
+    }
+
+    const centerX =
+      selected.reduce((sum, unit) => sum + unit.x, 0) / selected.length;
+    const centerY =
+      selected.reduce((sum, unit) => sum + unit.y, 0) / selected.length;
+    const targets = selected.map((unit) => {
+      const size = getUnitSize(unit.id);
+
+      return {
+        unit,
+        width: size.width,
+        height: size.height,
+        x: x + (unit.x - centerX),
+        y: y + (unit.y - centerY),
+      };
+    });
+
+    const firstBounds = getRuntimeBounds(selected[0].id);
+    if (!firstBounds) {
+      return false;
+    }
+
+    const minX = Math.min(...targets.map((target) => target.x));
+    const minY = Math.min(...targets.map((target) => target.y));
+    const maxX = Math.max(...targets.map((target) => target.x + target.width));
+    const maxY = Math.max(...targets.map((target) => target.y + target.height));
+
+    let correctionX = 0;
+    let correctionY = 0;
+
+    if (minX < 0) {
+      correctionX = -minX;
+    } else if (maxX > firstBounds.width) {
+      correctionX = firstBounds.width - maxX;
+    }
+
+    if (minY < 0) {
+      correctionY = -minY;
+    } else if (maxY > firstBounds.height) {
+      correctionY = firstBounds.height - maxY;
+    }
+
+    targets.forEach((target) => {
+      const next = clampUnitPosition(
+        target.unit,
+        target.x + correctionX,
+        target.y + correctionY,
+      );
+
+      target.unit.attackTargetId = undefined;
+      target.unit.command = "attackMove";
+      target.unit.commandTargetX = next.x;
+      target.unit.commandTargetY = next.y;
+      target.unit.targetX = next.x;
+      target.unit.targetY = next.y;
+    });
+
+    ensureLoop();
+
+    return true;
+  },
+  showCommandMarker(
+    container: HTMLElement,
+    x: number,
+    y: number,
+    type: "move" | "attackMove" | "attack",
+  ) {
+    showCommandMarker(container, x, y, type);
   },
 };

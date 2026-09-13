@@ -2,6 +2,7 @@ import {
   memo,
   useEffect,
   useMemo,
+  useState,
   type DragEvent,
   type PointerEvent,
 } from "react";
@@ -10,6 +11,7 @@ import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import LayoutComponentNode from "./LayoutComponentNode";
 import { findComponentRecursive } from "../editor/utils/componentTree";
 import { resetBuilderState } from "../editor/utils/builderState";
+import { runtimeUnits } from "../editor/utils/RuntimeUnitManager";
 
 type Props = {
   previewMode: boolean;
@@ -79,6 +81,50 @@ function BuilderCanvas({
   onPointerDragCancel,
   snapLayout,
 }: Props) {
+  const [runtimeCommandMode, setRuntimeCommandMode] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (!previewMode) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      if (event.key === "Escape") {
+        setRuntimeCommandMode(null);
+
+        return;
+      }
+
+      if (event.key.toLowerCase() === "a") {
+        if (runtimeUnits.getSelected().length === 0) {
+          return;
+        }
+
+        event.preventDefault();
+
+        setRuntimeCommandMode("attackMove");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [previewMode]);
+
   const sortedComponents = useMemo(
     () => [...components].sort((a, b) => a.order - b.order),
     [components],
@@ -240,6 +286,8 @@ function BuilderCanvas({
               droppedIds={droppedIds}
               layerSearch={layerSearch}
               activeDropTarget={activeDropTarget}
+              runtimeCommandMode={runtimeCommandMode}
+              setRuntimeCommandMode={setRuntimeCommandMode}
               setActiveDropTarget={setActiveDropTarget}
               onLayoutChange={onLayoutChange}
               onSelect={onSelect}

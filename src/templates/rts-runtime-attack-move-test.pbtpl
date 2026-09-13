@@ -1,0 +1,760 @@
+{
+  "version": 1,
+  "templateType": "project",
+  "name": "RTS Runtime Test Arena - Attack Move",
+  "createdAt": "2026-09-13T11:34:51.085353Z",
+  "components": [
+    {
+      "id": "rts-test-page",
+      "name": "RTS Runtime Test Arena",
+      "type": "container",
+      "order": 0,
+      "props": {
+        "direction": "column",
+        "gap": 16,
+        "justifyContent": "flex-start",
+        "alignItems": "stretch"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "maxWidth": "980px",
+        "margin": "0 auto",
+        "padding": "24px",
+        "boxSizing": "border-box",
+        "background": "#0b1220",
+        "color": "#eef4ff",
+        "borderRadius": "16px"
+      },
+      "children": [
+        {
+          "id": "rts-test-title",
+          "name": "Title",
+          "type": "heading",
+          "order": 0,
+          "props": {
+            "text": "RTS RUNTIME TEST ARENA",
+            "level": 2
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "contentStyle": {
+            "margin": "0",
+            "textAlign": "center",
+            "fontSize": "32px",
+            "letterSpacing": "1.5px"
+          }
+        },
+        {
+          "id": "rts-test-guide",
+          "name": "Test Guide",
+          "type": "quill",
+          "order": 1,
+          "props": {
+            "value": "<p><strong>Preview → SPAWN BATTLE</strong> 후 테스트하세요.</p><p>① 파란 유닛 클릭/드래그/Shift 선택 ② 빈 곳 우클릭 이동 + 파란 marker ③ 파란 유닛 선택 후 <strong>A</strong> → 커서 변경 → 적진 근처 좌클릭 ④ 자동 탐색/공격/추적/처치 후 원래 목적지 재개 ⑤ 피격 시 HP바 표시 ⑥ ESC로 Attack-Move 모드 취소</p>",
+            "placeholder": "",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "color": "#b8c6dc",
+            "lineHeight": "1.65"
+          }
+        },
+        {
+          "id": "rts-test-controls",
+          "name": "Controls",
+          "type": "container",
+          "order": 2,
+          "props": {
+            "direction": "row",
+            "gap": 10,
+            "justifyContent": "center",
+            "alignItems": "center"
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "display": "flex",
+            "flexWrap": "wrap",
+            "gap": "10px",
+            "justifyContent": "center"
+          },
+          "children": [
+            {
+              "id": "rts-spawn",
+              "name": "Spawn Battle",
+              "type": "button",
+              "order": 0,
+              "props": {
+                "title": "SPAWN BATTLE",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "positionParentId": null
+              },
+              "style": {
+                "padding": "11px 18px",
+                "borderRadius": "9px",
+                "background": "#2563eb",
+                "color": "#fff",
+                "border": "1px solid #60a5fa",
+                "fontWeight": "800"
+              },
+              "jsActions": [
+                {
+                  "id": "action-rts-spawn",
+                  "event": "click",
+                  "enabled": true,
+                  "stopPropagation": false,
+                  "preventDefault": false,
+                  "code": "builder.units.clear();\n\nbuilder.units.spawn(\"rts-blue-01\", {\n  x: 90,\n  y: 130,\n  speed: 170,\n  hp: 140,\n  team: \"blue\",\n  attackDamage: 18,\n  attackRange: 78,\n  attackCooldown: 650,\n  aggroRange: 240,\n});\n\nbuilder.units.spawn(\"rts-blue-02\", {\n  x: 165,\n  y: 130,\n  speed: 170,\n  hp: 140,\n  team: \"blue\",\n  attackDamage: 18,\n  attackRange: 78,\n  attackCooldown: 650,\n  aggroRange: 240,\n});\n\nbuilder.units.spawn(\"rts-blue-03\", {\n  x: 240,\n  y: 130,\n  speed: 170,\n  hp: 140,\n  team: \"blue\",\n  attackDamage: 18,\n  attackRange: 78,\n  attackCooldown: 650,\n  aggroRange: 240,\n});\n\nbuilder.units.spawn(\"rts-blue-04\", {\n  x: 90,\n  y: 215,\n  speed: 170,\n  hp: 140,\n  team: \"blue\",\n  attackDamage: 18,\n  attackRange: 78,\n  attackCooldown: 650,\n  aggroRange: 240,\n});\n\nbuilder.units.spawn(\"rts-blue-05\", {\n  x: 165,\n  y: 215,\n  speed: 170,\n  hp: 140,\n  team: \"blue\",\n  attackDamage: 18,\n  attackRange: 78,\n  attackCooldown: 650,\n  aggroRange: 240,\n});\n\nbuilder.units.spawn(\"rts-blue-06\", {\n  x: 240,\n  y: 215,\n  speed: 170,\n  hp: 140,\n  team: \"blue\",\n  attackDamage: 18,\n  attackRange: 78,\n  attackCooldown: 650,\n  aggroRange: 240,\n});\n\nbuilder.units.spawn(\"rts-red-01\", {\n  x: 630,\n  y: 300,\n  speed: 145,\n  hp: 120,\n  team: \"red\",\n  attackDamage: 14,\n  attackRange: 72,\n  attackCooldown: 750,\n  aggroRange: 220,\n});\n\nbuilder.units.spawn(\"rts-red-02\", {\n  x: 705,\n  y: 300,\n  speed: 145,\n  hp: 120,\n  team: \"red\",\n  attackDamage: 14,\n  attackRange: 72,\n  attackCooldown: 750,\n  aggroRange: 220,\n});\n\nbuilder.units.spawn(\"rts-red-03\", {\n  x: 780,\n  y: 300,\n  speed: 145,\n  hp: 120,\n  team: \"red\",\n  attackDamage: 14,\n  attackRange: 72,\n  attackCooldown: 750,\n  aggroRange: 220,\n});\n\nbuilder.units.spawn(\"rts-red-04\", {\n  x: 630,\n  y: 385,\n  speed: 145,\n  hp: 120,\n  team: \"red\",\n  attackDamage: 14,\n  attackRange: 72,\n  attackCooldown: 750,\n  aggroRange: 220,\n});\n\nbuilder.units.spawn(\"rts-red-05\", {\n  x: 705,\n  y: 385,\n  speed: 145,\n  hp: 120,\n  team: \"red\",\n  attackDamage: 14,\n  attackRange: 72,\n  attackCooldown: 750,\n  aggroRange: 220,\n});\n\nbuilder.units.spawn(\"rts-red-06\", {\n  x: 780,\n  y: 385,\n  speed: 145,\n  hp: 120,\n  team: \"red\",\n  attackDamage: 14,\n  attackRange: 72,\n  attackCooldown: 750,\n  aggroRange: 220,\n});"
+                }
+              ]
+            },
+            {
+              "id": "rts-enemy-advance",
+              "name": "Enemy Advance",
+              "type": "button",
+              "order": 1,
+              "props": {
+                "title": "ENEMY ADVANCE",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "positionParentId": null
+              },
+              "style": {
+                "padding": "11px 18px",
+                "borderRadius": "9px",
+                "background": "#b91c1c",
+                "color": "#fff",
+                "border": "1px solid #f87171",
+                "fontWeight": "800"
+              },
+              "jsActions": [
+                {
+                  "id": "action-rts-enemy-advance",
+                  "event": "click",
+                  "enabled": true,
+                  "stopPropagation": false,
+                  "preventDefault": false,
+                  "code": "builder.units.attackMove(\"rts-red-01\", 430, 200);\nbuilder.units.attackMove(\"rts-red-02\", 465, 200);\nbuilder.units.attackMove(\"rts-red-03\", 500, 200);\nbuilder.units.attackMove(\"rts-red-04\", 430, 280);\nbuilder.units.attackMove(\"rts-red-05\", 465, 280);\nbuilder.units.attackMove(\"rts-red-06\", 500, 280);"
+                }
+              ]
+            },
+            {
+              "id": "rts-reset",
+              "name": "Reset",
+              "type": "button",
+              "order": 2,
+              "props": {
+                "title": "RESET",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "positionParentId": null
+              },
+              "style": {
+                "padding": "11px 18px",
+                "borderRadius": "9px",
+                "background": "#334155",
+                "color": "#fff",
+                "border": "1px solid #64748b",
+                "fontWeight": "800"
+              },
+              "jsActions": [
+                {
+                  "id": "action-rts-reset",
+                  "event": "click",
+                  "enabled": true,
+                  "stopPropagation": false,
+                  "preventDefault": false,
+                  "code": "builder.units.clear();"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rts-test-map",
+          "name": "RTS Test Battlefield",
+          "type": "container",
+          "order": 3,
+          "props": {
+            "direction": "column",
+            "gap": 0,
+            "justifyContent": "flex-start",
+            "alignItems": "stretch"
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "height": "560px",
+            "minHeight": "560px",
+            "position": "relative",
+            "overflow": "hidden",
+            "background": "linear-gradient(180deg, #142033 0%, #172a25 100%)",
+            "border": "2px solid #41536b",
+            "borderRadius": "14px",
+            "boxSizing": "border-box",
+            "boxShadow": "inset 0 0 45px rgba(0,0,0,0.35)"
+          },
+          "children": [
+            {
+              "id": "rts-map-label",
+              "name": "Map Label",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "BLUE FORCE                                      RED FORCE",
+                "level": 4
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "margin": "14px 18px",
+                "textAlign": "center",
+                "color": "#6f8198",
+                "pointerEvents": "none",
+                "letterSpacing": "2px"
+              }
+            },
+            {
+              "id": "rts-blue-01",
+              "name": "Blue Unit 1",
+              "type": "button",
+              "order": 1,
+              "props": {
+                "title": "B1",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-test-map",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "54px",
+                "height": "54px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#1d4ed8",
+                "border": "3px solid #93c5fd",
+                "color": "#ffffff",
+                "fontWeight": "800",
+                "fontSize": "13px",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box",
+                "boxShadow": "0 5px 14px rgba(0,0,0,0.28)"
+              }
+            },
+            {
+              "id": "rts-blue-02",
+              "name": "Blue Unit 2",
+              "type": "button",
+              "order": 2,
+              "props": {
+                "title": "B2",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-test-map",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "54px",
+                "height": "54px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#1d4ed8",
+                "border": "3px solid #93c5fd",
+                "color": "#ffffff",
+                "fontWeight": "800",
+                "fontSize": "13px",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box",
+                "boxShadow": "0 5px 14px rgba(0,0,0,0.28)"
+              }
+            },
+            {
+              "id": "rts-blue-03",
+              "name": "Blue Unit 3",
+              "type": "button",
+              "order": 3,
+              "props": {
+                "title": "B3",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-test-map",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "54px",
+                "height": "54px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#1d4ed8",
+                "border": "3px solid #93c5fd",
+                "color": "#ffffff",
+                "fontWeight": "800",
+                "fontSize": "13px",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box",
+                "boxShadow": "0 5px 14px rgba(0,0,0,0.28)"
+              }
+            },
+            {
+              "id": "rts-blue-04",
+              "name": "Blue Unit 4",
+              "type": "button",
+              "order": 4,
+              "props": {
+                "title": "B4",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-test-map",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "54px",
+                "height": "54px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#1d4ed8",
+                "border": "3px solid #93c5fd",
+                "color": "#ffffff",
+                "fontWeight": "800",
+                "fontSize": "13px",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box",
+                "boxShadow": "0 5px 14px rgba(0,0,0,0.28)"
+              }
+            },
+            {
+              "id": "rts-blue-05",
+              "name": "Blue Unit 5",
+              "type": "button",
+              "order": 5,
+              "props": {
+                "title": "B5",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-test-map",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "54px",
+                "height": "54px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#1d4ed8",
+                "border": "3px solid #93c5fd",
+                "color": "#ffffff",
+                "fontWeight": "800",
+                "fontSize": "13px",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box",
+                "boxShadow": "0 5px 14px rgba(0,0,0,0.28)"
+              }
+            },
+            {
+              "id": "rts-blue-06",
+              "name": "Blue Unit 6",
+              "type": "button",
+              "order": 6,
+              "props": {
+                "title": "B6",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-test-map",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "54px",
+                "height": "54px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#1d4ed8",
+                "border": "3px solid #93c5fd",
+                "color": "#ffffff",
+                "fontWeight": "800",
+                "fontSize": "13px",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box",
+                "boxShadow": "0 5px 14px rgba(0,0,0,0.28)"
+              }
+            },
+            {
+              "id": "rts-red-01",
+              "name": "Red Unit 1",
+              "type": "button",
+              "order": 7,
+              "props": {
+                "title": "R1",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-test-map",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "54px",
+                "height": "54px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#b91c1c",
+                "border": "3px solid #fca5a5",
+                "color": "#ffffff",
+                "fontWeight": "800",
+                "fontSize": "13px",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box",
+                "boxShadow": "0 5px 14px rgba(0,0,0,0.28)"
+              }
+            },
+            {
+              "id": "rts-red-02",
+              "name": "Red Unit 2",
+              "type": "button",
+              "order": 8,
+              "props": {
+                "title": "R2",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-test-map",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "54px",
+                "height": "54px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#b91c1c",
+                "border": "3px solid #fca5a5",
+                "color": "#ffffff",
+                "fontWeight": "800",
+                "fontSize": "13px",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box",
+                "boxShadow": "0 5px 14px rgba(0,0,0,0.28)"
+              }
+            },
+            {
+              "id": "rts-red-03",
+              "name": "Red Unit 3",
+              "type": "button",
+              "order": 9,
+              "props": {
+                "title": "R3",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-test-map",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "54px",
+                "height": "54px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#b91c1c",
+                "border": "3px solid #fca5a5",
+                "color": "#ffffff",
+                "fontWeight": "800",
+                "fontSize": "13px",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box",
+                "boxShadow": "0 5px 14px rgba(0,0,0,0.28)"
+              }
+            },
+            {
+              "id": "rts-red-04",
+              "name": "Red Unit 4",
+              "type": "button",
+              "order": 10,
+              "props": {
+                "title": "R4",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-test-map",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "54px",
+                "height": "54px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#b91c1c",
+                "border": "3px solid #fca5a5",
+                "color": "#ffffff",
+                "fontWeight": "800",
+                "fontSize": "13px",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box",
+                "boxShadow": "0 5px 14px rgba(0,0,0,0.28)"
+              }
+            },
+            {
+              "id": "rts-red-05",
+              "name": "Red Unit 5",
+              "type": "button",
+              "order": 11,
+              "props": {
+                "title": "R5",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-test-map",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "54px",
+                "height": "54px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#b91c1c",
+                "border": "3px solid #fca5a5",
+                "color": "#ffffff",
+                "fontWeight": "800",
+                "fontSize": "13px",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box",
+                "boxShadow": "0 5px 14px rgba(0,0,0,0.28)"
+              }
+            },
+            {
+              "id": "rts-red-06",
+              "name": "Red Unit 6",
+              "type": "button",
+              "order": 12,
+              "props": {
+                "title": "R6",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-test-map",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "54px",
+                "height": "54px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#b91c1c",
+                "border": "3px solid #fca5a5",
+                "color": "#ffffff",
+                "fontWeight": "800",
+                "fontSize": "13px",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box",
+                "boxShadow": "0 5px 14px rgba(0,0,0,0.28)"
+              }
+            }
+          ]
+        },
+        {
+          "id": "rts-test-notes",
+          "name": "Notes",
+          "type": "quill",
+          "order": 4,
+          "props": {
+            "value": "<p><strong>ENEMY ADVANCE</strong>는 빨간 유닛에게 Attack-Move 명령을 내려 자동 교전을 강제로 테스트하는 버튼입니다. <strong>RESET</strong> 후 다시 SPAWN하면 초기 위치로 돌아갑니다.</p>",
+            "placeholder": "",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "color": "#8fa2bb",
+            "fontSize": "14px"
+          }
+        }
+      ]
+    }
+  ]
+}
