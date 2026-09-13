@@ -1,3 +1,14 @@
+export type RuntimeStatusType = "stun" | "slow" | "burn" | "poison" | "shield";
+
+export interface RuntimeStatusEffect {
+  type: RuntimeStatusType;
+  expiresAt: number;
+  magnitude: number;
+  tickInterval: number;
+  nextTickAt: number;
+  sourceId?: string;
+}
+
 export interface RuntimeUnit {
   id: string;
   x: number;
@@ -13,7 +24,15 @@ export interface RuntimeUnit {
   facingAngle: number;
   attackStateUntil: number;
   attackAnimationDuration: number;
+  attackWindupDuration: number;
+  pendingAttackAt: number;
+  pendingAttackTargetId?: string;
   deathAnimationDuration: number;
+  statuses: Partial<Record<RuntimeStatusType, RuntimeStatusEffect>>;
+  shield: number;
+  knockbackVelocityX: number;
+  knockbackVelocityY: number;
+  isDying: boolean;
   hp: number;
   maxHp: number;
 
@@ -56,7 +75,9 @@ export interface RuntimeUnitSpawnOptions {
   collisionRadius?: number;
   separationStrength?: number;
   attackAnimationDuration?: number;
+  attackWindupDuration?: number;
   deathAnimationDuration?: number;
+  shield?: number;
   hp?: number;
   team?: string;
   teamColor?: string;
@@ -94,6 +115,7 @@ const UNIT_CLASS_PRESETS = {
     attackDamage: 24,
     attackRange: 80,
     attackCooldown: 700,
+    attackWindupDuration: 120,
     projectileSpeed: 0,
     projectileType: "none" as const,
     splashRadius: 0,
@@ -108,6 +130,7 @@ const UNIT_CLASS_PRESETS = {
     attackDamage: 14,
     attackRange: 320,
     attackCooldown: 950,
+    attackWindupDuration: 180,
     projectileSpeed: 850,
     projectileType: "arrow" as const,
     splashRadius: 0,
@@ -122,6 +145,7 @@ const UNIT_CLASS_PRESETS = {
     attackDamage: 22,
     attackRange: 280,
     attackCooldown: 1200,
+    attackWindupDuration: 300,
     projectileSpeed: 600,
     projectileType: "orb" as const,
     splashRadius: 90,
@@ -136,6 +160,7 @@ const UNIT_CLASS_PRESETS = {
     attackDamage: 38,
     attackRange: 360,
     attackCooldown: 1600,
+    attackWindupDuration: 400,
     projectileSpeed: 500,
     projectileType: "shell" as const,
     splashRadius: 120,
@@ -225,6 +250,25 @@ const updateElement = (unit: RuntimeUnit) => {
   element.style.setProperty("--runtime-facing-y", String(unit.facingY));
   element.style.setProperty("--runtime-facing-angle", `${unit.facingAngle}deg`);
   element.setAttribute("data-runtime-command", unit.command);
+
+  const activeStatuses = Object.keys(unit.statuses);
+
+  if (activeStatuses.length > 0) {
+    element.setAttribute("data-runtime-statuses", activeStatuses.join(" "));
+  } else {
+    element.removeAttribute("data-runtime-statuses");
+  }
+
+  const slowStatus = unit.statuses.slow;
+  const slowMultiplier = slowStatus
+    ? Math.max(0.1, 1 - Math.min(0.9, slowStatus.magnitude))
+    : 1;
+
+  element.style.setProperty("--runtime-shield", String(unit.shield));
+  element.style.setProperty(
+    "--runtime-slow-multiplier",
+    String(slowMultiplier),
+  );
 
   if (unit.attackTargetId) {
     element.setAttribute("data-runtime-attack-target", unit.attackTargetId);
@@ -632,9 +676,25 @@ const getMeleeAttackPosition = (attacker: RuntimeUnit, target: RuntimeUnit) => {
 const updateCombat = (time: number) => {
   let hasCombatActivity = false;
 
-  const deadUnitIds = new Set<string>();
-
   units.forEach((unit) => {
+    if (unit.hp <= 0 || unit.isDying) {
+      return;
+    }
+
+    if (hasRuntimeStatus(unit, "stun")) {
+      unit.pendingAttackTargetId = undefined;
+      unit.pendingAttackAt = 0;
+      unit.targetX = unit.x;
+      unit.targetY = unit.y;
+
+      return;
+    }
+
+    if (unit.pendingAttackTargetId) {
+      hasCombatActivity = true;
+      resolvePendingAttack(unit, time);
+    }
+
     const targetId = unit.attackTargetId;
 
     if (!targetId) {
@@ -642,7 +702,7 @@ const updateCombat = (time: number) => {
     }
 
     const target = units.get(targetId);
-    if (!target || target.hp <= 0) {
+    if (!target || target.hp <= 0 || target.isDying) {
       resumeUnitCommand(unit);
 
       return;
@@ -677,6 +737,10 @@ const updateCombat = (time: number) => {
         : unit.attackRange;
 
     if (distance > effectiveRange) {
+      if (unit.pendingAttackTargetId) {
+        return;
+      }
+
       if (unit.unitType === "melee") {
         const attackPosition = getMeleeAttackPosition(unit, target);
         const next = clampUnitPosition(
@@ -698,6 +762,10 @@ const updateCombat = (time: number) => {
     unit.targetX = unit.x;
     unit.targetY = unit.y;
 
+    if (unit.pendingAttackTargetId) {
+      return;
+    }
+
     const elapsed = time - unit.lastAttackTime;
 
     if (elapsed < unit.attackCooldown) {
@@ -705,57 +773,20 @@ const updateCombat = (time: number) => {
     }
 
     unit.lastAttackTime = time;
+    unit.pendingAttackTargetId = target.id;
+    unit.pendingAttackAt = time + unit.attackWindupDuration;
     setUnitAnimationState(unit, "attack");
     unit.attackStateUntil = time + unit.attackAnimationDuration;
 
     dispatchRuntimeEvent("runtime-unit-attack", {
       unitId: unit.id,
       targetId: target.id,
+      windup: unit.attackWindupDuration,
       unit,
       target,
     });
 
     playAttackEffect(unit);
-
-    if (unit.unitType === "ranged") {
-      fireProjectile(unit, target);
-
-      return;
-    }
-
-    const previousHp = target.hp;
-
-    target.hp = Math.max(0, target.hp - unit.attackDamage);
-
-    dispatchRuntimeEvent("runtime-unit-damage", {
-      unitId: target.id,
-      attackerId: unit.id,
-      amount: previousHp - target.hp,
-      hp: target.hp,
-      maxHp: target.maxHp,
-      unit: target,
-      attacker: unit,
-    });
-
-    playHitEffect(target);
-    updateUnitHealth(target);
-
-    if (target.hp <= 0) {
-      grantKillReward(unit, target);
-      deadUnitIds.add(target.id);
-    }
-  });
-
-  deadUnitIds.forEach((id) => {
-    const deadUnit = units.get(id);
-
-    if (!deadUnit) {
-      return;
-    }
-
-    playDeathEffect(deadUnit, () => {
-      removeRuntimeUnit(id);
-    });
   });
 
   return hasCombatActivity;
@@ -840,6 +871,12 @@ const grantKillReward = (attacker: RuntimeUnit, target?: RuntimeUnit) => {
 };
 
 const playDeathEffect = (unit: RuntimeUnit, onComplete: () => void) => {
+  if (unit.isDying) {
+    return;
+  }
+
+  unit.isDying = true;
+
   const deathGeneration = runtimeGeneration;
   const element = getUnitElement(unit.id);
 
@@ -983,6 +1020,230 @@ const applyProjectileStyle = (
   }
 };
 
+const getSlowMultiplier = (unit: RuntimeUnit) => {
+  const status = unit.statuses.slow;
+
+  if (!status) {
+    return 1;
+  }
+
+  return Math.max(0.1, 1 - Math.min(0.9, status.magnitude));
+};
+
+const hasRuntimeStatus = (unit: RuntimeUnit, type: RuntimeStatusType) => {
+  return Boolean(unit.statuses[type]);
+};
+
+const removeRuntimeStatus = (unit: RuntimeUnit, type: RuntimeStatusType) => {
+  const status = unit.statuses[type];
+
+  if (!status) {
+    return false;
+  }
+
+  delete unit.statuses[type];
+
+  if (type === "shield") {
+    unit.shield = 0;
+  }
+
+  dispatchRuntimeEvent("runtime-unit-status-remove", {
+    unitId: unit.id,
+    type,
+    unit,
+  });
+
+  updateElement(unit);
+
+  return true;
+};
+
+const addRuntimeStatus = (
+  unit: RuntimeUnit,
+  type: RuntimeStatusType,
+  duration: number,
+  magnitude: number,
+  sourceId?: string,
+) => {
+  const now = performance.now();
+  const safeDuration = Math.max(0, duration);
+  const safeMagnitude = Math.max(0, magnitude);
+  const tickInterval = type === "burn" ? 500 : type === "poison" ? 1000 : 0;
+
+  unit.statuses[type] = {
+    type,
+    expiresAt: now + safeDuration,
+    magnitude: safeMagnitude,
+    tickInterval,
+    nextTickAt: tickInterval > 0 ? now + tickInterval : 0,
+    sourceId,
+  };
+
+  if (type === "shield") {
+    unit.shield = safeMagnitude;
+  }
+
+  dispatchRuntimeEvent("runtime-unit-status-add", {
+    unitId: unit.id,
+    type,
+    duration: safeDuration,
+    magnitude: safeMagnitude,
+    sourceId,
+    unit,
+  });
+
+  updateElement(unit);
+  ensureLoop();
+
+  return true;
+};
+
+const applyRuntimeDamage = (
+  target: RuntimeUnit,
+  amount: number,
+  attacker?: RuntimeUnit,
+  damageType = "normal",
+) => {
+  if (target.hp <= 0 || target.isDying) {
+    return 0;
+  }
+
+  let remainingDamage = Math.max(0, amount);
+  const previousShield = target.shield;
+
+  if (target.shield > 0 && remainingDamage > 0) {
+    const absorbed = Math.min(target.shield, remainingDamage);
+
+    target.shield -= absorbed;
+    remainingDamage -= absorbed;
+
+    if (target.shield <= 0 && target.statuses.shield) {
+      delete target.statuses.shield;
+    }
+
+    dispatchRuntimeEvent("runtime-unit-shield-damage", {
+      unitId: target.id,
+      attackerId: attacker?.id,
+      absorbed,
+      shield: target.shield,
+      unit: target,
+      attacker,
+    });
+  }
+
+  const previousHp = target.hp;
+
+  target.hp = Math.max(0, target.hp - remainingDamage);
+
+  const hpDamage = previousHp - target.hp;
+
+  if (hpDamage > 0 || previousShield !== target.shield) {
+    dispatchRuntimeEvent("runtime-unit-damage", {
+      unitId: target.id,
+      attackerId: attacker?.id,
+      amount: hpDamage,
+      absorbed: previousShield - target.shield,
+      damageType,
+      hp: target.hp,
+      maxHp: target.maxHp,
+      shield: target.shield,
+      unit: target,
+      attacker,
+    });
+
+    playHitEffect(target);
+    updateUnitHealth(target);
+    updateElement(target);
+  }
+
+  if (target.hp <= 0) {
+    if (attacker && attacker.id !== target.id) {
+      grantKillReward(attacker, target);
+    }
+
+    playDeathEffect(target, () => {
+      removeRuntimeUnit(target.id);
+    });
+  }
+
+  return hpDamage;
+};
+
+const updateRuntimeStatuses = (time: number) => {
+  let hasActivity = false;
+
+  units.forEach((unit) => {
+    if (unit.hp <= 0 || unit.isDying) {
+      return;
+    }
+
+    const entries = Object.entries(unit.statuses) as [
+      RuntimeStatusType,
+      RuntimeStatusEffect,
+    ][];
+
+    entries.forEach(([type, status]) => {
+      if (time >= status.expiresAt) {
+        removeRuntimeStatus(unit, type);
+
+        return;
+      }
+
+      if (Number.isFinite(status.expiresAt)) {
+        hasActivity = true;
+      }
+
+      if (
+        (type === "burn" || type === "poison") &&
+        status.tickInterval > 0 &&
+        time >= status.nextTickAt
+      ) {
+        const source = status.sourceId ? units.get(status.sourceId) : undefined;
+
+        status.nextTickAt = time + status.tickInterval;
+
+        applyRuntimeDamage(unit, status.magnitude, source, type);
+      }
+    });
+  });
+
+  return hasActivity;
+};
+
+const resolvePendingAttack = (unit: RuntimeUnit, time: number) => {
+  const targetId = unit.pendingAttackTargetId;
+
+  if (!targetId || time < unit.pendingAttackAt) {
+    return false;
+  }
+
+  unit.pendingAttackTargetId = undefined;
+  unit.pendingAttackAt = 0;
+
+  const target = units.get(targetId);
+
+  if (!target || target.hp <= 0 || target.isDying) {
+    return true;
+  }
+
+  if (unit.unitType === "ranged") {
+    fireProjectile(unit, target);
+
+    return true;
+  }
+
+  applyRuntimeDamage(target, unit.attackDamage, unit);
+
+  dispatchRuntimeEvent("runtime-unit-attack-hit", {
+    unitId: unit.id,
+    targetId: target.id,
+    unit,
+    target,
+  });
+
+  return true;
+};
+
 const applySplashDamage = (
   attacker: RuntimeUnit,
   impactTarget: RuntimeUnit,
@@ -1023,32 +1284,8 @@ const applySplashDamage = (
 
     const damageScale = 1 - Math.min(1, distance / attacker.splashRadius) * 0.5;
     const damage = attacker.attackDamage * damageScale;
-    const wasAlive = unit.hp > 0;
 
-    const previousHp = unit.hp;
-
-    unit.hp = Math.max(0, unit.hp - damage);
-
-    dispatchRuntimeEvent("runtime-unit-damage", {
-      unitId: unit.id,
-      attackerId: attacker.id,
-      amount: previousHp - unit.hp,
-      hp: unit.hp,
-      maxHp: unit.maxHp,
-      unit,
-      attacker,
-    });
-
-    playHitEffect(unit);
-    updateUnitHealth(unit);
-
-    if (wasAlive && unit.hp <= 0) {
-      grantKillReward(attacker, unit);
-
-      playDeathEffect(unit, () => {
-        removeRuntimeUnit(unit.id);
-      });
-    }
+    applyRuntimeDamage(unit, damage, attacker, "splash");
   });
 };
 
@@ -1153,30 +1390,12 @@ const fireProjectile = (attacker: RuntimeUnit, target: RuntimeUnit) => {
       return;
     }
 
-    const previousHp = liveTarget.hp;
-
-    liveTarget.hp = Math.max(0, liveTarget.hp - attacker.attackDamage);
-
-    dispatchRuntimeEvent("runtime-unit-damage", {
-      unitId: liveTarget.id,
-      attackerId: attacker.id,
-      amount: previousHp - liveTarget.hp,
-      hp: liveTarget.hp,
-      maxHp: liveTarget.maxHp,
-      unit: liveTarget,
+    applyRuntimeDamage(
+      liveTarget,
+      attacker.attackDamage,
       attacker,
-    });
-
-    playHitEffect(liveTarget);
-    updateUnitHealth(liveTarget);
-
-    if (liveTarget.hp <= 0) {
-      grantKillReward(attacker, liveTarget);
-
-      playDeathEffect(liveTarget, () => {
-        removeRuntimeUnit(liveTarget.id);
-      });
-    }
+      "projectile",
+    );
   };
 
   animation.oncancel = cleanup;
@@ -1271,12 +1490,40 @@ const tick = (time: number) => {
 
   const arrivalRadius = 2;
   const slowRadius = 120;
+  const hasStatusActivity = updateRuntimeStatuses(time);
   const hasAggroActivity = updateAggro();
 
-  let hasActivity = updateCombat(time) || hasAggroActivity;
+  let hasActivity = updateCombat(time) || hasAggroActivity || hasStatusActivity;
   const unitList = Array.from(units.values());
 
   unitList.forEach((unit) => {
+    const knockbackSpeed = Math.hypot(
+      unit.knockbackVelocityX,
+      unit.knockbackVelocityY,
+    );
+
+    if (knockbackSpeed > 1) {
+      unit.x += unit.knockbackVelocityX * delta;
+      unit.y += unit.knockbackVelocityY * delta;
+
+      const damping = Math.exp(-10 * delta);
+
+      unit.knockbackVelocityX *= damping;
+      unit.knockbackVelocityY *= damping;
+      hasActivity = true;
+    } else {
+      unit.knockbackVelocityX = 0;
+      unit.knockbackVelocityY = 0;
+    }
+
+    if (hasRuntimeStatus(unit, "stun")) {
+      unit.targetX = unit.x;
+      unit.targetY = unit.y;
+      setUnitAnimationState(unit, "idle");
+
+      return;
+    }
+
     const dx = unit.targetX - unit.x;
     const dy = unit.targetY - unit.y;
     const distance = Math.hypot(dx, dy);
@@ -1305,7 +1552,7 @@ const tick = (time: number) => {
 
     const speedFactor =
       distance < slowRadius ? Math.max(distance / slowRadius, 0.15) : 1;
-    const currentSpeed = unit.speed * speedFactor;
+    const currentSpeed = unit.speed * speedFactor * getSlowMultiplier(unit);
     const moveDistance = Math.min(currentSpeed * delta, distance);
     const directionX = dx / distance;
     const directionY = dy / distance;
@@ -1468,7 +1715,16 @@ export const runtimeUnits = {
       facingAngle: 0,
       attackStateUntil: 0,
       attackAnimationDuration: options.attackAnimationDuration ?? 180,
+      attackWindupDuration:
+        options.attackWindupDuration ?? preset?.attackWindupDuration ?? 90,
+      pendingAttackAt: 0,
+      pendingAttackTargetId: undefined,
       deathAnimationDuration: options.deathAnimationDuration ?? 350,
+      statuses: {},
+      shield: Math.max(0, options.shield ?? 0),
+      knockbackVelocityX: 0,
+      knockbackVelocityY: 0,
+      isDying: false,
       hp,
       maxHp: hp,
       team,
@@ -1499,6 +1755,16 @@ export const runtimeUnits = {
         (unitType === "ranged" ? "arrow" : "none"),
       splashRadius: options.splashRadius ?? preset?.splashRadius ?? 0,
     };
+
+    if (unit.shield > 0) {
+      unit.statuses.shield = {
+        type: "shield",
+        expiresAt: Number.POSITIVE_INFINITY,
+        magnitude: unit.shield,
+        tickInterval: 0,
+        nextTickAt: 0,
+      };
+    }
 
     units.set(id, unit);
     updateElement(unit);
@@ -1540,6 +1806,8 @@ export const runtimeUnits = {
 
     unit.attackTargetId = undefined;
     unit.aggroTargetId = undefined;
+    unit.pendingAttackTargetId = undefined;
+    unit.pendingAttackAt = 0;
 
     const target = clampUnitPosition(unit, x, y);
     unit.targetX = target.x;
@@ -1576,6 +1844,8 @@ export const runtimeUnits = {
       facingAngle: unit.facingAngle,
       command: unit.command,
       attackTargetId: unit.attackTargetId,
+      shield: unit.shield,
+      statuses: { ...unit.statuses },
     };
   },
   setAnimationState(id: string, state: RuntimeUnitAnimationState) {
@@ -1618,6 +1888,8 @@ export const runtimeUnits = {
       facingAngle: unit.facingAngle,
       command: unit.command,
       attackTargetId: unit.attackTargetId,
+      shield: unit.shield,
+      statuses: { ...unit.statuses },
     }));
   },
   remove(id: string) {
@@ -1664,6 +1936,9 @@ export const runtimeUnits = {
       element.removeAttribute("data-runtime-facing");
       element.removeAttribute("data-runtime-command");
       element.removeAttribute("data-runtime-attack-target");
+      element.removeAttribute("data-runtime-statuses");
+      element.style.removeProperty("--runtime-shield");
+      element.style.removeProperty("--runtime-slow-multiplier");
       element.style.removeProperty("--runtime-facing-x");
       element.style.removeProperty("--runtime-facing-y");
       element.style.removeProperty("--runtime-facing-angle");
@@ -1785,6 +2060,8 @@ export const runtimeUnits = {
     selected.forEach((unit) => {
       unit.attackTargetId = undefined;
       unit.aggroTargetId = undefined;
+      unit.pendingAttackTargetId = undefined;
+      unit.pendingAttackAt = 0;
     });
 
     targets.forEach((target) => {
@@ -1842,19 +2119,134 @@ export const runtimeUnits = {
   },
   damage(id: string, amount: number) {
     const unit = units.get(id);
+
     if (!unit) {
       return false;
     }
 
-    unit.hp = Math.max(0, unit.hp - Math.max(0, amount));
-    playHitEffect(unit);
-    updateUnitHealth(unit);
+    applyRuntimeDamage(unit, amount);
 
-    if (unit.hp <= 0) {
-      playDeathEffect(unit, () => {
-        removeRuntimeUnit(id);
-      });
+    return true;
+  },
+  addStatus(
+    id: string,
+    type: RuntimeStatusType,
+    duration: number,
+    magnitude = 0,
+    sourceId?: string,
+  ) {
+    const unit = units.get(id);
+
+    if (!unit || unit.hp <= 0 || unit.isDying) {
+      return false;
     }
+
+    return addRuntimeStatus(unit, type, duration, magnitude, sourceId);
+  },
+  removeStatus(id: string, type: RuntimeStatusType) {
+    const unit = units.get(id);
+
+    if (!unit) {
+      return false;
+    }
+
+    return removeRuntimeStatus(unit, type);
+  },
+  stun(id: string, duration: number, sourceId?: string) {
+    const unit = units.get(id);
+
+    if (!unit || unit.hp <= 0 || unit.isDying) {
+      return false;
+    }
+
+    return addRuntimeStatus(unit, "stun", duration, 0, sourceId);
+  },
+  slow(id: string, duration: number, amount = 0.4, sourceId?: string) {
+    const unit = units.get(id);
+
+    if (!unit || unit.hp <= 0 || unit.isDying) {
+      return false;
+    }
+
+    return addRuntimeStatus(unit, "slow", duration, amount, sourceId);
+  },
+  burn(id: string, duration: number, damagePerTick = 5, sourceId?: string) {
+    const unit = units.get(id);
+
+    if (!unit || unit.hp <= 0 || unit.isDying) {
+      return false;
+    }
+
+    return addRuntimeStatus(unit, "burn", duration, damagePerTick, sourceId);
+  },
+  poison(id: string, duration: number, damagePerTick = 3, sourceId?: string) {
+    const unit = units.get(id);
+
+    if (!unit || unit.hp <= 0 || unit.isDying) {
+      return false;
+    }
+
+    return addRuntimeStatus(unit, "poison", duration, damagePerTick, sourceId);
+  },
+  shield(
+    id: string,
+    amount: number,
+    duration = Number.POSITIVE_INFINITY,
+    sourceId?: string,
+  ) {
+    const unit = units.get(id);
+
+    if (!unit || unit.hp <= 0 || unit.isDying) {
+      return false;
+    }
+
+    return addRuntimeStatus(unit, "shield", duration, amount, sourceId);
+  },
+  clearStatuses(id: string) {
+    const unit = units.get(id);
+
+    if (!unit) {
+      return false;
+    }
+
+    const types = Object.keys(unit.statuses) as RuntimeStatusType[];
+
+    types.forEach((type) => {
+      removeRuntimeStatus(unit, type);
+    });
+
+    return true;
+  },
+  knockback(
+    id: string,
+    directionX: number,
+    directionY: number,
+    strength = 600,
+  ) {
+    const unit = units.get(id);
+
+    if (!unit || unit.hp <= 0 || unit.isDying) {
+      return false;
+    }
+
+    const length = Math.hypot(directionX, directionY);
+
+    if (length <= 0) {
+      return false;
+    }
+
+    unit.knockbackVelocityX = (directionX / length) * Math.max(0, strength);
+    unit.knockbackVelocityY = (directionY / length) * Math.max(0, strength);
+
+    dispatchRuntimeEvent("runtime-unit-knockback", {
+      unitId: unit.id,
+      directionX: directionX / length,
+      directionY: directionY / length,
+      strength: Math.max(0, strength),
+      unit,
+    });
+
+    ensureLoop();
 
     return true;
   },

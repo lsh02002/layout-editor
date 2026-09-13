@@ -28,6 +28,7 @@ import ComponentDragHandle from "./ComponentDragHandle";
 import { builderState } from "../editor/utils/builderState";
 import {
   runtimeUnits,
+  type RuntimeStatusType,
   type RuntimeUnitSpawnOptions,
 } from "../editor/utils/RuntimeUnitManager";
 
@@ -311,6 +312,65 @@ function LayoutComponentNode({
         },
         damage(id: string, amount: number) {
           return runtimeUnits.damage(id, amount);
+        },
+        addStatus(
+          id: string,
+          type: RuntimeStatusType,
+          duration: number,
+          magnitude = 0,
+          sourceId?: string,
+        ) {
+          return runtimeUnits.addStatus(
+            id,
+            type,
+            duration,
+            magnitude,
+            sourceId,
+          );
+        },
+        removeStatus(id: string, type: RuntimeStatusType) {
+          return runtimeUnits.removeStatus(id, type);
+        },
+        stun(id: string, duration: number, sourceId?: string) {
+          return runtimeUnits.stun(id, duration, sourceId);
+        },
+        slow(id: string, duration: number, amount = 0.4, sourceId?: string) {
+          return runtimeUnits.slow(id, duration, amount, sourceId);
+        },
+        burn(
+          id: string,
+          duration: number,
+          damagePerTick = 5,
+          sourceId?: string,
+        ) {
+          return runtimeUnits.burn(id, duration, damagePerTick, sourceId);
+        },
+        poison(
+          id: string,
+          duration: number,
+          damagePerTick = 3,
+          sourceId?: string,
+        ) {
+          return runtimeUnits.poison(id, duration, damagePerTick, sourceId);
+        },
+        shield(
+          id: string,
+          amount: number,
+          duration = Number.POSITIVE_INFINITY,
+          sourceId?: string,
+        ) {
+          return runtimeUnits.shield(id, amount, duration, sourceId);
+        },
+        clearStatuses(id: string) {
+          return runtimeUnits.clearStatuses(id);
+        },
+        knockback(
+          id: string,
+          directionX: number,
+          directionY: number,
+          strength = 600,
+        ) {
+          return runtimeUnits.knockback(id, directionX, directionY, strength);
         },
         attackSelected(targetId: string) {
           return runtimeUnits.attackSelected(targetId);

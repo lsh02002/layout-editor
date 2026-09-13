@@ -36,7 +36,7 @@
           "type": "heading",
           "order": 0,
           "props": {
-            "text": "RTS FULL FEATURE TEST ARENA",
+            "text": "RTS FULL FEATURE TEST ARENA\n\nSTATUS EFFECT TEST\n1. SPAWN MIXED → 혼합 병과 생성/초기화\n2. FORCE BATTLE → Attack-Move 전투\n3. 콘솔/JS Action에서 아래 API 테스트",
             "level": 2
           },
           "layout": {
@@ -900,5 +900,6 @@
         }
       ]
     }
-  ]
+  ],
+  "runtimeTestNotes": "STATUS EFFECT TEST\\n1. SPAWN MIXED → 혼합 병과 생성/초기화\\n2. FORCE BATTLE → Attack-Move 전투\\n3. 콘솔/JS Action에서 아래 API 테스트\\nbuilder.units.stun('red-knight-1', 2000)\\nbuilder.units.slow('red-tank-1', 0.45, 5000)\\nbuilder.units.burn('red-tank-1', 8, 5000, 'blue-mage-1')\\nbuilder.units.poison('red-archer-1', 5, 7000, 'blue-archer-1')\\nbuilder.units.shield('blue-knight-1', 80, 8000)\\nbuilder.units.knockback('red-knight-1', 120, 0, 120)\\nbuilder.units.getStats('blue-knight-1')"
 }
