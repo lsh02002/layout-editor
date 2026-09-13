@@ -58,6 +58,29 @@ export async function renderComponentToHtml(
   });
 }
 
+const minifyExportHtml = (html: string) => {
+  const protectedBlocks: string[] = [];
+
+  const protectedHtml = html.replace(
+    /<(script|style|pre|textarea)\b[\s\S]*?<\/\1>/gi,
+    (block) => {
+      const index = protectedBlocks.push(block) - 1;
+
+      return `__BUILDER_PROTECTED_BLOCK_${index}__`;
+    },
+  );
+
+  const minifiedHtml = protectedHtml
+    .replace(/\r?\n/g, " ")
+    .replace(/>\s+</g, "><")
+    .trim();
+
+  return minifiedHtml.replace(
+    /__BUILDER_PROTECTED_BLOCK_(\d+)__/g,
+    (_, index) => protectedBlocks[Number(index)] ?? "",
+  );
+};
+
 export const buildHtmlDocument = async (
   componentRegistry: ComponentRegistry,
   components: LayoutComponent[],
@@ -108,7 +131,7 @@ export const buildHtmlDocument = async (
     )
   ).join("");
 
-  const htmlDocument = `<!doctype html>
+  const html = `<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
@@ -993,7 +1016,7 @@ export const buildHtmlDocument = async (
 </body>
 </html>`;
 
-  return htmlDocument.replace(/\r?\n/g, "").trim();
+  return minifyExportHtml(html);
 };
 
 const fallbackDownloadHtml = (html: string, fileName: string) => {
