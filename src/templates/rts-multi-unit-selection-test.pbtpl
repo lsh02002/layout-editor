@@ -1,0 +1,629 @@
+{
+  "version": 1,
+  "templateType": "project",
+  "name": "RTS Multi Unit Selection Test",
+  "createdAt": "2026-09-13T05:22:28.560313Z",
+  "components": [
+    {
+      "id": "rts-page-001",
+      "name": "RTS Multi Unit Selection Test",
+      "type": "container",
+      "order": 0,
+      "props": {
+        "direction": "column",
+        "gap": 16,
+        "justifyContent": "flex-start",
+        "alignItems": "stretch"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "maxWidth": "1000px",
+        "margin": "0 auto",
+        "padding": "24px",
+        "boxSizing": "border-box",
+        "background": "#0c1220",
+        "color": "#f0f5ff",
+        "borderRadius": "16px"
+      },
+      "children": [
+        {
+          "id": "rts-title-001",
+          "name": "Title",
+          "type": "heading",
+          "order": 0,
+          "props": {
+            "text": "RTS MULTI UNIT SELECTION TEST",
+            "level": 2
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "contentStyle": {
+            "margin": "0",
+            "textAlign": "center"
+          }
+        },
+        {
+          "id": "rts-desc-001",
+          "name": "Description",
+          "type": "quill",
+          "order": 1,
+          "props": {
+            "value": "<p>Preview 진입 → Spawn 12 Units 클릭 → 드래그 박스로 다중 선택 → Shift+클릭/Shift+드래그로 추가·해제 → 맵 빈 곳 우클릭으로 이동</p>",
+            "placeholder": "",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "color": "#a9b6d1"
+          }
+        },
+        {
+          "id": "rts-spawn-button-001",
+          "name": "Spawn 12 Units",
+          "type": "button",
+          "order": 2,
+          "props": {
+            "title": "Spawn 12 Units",
+            "disabled": false,
+            "action": {
+              "type": "none",
+              "payload": null
+            }
+          },
+          "layout": {
+            "widthMode": "auto",
+            "positionParentId": null
+          },
+          "style": {
+            "padding": "10px 16px",
+            "borderRadius": "8px"
+          },
+          "jsActions": [
+            {
+              "id": "rts-action-spawn-multi-001",
+              "event": "click",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false,
+              "code": "builder.units.spawn(\n  \"rts-unit-001\",\n  { x: 90, y: 110, speed: 180, hp: 100 },\n);\n\nbuilder.units.spawn(\n  \"rts-unit-002\",\n  { x: 180, y: 110, speed: 180, hp: 100 },\n);\n\nbuilder.units.spawn(\n  \"rts-unit-003\",\n  { x: 270, y: 110, speed: 180, hp: 100 },\n);\n\nbuilder.units.spawn(\n  \"rts-unit-004\",\n  { x: 360, y: 110, speed: 180, hp: 100 },\n);\n\nbuilder.units.spawn(\n  \"rts-unit-005\",\n  { x: 90, y: 210, speed: 180, hp: 100 },\n);\n\nbuilder.units.spawn(\n  \"rts-unit-006\",\n  { x: 180, y: 210, speed: 180, hp: 100 },\n);\n\nbuilder.units.spawn(\n  \"rts-unit-007\",\n  { x: 270, y: 210, speed: 180, hp: 100 },\n);\n\nbuilder.units.spawn(\n  \"rts-unit-008\",\n  { x: 360, y: 210, speed: 180, hp: 100 },\n);\n\nbuilder.units.spawn(\n  \"rts-unit-009\",\n  { x: 90, y: 310, speed: 180, hp: 100 },\n);\n\nbuilder.units.spawn(\n  \"rts-unit-010\",\n  { x: 180, y: 310, speed: 180, hp: 100 },\n);\n\nbuilder.units.spawn(\n  \"rts-unit-011\",\n  { x: 270, y: 310, speed: 180, hp: 100 },\n);\n\nbuilder.units.spawn(\n  \"rts-unit-012\",\n  { x: 360, y: 310, speed: 180, hp: 100 },\n);"
+            }
+          ]
+        },
+        {
+          "id": "rts-map-001",
+          "name": "Multi Unit Battlefield",
+          "type": "container",
+          "order": 3,
+          "props": {
+            "direction": "column",
+            "gap": 0,
+            "justifyContent": "flex-start",
+            "alignItems": "stretch"
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "height": "620px",
+            "minHeight": "620px",
+            "position": "relative",
+            "overflow": "hidden",
+            "background": "#172436",
+            "border": "2px solid #304a68",
+            "borderRadius": "12px",
+            "boxSizing": "border-box"
+          },
+          "children": [
+            {
+              "id": "rts-map-label-001",
+              "name": "Map Label",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "BATTLEFIELD · BOX SELECT / SHIFT / RIGHT CLICK",
+                "level": 4
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "margin": "14px",
+                "textAlign": "center",
+                "color": "#7890ad",
+                "pointerEvents": "none"
+              }
+            },
+            {
+              "id": "rts-unit-001",
+              "name": "Unit A1",
+              "type": "button",
+              "order": 1,
+              "props": {
+                "title": "A1",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-map-001",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "64px",
+                "height": "64px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#2f7dd3",
+                "border": "3px solid #92c7ff",
+                "color": "#ffffff",
+                "fontWeight": "700",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box"
+              }
+            },
+            {
+              "id": "rts-unit-002",
+              "name": "Unit A2",
+              "type": "button",
+              "order": 2,
+              "props": {
+                "title": "A2",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-map-001",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "64px",
+                "height": "64px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#2f7dd3",
+                "border": "3px solid #92c7ff",
+                "color": "#ffffff",
+                "fontWeight": "700",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box"
+              }
+            },
+            {
+              "id": "rts-unit-003",
+              "name": "Unit A3",
+              "type": "button",
+              "order": 3,
+              "props": {
+                "title": "A3",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-map-001",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "64px",
+                "height": "64px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#2f7dd3",
+                "border": "3px solid #92c7ff",
+                "color": "#ffffff",
+                "fontWeight": "700",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box"
+              }
+            },
+            {
+              "id": "rts-unit-004",
+              "name": "Unit A4",
+              "type": "button",
+              "order": 4,
+              "props": {
+                "title": "A4",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-map-001",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "64px",
+                "height": "64px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#2f7dd3",
+                "border": "3px solid #92c7ff",
+                "color": "#ffffff",
+                "fontWeight": "700",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box"
+              }
+            },
+            {
+              "id": "rts-unit-005",
+              "name": "Unit B1",
+              "type": "button",
+              "order": 5,
+              "props": {
+                "title": "B1",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-map-001",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "64px",
+                "height": "64px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#16a085",
+                "border": "3px solid #8ff0d4",
+                "color": "#ffffff",
+                "fontWeight": "700",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box"
+              }
+            },
+            {
+              "id": "rts-unit-006",
+              "name": "Unit B2",
+              "type": "button",
+              "order": 6,
+              "props": {
+                "title": "B2",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-map-001",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "64px",
+                "height": "64px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#16a085",
+                "border": "3px solid #8ff0d4",
+                "color": "#ffffff",
+                "fontWeight": "700",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box"
+              }
+            },
+            {
+              "id": "rts-unit-007",
+              "name": "Unit B3",
+              "type": "button",
+              "order": 7,
+              "props": {
+                "title": "B3",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-map-001",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "64px",
+                "height": "64px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#16a085",
+                "border": "3px solid #8ff0d4",
+                "color": "#ffffff",
+                "fontWeight": "700",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box"
+              }
+            },
+            {
+              "id": "rts-unit-008",
+              "name": "Unit B4",
+              "type": "button",
+              "order": 8,
+              "props": {
+                "title": "B4",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-map-001",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "64px",
+                "height": "64px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#16a085",
+                "border": "3px solid #8ff0d4",
+                "color": "#ffffff",
+                "fontWeight": "700",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box"
+              }
+            },
+            {
+              "id": "rts-unit-009",
+              "name": "Unit C1",
+              "type": "button",
+              "order": 9,
+              "props": {
+                "title": "C1",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-map-001",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "64px",
+                "height": "64px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#9b59b6",
+                "border": "3px solid #ddb8ed",
+                "color": "#ffffff",
+                "fontWeight": "700",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box"
+              }
+            },
+            {
+              "id": "rts-unit-010",
+              "name": "Unit C2",
+              "type": "button",
+              "order": 10,
+              "props": {
+                "title": "C2",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-map-001",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "64px",
+                "height": "64px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#9b59b6",
+                "border": "3px solid #ddb8ed",
+                "color": "#ffffff",
+                "fontWeight": "700",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box"
+              }
+            },
+            {
+              "id": "rts-unit-011",
+              "name": "Unit C3",
+              "type": "button",
+              "order": 11,
+              "props": {
+                "title": "C3",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-map-001",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "64px",
+                "height": "64px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#9b59b6",
+                "border": "3px solid #ddb8ed",
+                "color": "#ffffff",
+                "fontWeight": "700",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box"
+              }
+            },
+            {
+              "id": "rts-unit-012",
+              "name": "Unit C4",
+              "type": "button",
+              "order": 12,
+              "props": {
+                "title": "C4",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "position": "absolute",
+                "positionParentId": "rts-map-001",
+                "left": 0,
+                "top": 0
+              },
+              "style": {
+                "position": "absolute",
+                "left": "0px",
+                "top": "0px",
+                "width": "64px",
+                "height": "64px",
+                "padding": "0",
+                "borderRadius": "50%",
+                "background": "#9b59b6",
+                "border": "3px solid #ddb8ed",
+                "color": "#ffffff",
+                "fontWeight": "700",
+                "cursor": "pointer",
+                "willChange": "transform",
+                "zIndex": "5",
+                "boxSizing": "border-box"
+              }
+            }
+          ]
+        },
+        {
+          "id": "rts-help-001",
+          "name": "Help",
+          "type": "quill",
+          "order": 4,
+          "props": {
+            "value": "<p><strong>테스트:</strong> 12개 유닛을 Spawn한 뒤 박스 선택, Shift 추가 선택, Shift 선택 해제, 빈 공간 클릭 해제, 우클릭 이동을 확인하세요.</p>",
+            "placeholder": "",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "color": "#8fc1ff"
+          }
+        }
+      ]
+    }
+  ]
+}

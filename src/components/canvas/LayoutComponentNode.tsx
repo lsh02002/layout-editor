@@ -115,6 +115,7 @@ function LayoutComponentNode({
   } | null>(null);
   const [runtimeSelectionVisible, setRuntimeSelectionVisible] = useState(false);
   const runtimeSelectionMoved = useRef(false);
+  const runtimeSelectionAppended = useRef(false);
 
   const textBinding = component.stateBindings?.find(
     (binding) => binding.target === "text",
@@ -867,6 +868,14 @@ function LayoutComponentNode({
         }
       : null;
 
+  const clearRuntimeSelectionPreview = () => {
+    document
+      .querySelectorAll<HTMLElement>('[data-runtime-preview-selected="true"]')
+      .forEach((element) => {
+        element.removeAttribute("data-runtime-preview-selected");
+      });
+  };
+
   const nodeStyle = {
     display: previewMode && !isStateVisible ? "none" : undefined,
 
@@ -1277,6 +1286,9 @@ function LayoutComponentNode({
             return;
           }
 
+          event.preventDefault();
+          event.stopPropagation();
+
           const rect = event.currentTarget.getBoundingClientRect();
           const x = event.clientX - rect.left;
           const y = event.clientY - rect.top;
@@ -1286,30 +1298,34 @@ function LayoutComponentNode({
             y,
           });
 
-          runtimeSelectionMoved.current = false;
-          setRuntimeSelectionVisible(false);
-
           setRuntimeSelectionCurrent({
             x,
             y,
           });
 
-          event.preventDefault();
-          event.stopPropagation();
+          runtimeSelectionMoved.current = false;
+          runtimeSelectionAppended.current = event.shiftKey;
+          setRuntimeSelectionVisible(false);
+          clearRuntimeSelectionPreview();
 
           event.currentTarget.setPointerCapture(event.pointerId);
         }}
         onPointerMove={(event) => {
-          if (!previewMode || !runtimeSelectionStart) {
+          if (!previewMode) {
             return;
           }
 
-          const rect = event.currentTarget.getBoundingClientRect();
-          const x = event.clientX - rect.left;
-          const y = event.clientY - rect.top;
+          const selectionStart = runtimeSelectionStart;
+          if (!selectionStart) {
+            return;
+          }
+
+          const mapRect = event.currentTarget.getBoundingClientRect();
+          const x = event.clientX - mapRect.left;
+          const y = event.clientY - mapRect.top;
           const distance = Math.hypot(
-            x - runtimeSelectionStart.x,
-            y - runtimeSelectionStart.y,
+            x - selectionStart.x,
+            y - selectionStart.y,
           );
 
           if (!runtimeSelectionMoved.current && distance < 5) {
@@ -1322,6 +1338,38 @@ function LayoutComponentNode({
             x,
             y,
           });
+
+          clearRuntimeSelectionPreview();
+
+          const left = Math.min(selectionStart.x, x);
+          const top = Math.min(selectionStart.y, y);
+          const right = Math.max(selectionStart.x, x);
+          const bottom = Math.max(selectionStart.y, y);
+
+          event.currentTarget
+            .querySelectorAll<HTMLElement>("[data-runtime-unit-id]")
+            .forEach((element) => {
+              const id = element.dataset.runtimeUnitId;
+
+              if (!id || !runtimeUnits.get(id)) {
+                return;
+              }
+
+              const rect = element.getBoundingClientRect();
+              const elementLeft = rect.left - mapRect.left;
+              const elementTop = rect.top - mapRect.top;
+              const elementRight = elementLeft + rect.width;
+              const elementBottom = elementTop + rect.height;
+              const inside =
+                elementRight >= left &&
+                elementLeft <= right &&
+                elementBottom >= top &&
+                elementTop <= bottom;
+
+              if (inside) {
+                element.setAttribute("data-runtime-preview-selected", "true");
+              }
+            });
         }}
         onPointerUp={(event) => {
           if (!previewMode || !runtimeSelectionStart) {
@@ -1331,7 +1379,9 @@ function LayoutComponentNode({
           const currentTarget = event.currentTarget;
 
           if (!runtimeSelectionMoved.current) {
-            runtimeUnits.clearSelected();
+            if (!runtimeSelectionAppended.current) {
+              runtimeUnits.clearSelected();
+            }
 
             runtimeSelectionMoved.current = false;
 
@@ -1368,20 +1418,29 @@ function LayoutComponentNode({
               }
 
               const rect = element.getBoundingClientRect();
-              const centerX = rect.left - mapRect.left + rect.width / 2;
-              const centerY = rect.top - mapRect.top + rect.height / 2;
+              const elementLeft = rect.left - mapRect.left;
+              const elementTop = rect.top - mapRect.top;
+              const elementRight = elementLeft + rect.width;
+              const elementBottom = elementTop + rect.height;
 
               return (
-                centerX >= left &&
-                centerX <= right &&
-                centerY >= top &&
-                centerY <= bottom
+                elementRight >= left &&
+                elementLeft <= right &&
+                elementBottom >= top &&
+                elementTop <= bottom
               );
             })
             .map((element) => element.dataset.runtimeUnitId!);
 
-          runtimeUnits.selectMany(selectedIds);
+          runtimeUnits.selectMany(
+            selectedIds,
+            runtimeSelectionAppended.current,
+          );
+
+          clearRuntimeSelectionPreview();
+
           runtimeSelectionMoved.current = false;
+          runtimeSelectionAppended.current = false;
 
           setRuntimeSelectionStart(null);
           setRuntimeSelectionCurrent(null);
@@ -1392,7 +1451,10 @@ function LayoutComponentNode({
           }
         }}
         onPointerCancel={(event) => {
+          clearRuntimeSelectionPreview();
+
           runtimeSelectionMoved.current = false;
+          runtimeSelectionAppended.current = false;
           setRuntimeSelectionVisible(false);
 
           setRuntimeSelectionStart(null);

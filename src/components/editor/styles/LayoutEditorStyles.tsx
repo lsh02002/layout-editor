@@ -220,6 +220,14 @@ function LayoutEditorStyles() {
           0 0 18px rgba(56, 189, 248, 0.65);
       }
 
+      [data-runtime-unit-id][data-runtime-preview-selected="true"] {
+        outline: 2px solid #7dd3fc !important;
+        outline-offset: 4px;
+        box-shadow:
+          0 0 0 2px rgba(125, 211, 252, 0.18),
+          0 0 14px rgba(125, 211, 252, 0.45);
+      }
+
       @media (max-width: 767.98px) {
         .editor-side-panel {
           width: min(88vw, 340px);

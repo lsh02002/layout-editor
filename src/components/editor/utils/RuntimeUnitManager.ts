@@ -139,24 +139,31 @@ export const runtimeUnits = {
       return false;
     }
 
+    if (append && selectedUnitIds.has(id)) {
+      selectedUnitIds.delete(id);
+      const element = document.querySelector<HTMLElement>(
+        `[data-runtime-unit-id="${CSS.escape(id)}"]`,
+      );
+
+      element?.removeAttribute("data-runtime-selected");
+      return true;
+    }
+
     if (!append) {
-      selectedUnitIds.forEach((selectedId: string) => {
+      selectedUnitIds.forEach((selectedId) => {
         const previousElement = document.querySelector<HTMLElement>(
           `[data-runtime-unit-id="${CSS.escape(selectedId)}"]`,
         );
 
         previousElement?.removeAttribute("data-runtime-selected");
       });
-
       selectedUnitIds.clear();
     }
-
     selectedUnitIds.add(id);
 
     const element = document.querySelector<HTMLElement>(
       `[data-runtime-unit-id="${CSS.escape(id)}"]`,
     );
-
     element?.setAttribute("data-runtime-selected", "true");
 
     return true;
@@ -205,16 +212,18 @@ export const runtimeUnits = {
 
     return true;
   },
-  selectMany(ids: string[]) {
-    selectedUnitIds.forEach((selectedId) => {
-      const element = document.querySelector<HTMLElement>(
-        `[data-runtime-unit-id="${CSS.escape(selectedId)}"]`,
-      );
+  selectMany(ids: string[], append = false) {
+    if (!append) {
+      selectedUnitIds.forEach((selectedId) => {
+        const element = document.querySelector<HTMLElement>(
+          `[data-runtime-unit-id="${CSS.escape(selectedId)}"]`,
+        );
 
-      element?.removeAttribute("data-runtime-selected");
-    });
+        element?.removeAttribute("data-runtime-selected");
+      });
 
-    selectedUnitIds.clear();
+      selectedUnitIds.clear();
+    }
 
     ids.forEach((id) => {
       if (!units.has(id)) {
