@@ -840,6 +840,7 @@ const grantKillReward = (attacker: RuntimeUnit, target?: RuntimeUnit) => {
 };
 
 const playDeathEffect = (unit: RuntimeUnit, onComplete: () => void) => {
+  const deathGeneration = runtimeGeneration;
   const element = getUnitElement(unit.id);
 
   if (!element) {
@@ -878,6 +879,14 @@ const playDeathEffect = (unit: RuntimeUnit, onComplete: () => void) => {
   );
 
   animation.onfinish = () => {
+    if (deathGeneration !== runtimeGeneration) {
+      return;
+    }
+
+    if (units.get(unit.id) !== unit) {
+      return;
+    }
+
     onComplete();
   };
 };
@@ -1631,6 +1640,8 @@ export const runtimeUnits = {
       if (!element) {
         return;
       }
+
+      element.getAnimations().forEach((animation) => animation.cancel());
 
       element.removeAttribute("data-runtime-selected");
       element.removeAttribute("data-runtime-preview-selected");
