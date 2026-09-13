@@ -6,6 +6,16 @@ export interface RuntimeUnit {
   targetY: number;
   speed: number;
   hp: number;
+  maxHp: number;
+
+  team: string;
+
+  attackDamage: number;
+  attackRange: number;
+  attackCooldown: number;
+
+  lastAttackTime: number;
+  attackTargetId?: string;
 }
 
 const units = new Map<string, RuntimeUnit>();
@@ -31,6 +41,37 @@ const getUnitElement = (id: string) => {
   return document.querySelector<HTMLElement>(
     `[data-runtime-unit-id="${CSS.escape(id)}"]`,
   );
+};
+
+const updateUnitHealth = (unit: RuntimeUnit) => {
+  const element = getUnitElement(unit.id);
+
+  if (!element) {
+    return;
+  }
+
+  const ratio =
+    unit.maxHp > 0 ? Math.max(0, Math.min(1, unit.hp / unit.maxHp)) : 0;
+
+  element.setAttribute("data-runtime-hp", String(unit.hp));
+  element.setAttribute("data-runtime-max-hp", String(unit.maxHp));
+  element.style.setProperty("--runtime-hp-ratio", String(ratio));
+
+  const healthBar = element.querySelector<HTMLElement>(
+    "[data-runtime-health-bar]",
+  );
+
+  if (healthBar) {
+    healthBar.style.width = `${ratio * 100}%`;
+  }
+
+  const healthText = element.querySelector<HTMLElement>(
+    "[data-runtime-health-text]",
+  );
+
+  if (healthText) {
+    healthText.textContent = `${Math.ceil(unit.hp)} / ${Math.ceil(unit.maxHp)}`;
+  }
 };
 
 const getUnitSize = (id: string) => {
@@ -85,6 +126,81 @@ const clampUnitPosition = (unit: RuntimeUnit, x: number, y: number) => {
   };
 };
 
+const updateCombat = (time: number) => {
+  let hasCombatActivity = false;
+
+  const deadUnitIds = new Set<string>();
+
+  units.forEach((unit) => {
+    const targetId = unit.attackTargetId;
+
+    if (!targetId) {
+      return;
+    }
+
+    const target = units.get(targetId);
+
+    if (!target || target.hp <= 0) {
+      unit.attackTargetId = undefined;
+
+      unit.targetX = unit.x;
+
+      unit.targetY = unit.y;
+
+      return;
+    }
+
+    const unitElement = getUnitElement(unit.id);
+    const targetElement = getUnitElement(target.id);
+
+    if (!unitElement || !targetElement) {
+      return;
+    }
+
+    const unitRect = unitElement.getBoundingClientRect();
+    const targetRect = targetElement.getBoundingClientRect();
+    const unitCenterX = unitRect.left + unitRect.width / 2;
+    const unitCenterY = unitRect.top + unitRect.height / 2;
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const targetCenterY = targetRect.top + targetRect.height / 2;
+    const dx = targetCenterX - unitCenterX;
+    const dy = targetCenterY - unitCenterY;
+    const distance = Math.hypot(dx, dy);
+
+    hasCombatActivity = true;
+
+    if (distance > unit.attackRange) {
+      unit.targetX = unit.x + dx;
+      unit.targetY = unit.y + dy;
+      return;
+    }
+
+    unit.targetX = unit.x;
+    unit.targetY = unit.y;
+
+    const elapsed = time - unit.lastAttackTime;
+
+    if (elapsed < unit.attackCooldown) {
+      return;
+    }
+
+    unit.lastAttackTime = time;
+    target.hp = Math.max(0, target.hp - unit.attackDamage);
+
+    updateUnitHealth(target);
+
+    if (target.hp <= 0) {
+      deadUnitIds.add(target.id);
+    }
+  });
+
+  deadUnitIds.forEach((id) => {
+    removeRuntimeUnit(id);
+  });
+
+  return hasCombatActivity;
+};
+
 const tick = (time: number) => {
   if (!lastTime) {
     lastTime = time;
@@ -98,8 +214,7 @@ const tick = (time: number) => {
   const slowRadius = 120;
   const separationEpsilon = 0.5;
 
-  let hasActivity = false;
-
+  let hasActivity = updateCombat(time);
   const unitList = Array.from(units.values());
 
   unitList.forEach((unit) => {
@@ -225,6 +340,77 @@ const ensureLoop = () => {
   frameId = requestAnimationFrame(tick);
 };
 
+const removeRuntimeUnit = (id: string) => {
+  const unit = units.get(id);
+
+  if (!unit) {
+    return false;
+  }
+
+  units.delete(id);
+  selectedUnitIds.delete(id);
+
+  const element = getUnitElement(id);
+
+  if (element) {
+    element.removeAttribute("data-runtime-selected");
+
+    element.removeAttribute("data-runtime-preview-selected");
+
+    element.setAttribute("data-runtime-dead", "true");
+
+    element.style.display = "none";
+  }
+
+  units.forEach((otherUnit) => {
+    if (otherUnit.attackTargetId === id) {
+      otherUnit.attackTargetId = undefined;
+
+      otherUnit.targetX = otherUnit.x;
+
+      otherUnit.targetY = otherUnit.y;
+    }
+  });
+
+  return true;
+};
+
+const attackUnit = (attackerId: string, targetId: string) => {
+  if (attackerId === targetId) {
+    return false;
+  }
+
+  const attacker = units.get(attackerId);
+  const target = units.get(targetId);
+
+  if (!attacker || !target) {
+    return false;
+  }
+
+  if (attacker.team === target.team) {
+    return false;
+  }
+
+  attacker.attackTargetId = targetId;
+  ensureLoop();
+
+  return true;
+};
+
+const stopAttackUnit = (id: string) => {
+  const unit = units.get(id);
+
+  if (!unit) {
+    return false;
+  }
+
+  unit.attackTargetId = undefined;
+  unit.targetX = unit.x;
+  unit.targetY = unit.y;
+
+  return true;
+};
+
 export const runtimeUnits = {
   spawn(
     id: string,
@@ -233,6 +419,10 @@ export const runtimeUnits = {
       y?: number;
       speed?: number;
       hp?: number;
+      team?: string;
+      attackDamage?: number;
+      attackRange?: number;
+      attackCooldown?: number;
     } = {},
   ) {
     const element = document.querySelector<HTMLElement>(
@@ -245,6 +435,8 @@ export const runtimeUnits = {
       return null;
     }
 
+    const hp = options.hp ?? 100;
+
     const unit: RuntimeUnit = {
       id,
       x: options.x ?? 0,
@@ -253,13 +445,28 @@ export const runtimeUnits = {
       targetY: options.y ?? 0,
       speed: options.speed ?? 120,
       hp: options.hp ?? 100,
+      maxHp: hp,
+      team: options.team ?? "neutral",
+      attackDamage: options.attackDamage ?? 10,
+      attackRange: options.attackRange ?? 100,
+      attackCooldown: options.attackCooldown ?? 800,
+      lastAttackTime: 0,
+      attackTargetId: undefined,
     };
 
     units.set(id, unit);
-
     updateElement(unit);
-    ensureLoop();
 
+    const runtimeElement = getUnitElement(id);
+
+    if (runtimeElement) {
+      runtimeElement.setAttribute("data-runtime-team", unit.team);
+      runtimeElement.removeAttribute("data-runtime-dead");
+      runtimeElement.style.removeProperty("display");
+    }
+
+    updateUnitHealth(unit);
+    ensureLoop();
     console.log("[runtimeUnits] spawned:", unit);
 
     return unit;
@@ -270,6 +477,8 @@ export const runtimeUnits = {
     if (!unit) {
       return false;
     }
+
+    unit.attackTargetId = undefined;
 
     const target = clampUnitPosition(unit, x, y);
     unit.targetX = target.x;
@@ -283,10 +492,30 @@ export const runtimeUnits = {
     return units.get(id);
   },
   remove(id: string) {
-    selectedUnitIds.delete(id);
-    return units.delete(id);
+    return removeRuntimeUnit(id);
   },
   clear() {
+    selectedUnitIds.forEach((id) => {
+      const element = getUnitElement(id);
+
+      element?.removeAttribute("data-runtime-selected");
+    });
+
+    units.forEach((unit) => {
+      const element = getUnitElement(unit.id);
+
+      if (!element) {
+        return;
+      }
+
+      element.removeAttribute("data-runtime-selected");
+      element.removeAttribute("data-runtime-preview-selected");
+      element.removeAttribute("data-runtime-dead");
+      element.removeAttribute("data-runtime-team");
+      element.style.removeProperty("display");
+      element.style.removeProperty("transform");
+    });
+
     units.clear();
     selectedUnitIds.clear();
   },
@@ -388,6 +617,10 @@ export const runtimeUnits = {
       correctionY = firstBounds.height - maxY;
     }
 
+    selected.forEach((unit) => {
+      unit.attackTargetId = undefined;
+    });
+
     targets.forEach((target) => {
       const next = clampUnitPosition(
         target.unit,
@@ -432,5 +665,58 @@ export const runtimeUnits = {
     });
 
     return Array.from(selectedUnitIds);
+  },
+  attack(attackerId: string, targetId: string) {
+    return attackUnit(attackerId, targetId);
+  },
+  stopAttack(id: string) {
+    return stopAttackUnit(id);
+  },
+  damage(id: string, amount: number) {
+    const unit = units.get(id);
+    if (!unit) {
+      return false;
+    }
+
+    unit.hp = Math.max(0, unit.hp - Math.max(0, amount));
+
+    updateUnitHealth(unit);
+
+    if (unit.hp <= 0) {
+      removeRuntimeUnit(id);
+    }
+
+    return true;
+  },
+  attackSelected(targetId: string) {
+    const target = units.get(targetId);
+    if (!target) {
+      return false;
+    }
+
+    let attackCount = 0;
+
+    selectedUnitIds.forEach((id) => {
+      const attacker = units.get(id);
+
+      if (
+        !attacker ||
+        attacker.id === target.id ||
+        attacker.team === target.team
+      ) {
+        return;
+      }
+
+      attacker.attackTargetId = target.id;
+      attackCount += 1;
+    });
+
+    if (attackCount === 0) {
+      return false;
+    }
+
+    ensureLoop();
+
+    return true;
   },
 };

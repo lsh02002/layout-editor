@@ -271,6 +271,10 @@ function LayoutComponentNode({
             y?: number;
             speed?: number;
             hp?: number;
+            team?: string;
+            attackDamage?: number;
+            attackRange?: number;
+            attackCooldown?: number;
           },
         ) {
           return runtimeUnits.spawn(id, options);
@@ -298,6 +302,18 @@ function LayoutComponentNode({
         },
         remove(id: string) {
           return runtimeUnits.remove(id);
+        },
+        attack(attackerId: string, targetId: string) {
+          return runtimeUnits.attack(attackerId, targetId);
+        },
+        stopAttack(id: string) {
+          return runtimeUnits.stopAttack(id);
+        },
+        damage(id: string, amount: number) {
+          return runtimeUnits.damage(id, amount);
+        },
+        attackSelected(targetId: string) {
+          return runtimeUnits.attackSelected(targetId);
         },
         clear() {
           runtimeUnits.clear();
@@ -1271,9 +1287,8 @@ function LayoutComponentNode({
           event.stopPropagation();
 
           const rect = event.currentTarget.getBoundingClientRect();
-          const unitSize = 72;
-          const x = event.clientX - rect.left - unitSize / 2;
-          const y = event.clientY - rect.top - unitSize / 2;
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
 
           runtimeUnits.moveSelectedTo(x, y);
         }}
@@ -1572,12 +1587,35 @@ function LayoutComponentNode({
           return;
         }
 
-        if (!runtimeUnits.get(component.id)) {
+        const clickedUnit = runtimeUnits.get(component.id);
+
+        if (clickedUnit) {
+          const selectedIds = runtimeUnits.getSelected();
+
+          const selectedUnits = selectedIds
+            .map((id) => runtimeUnits.get(id))
+            .filter(
+              (
+                unit,
+              ): unit is NonNullable<ReturnType<typeof runtimeUnits.get>> =>
+                Boolean(unit),
+            );
+
+          const canAttack = selectedUnits.some(
+            (unit) => unit.team !== clickedUnit.team,
+          );
+
+          if (canAttack) {
+            runtimeUnits.attackSelected(clickedUnit.id);
+          } else {
+            runtimeUnits.select(clickedUnit.id, event.shiftKey);
+          }
+
+          event.preventDefault();
+          event.stopPropagation();
+
           return;
         }
-
-        event.stopPropagation();
-        runtimeUnits.select(component.id, event.shiftKey);
       }}
     >
       <DivBox
