@@ -385,18 +385,24 @@ export function InputRenderer({
 }: {
   component: ComponentOf<"input">;
 }) {
+  const valueBinding = component.stateBindings?.find(
+    (binding) => binding.target === "value",
+  );
+
   return (
     <input
       type={component.props.inputType ?? "text"}
-      defaultValue={component.props.value ?? ""}
-      placeholder={component.props.placeholder ?? ""}
-      name={component.props.name ?? ""}
-      disabled={component.props.disabled ?? false}
-      className="form-control"
-      style={{
-        width: "100%",
-        ...component.contentStyle,
-      }}
+      {...(valueBinding
+        ? {
+            value: component.props.value ?? "",
+            readOnly: true,
+          }
+        : {
+            defaultValue: component.props.value ?? "",
+          })}
+      placeholder={component.props.placeholder}
+      name={component.props.name}
+      disabled={component.props.disabled}
     />
   );
 }

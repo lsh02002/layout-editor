@@ -5,6 +5,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type DragEvent,
   type PointerEvent,
   type ReactNode,
@@ -14,6 +15,7 @@ import { createPortal } from "react-dom";
 import DivBox from "./DivBox";
 import {
   isLayoutContainer,
+  type CanvasComponent,
   type ComponentLayout,
   type ContainerDirection,
   type LayoutComponent,
@@ -91,10 +93,40 @@ function LayoutComponentNode({
   onPointerDragCancel,
   snapLayout,
 }: Props) {
+  useSyncExternalStore(
+    builderState.subscribe,
+    builderState.getVersion,
+    builderState.getVersion,
+  );
+
   const [renderedWidth, setRenderedWidth] = useState<number>(0);
   const [editToolbarVisible, setEditToolbarVisible] = useState(false);
   const [positionParentElement, setPositionParentElement] =
     useState<HTMLElement | null>(null);
+
+  const textBinding = component.stateBindings?.find(
+    (binding) => binding.target === "text",
+  );
+
+  const valueBinding = component.stateBindings?.find(
+    (binding) => binding.target === "value",
+  );
+
+  const visibleBinding = component.stateBindings?.find(
+    (binding) => binding.target === "visible",
+  );
+
+  const boundText = textBinding
+    ? builderState.get(textBinding.stateKey, "")
+    : undefined;
+
+  const boundValue = valueBinding
+    ? builderState.get(valueBinding.stateKey, "")
+    : undefined;
+
+  const isStateVisible = visibleBinding
+    ? Boolean(builderState.get(visibleBinding.stateKey, true))
+    : true;
 
   const isSelected = selectedComponentIds.includes(component.id);
   const isPrimarySelected = selectedComponentIds.at(-1) === component.id;
@@ -777,6 +809,8 @@ function LayoutComponentNode({
     component.type === "container" ? component.props.maxWidth : undefined;
 
   const nodeStyle = {
+    display: previewMode && !isStateVisible ? "none" : undefined,
+
     position: isAbsolute ? ("absolute" as const) : ("relative" as const),
     left: isAbsolute ? (component.layout?.x ?? 0) : undefined,
     top: isAbsolute ? (component.layout?.y ?? 0) : undefined,
@@ -842,6 +876,10 @@ function LayoutComponentNode({
     return [...componentChildren].sort((a, b) => a.order - b.order);
   }, [componentChildren]);
 
+  if (!isStateVisible) {
+    return null;
+  }
+
   const renderChildNode = (child: LayoutComponent) => (
     <LayoutComponentNode
       previewMode={previewMode}
@@ -870,6 +908,29 @@ function LayoutComponentNode({
       snapLayout={snapLayout}
     />
   );
+
+  const canvasComponent = component as CanvasComponent;
+  let boundComponent: CanvasComponent = canvasComponent;
+
+  if (previewMode && textBinding && "text" in canvasComponent.props) {
+    boundComponent = {
+      ...canvasComponent,
+      props: {
+        ...canvasComponent.props,
+        text: String(boundText ?? ""),
+      },
+    } as CanvasComponent;
+  }
+
+  if (previewMode && valueBinding && "value" in canvasComponent.props) {
+    boundComponent = {
+      ...boundComponent,
+      props: {
+        ...boundComponent.props,
+        value: String(boundValue ?? ""),
+      },
+    } as CanvasComponent;
+  }
 
   if (component.type === "grid") {
     const children = sortedChildren;
@@ -1238,7 +1299,7 @@ function LayoutComponentNode({
         }}
       >
         {dragHandleView}
-        <CanvasComponentContent component={component} />
+        <CanvasComponentContent component={boundComponent} />
       </DivBox>
     </div>,
   );

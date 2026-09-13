@@ -13,6 +13,13 @@ export type LinkType = "url" | "tel" | "email";
 
 export type SizeMode = "auto" | "fill" | "fixed";
 
+export type StateBindingTarget = "text" | "value" | "visible";
+
+export interface StateBinding {
+  target: StateBindingTarget;
+  stateKey: string;
+}
+
 export interface ComponentLayout {
   position?: "relative" | "absolute";
   widthMode?: SizeMode;
@@ -80,6 +87,8 @@ export type BaseComponent<
   contentStyle?: CSSProperties;
   jsActions?: ComponentJsAction[];
   customCss?: string;
+
+  stateBindings?: StateBinding[];
 };
 export interface ButtonComponent extends BaseComponent {
   type: "button";

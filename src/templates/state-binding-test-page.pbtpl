@@ -1,0 +1,464 @@
+{
+  "version": 1,
+  "templateType": "project",
+  "name": "State Binding Test Page",
+  "createdAt": "2026-09-13T01:17:43.509084Z",
+  "components": [
+    {
+      "id": "binding-root",
+      "name": "State Binding Test",
+      "type": "container",
+      "order": 0,
+      "props": {
+        "direction": "column",
+        "gap": 18,
+        "justifyContent": "flex-start",
+        "alignItems": "stretch"
+      },
+      "layout": {
+        "widthMode": "fill",
+        "positionParentId": null
+      },
+      "style": {
+        "width": "100%",
+        "maxWidth": "760px",
+        "margin": "0 auto",
+        "padding": "32px 24px",
+        "boxSizing": "border-box"
+      },
+      "children": [
+        {
+          "id": "test-title",
+          "name": "Test Title",
+          "type": "heading",
+          "order": 0,
+          "props": {
+            "text": "State Binding 테스트",
+            "level": 1
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "fontSize": "34px"
+          }
+        },
+        {
+          "id": "test-desc",
+          "name": "Instructions",
+          "type": "quill",
+          "order": 1,
+          "props": {
+            "value": "<p>Preview에서 아래 버튼을 눌러 <strong>text / value / visible</strong> 바인딩이 자동 반영되는지 확인하세요.</p>",
+            "placeholder": "",
+            "disabled": false
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "fontSize": "15px"
+          }
+        },
+        {
+          "id": "bound-score-heading",
+          "name": "Bound Score Heading",
+          "type": "heading",
+          "order": 2,
+          "props": {
+            "text": "아직 score 없음",
+            "level": 2
+          },
+          "stateBindings": [
+            {
+              "target": "text",
+              "stateKey": "score"
+            }
+          ],
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "contentStyle": {
+            "textAlign": "center",
+            "fontSize": "28px"
+          }
+        },
+        {
+          "id": "bound-name-input",
+          "name": "Bound Name Input",
+          "type": "input",
+          "order": 3,
+          "props": {
+            "value": "아직 name 없음",
+            "inputType": "text",
+            "placeholder": "",
+            "name": "boundName",
+            "disabled": true
+          },
+          "stateBindings": [
+            {
+              "target": "value",
+              "stateKey": "name"
+            }
+          ],
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "padding": "12px",
+            "textAlign": "center",
+            "borderRadius": "8px"
+          }
+        },
+        {
+          "id": "bound-visible-box",
+          "name": "Bound Visible Box",
+          "type": "container",
+          "order": 4,
+          "props": {
+            "direction": "column",
+            "gap": 8,
+            "justifyContent": "center",
+            "alignItems": "stretch"
+          },
+          "stateBindings": [
+            {
+              "target": "visible",
+              "stateKey": "panelVisible"
+            }
+          ],
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%",
+            "padding": "20px",
+            "boxSizing": "border-box",
+            "border": "1px solid #cbd5e1",
+            "borderRadius": "12px"
+          },
+          "children": [
+            {
+              "id": "visible-box-title",
+              "name": "Visible Box Title",
+              "type": "heading",
+              "order": 0,
+              "props": {
+                "text": "👀 visible 바인딩 영역",
+                "level": 3
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "20px"
+              }
+            },
+            {
+              "id": "visible-box-desc",
+              "name": "Visible Box Description",
+              "type": "quill",
+              "order": 1,
+              "props": {
+                "value": "<p>panelVisible이 false면 Preview에서 이 박스 전체가 사라져야 합니다.</p>",
+                "placeholder": "",
+                "disabled": false
+              },
+              "layout": {
+                "widthMode": "fill",
+                "positionParentId": null
+              },
+              "style": {
+                "width": "100%"
+              },
+              "contentStyle": {
+                "textAlign": "center",
+                "fontSize": "14px"
+              }
+            }
+          ]
+        },
+        {
+          "id": "control-row-1",
+          "name": "Control Row 1",
+          "type": "container",
+          "order": 5,
+          "props": {
+            "direction": "row",
+            "gap": 10,
+            "justifyContent": "center",
+            "alignItems": "stretch"
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          },
+          "children": [
+            {
+              "id": "btn-init",
+              "name": "Initialize State",
+              "type": "button",
+              "order": 0,
+              "props": {
+                "title": "초기값 넣기",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "positionParentId": null
+              },
+              "style": {
+                "padding": "11px 16px",
+                "borderRadius": "8px"
+              },
+              "jsActions": [
+                {
+                  "id": "act-init",
+                  "event": "click",
+                  "code": "builder.state.set(\"score\", 10);\nbuilder.state.set(\"name\", \"홍길동\");\nbuilder.state.set(\"panelVisible\", true);",
+                  "enabled": true,
+                  "stopPropagation": false,
+                  "preventDefault": false
+                }
+              ]
+            },
+            {
+              "id": "btn-score-plus",
+              "name": "Score Plus",
+              "type": "button",
+              "order": 1,
+              "props": {
+                "title": "score + 1",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "positionParentId": null
+              },
+              "style": {
+                "padding": "11px 16px",
+                "borderRadius": "8px"
+              },
+              "jsActions": [
+                {
+                  "id": "act-score-plus",
+                  "event": "click",
+                  "code": "builder.state.add(\"score\", 1);",
+                  "enabled": true,
+                  "stopPropagation": false,
+                  "preventDefault": false
+                }
+              ]
+            },
+            {
+              "id": "btn-score-minus",
+              "name": "Score Minus",
+              "type": "button",
+              "order": 2,
+              "props": {
+                "title": "score - 1",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "positionParentId": null
+              },
+              "style": {
+                "padding": "11px 16px",
+                "borderRadius": "8px"
+              },
+              "jsActions": [
+                {
+                  "id": "act-score-minus",
+                  "event": "click",
+                  "code": "builder.state.add(\"score\", -1);",
+                  "enabled": true,
+                  "stopPropagation": false,
+                  "preventDefault": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "control-row-2",
+          "name": "Control Row 2",
+          "type": "container",
+          "order": 6,
+          "props": {
+            "direction": "row",
+            "gap": 10,
+            "justifyContent": "center",
+            "alignItems": "stretch"
+          },
+          "layout": {
+            "widthMode": "fill",
+            "positionParentId": null
+          },
+          "style": {
+            "width": "100%"
+          },
+          "children": [
+            {
+              "id": "btn-name-a",
+              "name": "Set Name A",
+              "type": "button",
+              "order": 0,
+              "props": {
+                "title": "name = Alice",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "positionParentId": null
+              },
+              "style": {
+                "padding": "11px 16px",
+                "borderRadius": "8px"
+              },
+              "jsActions": [
+                {
+                  "id": "act-name-a",
+                  "event": "click",
+                  "code": "builder.state.set(\"name\", \"Alice\");",
+                  "enabled": true,
+                  "stopPropagation": false,
+                  "preventDefault": false
+                }
+              ]
+            },
+            {
+              "id": "btn-name-b",
+              "name": "Set Name B",
+              "type": "button",
+              "order": 1,
+              "props": {
+                "title": "name = Builder",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "positionParentId": null
+              },
+              "style": {
+                "padding": "11px 16px",
+                "borderRadius": "8px"
+              },
+              "jsActions": [
+                {
+                  "id": "act-name-b",
+                  "event": "click",
+                  "code": "builder.state.set(\"name\", \"Builder\");",
+                  "enabled": true,
+                  "stopPropagation": false,
+                  "preventDefault": false
+                }
+              ]
+            },
+            {
+              "id": "btn-toggle-panel",
+              "name": "Toggle Panel",
+              "type": "button",
+              "order": 2,
+              "props": {
+                "title": "박스 보이기/숨기기",
+                "disabled": false,
+                "action": {
+                  "type": "none",
+                  "payload": null
+                }
+              },
+              "layout": {
+                "widthMode": "auto",
+                "positionParentId": null
+              },
+              "style": {
+                "padding": "11px 16px",
+                "borderRadius": "8px"
+              },
+              "jsActions": [
+                {
+                  "id": "act-toggle-panel",
+                  "event": "click",
+                  "code": "builder.state.toggle(\"panelVisible\");",
+                  "enabled": true,
+                  "stopPropagation": false,
+                  "preventDefault": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "btn-reset",
+          "name": "Reset State",
+          "type": "button",
+          "order": 7,
+          "props": {
+            "title": "State 전체 reset",
+            "disabled": false,
+            "action": {
+              "type": "none",
+              "payload": null
+            }
+          },
+          "layout": {
+            "widthMode": "auto",
+            "positionParentId": null
+          },
+          "style": {
+            "padding": "11px 16px",
+            "borderRadius": "8px",
+            "alignSelf": "center"
+          },
+          "jsActions": [
+            {
+              "id": "act-reset",
+              "event": "click",
+              "code": "builder.state.reset();",
+              "enabled": true,
+              "stopPropagation": false,
+              "preventDefault": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
