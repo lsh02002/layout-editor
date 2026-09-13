@@ -108,7 +108,7 @@ export const buildHtmlDocument = async (
     )
   ).join("");
 
-  return `<!doctype html>
+  const htmlDocument = `<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
@@ -992,6 +992,8 @@ export const buildHtmlDocument = async (
   </script>
 </body>
 </html>`;
+
+  return htmlDocument.replace(/\r?\n/g, "").trim();
 };
 
 const fallbackDownloadHtml = (html: string, fileName: string) => {
