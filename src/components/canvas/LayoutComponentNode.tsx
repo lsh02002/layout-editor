@@ -26,7 +26,10 @@ import CanvasComponentContent from "./CanvasComponentContent";
 import CanvasDropZone, { type CanvasDropTarget } from "./CanvasDropZone";
 import ComponentDragHandle from "./ComponentDragHandle";
 import { builderState } from "../editor/utils/builderState";
-import { runtimeUnits } from "../editor/utils/RuntimeUnitManager";
+import {
+  runtimeUnits,
+  type RuntimeUnitSpawnOptions,
+} from "../editor/utils/RuntimeUnitManager";
 
 type Props = {
   previewMode: boolean;
@@ -270,20 +273,7 @@ function LayoutComponentNode({
     return {
       state: builderState,
       units: {
-        spawn(
-          id: string,
-          options?: {
-            x?: number;
-            y?: number;
-            speed?: number;
-            hp?: number;
-            team?: string;
-            attackDamage?: number;
-            attackRange?: number;
-            attackCooldown?: number;
-            aggroRange?: number;
-          },
-        ) {
+        spawn(id: string, options?: RuntimeUnitSpawnOptions) {
           return runtimeUnits.spawn(id, options);
         },
         moveTo(id: string, x: number, y: number) {
@@ -306,6 +296,9 @@ function LayoutComponentNode({
         },
         get(id: string) {
           return runtimeUnits.get(id);
+        },
+        getStats(id: string) {
+          return runtimeUnits.getStats(id);
         },
         remove(id: string) {
           return runtimeUnits.remove(id);

@@ -9,6 +9,13 @@ export interface RuntimeUnit {
   maxHp: number;
 
   team: string;
+  teamColor: string;
+
+  unitType: "melee" | "ranged";
+
+  unitClass: "custom" | "knight" | "archer" | "mage" | "tank";
+  projectileType: "none" | "arrow" | "orb" | "shell";
+  splashRadius: number;
 
   attackDamage: number;
   attackRange: number;
@@ -23,14 +30,115 @@ export interface RuntimeUnit {
   commandTargetY?: number;
 
   aggroRange: number;
+  aggroLeashRange: number;
+
+  kills: number;
+  experience: number;
+
+  aggroTargetId?: string;
+
+  projectileSpeed: number; // Units per second
+}
+
+export interface RuntimeUnitSpawnOptions {
+  x?: number;
+  y?: number;
+  speed?: number;
+  hp?: number;
+  team?: string;
+  teamColor?: string;
+  unitType?: "melee" | "ranged";
+  unitClass?: "custom" | "knight" | "archer" | "mage" | "tank";
+  attackDamage?: number;
+  attackRange?: number;
+  attackCooldown?: number;
+  aggroRange?: number;
+  aggroLeashRange?: number;
+  projectileSpeed?: number;
+  projectileType?: "none" | "arrow" | "orb" | "shell";
+  splashRadius?: number;
 }
 
 const units = new Map<string, RuntimeUnit>();
 
 const selectedUnitIds = new Set<string>();
 
+const TEAM_COLORS: Record<string, string> = {
+  blue: "#3b82f6",
+  red: "#ef4444",
+  green: "#22c55e",
+  yellow: "#eab308",
+  purple: "#a855f7",
+  neutral: "#94a3b8",
+};
+
+const UNIT_CLASS_PRESETS = {
+  knight: {
+    unitType: "melee" as const,
+    hp: 180,
+    speed: 110,
+    attackDamage: 24,
+    attackRange: 80,
+    attackCooldown: 700,
+    projectileSpeed: 0,
+    projectileType: "none" as const,
+    splashRadius: 0,
+    aggroRange: 260,
+  },
+
+  archer: {
+    unitType: "ranged" as const,
+    hp: 90,
+    speed: 120,
+    attackDamage: 14,
+    attackRange: 320,
+    attackCooldown: 950,
+    projectileSpeed: 850,
+    projectileType: "arrow" as const,
+    splashRadius: 0,
+    aggroRange: 400,
+  },
+
+  mage: {
+    unitType: "ranged" as const,
+    hp: 75,
+    speed: 105,
+    attackDamage: 22,
+    attackRange: 280,
+    attackCooldown: 1200,
+    projectileSpeed: 600,
+    projectileType: "orb" as const,
+    splashRadius: 90,
+    aggroRange: 360,
+  },
+
+  tank: {
+    unitType: "ranged" as const,
+    hp: 260,
+    speed: 70,
+    attackDamage: 38,
+    attackRange: 360,
+    attackCooldown: 1600,
+    projectileSpeed: 500,
+    projectileType: "shell" as const,
+    splashRadius: 120,
+    aggroRange: 420,
+  },
+};
+
+const getTeamColor = (team: string, customColor?: string) => {
+  if (customColor) {
+    return customColor;
+  }
+
+  return TEAM_COLORS[team] ?? TEAM_COLORS.neutral;
+};
+
 let frameId = 0;
 let lastTime = 0;
+
+const activeProjectiles = new Set<HTMLElement>();
+let runtimeGeneration = 0;
 
 const updateElement = (unit: RuntimeUnit) => {
   const element = document.querySelector<HTMLElement>(
@@ -242,50 +350,102 @@ const ensureHealthBar = (unit: RuntimeUnit) => {
   element.appendChild(wrapper);
 };
 
-const findNearestEnemy = (unit: RuntimeUnit, maxDistance: number) => {
+const ensureTeamRing = (unit: RuntimeUnit) => {
   const element = getUnitElement(unit.id);
 
   if (!element) {
+    return;
+  }
+
+  if (getComputedStyle(element).position === "static") {
+    element.style.position = "relative";
+  }
+
+  let ring = element.querySelector<HTMLElement>("[data-runtime-team-ring]");
+
+  if (!ring) {
+    ring = document.createElement("div");
+    ring.setAttribute("data-runtime-team-ring", "true");
+    ring.style.position = "absolute";
+    ring.style.inset = "-4px";
+    ring.style.border = "2px solid transparent";
+    ring.style.borderRadius = "inherit";
+    ring.style.pointerEvents = "none";
+    ring.style.zIndex = "9998";
+
+    element.appendChild(ring);
+  }
+
+  ring.style.borderColor = unit.teamColor;
+
+  element.style.setProperty("--runtime-team-color", unit.teamColor);
+
+  element.setAttribute("data-runtime-unit-type", unit.unitType);
+};
+
+const getTargetScore = (unit: RuntimeUnit, enemy: RuntimeUnit) => {
+  const unitElement = getUnitElement(unit.id);
+  const enemyElement = getUnitElement(enemy.id);
+
+  if (!unitElement || !enemyElement) {
+    return Infinity;
+  }
+
+  const unitRect = unitElement.getBoundingClientRect();
+  const enemyRect = enemyElement.getBoundingClientRect();
+  const unitX = unitRect.left + unitRect.width / 2;
+  const unitY = unitRect.top + unitRect.height / 2;
+  const enemyX = enemyRect.left + enemyRect.width / 2;
+  const enemyY = enemyRect.top + enemyRect.height / 2;
+  const distance = Math.hypot(enemyX - unitX, enemyY - unitY);
+  const healthRatio = enemy.maxHp > 0 ? enemy.hp / enemy.maxHp : 1;
+
+  return distance + healthRatio * 40;
+};
+
+const findNearestEnemy = (unit: RuntimeUnit, maxDistance: number) => {
+  let bestEnemy: RuntimeUnit | undefined;
+  let bestScore = Infinity;
+
+  const unitElement = getUnitElement(unit.id);
+
+  if (!unitElement) {
     return undefined;
   }
 
-  const rect = element.getBoundingClientRect();
-  const centerX = rect.left + rect.width / 2;
-  const centerY = rect.top + rect.height / 2;
+  const unitRect = unitElement.getBoundingClientRect();
+  const unitX = unitRect.left + unitRect.width / 2;
+  const unitY = unitRect.top + unitRect.height / 2;
 
-  let nearest: RuntimeUnit | undefined;
-  let nearestDistance = maxDistance;
-
-  units.forEach((otherUnit) => {
-    if (
-      otherUnit.id === unit.id ||
-      otherUnit.team === unit.team ||
-      otherUnit.hp <= 0
-    ) {
+  units.forEach((enemy) => {
+    if (enemy.id === unit.id || enemy.team === unit.team || enemy.hp <= 0) {
       return;
     }
 
-    const otherElement = getUnitElement(otherUnit.id);
+    const enemyElement = getUnitElement(enemy.id);
 
-    if (!otherElement) {
+    if (!enemyElement) {
       return;
     }
 
-    const otherRect = otherElement.getBoundingClientRect();
-    const otherCenterX = otherRect.left + otherRect.width / 2;
-    const otherCenterY = otherRect.top + otherRect.height / 2;
-    const distance = Math.hypot(otherCenterX - centerX, otherCenterY - centerY);
+    const enemyRect = enemyElement.getBoundingClientRect();
+    const enemyX = enemyRect.left + enemyRect.width / 2;
+    const enemyY = enemyRect.top + enemyRect.height / 2;
+    const distance = Math.hypot(enemyX - unitX, enemyY - unitY);
 
-    if (distance > nearestDistance) {
+    if (distance > maxDistance) {
       return;
     }
 
-    nearestDistance = distance;
+    const score = getTargetScore(unit, enemy);
 
-    nearest = otherUnit;
+    if (score < bestScore) {
+      bestScore = score;
+      bestEnemy = enemy;
+    }
   });
 
-  return nearest;
+  return bestEnemy;
 };
 
 const updateAggro = () => {
@@ -297,7 +457,33 @@ const updateAggro = () => {
     }
 
     if (unit.attackTargetId) {
-      return;
+      const currentTarget = units.get(unit.attackTargetId);
+
+      if (currentTarget && currentTarget.hp > 0) {
+        const unitElement = getUnitElement(unit.id);
+        const targetElement = getUnitElement(currentTarget.id);
+
+        if (unitElement && targetElement) {
+          const unitRect = unitElement.getBoundingClientRect();
+          const targetRect = targetElement.getBoundingClientRect();
+          const distance = Math.hypot(
+            targetRect.left +
+              targetRect.width / 2 -
+              (unitRect.left + unitRect.width / 2),
+            targetRect.top +
+              targetRect.height / 2 -
+              (unitRect.top + unitRect.height / 2),
+          );
+
+          if (distance <= unit.aggroLeashRange) {
+            return;
+          }
+        }
+      }
+
+      unit.attackTargetId = undefined;
+      unit.aggroTargetId = undefined;
+      resumeUnitCommand(unit);
     }
 
     const enemy = findNearestEnemy(unit, unit.aggroRange);
@@ -307,6 +493,7 @@ const updateAggro = () => {
     }
 
     unit.attackTargetId = enemy.id;
+    unit.aggroTargetId = enemy.id;
     hasAggroActivity = true;
   });
 
@@ -315,6 +502,7 @@ const updateAggro = () => {
 
 const resumeUnitCommand = (unit: RuntimeUnit) => {
   unit.attackTargetId = undefined;
+  unit.aggroTargetId = undefined;
 
   if (
     unit.command === "attackMove" &&
@@ -391,20 +579,401 @@ const updateCombat = (time: number) => {
     }
 
     unit.lastAttackTime = time;
-    target.hp = Math.max(0, target.hp - unit.attackDamage);
 
+    playAttackEffect(unit);
+
+    if (unit.unitType === "ranged") {
+      fireProjectile(unit, target);
+
+      return;
+    }
+
+    target.hp = Math.max(0, target.hp - unit.attackDamage);
+    playHitEffect(target);
     updateUnitHealth(target);
 
     if (target.hp <= 0) {
+      grantKillReward(unit);
       deadUnitIds.add(target.id);
     }
   });
 
   deadUnitIds.forEach((id) => {
-    removeRuntimeUnit(id);
+    const deadUnit = units.get(id);
+
+    if (!deadUnit) {
+      return;
+    }
+
+    playDeathEffect(deadUnit, () => {
+      removeRuntimeUnit(id);
+    });
   });
 
   return hasCombatActivity;
+};
+
+const playAttackEffect = (unit: RuntimeUnit) => {
+  const element = getUnitElement(unit.id);
+
+  if (!element) {
+    return;
+  }
+
+  element.animate(
+    [
+      {
+        filter: "brightness(1)",
+      },
+      {
+        filter: "brightness(1.7)",
+      },
+      {
+        filter: "brightness(1)",
+      },
+    ],
+    {
+      duration: 160,
+      easing: "ease-out",
+    },
+  );
+};
+
+const playHitEffect = (unit: RuntimeUnit) => {
+  const element = getUnitElement(unit.id);
+
+  if (!element) {
+    return;
+  }
+
+  const flash = document.createElement("div");
+
+  flash.setAttribute("data-runtime-hit-effect", "true");
+  flash.style.position = "absolute";
+  flash.style.inset = "-6px";
+  flash.style.borderRadius = "inherit";
+  flash.style.background = "rgba(255,255,255,0.65)";
+  flash.style.pointerEvents = "none";
+  flash.style.zIndex = "10000";
+  element.appendChild(flash);
+
+  const animation = flash.animate(
+    [
+      {
+        opacity: 1,
+      },
+      {
+        opacity: 0,
+      },
+    ],
+    {
+      duration: 180,
+      easing: "ease-out",
+    },
+  );
+
+  animation.onfinish = () => {
+    flash.remove();
+  };
+};
+
+const grantKillReward = (attacker: RuntimeUnit) => {
+  attacker.kills += 1;
+  attacker.experience += 25;
+};
+
+const playDeathEffect = (unit: RuntimeUnit, onComplete: () => void) => {
+  const element = getUnitElement(unit.id);
+
+  if (!element) {
+    onComplete();
+
+    return;
+  }
+
+  element.style.pointerEvents = "none";
+  element.setAttribute("data-runtime-dead", "true");
+
+  const animation = element.animate(
+    [
+      {
+        opacity: 1,
+        filter: "grayscale(0)",
+      },
+      {
+        opacity: 0,
+        filter: "grayscale(1)",
+      },
+    ],
+    {
+      duration: 350,
+      easing: "ease-in",
+      fill: "forwards",
+    },
+  );
+
+  animation.onfinish = () => {
+    onComplete();
+  };
+};
+
+const playImpactEffect = (
+  x: number,
+  y: number,
+  color: string,
+  size: number,
+) => {
+  const effect = document.createElement("div");
+
+  effect.style.position = "fixed";
+
+  effect.style.left = `${x}px`;
+
+  effect.style.top = `${y}px`;
+
+  effect.style.width = `${size}px`;
+
+  effect.style.height = `${size}px`;
+
+  effect.style.borderRadius = "9999px";
+
+  effect.style.background = color;
+
+  effect.style.opacity = "0.65";
+
+  effect.style.pointerEvents = "none";
+
+  effect.style.zIndex = "99999";
+
+  effect.style.transform = "translate(-50%, -50%) scale(0.2)";
+
+  document.body.appendChild(effect);
+
+  const animation = effect.animate(
+    [
+      {
+        opacity: 0.8,
+        transform: "translate(-50%, -50%) scale(0.2)",
+      },
+      {
+        opacity: 0,
+        transform: "translate(-50%, -50%) scale(1)",
+      },
+    ],
+    {
+      duration: 280,
+      easing: "ease-out",
+    },
+  );
+
+  animation.onfinish = () => {
+    effect.remove();
+  };
+};
+
+const applyProjectileStyle = (
+  projectile: HTMLElement,
+  attacker: RuntimeUnit,
+) => {
+  switch (attacker.projectileType) {
+    case "arrow":
+      projectile.style.width = "18px";
+      projectile.style.height = "4px";
+      projectile.style.borderRadius = "9999px";
+      projectile.style.background = attacker.teamColor;
+      projectile.style.boxShadow = `0 0 6px ${attacker.teamColor}`;
+      break;
+
+    case "orb":
+      projectile.style.width = "14px";
+      projectile.style.height = "14px";
+      projectile.style.borderRadius = "9999px";
+      projectile.style.background = attacker.teamColor;
+      projectile.style.boxShadow = `0 0 16px ${attacker.teamColor}`;
+      break;
+
+    case "shell":
+      projectile.style.width = "12px";
+      projectile.style.height = "12px";
+      projectile.style.borderRadius = "4px";
+      projectile.style.background = "#f97316";
+      projectile.style.boxShadow = "0 0 12px rgba(249,115,22,0.9)";
+      break;
+
+    default:
+      projectile.style.width = "9px";
+      projectile.style.height = "9px";
+      projectile.style.borderRadius = "9999px";
+      projectile.style.background = attacker.teamColor;
+      break;
+  }
+};
+
+const applySplashDamage = (
+  attacker: RuntimeUnit,
+  impactTarget: RuntimeUnit,
+) => {
+  const targetElement = getUnitElement(impactTarget.id);
+
+  if (!targetElement) {
+    return;
+  }
+
+  const targetRect = targetElement.getBoundingClientRect();
+  const centerX = targetRect.left + targetRect.width / 2;
+  const centerY = targetRect.top + targetRect.height / 2;
+
+  units.forEach((unit) => {
+    if (unit.team === attacker.team) {
+      return;
+    }
+
+    if (unit.hp <= 0) {
+      return;
+    }
+
+    const element = getUnitElement(unit.id);
+
+    if (!element) {
+      return;
+    }
+
+    const rect = element.getBoundingClientRect();
+    const unitX = rect.left + rect.width / 2;
+    const unitY = rect.top + rect.height / 2;
+    const distance = Math.hypot(unitX - centerX, unitY - centerY);
+
+    if (distance > attacker.splashRadius) {
+      return;
+    }
+
+    const damageScale = 1 - Math.min(1, distance / attacker.splashRadius) * 0.5;
+    const damage = attacker.attackDamage * damageScale;
+    const wasAlive = unit.hp > 0;
+
+    unit.hp = Math.max(0, unit.hp - damage);
+    playHitEffect(unit);
+    updateUnitHealth(unit);
+
+    if (wasAlive && unit.hp <= 0) {
+      grantKillReward(attacker);
+
+      playDeathEffect(unit, () => {
+        removeRuntimeUnit(unit.id);
+      });
+    }
+  });
+};
+
+const fireProjectile = (attacker: RuntimeUnit, target: RuntimeUnit) => {
+  const attackerElement = getUnitElement(attacker.id);
+
+  const targetElement = getUnitElement(target.id);
+
+  if (!attackerElement || !targetElement) {
+    return;
+  }
+
+  const attackerRect = attackerElement.getBoundingClientRect();
+  const targetRect = targetElement.getBoundingClientRect();
+  const startX = attackerRect.left + attackerRect.width / 2;
+  const startY = attackerRect.top + attackerRect.height / 2;
+  const endX = targetRect.left + targetRect.width / 2;
+  const endY = targetRect.top + targetRect.height / 2;
+  const deltaX = endX - startX;
+
+  const deltaY = endY - startY;
+
+  const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+  const distance = Math.hypot(endX - startX, endY - startY);
+  const duration = Math.max(
+    80,
+    Math.min(1200, (distance / attacker.projectileSpeed) * 1000),
+  );
+
+  const projectile = document.createElement("div");
+
+  projectile.setAttribute("data-runtime-projectile", attacker.team);
+  projectile.style.position = "fixed";
+  projectile.style.left = `${startX}px`;
+  projectile.style.top = `${startY}px`;
+  applyProjectileStyle(projectile, attacker);
+  projectile.style.boxShadow = `0 0 10px ${attacker.teamColor}`;
+  projectile.style.pointerEvents = "none";
+  projectile.style.zIndex = "100000";
+  projectile.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+  document.body.appendChild(projectile);
+  activeProjectiles.add(projectile);
+
+  const generation = runtimeGeneration;
+
+  const baseTransform = `translate(-50%, -50%) rotate(${angle}deg)`;
+  const animation = projectile.animate(
+    [
+      {
+        transform: baseTransform + " translate(0px, 0px)",
+      },
+      {
+        transform:
+          baseTransform + ` translate(${endX - startX}px, ${endY - startY}px)`,
+      },
+    ],
+    {
+      duration,
+      easing: "linear",
+    },
+  );
+
+  const cleanup = () => {
+    activeProjectiles.delete(projectile);
+    projectile.remove();
+  };
+
+  animation.onfinish = () => {
+    cleanup();
+
+    if (generation !== runtimeGeneration) {
+      return;
+    }
+
+    const liveTarget = units.get(target.id);
+
+    if (!liveTarget || liveTarget.hp <= 0) {
+      return;
+    }
+
+    if (
+      attacker.projectileType === "orb" ||
+      attacker.projectileType === "shell"
+    ) {
+      playImpactEffect(
+        endX,
+        endY,
+        attacker.projectileType === "shell" ? "#f97316" : attacker.teamColor,
+        attacker.splashRadius > 0 ? attacker.splashRadius * 2 : 50,
+      );
+    }
+
+    if (attacker.splashRadius > 0) {
+      applySplashDamage(attacker, liveTarget);
+
+      return;
+    }
+
+    liveTarget.hp = Math.max(0, liveTarget.hp - attacker.attackDamage);
+    playHitEffect(liveTarget);
+    updateUnitHealth(liveTarget);
+
+    if (liveTarget.hp <= 0) {
+      grantKillReward(attacker);
+
+      playDeathEffect(liveTarget, () => {
+        removeRuntimeUnit(liveTarget.id);
+      });
+    }
+  };
+
+  animation.oncancel = cleanup;
 };
 
 const tick = (time: number) => {
@@ -601,6 +1170,7 @@ const attackUnit = (attackerId: string, targetId: string) => {
   }
 
   attacker.attackTargetId = targetId;
+  attacker.aggroTargetId = undefined;
   attacker.command = "attack";
   attacker.commandTargetX = undefined;
   attacker.commandTargetY = undefined;
@@ -618,6 +1188,7 @@ const stopAttackUnit = (id: string) => {
   }
 
   unit.attackTargetId = undefined;
+  unit.aggroTargetId = undefined;
   unit.command = "idle";
   unit.commandTargetX = undefined;
   unit.commandTargetY = undefined;
@@ -628,20 +1199,7 @@ const stopAttackUnit = (id: string) => {
 };
 
 export const runtimeUnits = {
-  spawn(
-    id: string,
-    options: {
-      x?: number;
-      y?: number;
-      speed?: number;
-      hp?: number;
-      team?: string;
-      attackDamage?: number;
-      attackRange?: number;
-      attackCooldown?: number;
-      aggroRange?: number;
-    } = {},
-  ) {
+  spawn(id: string, options: RuntimeUnitSpawnOptions = {}) {
     const element = document.querySelector<HTMLElement>(
       `[data-runtime-unit-id="${CSS.escape(id)}"]`,
     );
@@ -652,7 +1210,13 @@ export const runtimeUnits = {
       return null;
     }
 
-    const hp = options.hp ?? 100;
+    const team = options.team ?? "neutral";
+    const teamColor = getTeamColor(team, options.teamColor);
+    const unitClass = options.unitClass ?? "custom";
+    const preset =
+      unitClass === "custom" ? undefined : UNIT_CLASS_PRESETS[unitClass];
+    const unitType = options.unitType ?? preset?.unitType ?? "melee";
+    const hp = options.hp ?? preset?.hp ?? 100;
 
     const unit: RuntimeUnit = {
       id,
@@ -660,19 +1224,36 @@ export const runtimeUnits = {
       y: options.y ?? 0,
       targetX: options.x ?? 0,
       targetY: options.y ?? 0,
-      speed: options.speed ?? 120,
-      hp: options.hp ?? 100,
+      speed: options.speed ?? preset?.speed ?? 120,
+      hp,
       maxHp: hp,
-      team: options.team ?? "neutral",
-      attackDamage: options.attackDamage ?? 10,
-      attackRange: options.attackRange ?? 100,
-      attackCooldown: options.attackCooldown ?? 800,
+      team,
+      teamColor,
+      unitType,
+      unitClass,
+      attackDamage: options.attackDamage ?? preset?.attackDamage ?? 10,
+      attackRange:
+        options.attackRange ??
+        preset?.attackRange ??
+        (unitType === "ranged" ? 280 : 100),
+      attackCooldown: options.attackCooldown ?? preset?.attackCooldown ?? 800,
       lastAttackTime: 0,
       attackTargetId: undefined,
       command: "idle",
       commandTargetX: undefined,
       commandTargetY: undefined,
-      aggroRange: options.aggroRange ?? 250,
+      aggroRange: options.aggroRange ?? preset?.aggroRange ?? 250,
+      aggroLeashRange: options.aggroLeashRange ?? 500,
+      kills: 0,
+      experience: 0,
+      aggroTargetId: undefined,
+      projectileSpeed:
+        options.projectileSpeed ?? preset?.projectileSpeed ?? 700,
+      projectileType:
+        options.projectileType ??
+        preset?.projectileType ??
+        (unitType === "ranged" ? "arrow" : "none"),
+      splashRadius: options.splashRadius ?? preset?.splashRadius ?? 0,
     };
 
     units.set(id, unit);
@@ -682,11 +1263,18 @@ export const runtimeUnits = {
 
     if (runtimeElement) {
       runtimeElement.setAttribute("data-runtime-team", unit.team);
+      runtimeElement.setAttribute("data-runtime-unit-type", unit.unitType);
+      runtimeElement.setAttribute("data-runtime-unit-class", unit.unitClass);
+      runtimeElement.setAttribute(
+        "data-runtime-projectile-type",
+        unit.projectileType,
+      );
       runtimeElement.removeAttribute("data-runtime-dead");
       runtimeElement.style.removeProperty("display");
     }
 
     ensureHealthBar(unit);
+    ensureTeamRing(unit);
     updateUnitHealth(unit);
 
     ensureLoop();
@@ -702,6 +1290,7 @@ export const runtimeUnits = {
     }
 
     unit.attackTargetId = undefined;
+    unit.aggroTargetId = undefined;
 
     const target = clampUnitPosition(unit, x, y);
     unit.targetX = target.x;
@@ -718,10 +1307,36 @@ export const runtimeUnits = {
   get(id: string) {
     return units.get(id);
   },
+  getStats(id: string) {
+    const unit = units.get(id);
+
+    if (!unit) {
+      return undefined;
+    }
+
+    return {
+      hp: unit.hp,
+      maxHp: unit.maxHp,
+      kills: unit.kills,
+      experience: unit.experience,
+      unitClass: unit.unitClass,
+      team: unit.team,
+    };
+  },
   remove(id: string) {
     return removeRuntimeUnit(id);
   },
   clear() {
+    runtimeGeneration += 1;
+
+    activeProjectiles.forEach((projectile) => {
+      projectile.getAnimations().forEach((animation) => animation.cancel());
+
+      projectile.remove();
+    });
+
+    activeProjectiles.clear();
+
     units.forEach((unit) => {
       const element = getUnitElement(unit.id);
 
@@ -737,8 +1352,20 @@ export const runtimeUnits = {
       element.removeAttribute("data-runtime-max-hp");
       element.style.removeProperty("display");
       element.style.removeProperty("transform");
+      element.style.removeProperty("opacity");
+      element.style.removeProperty("filter");
+      element.style.removeProperty("pointer-events");
       element.style.removeProperty("--runtime-hp-ratio");
       element.querySelector("[data-runtime-health-overlay]")?.remove();
+
+      element.removeAttribute("data-runtime-unit-type");
+      element.removeAttribute("data-runtime-unit-class");
+      element.removeAttribute("data-runtime-projectile-type");
+      element.style.removeProperty("--runtime-team-color");
+      element.querySelector("[data-runtime-team-ring]")?.remove();
+      element
+        .querySelectorAll("[data-runtime-hit-effect]")
+        .forEach((effect) => effect.remove());
     });
 
     units.clear();
@@ -851,6 +1478,7 @@ export const runtimeUnits = {
 
     selected.forEach((unit) => {
       unit.attackTargetId = undefined;
+      unit.aggroTargetId = undefined;
     });
 
     targets.forEach((target) => {
@@ -913,11 +1541,13 @@ export const runtimeUnits = {
     }
 
     unit.hp = Math.max(0, unit.hp - Math.max(0, amount));
-
+    playHitEffect(unit);
     updateUnitHealth(unit);
 
     if (unit.hp <= 0) {
-      removeRuntimeUnit(id);
+      playDeathEffect(unit, () => {
+        removeRuntimeUnit(id);
+      });
     }
 
     return true;
@@ -942,6 +1572,7 @@ export const runtimeUnits = {
       }
 
       attacker.attackTargetId = target.id;
+      attacker.aggroTargetId = undefined;
       attacker.command = "attack";
       attacker.commandTargetX = undefined;
       attacker.commandTargetY = undefined;
@@ -966,6 +1597,7 @@ export const runtimeUnits = {
     const target = clampUnitPosition(unit, x, y);
 
     unit.attackTargetId = undefined;
+    unit.aggroTargetId = undefined;
     unit.command = "attackMove";
     unit.commandTargetX = target.x;
     unit.commandTargetY = target.y;
@@ -1034,6 +1666,7 @@ export const runtimeUnits = {
       );
 
       target.unit.attackTargetId = undefined;
+      target.unit.aggroTargetId = undefined;
       target.unit.command = "attackMove";
       target.unit.commandTargetX = next.x;
       target.unit.commandTargetY = next.y;
