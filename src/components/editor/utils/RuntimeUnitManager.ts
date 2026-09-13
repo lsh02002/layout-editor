@@ -27,6 +27,64 @@ const updateElement = (unit: RuntimeUnit) => {
   element.style.transform = `translate3d(${unit.x}px, ${unit.y}px, 0)`;
 };
 
+const getUnitElement = (id: string) => {
+  return document.querySelector<HTMLElement>(
+    `[data-runtime-unit-id="${CSS.escape(id)}"]`,
+  );
+};
+
+const getUnitSize = (id: string) => {
+  const element = getUnitElement(id);
+
+  if (!element) {
+    return {
+      width: 0,
+      height: 0,
+    };
+  }
+
+  const rect = element.getBoundingClientRect();
+
+  return {
+    width: rect.width,
+    height: rect.height,
+  };
+};
+
+const getRuntimeBounds = (id: string) => {
+  const element = getUnitElement(id);
+
+  const container = element?.closest<HTMLElement>("[data-runtime-map]");
+
+  if (!element || !container) {
+    return null;
+  }
+
+  const containerRect = container.getBoundingClientRect();
+
+  return {
+    width: containerRect.width,
+    height: containerRect.height,
+  };
+};
+
+const clampUnitPosition = (unit: RuntimeUnit, x: number, y: number) => {
+  const bounds = getRuntimeBounds(unit.id);
+
+  if (!bounds) {
+    return {
+      x,
+      y,
+    };
+  }
+
+  const size = getUnitSize(unit.id);
+  return {
+    x: Math.min(Math.max(x, 0), Math.max(0, bounds.width - size.width)),
+    y: Math.min(Math.max(y, 0), Math.max(0, bounds.height - size.height)),
+  };
+};
+
 const tick = (time: number) => {
   if (!lastTime) {
     lastTime = time;
@@ -36,26 +94,123 @@ const tick = (time: number) => {
 
   lastTime = time;
 
-  units.forEach((unit) => {
+  const arrivalRadius = 2;
+  const slowRadius = 120;
+  const separationEpsilon = 0.5;
+
+  let hasActivity = false;
+
+  const unitList = Array.from(units.values());
+
+  unitList.forEach((unit) => {
     const dx = unit.targetX - unit.x;
     const dy = unit.targetY - unit.y;
     const distance = Math.hypot(dx, dy);
 
-    if (distance <= 1) {
+    if (distance <= arrivalRadius) {
       unit.x = unit.targetX;
       unit.y = unit.targetY;
-
-      updateElement(unit);
 
       return;
     }
 
-    const moveDistance = Math.min(unit.speed * delta, distance);
+    hasActivity = true;
+
+    const speedFactor =
+      distance < slowRadius ? Math.max(distance / slowRadius, 0.15) : 1;
+    const currentSpeed = unit.speed * speedFactor;
+    const moveDistance = Math.min(currentSpeed * delta, distance);
     unit.x += (dx / distance) * moveDistance;
     unit.y += (dy / distance) * moveDistance;
+  });
+
+  unitList.forEach((unit) => {
+    updateElement(unit);
+  });
+
+  for (let i = 0; i < unitList.length; i += 1) {
+    const unitA = unitList[i];
+    const elementA = document.querySelector<HTMLElement>(
+      `[data-runtime-unit-id="${CSS.escape(unitA.id)}"]`,
+    );
+
+    if (!elementA) {
+      continue;
+    }
+
+    const rectA = elementA.getBoundingClientRect();
+
+    for (let j = i + 1; j < unitList.length; j += 1) {
+      const unitB = unitList[j];
+      const elementB = document.querySelector<HTMLElement>(
+        `[data-runtime-unit-id="${CSS.escape(unitB.id)}"]`,
+      );
+
+      if (!elementB) {
+        continue;
+      }
+
+      const rectB = elementB.getBoundingClientRect();
+      const centerAX = rectA.left + rectA.width / 2;
+      const centerAY = rectA.top + rectA.height / 2;
+      const centerBX = rectB.left + rectB.width / 2;
+      const centerBY = rectB.top + rectB.height / 2;
+      let dx = centerAX - centerBX;
+      let dy = centerAY - centerBY;
+
+      let distance = Math.hypot(dx, dy);
+      const radiusA = Math.max(rectA.width, rectA.height) / 2;
+      const radiusB = Math.max(rectB.width, rectB.height) / 2;
+      const minDistance = radiusA + radiusB;
+
+      if (distance >= minDistance) {
+        continue;
+      }
+
+      if (distance === 0) {
+        dx = i % 2 === 0 ? 1 : -1;
+
+        dy = j % 2 === 0 ? 0.5 : -0.5;
+
+        distance = Math.hypot(dx, dy);
+      }
+
+      const overlap = minDistance - distance;
+
+      if (overlap <= separationEpsilon) {
+        continue;
+      }
+
+      hasActivity = true;
+
+      const normalX = dx / distance;
+      const normalY = dy / distance;
+      const pushStrength = Math.min(overlap * 0.25, 3);
+      const pushX = normalX * pushStrength;
+      const pushY = normalY * pushStrength;
+
+      unitA.x += pushX;
+      unitA.y += pushY;
+      unitB.x -= pushX;
+      unitB.y -= pushY;
+    }
+  }
+
+  unitList.forEach((unit) => {
+    const position = clampUnitPosition(unit, unit.x, unit.y);
+
+    unit.x = position.x;
+    unit.y = position.y;
 
     updateElement(unit);
   });
+
+  if (!hasActivity) {
+    frameId = 0;
+    lastTime = 0;
+
+    return;
+  }
 
   frameId = requestAnimationFrame(tick);
 };
@@ -116,8 +271,9 @@ export const runtimeUnits = {
       return false;
     }
 
-    unit.targetX = x;
-    unit.targetY = y;
+    const target = clampUnitPosition(unit, x, y);
+    unit.targetX = target.x;
+    unit.targetY = target.y;
 
     ensureLoop();
 
@@ -183,29 +339,65 @@ export const runtimeUnits = {
     selectedUnitIds.clear();
   },
   moveSelectedTo(x: number, y: number) {
-    const selected = Array.from(selectedUnitIds);
+    const selected = Array.from(selectedUnitIds)
+      .map((id) => units.get(id))
+      .filter((unit): unit is RuntimeUnit => Boolean(unit));
 
     if (selected.length === 0) {
       return false;
     }
 
-    const spacing = 90;
-    const columns = Math.ceil(Math.sqrt(selected.length));
+    const centerX =
+      selected.reduce((sum, unit) => sum + unit.x, 0) / selected.length;
+    const centerY =
+      selected.reduce((sum, unit) => sum + unit.y, 0) / selected.length;
+    const targets = selected.map((unit) => {
+      const size = getUnitSize(unit.id);
 
-    selected.forEach((id, index) => {
-      const unit = units.get(id as string);
+      return {
+        unit,
+        width: size.width,
+        height: size.height,
+        x: x + (unit.x - centerX),
+        y: y + (unit.y - centerY),
+      };
+    });
 
-      if (!unit) {
-        return;
-      }
+    const firstBounds = getRuntimeBounds(selected[0].id);
+    if (!firstBounds) {
+      return false;
+    }
 
-      const column = index % columns;
-      const row = Math.floor(index / columns);
-      const offsetX = (column - (columns - 1) / 2) * spacing;
-      const offsetY = row * spacing;
+    const minX = Math.min(...targets.map((target) => target.x));
+    const minY = Math.min(...targets.map((target) => target.y));
+    const maxX = Math.max(...targets.map((target) => target.x + target.width));
+    const maxY = Math.max(...targets.map((target) => target.y + target.height));
 
-      unit.targetX = x + offsetX;
-      unit.targetY = y + offsetY;
+    let correctionX = 0;
+    let correctionY = 0;
+
+    if (minX < 0) {
+      correctionX = -minX;
+    } else if (maxX > firstBounds.width) {
+      correctionX = firstBounds.width - maxX;
+    }
+
+    if (minY < 0) {
+      correctionY = -minY;
+    } else if (maxY > firstBounds.height) {
+      correctionY = firstBounds.height - maxY;
+    }
+
+    targets.forEach((target) => {
+      const next = clampUnitPosition(
+        target.unit,
+        target.x + correctionX,
+        target.y + correctionY,
+      );
+
+      target.unit.targetX = next.x;
+
+      target.unit.targetY = next.y;
     });
 
     ensureLoop();

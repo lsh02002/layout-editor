@@ -278,6 +278,21 @@ function LayoutComponentNode({
         moveTo(id: string, x: number, y: number) {
           return runtimeUnits.moveTo(id, x, y);
         },
+        moveSelectedTo(x: number, y: number) {
+          return runtimeUnits.moveSelectedTo(x, y);
+        },
+        select(id: string, append = false) {
+          return runtimeUnits.select(id, append);
+        },
+        selectMany(ids: string[], append = false) {
+          return runtimeUnits.selectMany(ids, append);
+        },
+        getSelected() {
+          return runtimeUnits.getSelected();
+        },
+        clearSelected() {
+          runtimeUnits.clearSelected();
+        },
         get(id: string) {
           return runtimeUnits.get(id);
         },
@@ -286,18 +301,6 @@ function LayoutComponentNode({
         },
         clear() {
           runtimeUnits.clear();
-        },
-        select(id: string) {
-          return runtimeUnits.select(id);
-        },
-        getSelected() {
-          return runtimeUnits.getSelected();
-        },
-        clearSelected() {
-          runtimeUnits.clearSelected();
-        },
-        moveSelectedTo(x: number, y: number) {
-          return runtimeUnits.moveSelectedTo(x, y);
         },
       },
       getElement,
@@ -1251,6 +1254,7 @@ function LayoutComponentNode({
       <div
         ref={handleComponentRef}
         data-component-id={component.id}
+        data-runtime-map={previewMode ? "true" : undefined}
         style={nodeStyle}
         {...jsEventProps}
         onClick={(event) => executeJsActions("click", event)}
