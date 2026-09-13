@@ -1970,25 +1970,27 @@ export const exportCheckboxHtml: HtmlExporter = (component) => {
       data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
-      <label
-        style="${escapeAttribute(
-          ["display:inline-flex", "align-items:center", "gap:8px", contentStyle]
-            .filter(Boolean)
-            .join(";"),
-        )}"
+      <div
+        class="form-check"
+        style="${escapeAttribute(contentStyle)}"
       >
         <input
+          class="form-check-input"
           type="checkbox"
           name="${escapeAttribute(component.props.name ?? "")}"
           value="${escapeAttribute(component.props.value ?? "on")}"
           ${component.props.checked ? "checked" : ""}
           ${component.props.disabled ? "disabled" : ""}
+          id="${componentId}-input"
         />
 
-        <span>
+        <label
+          class="form-check-label"
+          for="${componentId}-input"
+        >
           ${escapeHtml(component.props.label ?? "")}
-        </span>
-      </label>
+        </label>
+      </div>
     </div>
   `;
 };
@@ -2015,25 +2017,27 @@ export const exportRadioHtml: HtmlExporter = (component) => {
       data-component-name="${componentName}"${positionParentAttr}
       style="${escapeAttribute(wrapperStyle)}"
     >
-      <label
-        style="${escapeAttribute(
-          ["display:inline-flex", "align-items:center", "gap:8px", contentStyle]
-            .filter(Boolean)
-            .join(";"),
-        )}"
+      <div
+        class="form-check"
+        style="${escapeAttribute(contentStyle)}"
       >
         <input
+          class="form-check-input"
           type="radio"
           name="${escapeAttribute(component.props.name ?? "")}"
           value="${escapeAttribute(component.props.value ?? "on")}"
           ${component.props.checked ? "checked" : ""}
           ${component.props.disabled ? "disabled" : ""}
+          id="${componentId}-input"
         />
 
-        <span>
+        <label
+          class="form-check-label"
+          for="${componentId}-input"
+        >
           ${escapeHtml(component.props.label ?? "")}
-        </span>
-      </label>
+        </label>
+      </div>
     </div>
   `;
 };
@@ -2053,7 +2057,7 @@ export const exportFormHtml: HtmlExporter = async (component, context) => {
 
   const direction = component.props.direction ?? "column";
 
-  const gap = component.props.gap ?? 8;
+  const gap = component.props.gap ?? 16;
 
   const justifyContent = component.props.justifyContent ?? "flex-start";
 
