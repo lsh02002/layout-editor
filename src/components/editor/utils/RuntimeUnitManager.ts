@@ -5,6 +5,15 @@ export interface RuntimeUnit {
   targetX: number;
   targetY: number;
   speed: number;
+  collisionRadius: number;
+  separationStrength: number;
+  animationState: "idle" | "move" | "attack" | "death";
+  facingX: number;
+  facingY: number;
+  facingAngle: number;
+  attackStateUntil: number;
+  attackAnimationDuration: number;
+  deathAnimationDuration: number;
   hp: number;
   maxHp: number;
 
@@ -44,6 +53,10 @@ export interface RuntimeUnitSpawnOptions {
   x?: number;
   y?: number;
   speed?: number;
+  collisionRadius?: number;
+  separationStrength?: number;
+  attackAnimationDuration?: number;
+  deathAnimationDuration?: number;
   hp?: number;
   team?: string;
   teamColor?: string;
@@ -77,6 +90,7 @@ const UNIT_CLASS_PRESETS = {
     unitType: "melee" as const,
     hp: 180,
     speed: 110,
+    collisionRadius: 30,
     attackDamage: 24,
     attackRange: 80,
     attackCooldown: 700,
@@ -90,6 +104,7 @@ const UNIT_CLASS_PRESETS = {
     unitType: "ranged" as const,
     hp: 90,
     speed: 120,
+    collisionRadius: 24,
     attackDamage: 14,
     attackRange: 320,
     attackCooldown: 950,
@@ -103,6 +118,7 @@ const UNIT_CLASS_PRESETS = {
     unitType: "ranged" as const,
     hp: 75,
     speed: 105,
+    collisionRadius: 24,
     attackDamage: 22,
     attackRange: 280,
     attackCooldown: 1200,
@@ -116,6 +132,7 @@ const UNIT_CLASS_PRESETS = {
     unitType: "ranged" as const,
     hp: 260,
     speed: 70,
+    collisionRadius: 36,
     attackDamage: 38,
     attackRange: 360,
     attackCooldown: 1600,
@@ -140,6 +157,49 @@ let lastTime = 0;
 const activeProjectiles = new Set<HTMLElement>();
 let runtimeGeneration = 0;
 
+type RuntimeUnitAnimationState = RuntimeUnit["animationState"];
+
+type RuntimeUnitEventDetail = {
+  unitId: string;
+  unit: RuntimeUnit;
+};
+
+const dispatchRuntimeEvent = <T extends object>(name: string, detail: T) => {
+  window.dispatchEvent(
+    new CustomEvent(name, {
+      detail,
+    }),
+  );
+};
+
+const setUnitAnimationState = (
+  unit: RuntimeUnit,
+  state: RuntimeUnitAnimationState,
+) => {
+  if (unit.animationState === state) {
+    return;
+  }
+
+  unit.animationState = state;
+
+  dispatchRuntimeEvent<RuntimeUnitEventDetail>("runtime-unit-animation-state", {
+    unitId: unit.id,
+    unit,
+  });
+};
+
+const setUnitFacing = (unit: RuntimeUnit, x: number, y: number) => {
+  const length = Math.hypot(x, y);
+
+  if (length <= 0) {
+    return;
+  }
+
+  unit.facingX = x / length;
+  unit.facingY = y / length;
+  unit.facingAngle = Math.atan2(unit.facingY, unit.facingX) * (180 / Math.PI);
+};
+
 const updateElement = (unit: RuntimeUnit) => {
   const element = document.querySelector<HTMLElement>(
     `[data-runtime-unit-id="${CSS.escape(unit.id)}"]`,
@@ -150,6 +210,27 @@ const updateElement = (unit: RuntimeUnit) => {
   }
 
   element.style.transform = `translate3d(${unit.x}px, ${unit.y}px, 0)`;
+  element.setAttribute("data-runtime-animation-state", unit.animationState);
+  element.setAttribute(
+    "data-runtime-facing",
+    Math.abs(unit.facingX) >= Math.abs(unit.facingY)
+      ? unit.facingX >= 0
+        ? "right"
+        : "left"
+      : unit.facingY >= 0
+        ? "down"
+        : "up",
+  );
+  element.style.setProperty("--runtime-facing-x", String(unit.facingX));
+  element.style.setProperty("--runtime-facing-y", String(unit.facingY));
+  element.style.setProperty("--runtime-facing-angle", `${unit.facingAngle}deg`);
+  element.setAttribute("data-runtime-command", unit.command);
+
+  if (unit.attackTargetId) {
+    element.setAttribute("data-runtime-attack-target", unit.attackTargetId);
+  } else {
+    element.removeAttribute("data-runtime-attack-target");
+  }
 };
 
 const getUnitElement = (id: string) => {
@@ -525,6 +606,29 @@ const resumeUnitCommand = (unit: RuntimeUnit) => {
   }
 };
 
+const getMeleeAttackPosition = (attacker: RuntimeUnit, target: RuntimeUnit) => {
+  const attackers = Array.from(units.values()).filter(
+    (unit) =>
+      unit.hp > 0 &&
+      unit.unitType === "melee" &&
+      unit.attackTargetId === target.id,
+  );
+
+  const index = Math.max(
+    0,
+    attackers.findIndex((unit) => unit.id === attacker.id),
+  );
+
+  const count = Math.max(attackers.length, 1);
+  const angle = (index / count) * Math.PI * 2;
+  const radius = target.collisionRadius + attacker.collisionRadius + 8;
+
+  return {
+    x: target.x + Math.cos(angle) * radius,
+    y: target.y + Math.sin(angle) * radius,
+  };
+};
+
 const updateCombat = (time: number) => {
   let hasCombatActivity = false;
 
@@ -561,11 +665,33 @@ const updateCombat = (time: number) => {
     const dy = targetCenterY - unitCenterY;
     const distance = Math.hypot(dx, dy);
 
+    if (distance > 0) {
+      setUnitFacing(unit, dx, dy);
+    }
+
     hasCombatActivity = true;
 
-    if (distance > unit.attackRange) {
-      unit.targetX = unit.x + dx;
-      unit.targetY = unit.y + dy;
+    const effectiveRange =
+      unit.unitType === "melee"
+        ? unit.attackRange + unit.collisionRadius + target.collisionRadius
+        : unit.attackRange;
+
+    if (distance > effectiveRange) {
+      if (unit.unitType === "melee") {
+        const attackPosition = getMeleeAttackPosition(unit, target);
+        const next = clampUnitPosition(
+          unit,
+          attackPosition.x,
+          attackPosition.y,
+        );
+
+        unit.targetX = next.x;
+        unit.targetY = next.y;
+      } else {
+        unit.targetX = unit.x + dx;
+        unit.targetY = unit.y + dy;
+      }
+
       return;
     }
 
@@ -579,6 +705,15 @@ const updateCombat = (time: number) => {
     }
 
     unit.lastAttackTime = time;
+    setUnitAnimationState(unit, "attack");
+    unit.attackStateUntil = time + unit.attackAnimationDuration;
+
+    dispatchRuntimeEvent("runtime-unit-attack", {
+      unitId: unit.id,
+      targetId: target.id,
+      unit,
+      target,
+    });
 
     playAttackEffect(unit);
 
@@ -588,12 +723,25 @@ const updateCombat = (time: number) => {
       return;
     }
 
+    const previousHp = target.hp;
+
     target.hp = Math.max(0, target.hp - unit.attackDamage);
+
+    dispatchRuntimeEvent("runtime-unit-damage", {
+      unitId: target.id,
+      attackerId: unit.id,
+      amount: previousHp - target.hp,
+      hp: target.hp,
+      maxHp: target.maxHp,
+      unit: target,
+      attacker: unit,
+    });
+
     playHitEffect(target);
     updateUnitHealth(target);
 
     if (target.hp <= 0) {
-      grantKillReward(unit);
+      grantKillReward(unit, target);
       deadUnitIds.add(target.id);
     }
   });
@@ -677,9 +825,18 @@ const playHitEffect = (unit: RuntimeUnit) => {
   };
 };
 
-const grantKillReward = (attacker: RuntimeUnit) => {
+const grantKillReward = (attacker: RuntimeUnit, target?: RuntimeUnit) => {
   attacker.kills += 1;
   attacker.experience += 25;
+
+  dispatchRuntimeEvent("runtime-unit-kill", {
+    unitId: attacker.id,
+    targetId: target?.id,
+    kills: attacker.kills,
+    experience: attacker.experience,
+    unit: attacker,
+    target,
+  });
 };
 
 const playDeathEffect = (unit: RuntimeUnit, onComplete: () => void) => {
@@ -690,6 +847,14 @@ const playDeathEffect = (unit: RuntimeUnit, onComplete: () => void) => {
 
     return;
   }
+
+  setUnitAnimationState(unit, "death");
+  updateElement(unit);
+
+  dispatchRuntimeEvent("runtime-unit-death", {
+    unitId: unit.id,
+    unit,
+  });
 
   element.style.pointerEvents = "none";
   element.setAttribute("data-runtime-dead", "true");
@@ -706,7 +871,7 @@ const playDeathEffect = (unit: RuntimeUnit, onComplete: () => void) => {
       },
     ],
     {
-      duration: 350,
+      duration: unit.deathAnimationDuration,
       easing: "ease-in",
       fill: "forwards",
     },
@@ -851,12 +1016,25 @@ const applySplashDamage = (
     const damage = attacker.attackDamage * damageScale;
     const wasAlive = unit.hp > 0;
 
+    const previousHp = unit.hp;
+
     unit.hp = Math.max(0, unit.hp - damage);
+
+    dispatchRuntimeEvent("runtime-unit-damage", {
+      unitId: unit.id,
+      attackerId: attacker.id,
+      amount: previousHp - unit.hp,
+      hp: unit.hp,
+      maxHp: unit.maxHp,
+      unit,
+      attacker,
+    });
+
     playHitEffect(unit);
     updateUnitHealth(unit);
 
     if (wasAlive && unit.hp <= 0) {
-      grantKillReward(attacker);
+      grantKillReward(attacker, unit);
 
       playDeathEffect(unit, () => {
         removeRuntimeUnit(unit.id);
@@ -901,21 +1079,19 @@ const fireProjectile = (attacker: RuntimeUnit, target: RuntimeUnit) => {
   projectile.style.boxShadow = `0 0 10px ${attacker.teamColor}`;
   projectile.style.pointerEvents = "none";
   projectile.style.zIndex = "100000";
-  projectile.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+  projectile.style.transform = `translate(-50%, -50%) translate(0px, 0px) rotate(${angle}deg)`;
   document.body.appendChild(projectile);
   activeProjectiles.add(projectile);
 
   const generation = runtimeGeneration;
 
-  const baseTransform = `translate(-50%, -50%) rotate(${angle}deg)`;
   const animation = projectile.animate(
     [
       {
-        transform: baseTransform + " translate(0px, 0px)",
+        transform: `translate(-50%, -50%) translate(0px, 0px) rotate(${angle}deg)`,
       },
       {
-        transform:
-          baseTransform + ` translate(${endX - startX}px, ${endY - startY}px)`,
+        transform: `translate(-50%, -50%) translate(${deltaX}px, ${deltaY}px) rotate(${angle}deg)`,
       },
     ],
     {
@@ -942,6 +1118,14 @@ const fireProjectile = (attacker: RuntimeUnit, target: RuntimeUnit) => {
       return;
     }
 
+    dispatchRuntimeEvent("runtime-projectile-hit", {
+      unitId: attacker.id,
+      targetId: liveTarget.id,
+      projectileType: attacker.projectileType,
+      unit: attacker,
+      target: liveTarget,
+    });
+
     if (
       attacker.projectileType === "orb" ||
       attacker.projectileType === "shell"
@@ -960,12 +1144,25 @@ const fireProjectile = (attacker: RuntimeUnit, target: RuntimeUnit) => {
       return;
     }
 
+    const previousHp = liveTarget.hp;
+
     liveTarget.hp = Math.max(0, liveTarget.hp - attacker.attackDamage);
+
+    dispatchRuntimeEvent("runtime-unit-damage", {
+      unitId: liveTarget.id,
+      attackerId: attacker.id,
+      amount: previousHp - liveTarget.hp,
+      hp: liveTarget.hp,
+      maxHp: liveTarget.maxHp,
+      unit: liveTarget,
+      attacker,
+    });
+
     playHitEffect(liveTarget);
     updateUnitHealth(liveTarget);
 
     if (liveTarget.hp <= 0) {
-      grantKillReward(attacker);
+      grantKillReward(attacker, liveTarget);
 
       playDeathEffect(liveTarget, () => {
         removeRuntimeUnit(liveTarget.id);
@@ -974,6 +1171,84 @@ const fireProjectile = (attacker: RuntimeUnit, target: RuntimeUnit) => {
   };
 
   animation.oncancel = cleanup;
+};
+
+const getAvoidanceVector = (unit: RuntimeUnit) => {
+  let avoidX = 0;
+  let avoidY = 0;
+
+  units.forEach((other) => {
+    if (other.id === unit.id || other.hp <= 0) {
+      return;
+    }
+
+    const dx = unit.x - other.x;
+    const dy = unit.y - other.y;
+    const distance = Math.hypot(dx, dy);
+    const avoidDistance = (unit.collisionRadius + other.collisionRadius) * 1.8;
+
+    if (distance <= 0 || distance > avoidDistance) {
+      return;
+    }
+
+    const strength = 1 - distance / avoidDistance;
+
+    avoidX += (dx / distance) * strength;
+    avoidY += (dy / distance) * strength;
+  });
+
+  return {
+    x: avoidX,
+    y: avoidY,
+  };
+};
+
+const applyUnitSeparation = () => {
+  const unitList = Array.from(units.values()).filter((unit) => unit.hp > 0);
+
+  for (let i = 0; i < unitList.length; i += 1) {
+    const a = unitList[i];
+
+    for (let j = i + 1; j < unitList.length; j += 1) {
+      const b = unitList[j];
+      let dx = b.x - a.x;
+      let dy = b.y - a.y;
+      let distance = Math.hypot(dx, dy);
+
+      if (distance === 0) {
+        dx = i % 2 === 0 ? 1 : -1;
+        dy = j % 2 === 0 ? 0.5 : -0.5;
+        distance = Math.hypot(dx, dy);
+      }
+
+      const minDistance = a.collisionRadius + b.collisionRadius;
+
+      if (distance >= minDistance) {
+        continue;
+      }
+
+      const overlap = minDistance - distance;
+      const normalX = dx / distance;
+      const normalY = dy / distance;
+      const strength = Math.min(a.separationStrength, b.separationStrength);
+      const push = overlap * 0.5 * strength;
+      const nextA = clampUnitPosition(
+        a,
+        a.x - normalX * push,
+        a.y - normalY * push,
+      );
+      const nextB = clampUnitPosition(
+        b,
+        b.x + normalX * push,
+        b.y + normalY * push,
+      );
+
+      a.x = nextA.x;
+      a.y = nextA.y;
+      b.x = nextB.x;
+      b.y = nextB.y;
+    }
+  }
 };
 
 const tick = (time: number) => {
@@ -987,7 +1262,6 @@ const tick = (time: number) => {
 
   const arrivalRadius = 2;
   const slowRadius = 120;
-  const separationEpsilon = 0.5;
   const hasAggroActivity = updateAggro();
 
   let hasActivity = updateCombat(time) || hasAggroActivity;
@@ -997,6 +1271,10 @@ const tick = (time: number) => {
     const dx = unit.targetX - unit.x;
     const dy = unit.targetY - unit.y;
     const distance = Math.hypot(dx, dy);
+
+    if (unit.animationState !== "death" && time >= unit.attackStateUntil) {
+      setUnitAnimationState(unit, distance > arrivalRadius ? "move" : "idle");
+    }
 
     if (distance <= arrivalRadius) {
       unit.x = unit.targetX;
@@ -1020,81 +1298,24 @@ const tick = (time: number) => {
       distance < slowRadius ? Math.max(distance / slowRadius, 0.15) : 1;
     const currentSpeed = unit.speed * speedFactor;
     const moveDistance = Math.min(currentSpeed * delta, distance);
-    unit.x += (dx / distance) * moveDistance;
-    unit.y += (dy / distance) * moveDistance;
-  });
+    const directionX = dx / distance;
+    const directionY = dy / distance;
+    const avoidance = getAvoidanceVector(unit);
+    let moveX = directionX + avoidance.x * 0.7;
+    let moveY = directionY + avoidance.y * 0.7;
+    const moveLength = Math.hypot(moveX, moveY);
 
-  unitList.forEach((unit) => {
-    updateElement(unit);
-  });
-
-  for (let i = 0; i < unitList.length; i += 1) {
-    const unitA = unitList[i];
-    const elementA = document.querySelector<HTMLElement>(
-      `[data-runtime-unit-id="${CSS.escape(unitA.id)}"]`,
-    );
-
-    if (!elementA) {
-      continue;
+    if (moveLength > 0) {
+      moveX /= moveLength;
+      moveY /= moveLength;
+      setUnitFacing(unit, moveX, moveY);
     }
 
-    const rectA = elementA.getBoundingClientRect();
+    unit.x += moveX * moveDistance;
+    unit.y += moveY * moveDistance;
+  });
 
-    for (let j = i + 1; j < unitList.length; j += 1) {
-      const unitB = unitList[j];
-      const elementB = document.querySelector<HTMLElement>(
-        `[data-runtime-unit-id="${CSS.escape(unitB.id)}"]`,
-      );
-
-      if (!elementB) {
-        continue;
-      }
-
-      const rectB = elementB.getBoundingClientRect();
-      const centerAX = rectA.left + rectA.width / 2;
-      const centerAY = rectA.top + rectA.height / 2;
-      const centerBX = rectB.left + rectB.width / 2;
-      const centerBY = rectB.top + rectB.height / 2;
-      let dx = centerAX - centerBX;
-      let dy = centerAY - centerBY;
-
-      let distance = Math.hypot(dx, dy);
-      const radiusA = Math.max(rectA.width, rectA.height) / 2;
-      const radiusB = Math.max(rectB.width, rectB.height) / 2;
-      const minDistance = radiusA + radiusB;
-
-      if (distance >= minDistance) {
-        continue;
-      }
-
-      if (distance === 0) {
-        dx = i % 2 === 0 ? 1 : -1;
-
-        dy = j % 2 === 0 ? 0.5 : -0.5;
-
-        distance = Math.hypot(dx, dy);
-      }
-
-      const overlap = minDistance - distance;
-
-      if (overlap <= separationEpsilon) {
-        continue;
-      }
-
-      hasActivity = true;
-
-      const normalX = dx / distance;
-      const normalY = dy / distance;
-      const pushStrength = Math.min(overlap * 0.25, 3);
-      const pushX = normalX * pushStrength;
-      const pushY = normalY * pushStrength;
-
-      unitA.x += pushX;
-      unitA.y += pushY;
-      unitB.x -= pushX;
-      unitB.y -= pushY;
-    }
-  }
+  applyUnitSeparation();
 
   unitList.forEach((unit) => {
     const position = clampUnitPosition(unit, unit.x, unit.y);
@@ -1134,6 +1355,11 @@ const removeRuntimeUnit = (id: string) => {
 
   units.delete(id);
   selectedUnitIds.delete(id);
+
+  dispatchRuntimeEvent("runtime-unit-remove", {
+    unitId: unit.id,
+    unit,
+  });
 
   const element = getUnitElement(id);
 
@@ -1225,6 +1451,15 @@ export const runtimeUnits = {
       targetX: options.x ?? 0,
       targetY: options.y ?? 0,
       speed: options.speed ?? preset?.speed ?? 120,
+      collisionRadius: options.collisionRadius ?? preset?.collisionRadius ?? 28,
+      separationStrength: options.separationStrength ?? 1,
+      animationState: "idle",
+      facingX: 1,
+      facingY: 0,
+      facingAngle: 0,
+      attackStateUntil: 0,
+      attackAnimationDuration: options.attackAnimationDuration ?? 180,
+      deathAnimationDuration: options.deathAnimationDuration ?? 350,
       hp,
       maxHp: hp,
       team,
@@ -1277,6 +1512,11 @@ export const runtimeUnits = {
     ensureTeamRing(unit);
     updateUnitHealth(unit);
 
+    dispatchRuntimeEvent("runtime-unit-spawn", {
+      unitId: unit.id,
+      unit,
+    });
+
     ensureLoop();
     console.log("[runtimeUnits] spawned:", unit);
 
@@ -1321,7 +1561,55 @@ export const runtimeUnits = {
       experience: unit.experience,
       unitClass: unit.unitClass,
       team: unit.team,
+      animationState: unit.animationState,
+      facingX: unit.facingX,
+      facingY: unit.facingY,
+      facingAngle: unit.facingAngle,
+      command: unit.command,
+      attackTargetId: unit.attackTargetId,
     };
+  },
+  setAnimationState(id: string, state: RuntimeUnitAnimationState) {
+    const unit = units.get(id);
+
+    if (!unit || unit.animationState === "death") {
+      return false;
+    }
+
+    setUnitAnimationState(unit, state);
+    updateElement(unit);
+
+    return true;
+  },
+  setFacing(id: string, x: number, y: number) {
+    const unit = units.get(id);
+
+    if (!unit) {
+      return false;
+    }
+
+    setUnitFacing(unit, x, y);
+    updateElement(unit);
+
+    return true;
+  },
+  getAllStats() {
+    return Array.from(units.values()).map((unit) => ({
+      id: unit.id,
+      hp: unit.hp,
+      maxHp: unit.maxHp,
+      kills: unit.kills,
+      experience: unit.experience,
+      unitClass: unit.unitClass,
+      unitType: unit.unitType,
+      team: unit.team,
+      animationState: unit.animationState,
+      facingX: unit.facingX,
+      facingY: unit.facingY,
+      facingAngle: unit.facingAngle,
+      command: unit.command,
+      attackTargetId: unit.attackTargetId,
+    }));
   },
   remove(id: string) {
     return removeRuntimeUnit(id);
@@ -1361,6 +1649,13 @@ export const runtimeUnits = {
       element.removeAttribute("data-runtime-unit-type");
       element.removeAttribute("data-runtime-unit-class");
       element.removeAttribute("data-runtime-projectile-type");
+      element.removeAttribute("data-runtime-animation-state");
+      element.removeAttribute("data-runtime-facing");
+      element.removeAttribute("data-runtime-command");
+      element.removeAttribute("data-runtime-attack-target");
+      element.style.removeProperty("--runtime-facing-x");
+      element.style.removeProperty("--runtime-facing-y");
+      element.style.removeProperty("--runtime-facing-angle");
       element.style.removeProperty("--runtime-team-color");
       element.querySelector("[data-runtime-team-ring]")?.remove();
       element
