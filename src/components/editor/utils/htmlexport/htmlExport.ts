@@ -58,6 +58,22 @@ export async function renderComponentToHtml(
   });
 }
 
+const obfuscateExportScripts = (html: string) => {
+  return html.replace(/<script>([\s\S]*?)<\/script>/gi, (_, scriptContent) => {
+    const bytes = new TextEncoder().encode(scriptContent);
+
+    let binary = "";
+
+    bytes.forEach((byte) => {
+      binary += String.fromCharCode(byte);
+    });
+
+    const encoded = btoa(binary);
+
+    return `<script>(()=>{const b=atob("${encoded}"),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);Function(new TextDecoder().decode(u))();})();</script>`;
+  });
+};
+
 const minifyExportHtml = (html: string) => {
   const protectedBlocks: string[] = [];
 
@@ -1016,7 +1032,7 @@ export const buildHtmlDocument = async (
 </body>
 </html>`;
 
-  return minifyExportHtml(html);
+  return minifyExportHtml(obfuscateExportScripts(html));
 };
 
 const fallbackDownloadHtml = (html: string, fileName: string) => {
