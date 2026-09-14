@@ -65,7 +65,7 @@ export interface RuntimeUnit {
 
   aggroTargetId?: string;
 
-  projectileSpeed: number; // Units per second
+  projectileSpeed: number;
 }
 
 export interface RuntimeUnitSpawnOptions {
@@ -96,6 +96,62 @@ export interface RuntimeUnitSpawnOptions {
 const units = new Map<string, RuntimeUnit>();
 
 const selectedUnitIds = new Set<string>();
+
+const SPATIAL_CELL_SIZE = 160;
+const AGGRO_SCAN_INTERVAL = 140;
+const RENDER_INTERVAL = 1000 / 30;
+const spatialGrid = new Map<string, RuntimeUnit[]>();
+const unitElementCache = new Map<string, HTMLElement>();
+const unitSizeCache = new Map<string, { width: number; height: number }>();
+const unitBoundsCache = new Map<string, { width: number; height: number }>();
+const aggroNextScanAt = new Map<string, number>();
+let lastRenderTime = 0;
+
+const getSpatialKey = (x: number, y: number) => {
+  const cellX = Math.floor(x / SPATIAL_CELL_SIZE);
+  const cellY = Math.floor(y / SPATIAL_CELL_SIZE);
+
+  return `${cellX}:${cellY}`;
+};
+
+const rebuildSpatialGrid = () => {
+  spatialGrid.clear();
+
+  units.forEach((unit) => {
+    if (unit.hp <= 0 || unit.isDying) {
+      return;
+    }
+
+    const key = getSpatialKey(unit.x, unit.y);
+    const bucket = spatialGrid.get(key);
+
+    if (bucket) {
+      bucket.push(unit);
+    } else {
+      spatialGrid.set(key, [unit]);
+    }
+  });
+};
+
+const getNearbyUnits = (x: number, y: number, radius: number) => {
+  const minCellX = Math.floor((x - radius) / SPATIAL_CELL_SIZE);
+  const maxCellX = Math.floor((x + radius) / SPATIAL_CELL_SIZE);
+  const minCellY = Math.floor((y - radius) / SPATIAL_CELL_SIZE);
+  const maxCellY = Math.floor((y + radius) / SPATIAL_CELL_SIZE);
+  const result: RuntimeUnit[] = [];
+
+  for (let cellY = minCellY; cellY <= maxCellY; cellY += 1) {
+    for (let cellX = minCellX; cellX <= maxCellX; cellX += 1) {
+      const bucket = spatialGrid.get(`${cellX}:${cellY}`);
+
+      if (bucket) {
+        result.push(...bucket);
+      }
+    }
+  }
+
+  return result;
+};
 
 const TEAM_COLORS: Record<string, string> = {
   blue: "#3b82f6",
@@ -278,9 +334,23 @@ const updateElement = (unit: RuntimeUnit) => {
 };
 
 const getUnitElement = (id: string) => {
-  return document.querySelector<HTMLElement>(
+  const cached = unitElementCache.get(id);
+
+  if (cached?.isConnected) {
+    return cached;
+  }
+
+  const element = document.querySelector<HTMLElement>(
     `[data-runtime-unit-id="${CSS.escape(id)}"]`,
   );
+
+  if (element) {
+    unitElementCache.set(id, element);
+  } else {
+    unitElementCache.delete(id);
+  }
+
+  return element;
 };
 
 const updateUnitHealth = (unit: RuntimeUnit) => {
@@ -323,6 +393,12 @@ const updateUnitHealth = (unit: RuntimeUnit) => {
 };
 
 const getUnitSize = (id: string) => {
+  const cached = unitSizeCache.get(id);
+
+  if (cached) {
+    return cached;
+  }
+
   const element = getUnitElement(id);
 
   if (!element) {
@@ -333,11 +409,14 @@ const getUnitSize = (id: string) => {
   }
 
   const rect = element.getBoundingClientRect();
-
-  return {
+  const size = {
     width: rect.width,
     height: rect.height,
   };
+
+  unitSizeCache.set(id, size);
+
+  return size;
 };
 
 const getRuntimeContainer = (id: string) => {
@@ -361,6 +440,12 @@ const getRuntimeContainer = (id: string) => {
 };
 
 const getRuntimeBounds = (id: string) => {
+  const cached = unitBoundsCache.get(id);
+
+  if (cached) {
+    return cached;
+  }
+
   const container = getRuntimeContainer(id);
 
   if (!container) {
@@ -368,11 +453,14 @@ const getRuntimeBounds = (id: string) => {
   }
 
   const rect = container.getBoundingClientRect();
-
-  return {
+  const bounds = {
     width: rect.width,
     height: rect.height,
   };
+
+  unitBoundsCache.set(id, bounds);
+
+  return bounds;
 };
 
 const clampUnitPosition = (unit: RuntimeUnit, x: number, y: number) => {
@@ -509,20 +597,7 @@ const ensureTeamRing = (unit: RuntimeUnit) => {
 };
 
 const getTargetScore = (unit: RuntimeUnit, enemy: RuntimeUnit) => {
-  const unitElement = getUnitElement(unit.id);
-  const enemyElement = getUnitElement(enemy.id);
-
-  if (!unitElement || !enemyElement) {
-    return Infinity;
-  }
-
-  const unitRect = unitElement.getBoundingClientRect();
-  const enemyRect = enemyElement.getBoundingClientRect();
-  const unitX = unitRect.left + unitRect.width / 2;
-  const unitY = unitRect.top + unitRect.height / 2;
-  const enemyX = enemyRect.left + enemyRect.width / 2;
-  const enemyY = enemyRect.top + enemyRect.height / 2;
-  const distance = Math.hypot(enemyX - unitX, enemyY - unitY);
+  const distance = Math.hypot(enemy.x - unit.x, enemy.y - unit.y);
   const healthRatio = enemy.maxHp > 0 ? enemy.hp / enemy.maxHp : 1;
 
   return distance + healthRatio * 40;
@@ -531,34 +606,19 @@ const getTargetScore = (unit: RuntimeUnit, enemy: RuntimeUnit) => {
 const findNearestEnemy = (unit: RuntimeUnit, maxDistance: number) => {
   let bestEnemy: RuntimeUnit | undefined;
   let bestScore = Infinity;
+  const maxDistanceSquared = maxDistance * maxDistance;
+  const nearby = getNearbyUnits(unit.x, unit.y, maxDistance);
 
-  const unitElement = getUnitElement(unit.id);
-
-  if (!unitElement) {
-    return undefined;
-  }
-
-  const unitRect = unitElement.getBoundingClientRect();
-  const unitX = unitRect.left + unitRect.width / 2;
-  const unitY = unitRect.top + unitRect.height / 2;
-
-  units.forEach((enemy) => {
+  nearby.forEach((enemy) => {
     if (enemy.id === unit.id || enemy.team === unit.team || enemy.hp <= 0) {
       return;
     }
 
-    const enemyElement = getUnitElement(enemy.id);
+    const dx = enemy.x - unit.x;
+    const dy = enemy.y - unit.y;
+    const distanceSquared = dx * dx + dy * dy;
 
-    if (!enemyElement) {
-      return;
-    }
-
-    const enemyRect = enemyElement.getBoundingClientRect();
-    const enemyX = enemyRect.left + enemyRect.width / 2;
-    const enemyY = enemyRect.top + enemyRect.height / 2;
-    const distance = Math.hypot(enemyX - unitX, enemyY - unitY);
-
-    if (distance > maxDistance) {
+    if (distanceSquared > maxDistanceSquared) {
       return;
     }
 
@@ -573,7 +633,7 @@ const findNearestEnemy = (unit: RuntimeUnit, maxDistance: number) => {
   return bestEnemy;
 };
 
-const updateAggro = () => {
+const updateAggro = (time: number) => {
   let hasAggroActivity = false;
 
   units.forEach((unit) => {
@@ -584,25 +644,14 @@ const updateAggro = () => {
     if (unit.attackTargetId) {
       const currentTarget = units.get(unit.attackTargetId);
 
-      if (currentTarget && currentTarget.hp > 0) {
-        const unitElement = getUnitElement(unit.id);
-        const targetElement = getUnitElement(currentTarget.id);
+      if (currentTarget && currentTarget.hp > 0 && !currentTarget.isDying) {
+        const distance = Math.hypot(
+          currentTarget.x - unit.x,
+          currentTarget.y - unit.y,
+        );
 
-        if (unitElement && targetElement) {
-          const unitRect = unitElement.getBoundingClientRect();
-          const targetRect = targetElement.getBoundingClientRect();
-          const distance = Math.hypot(
-            targetRect.left +
-              targetRect.width / 2 -
-              (unitRect.left + unitRect.width / 2),
-            targetRect.top +
-              targetRect.height / 2 -
-              (unitRect.top + unitRect.height / 2),
-          );
-
-          if (distance <= unit.aggroLeashRange) {
-            return;
-          }
+        if (distance <= unit.aggroLeashRange) {
+          return;
         }
       }
 
@@ -610,6 +659,23 @@ const updateAggro = () => {
       unit.aggroTargetId = undefined;
       resumeUnitCommand(unit);
     }
+
+    const nextScanAt = aggroNextScanAt.get(unit.id) ?? 0;
+
+    if (time < nextScanAt) {
+      return;
+    }
+
+    let hash = 0;
+
+    for (let index = 0; index < unit.id.length; index += 1) {
+      hash = (hash * 31 + unit.id.charCodeAt(index)) >>> 0;
+    }
+
+    aggroNextScanAt.set(
+      unit.id,
+      time + AGGRO_SCAN_INTERVAL + (hash % AGGRO_SCAN_INTERVAL),
+    );
 
     const enemy = findNearestEnemy(unit, unit.aggroRange);
 
@@ -650,19 +716,15 @@ const resumeUnitCommand = (unit: RuntimeUnit) => {
   }
 };
 
-const getMeleeAttackPosition = (attacker: RuntimeUnit, target: RuntimeUnit) => {
-  const attackers = Array.from(units.values()).filter(
-    (unit) =>
-      unit.hp > 0 &&
-      unit.unitType === "melee" &&
-      unit.attackTargetId === target.id,
-  );
-
+const getMeleeAttackPosition = (
+  attacker: RuntimeUnit,
+  target: RuntimeUnit,
+  attackers: RuntimeUnit[],
+) => {
   const index = Math.max(
     0,
     attackers.findIndex((unit) => unit.id === attacker.id),
   );
-
   const count = Math.max(attackers.length, 1);
   const angle = (index / count) * Math.PI * 2;
   const radius = target.collisionRadius + attacker.collisionRadius + 8;
@@ -675,6 +737,24 @@ const getMeleeAttackPosition = (attacker: RuntimeUnit, target: RuntimeUnit) => {
 
 const updateCombat = (time: number) => {
   let hasCombatActivity = false;
+  const meleeAttackersByTarget = new Map<string, RuntimeUnit[]>();
+
+  units.forEach((unit) => {
+    if (
+      unit.hp > 0 &&
+      !unit.isDying &&
+      unit.unitType === "melee" &&
+      unit.attackTargetId
+    ) {
+      const attackers = meleeAttackersByTarget.get(unit.attackTargetId);
+
+      if (attackers) {
+        attackers.push(unit);
+      } else {
+        meleeAttackersByTarget.set(unit.attackTargetId, [unit]);
+      }
+    }
+  });
 
   units.forEach((unit) => {
     if (unit.hp <= 0 || unit.isDying) {
@@ -702,27 +782,15 @@ const updateCombat = (time: number) => {
     }
 
     const target = units.get(targetId);
+
     if (!target || target.hp <= 0 || target.isDying) {
       resumeUnitCommand(unit);
 
       return;
     }
 
-    const unitElement = getUnitElement(unit.id);
-    const targetElement = getUnitElement(target.id);
-
-    if (!unitElement || !targetElement) {
-      return;
-    }
-
-    const unitRect = unitElement.getBoundingClientRect();
-    const targetRect = targetElement.getBoundingClientRect();
-    const unitCenterX = unitRect.left + unitRect.width / 2;
-    const unitCenterY = unitRect.top + unitRect.height / 2;
-    const targetCenterX = targetRect.left + targetRect.width / 2;
-    const targetCenterY = targetRect.top + targetRect.height / 2;
-    const dx = targetCenterX - unitCenterX;
-    const dy = targetCenterY - unitCenterY;
+    const dx = target.x - unit.x;
+    const dy = target.y - unit.y;
     const distance = Math.hypot(dx, dy);
 
     if (distance > 0) {
@@ -742,7 +810,11 @@ const updateCombat = (time: number) => {
       }
 
       if (unit.unitType === "melee") {
-        const attackPosition = getMeleeAttackPosition(unit, target);
+        const attackPosition = getMeleeAttackPosition(
+          unit,
+          target,
+          meleeAttackersByTarget.get(target.id) ?? [unit],
+        );
         const next = clampUnitPosition(
           unit,
           attackPosition.x,
@@ -752,8 +824,8 @@ const updateCombat = (time: number) => {
         unit.targetX = next.x;
         unit.targetY = next.y;
       } else {
-        unit.targetX = unit.x + dx;
-        unit.targetY = unit.y + dy;
+        unit.targetX = target.x;
+        unit.targetY = target.y;
       }
 
       return;
@@ -1248,35 +1320,21 @@ const applySplashDamage = (
   attacker: RuntimeUnit,
   impactTarget: RuntimeUnit,
 ) => {
-  const targetElement = getUnitElement(impactTarget.id);
+  const nearby = getNearbyUnits(
+    impactTarget.x,
+    impactTarget.y,
+    attacker.splashRadius,
+  );
 
-  if (!targetElement) {
-    return;
-  }
-
-  const targetRect = targetElement.getBoundingClientRect();
-  const centerX = targetRect.left + targetRect.width / 2;
-  const centerY = targetRect.top + targetRect.height / 2;
-
-  units.forEach((unit) => {
-    if (unit.team === attacker.team) {
+  nearby.forEach((unit) => {
+    if (unit.team === attacker.team || unit.hp <= 0 || unit.isDying) {
       return;
     }
 
-    if (unit.hp <= 0) {
-      return;
-    }
-
-    const element = getUnitElement(unit.id);
-
-    if (!element) {
-      return;
-    }
-
-    const rect = element.getBoundingClientRect();
-    const unitX = rect.left + rect.width / 2;
-    const unitY = rect.top + rect.height / 2;
-    const distance = Math.hypot(unitX - centerX, unitY - centerY);
+    const distance = Math.hypot(
+      unit.x - impactTarget.x,
+      unit.y - impactTarget.y,
+    );
 
     if (distance > attacker.splashRadius) {
       return;
@@ -1404,21 +1462,25 @@ const fireProjectile = (attacker: RuntimeUnit, target: RuntimeUnit) => {
 const getAvoidanceVector = (unit: RuntimeUnit) => {
   let avoidX = 0;
   let avoidY = 0;
+  const searchRadius = unit.collisionRadius * 4;
+  const nearby = getNearbyUnits(unit.x, unit.y, searchRadius);
 
-  units.forEach((other) => {
-    if (other.id === unit.id || other.hp <= 0) {
+  nearby.forEach((other) => {
+    if (other.id === unit.id || other.hp <= 0 || other.isDying) {
       return;
     }
 
     const dx = unit.x - other.x;
     const dy = unit.y - other.y;
-    const distance = Math.hypot(dx, dy);
+    const distanceSquared = dx * dx + dy * dy;
     const avoidDistance = (unit.collisionRadius + other.collisionRadius) * 1.8;
+    const avoidDistanceSquared = avoidDistance * avoidDistance;
 
-    if (distance <= 0 || distance > avoidDistance) {
+    if (distanceSquared <= 0 || distanceSquared > avoidDistanceSquared) {
       return;
     }
 
+    const distance = Math.sqrt(distanceSquared);
     const strength = 1 - distance / avoidDistance;
 
     avoidX += (dx / distance) * strength;
@@ -1432,29 +1494,49 @@ const getAvoidanceVector = (unit: RuntimeUnit) => {
 };
 
 const applyUnitSeparation = () => {
-  const unitList = Array.from(units.values()).filter((unit) => unit.hp > 0);
+  const processedPairs = new Set<string>();
 
-  for (let i = 0; i < unitList.length; i += 1) {
-    const a = unitList[i];
+  units.forEach((a) => {
+    if (a.hp <= 0 || a.isDying) {
+      return;
+    }
 
-    for (let j = i + 1; j < unitList.length; j += 1) {
-      const b = unitList[j];
+    const nearby = getNearbyUnits(
+      a.x,
+      a.y,
+      Math.max(SPATIAL_CELL_SIZE, a.collisionRadius * 4),
+    );
+
+    nearby.forEach((b) => {
+      if (b.id === a.id || b.hp <= 0 || b.isDying) {
+        return;
+      }
+
+      const pairKey = a.id < b.id ? `${a.id}|${b.id}` : `${b.id}|${a.id}`;
+
+      if (processedPairs.has(pairKey)) {
+        return;
+      }
+
+      processedPairs.add(pairKey);
+
       let dx = b.x - a.x;
       let dy = b.y - a.y;
-      let distance = Math.hypot(dx, dy);
+      let distanceSquared = dx * dx + dy * dy;
 
-      if (distance === 0) {
-        dx = i % 2 === 0 ? 1 : -1;
-        dy = j % 2 === 0 ? 0.5 : -0.5;
-        distance = Math.hypot(dx, dy);
+      if (distanceSquared === 0) {
+        dx = a.id < b.id ? 1 : -1;
+        dy = a.id < b.id ? 0.5 : -0.5;
+        distanceSquared = dx * dx + dy * dy;
       }
 
       const minDistance = a.collisionRadius + b.collisionRadius;
 
-      if (distance >= minDistance) {
-        continue;
+      if (distanceSquared >= minDistance * minDistance) {
+        return;
       }
 
+      const distance = Math.sqrt(distanceSquared);
       const overlap = minDistance - distance;
       const normalX = dx / distance;
       const normalY = dy / distance;
@@ -1475,8 +1557,8 @@ const applyUnitSeparation = () => {
       a.y = nextA.y;
       b.x = nextB.x;
       b.y = nextB.y;
-    }
-  }
+    });
+  });
 };
 
 const tick = (time: number) => {
@@ -1490,8 +1572,10 @@ const tick = (time: number) => {
 
   const arrivalRadius = 2;
   const slowRadius = 120;
+  rebuildSpatialGrid();
+
   const hasStatusActivity = updateRuntimeStatuses(time);
-  const hasAggroActivity = updateAggro();
+  const hasAggroActivity = updateAggro(time);
 
   let hasActivity = updateCombat(time) || hasAggroActivity || hasStatusActivity;
   const unitList = Array.from(units.values());
@@ -1571,7 +1655,10 @@ const tick = (time: number) => {
     unit.y += moveY * moveDistance;
   });
 
+  rebuildSpatialGrid();
   applyUnitSeparation();
+
+  const shouldRender = time - lastRenderTime >= RENDER_INTERVAL;
 
   unitList.forEach((unit) => {
     const position = clampUnitPosition(unit, unit.x, unit.y);
@@ -1579,12 +1666,23 @@ const tick = (time: number) => {
     unit.x = position.x;
     unit.y = position.y;
 
-    updateElement(unit);
+    if (shouldRender) {
+      updateElement(unit);
+    }
   });
+
+  if (shouldRender) {
+    lastRenderTime = time;
+  }
 
   if (!hasActivity) {
     frameId = 0;
     lastTime = 0;
+
+    if (!shouldRender) {
+      unitList.forEach((unit) => updateElement(unit));
+      lastRenderTime = time;
+    }
 
     return;
   }
@@ -1611,6 +1709,9 @@ const removeRuntimeUnit = (id: string) => {
 
   units.delete(id);
   selectedUnitIds.delete(id);
+  aggroNextScanAt.delete(id);
+  unitSizeCache.delete(id);
+  unitBoundsCache.delete(id);
 
   dispatchRuntimeEvent("runtime-unit-remove", {
     unitId: unit.id,
@@ -1787,6 +1888,10 @@ export const runtimeUnits = {
       };
     }
 
+    unitElementCache.set(id, element);
+    unitSizeCache.delete(id);
+    unitBoundsCache.delete(id);
+    aggroNextScanAt.delete(id);
     units.set(id, unit);
     updateElement(unit);
 
@@ -1919,6 +2024,9 @@ export const runtimeUnits = {
     if (unit) {
       units.delete(id);
       selectedUnitIds.delete(id);
+      aggroNextScanAt.delete(id);
+      unitSizeCache.delete(id);
+      unitBoundsCache.delete(id);
     }
 
     const element = getUnitElement(id);
@@ -2023,6 +2131,12 @@ export const runtimeUnits = {
 
     units.clear();
     selectedUnitIds.clear();
+    spatialGrid.clear();
+    aggroNextScanAt.clear();
+    unitSizeCache.clear();
+    unitBoundsCache.clear();
+    unitElementCache.clear();
+    lastRenderTime = 0;
 
     if (frameId) {
       cancelAnimationFrame(frameId);
