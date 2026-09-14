@@ -22,6 +22,7 @@ import EditCssTab from "./tabs/EditCssTab";
 import ComponentLibraryPanel from "../librarypanel/ComponentLibraryPanel";
 import { useLogin } from "../../../context/usehooks";
 import { EditJsActionTab } from "./tabs/EditJsActionTab";
+import RtsUnitEditorTab from "./tabs/RtsUnitEditorTab";
 
 type Props = {
   components: LayoutComponent[];
@@ -150,6 +151,17 @@ function EditComponentPanel({
   const isMultiSelected = selectedComponentIds?.length > 1;
   const primarySelectedId = selectedComponentIds.at(-1) ?? null;
 
+  const isCurrentDraft =
+    !!draftComponent && draftComponent.id === primarySelectedId;
+  const rtsEnabled =
+    isCurrentDraft && draftComponent.runtimeUnit?.enabled === true;
+  const canEnableRts =
+    isCurrentDraft &&
+    draftComponent.type !== "container" &&
+    draftComponent.type !== "flex" &&
+    draftComponent.type !== "grid" &&
+    draftComponent.type !== "form";
+
   const tabMenus = [
     {
       key: "basic",
@@ -167,6 +179,14 @@ function EditComponentPanel({
       key: "js-actions",
       label: "JS Actions",
     },
+    ...(rtsEnabled
+      ? [
+          {
+            key: "rts",
+            label: "RTS",
+          },
+        ]
+      : []),
   ];
 
   useEffect(() => {
@@ -315,11 +335,48 @@ function EditComponentPanel({
               {/* 기본 설정 */}
               {editTab === "basic" &&
                 (draftComponent && updateDraftComponent ? (
-                  <EditBasicTab
-                    key={`${draftComponent.id}-${editorSyncKey}`}
-                    component={draftComponent}
-                    updateComponent={updateDraftComponent}
-                  />
+                  <>
+                    {canEnableRts && (
+                      <div className="form-check px-3 mb-3">
+                        <input
+                          id="runtime-unit-enabled"
+                          type="checkbox"
+                          className="form-check-input"
+                          checked={draftComponent.runtimeUnit?.enabled === true}
+                          onChange={(event) => {
+                            const enabled = event.target.checked;
+
+                            updateDraftComponent((current) => ({
+                              ...current,
+                              runtimeUnit: enabled
+                                ? {
+                                    unitClass:
+                                      current.runtimeUnit?.unitClass ??
+                                      "knight",
+                                    team: current.runtimeUnit?.team ?? "blue",
+                                    ...current.runtimeUnit,
+                                    enabled: true,
+                                  }
+                                : undefined,
+                            }));
+                          }}
+                        />
+
+                        <label
+                          htmlFor="runtime-unit-enabled"
+                          className="form-check-label"
+                        >
+                          Enable RTS Unit
+                        </label>
+                      </div>
+                    )}
+
+                    <EditBasicTab
+                      key={`${draftComponent.id}-${editorSyncKey}`}
+                      component={draftComponent}
+                      updateComponent={updateDraftComponent}
+                    />
+                  </>
                 ) : (
                   <div
                     className="text-secondary text-center"
@@ -373,6 +430,26 @@ function EditComponentPanel({
                     }))
                   }
                 />
+              )}
+
+              {editTab === "rts" && rtsEnabled ? (
+                draftComponent &&
+                draftComponent.id === primarySelectedId &&
+                updateDraftComponent && (
+                  <RtsUnitEditorTab
+                    draftComponent={draftComponent}
+                    onChange={updateDraftComponent}
+                  />
+                )
+              ) : (
+                <>
+                  {editTab !== "basic" &&
+                    editTab !== "style" &&
+                    editTab !== "css" &&
+                    editTab !== "js-actions" && (
+                      <div>RTS 유닛이 선택되지 않았습니다.</div>
+                    )}
+                </>
               )}
             </>
           )}

@@ -1692,36 +1692,56 @@ export const runtimeUnits = {
       return null;
     }
 
-    const team = options.team ?? "neutral";
-    const teamColor = getTeamColor(team, options.teamColor);
-    const unitClass = options.unitClass ?? "custom";
+    let editorOptions: RuntimeUnitSpawnOptions = {};
+
+    if (element.dataset.runtimeUnitConfig) {
+      try {
+        editorOptions = JSON.parse(
+          element.dataset.runtimeUnitConfig,
+        ) as RuntimeUnitSpawnOptions;
+      } catch {
+        editorOptions = {};
+      }
+    }
+
+    const resolvedOptions: RuntimeUnitSpawnOptions = {
+      ...editorOptions,
+      ...options,
+    };
+
+    const team = resolvedOptions.team ?? "neutral";
+    const teamColor = getTeamColor(team, resolvedOptions.teamColor);
+    const unitClass = resolvedOptions.unitClass ?? "custom";
     const preset =
       unitClass === "custom" ? undefined : UNIT_CLASS_PRESETS[unitClass];
-    const unitType = options.unitType ?? preset?.unitType ?? "melee";
-    const hp = options.hp ?? preset?.hp ?? 100;
+    const unitType = resolvedOptions.unitType ?? preset?.unitType ?? "melee";
+    const hp = resolvedOptions.hp ?? preset?.hp ?? 100;
 
     const unit: RuntimeUnit = {
       id,
-      x: options.x ?? 0,
-      y: options.y ?? 0,
-      targetX: options.x ?? 0,
-      targetY: options.y ?? 0,
-      speed: options.speed ?? preset?.speed ?? 120,
-      collisionRadius: options.collisionRadius ?? preset?.collisionRadius ?? 28,
-      separationStrength: options.separationStrength ?? 1,
+      x: resolvedOptions.x ?? 0,
+      y: resolvedOptions.y ?? 0,
+      targetX: resolvedOptions.x ?? 0,
+      targetY: resolvedOptions.y ?? 0,
+      speed: resolvedOptions.speed ?? preset?.speed ?? 120,
+      collisionRadius:
+        resolvedOptions.collisionRadius ?? preset?.collisionRadius ?? 28,
+      separationStrength: resolvedOptions.separationStrength ?? 1,
       animationState: "idle",
       facingX: 1,
       facingY: 0,
       facingAngle: 0,
       attackStateUntil: 0,
-      attackAnimationDuration: options.attackAnimationDuration ?? 180,
+      attackAnimationDuration: resolvedOptions.attackAnimationDuration ?? 180,
       attackWindupDuration:
-        options.attackWindupDuration ?? preset?.attackWindupDuration ?? 90,
+        resolvedOptions.attackWindupDuration ??
+        preset?.attackWindupDuration ??
+        90,
       pendingAttackAt: 0,
       pendingAttackTargetId: undefined,
-      deathAnimationDuration: options.deathAnimationDuration ?? 350,
+      deathAnimationDuration: resolvedOptions.deathAnimationDuration ?? 350,
       statuses: {},
-      shield: Math.max(0, options.shield ?? 0),
+      shield: Math.max(0, resolvedOptions.shield ?? 0),
       knockbackVelocityX: 0,
       knockbackVelocityY: 0,
       isDying: false,
@@ -1731,29 +1751,30 @@ export const runtimeUnits = {
       teamColor,
       unitType,
       unitClass,
-      attackDamage: options.attackDamage ?? preset?.attackDamage ?? 10,
+      attackDamage: resolvedOptions.attackDamage ?? preset?.attackDamage ?? 10,
       attackRange:
-        options.attackRange ??
+        resolvedOptions.attackRange ??
         preset?.attackRange ??
         (unitType === "ranged" ? 280 : 100),
-      attackCooldown: options.attackCooldown ?? preset?.attackCooldown ?? 800,
+      attackCooldown:
+        resolvedOptions.attackCooldown ?? preset?.attackCooldown ?? 800,
       lastAttackTime: 0,
       attackTargetId: undefined,
       command: "idle",
       commandTargetX: undefined,
       commandTargetY: undefined,
-      aggroRange: options.aggroRange ?? preset?.aggroRange ?? 250,
-      aggroLeashRange: options.aggroLeashRange ?? 500,
+      aggroRange: resolvedOptions.aggroRange ?? preset?.aggroRange ?? 250,
+      aggroLeashRange: resolvedOptions.aggroLeashRange ?? 500,
       kills: 0,
       experience: 0,
       aggroTargetId: undefined,
       projectileSpeed:
-        options.projectileSpeed ?? preset?.projectileSpeed ?? 700,
+        resolvedOptions.projectileSpeed ?? preset?.projectileSpeed ?? 700,
       projectileType:
-        options.projectileType ??
+        resolvedOptions.projectileType ??
         preset?.projectileType ??
         (unitType === "ranged" ? "arrow" : "none"),
-      splashRadius: options.splashRadius ?? preset?.splashRadius ?? 0,
+      splashRadius: resolvedOptions.splashRadius ?? preset?.splashRadius ?? 0,
     };
 
     if (unit.shield > 0) {
@@ -1891,6 +1912,57 @@ export const runtimeUnits = {
       shield: unit.shield,
       statuses: { ...unit.statuses },
     }));
+  },
+  reset(id: string) {
+    const unit = units.get(id);
+
+    if (unit) {
+      units.delete(id);
+      selectedUnitIds.delete(id);
+    }
+
+    const element = getUnitElement(id);
+
+    if (!element) {
+      return Boolean(unit);
+    }
+
+    element.getAnimations().forEach((animation) => animation.cancel());
+
+    element.removeAttribute("data-runtime-selected");
+    element.removeAttribute("data-runtime-preview-selected");
+    element.removeAttribute("data-runtime-dead");
+    element.removeAttribute("data-runtime-team");
+    element.removeAttribute("data-runtime-hp");
+    element.removeAttribute("data-runtime-max-hp");
+    element.style.removeProperty("display");
+    element.style.removeProperty("transform");
+    element.style.removeProperty("opacity");
+    element.style.removeProperty("filter");
+    element.style.removeProperty("pointer-events");
+    element.style.removeProperty("--runtime-hp-ratio");
+    element.querySelector("[data-runtime-health-overlay]")?.remove();
+
+    element.removeAttribute("data-runtime-unit-type");
+    element.removeAttribute("data-runtime-unit-class");
+    element.removeAttribute("data-runtime-projectile-type");
+    element.removeAttribute("data-runtime-animation-state");
+    element.removeAttribute("data-runtime-facing");
+    element.removeAttribute("data-runtime-command");
+    element.removeAttribute("data-runtime-attack-target");
+    element.removeAttribute("data-runtime-statuses");
+    element.style.removeProperty("--runtime-shield");
+    element.style.removeProperty("--runtime-slow-multiplier");
+    element.style.removeProperty("--runtime-facing-x");
+    element.style.removeProperty("--runtime-facing-y");
+    element.style.removeProperty("--runtime-facing-angle");
+    element.style.removeProperty("--runtime-team-color");
+    element.querySelector("[data-runtime-team-ring]")?.remove();
+    element
+      .querySelectorAll("[data-runtime-hit-effect]")
+      .forEach((effect) => effect.remove());
+
+    return true;
   },
   remove(id: string) {
     return removeRuntimeUnit(id);

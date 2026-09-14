@@ -213,6 +213,21 @@ function LayoutComponentNode({
   const justDropped = !isAbsolute && droppedIds.includes(component.id);
 
   useEffect(() => {
+    if (!previewMode || !component.runtimeUnit?.enabled) {
+      return;
+    }
+
+    const frameId = requestAnimationFrame(() => {
+      runtimeUnits.spawn(component.id);
+    });
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      runtimeUnits.reset(component.id);
+    };
+  }, [component.id, component.runtimeUnit, previewMode]);
+
+  useEffect(() => {
     if (!isSelected) {
       return;
     }
@@ -594,6 +609,11 @@ function LayoutComponentNode({
       ref={handleComponentRef}
       data-component-id={component.id}
       data-runtime-unit-id={component.id}
+      data-runtime-unit-config={
+        component.runtimeUnit?.enabled
+          ? JSON.stringify(component.runtimeUnit)
+          : undefined
+      }
       style={nodeStyle}
       {...jsEventProps}
       onClick={(event) => {

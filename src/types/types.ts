@@ -20,6 +20,38 @@ export interface StateBinding {
   stateKey: string;
 }
 
+export type RuntimeUnitClass = "custom" | "knight" | "archer" | "mage" | "tank";
+
+export type RuntimeProjectileType = "none" | "arrow" | "orb" | "shell";
+
+export type RuntimeUnitConfig = {
+  enabled: boolean;
+
+  unitClass: RuntimeUnitClass;
+  team: string;
+  teamColor?: string;
+
+  hp?: number;
+  speed?: number;
+
+  collisionRadius?: number;
+  separationStrength?: number;
+
+  attackDamage?: number;
+  attackRange?: number;
+  attackCooldown?: number;
+
+  aggroRange?: number;
+  aggroLeashRange?: number;
+
+  projectileType?: RuntimeProjectileType;
+  projectileSpeed?: number;
+  splashRadius?: number;
+
+  attackAnimationDuration?: number;
+  deathAnimationDuration?: number;
+};
+
 export interface ComponentLayout {
   position?: "relative" | "absolute";
   widthMode?: SizeMode;
@@ -89,6 +121,8 @@ export type BaseComponent<
   customCss?: string;
 
   stateBindings?: StateBinding[];
+
+  runtimeUnit?: RuntimeUnitConfig;
 };
 export interface ButtonComponent extends BaseComponent {
   type: "button";

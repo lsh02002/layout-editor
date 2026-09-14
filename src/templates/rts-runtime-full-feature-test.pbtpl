@@ -416,6 +416,9 @@
                 "left": 0,
                 "top": 0
               },
+              "runtimeUnit": {
+                "enabled": true
+              },
               "style": {
                 "position": "absolute",
                 "left": "0px",
@@ -455,6 +458,9 @@
                 "positionParentId": "rts-test-map",
                 "left": 0,
                 "top": 0
+              },
+              "runtimeUnit": {
+                "enabled": true
               },
               "style": {
                 "position": "absolute",
@@ -496,6 +502,9 @@
                 "left": 0,
                 "top": 0
               },
+              "runtimeUnit": {
+                "enabled": true
+              },
               "style": {
                 "position": "absolute",
                 "left": "0px",
@@ -535,6 +544,9 @@
                 "positionParentId": "rts-test-map",
                 "left": 0,
                 "top": 0
+              },
+              "runtimeUnit": {
+                "enabled": true
               },
               "style": {
                 "position": "absolute",
@@ -576,6 +588,9 @@
                 "left": 0,
                 "top": 0
               },
+              "runtimeUnit": {
+                "enabled": true
+              },
               "style": {
                 "position": "absolute",
                 "left": "0px",
@@ -615,6 +630,9 @@
                 "positionParentId": "rts-test-map",
                 "left": 0,
                 "top": 0
+              },
+              "runtimeUnit": {
+                "enabled": true
               },
               "style": {
                 "position": "absolute",
@@ -656,6 +674,9 @@
                 "left": 0,
                 "top": 0
               },
+              "runtimeUnit": {
+                "enabled": true
+              },
               "style": {
                 "position": "absolute",
                 "left": "0px",
@@ -695,6 +716,9 @@
                 "positionParentId": "rts-test-map",
                 "left": 0,
                 "top": 0
+              },
+              "runtimeUnit": {
+                "enabled": true
               },
               "style": {
                 "position": "absolute",
@@ -736,6 +760,9 @@
                 "left": 0,
                 "top": 0
               },
+              "runtimeUnit": {
+                "enabled": true
+              },
               "style": {
                 "position": "absolute",
                 "left": "0px",
@@ -775,6 +802,9 @@
                 "positionParentId": "rts-test-map",
                 "left": 0,
                 "top": 0
+              },
+              "runtimeUnit": {
+                "enabled": true
               },
               "style": {
                 "position": "absolute",
@@ -816,6 +846,9 @@
                 "left": 0,
                 "top": 0
               },
+              "runtimeUnit": {
+                "enabled": true
+              },
               "style": {
                 "position": "absolute",
                 "left": "0px",
@@ -855,6 +888,9 @@
                 "positionParentId": "rts-test-map",
                 "left": 0,
                 "top": 0
+              },
+              "runtimeUnit": {
+                "enabled": true
               },
               "style": {
                 "position": "absolute",
