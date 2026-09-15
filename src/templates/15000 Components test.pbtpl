@@ -70,7 +70,7 @@
               "type": "heading",
               "order": 1,
               "props": {
-                "text": "3000 component stress test item 2",
+                "text": "15000 component stress test item 2",
                 "level": 6
               },
               "layout": {
