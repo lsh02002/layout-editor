@@ -547,3 +547,4 @@ export type SelectionSetter = Dispatch<SetStateAction<string | null>>;
 export type BooleanSetter = Dispatch<SetStateAction<boolean>>;
 export type InsertTargetSetter = Dispatch<SetStateAction<InsertTarget>>;
 export type FavoriteSetter = Dispatch<SetStateAction<FavoriteComponent[]>>;
+
