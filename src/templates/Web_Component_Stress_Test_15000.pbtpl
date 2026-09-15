@@ -3,7 +3,7 @@
   "components": [
     {
       "id": "c763d3ff-298e-4375-bdd9-02cbec71fac4",
-      "name": "3000 Component Stress Test",
+      "name": "15000 Components test",
       "type": "container",
       "order": 0,
       "props": {
