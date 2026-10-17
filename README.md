@@ -9,6 +9,10 @@
   제 말씀은 제가 모르는 최상의 기술들을 가르쳐주네요
 - 너무 복잡해지겠지만 열심히 만들어 보겠습니다
 
+# 새 쇼핑몰 솔루션 프로젝트 URL (seho-shopping)
+
+- https://seho-shopping.vercel.app/
+
 # 새 프로젝트 URL (seho-presentation)
 
 - https://seho-presentation.vercel.app/
