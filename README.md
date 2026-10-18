@@ -12,6 +12,7 @@
 # 새 쇼핑몰 솔루션 프로젝트 URL (seho-shopping)
 
 - https://seho-shopping.vercel.app/
+- 현재 redis refresh token이 계정 한개당 하나만 로그인되는 이슈로 조만간 조치하겠습니다 동시에 여러명이 한 계정으로 로그인 할수 없어서요
 
 # 새 프로젝트 URL (seho-presentation)
 
