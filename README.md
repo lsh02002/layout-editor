@@ -13,6 +13,7 @@
 
 - https://seho-shopping.vercel.app/
 - 현재 redis refresh token이 계정 한개당 하나만 로그인되는 이슈로 조만간 조치하겠습니다 동시에 여러명이 한 계정으로 로그인 할수 없어서요
+- 참고로 access token은 30분 유지 됩니다 로그인하고 30분은 이용 가능합니다
 
 # 새 프로젝트 URL (seho-presentation)
 
