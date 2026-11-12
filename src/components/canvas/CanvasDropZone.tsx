@@ -63,6 +63,9 @@ function CanvasDropZone({
     );
   };
 
+  const expanded = !previewMode && isActive;
+  const buttonExpanded = !previewMode && (hovered || isActive);
+
   return (
     <div
       data-drop-zone="true"
@@ -114,10 +117,15 @@ function CanvasDropZone({
         flexDirection: isRow ? "column" : "row",
         alignItems: "center",
         justifyContent: "center",
-        minHeight: isRow ? undefined : draggingIds.length > 0 ? 32 : 24,
-        minWidth: isRow ? (draggingIds.length > 0 ? 32 : 24) : undefined,
-        height: isRow ? undefined : draggingIds.length > 0 ? 32 : 24,
-        width: isRow ? (draggingIds.length > 0 ? 32 : 24) : undefined,
+        minHeight: isRow ? undefined : expanded ? 32 : 1,
+        minWidth: isRow ? (expanded ? 32 : 1) : undefined,
+        height: isRow ? undefined : expanded ? 32 : 1,
+        width: isRow ? (expanded ? 32 : 1) : undefined,
+
+        marginTop: !isRow && expanded ? -14 : 0,
+        marginBottom: !isRow && expanded ? 14 : 0,
+        marginLeft: isRow && expanded ? -14 : 0,
+        marginRight: isRow && expanded ? -14 : 0,
         flexShrink: 0,
         margin: 0,
         borderRadius: 6,
@@ -127,8 +135,7 @@ function CanvasDropZone({
         outline: "2px dashed",
         outlineColor: isActive ? "#0d6efd" : "transparent",
 
-        transition:
-          "min-height 120ms ease, min-width 120ms ease, background 120ms ease",
+        transition: "background 120ms ease",
 
         visibility: previewMode ? "hidden" : "visible",
       }}
@@ -148,20 +155,25 @@ function CanvasDropZone({
         type="button"
         className="btn btn-sm"
         style={{
-          width: 24,
-          height: 24,
-          minWidth: 24,
-          minHeight: 24,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: isRow ? (buttonExpanded ? 24 : 1) : 72,
+          height: isRow ? 72 : buttonExpanded ? 24 : 1,
+          minWidth: isRow ? (buttonExpanded ? 24 : 1) : 72,
+          minHeight: isRow ? 72 : buttonExpanded ? 24 : 1,
           padding: 0,
-          border: !previewMode
-            ? `1px solid ${hovered || isActive ? "#3b82f6" : "#cbd5e1"}`
-            : "1px solid transparent",
-          borderRadius: 6,
-          color: hovered || isActive ? "#2563eb" : "#64748b",
+          border: `1px solid #ccccff`,
+          borderRadius: 3,
+          color: buttonExpanded ? "#356abe" : "#64748b",
           pointerEvents: draggingIds.length > 0 ? "none" : "auto",
-          transform: hovered || isActive ? "scale(1.08)" : "scale(1)",
+          transform: buttonExpanded ? "scale(1.08)" : "scale(1)",
+          transition:
+            "width 120ms ease, height 120ms ease, transform 120ms ease",
           touchAction: "manipulation",
           zIndex: 10,
+          background: "white",
+          fontSize: 16,
         }}
         onClick={(event) => {
           event.stopPropagation();
