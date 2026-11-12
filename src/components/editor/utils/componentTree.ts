@@ -321,3 +321,14 @@ export const updateComponentRecursive = (
     return component;
   });
 };
+
+export const flattenComponents = (
+  components: LayoutComponent[],
+): LayoutComponent[] => {
+  return components.flatMap((component) => [
+    component,
+    ...flattenComponents(
+      isLayoutContainer(component) ? component.children : [],
+    ),
+  ]);
+};

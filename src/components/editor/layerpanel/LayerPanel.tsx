@@ -436,6 +436,15 @@ function LayerPanel({
                   )}
                 </span>
 
+                {(component?.jsActions?.length ?? 0) > 0 && (
+                  <small
+                    className="text-primary"
+                    style={{ fontSize: 12, flexShrink: 0, color: "green" }}
+                  >
+                    (JS)
+                  </small>
+                )}
+
                 <small
                   className="text-secondary"
                   style={{ fontSize: 9, flexShrink: 0 }}

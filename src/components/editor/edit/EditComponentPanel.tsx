@@ -276,6 +276,10 @@ function EditComponentPanel({
                     onClick={() => setEditTab(key as EditTab)}
                   >
                     {label}
+                    {(draftComponent?.jsActions?.length ?? 0) > 0 &&
+                    key === "js-actions"
+                      ? " (✓)"
+                      : ""}
                   </button>
                 </li>
               ))}

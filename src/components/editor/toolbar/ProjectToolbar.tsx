@@ -5,6 +5,7 @@ import { useEditorConfig } from "../../../context/usehooks";
 
 type ProjectToolbarProps = {
   previewMode: boolean;
+  setShowComponentCodeModal: React.Dispatch<React.SetStateAction<boolean>>;
 
   isMobile: boolean;
   canvasViewport: CanvasViewport;
@@ -37,6 +38,7 @@ type ProjectToolbarProps = {
 
 function ProjectToolbar({
   previewMode,
+  setShowComponentCodeModal,
   isMobile,
   canvasViewport,
   onCanvasViewportChange,
@@ -62,7 +64,7 @@ function ProjectToolbar({
   onLoadTemplate,
 }: ProjectToolbarProps) {
   const { components: componentRegistry } = useEditorConfig();
-  
+
   return (
     <div
       className="d-flex flex-wrap align-items-center gap-2 mb-3 p-2 border rounded bg-light"
@@ -127,6 +129,13 @@ function ProjectToolbar({
           title="프로젝트 Custom CSS"
         >
           CSS
+        </button>
+        <button
+          type="button"
+          className="btn btn-outline-secondary btn-sm"
+          onClick={() => setShowComponentCodeModal(true)}
+        >
+          {"</>"}
         </button>
         <button
           type="button"

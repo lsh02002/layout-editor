@@ -32,6 +32,7 @@ import { usePositionParent } from "./hooks/usePositionParent";
 import ComponentPanel from "./componentpanel/ComponentPanel";
 import { findComponentRecursive } from "./utils/componentTree";
 import { useEditorConfig } from "../../context/usehooks";
+import ComponentCodeModal from "./codeeditormodal/ComponentCodeModal";
 
 function LayoutEditorContent() {
   const { components: componentRegistry } = useEditorConfig();
@@ -80,6 +81,8 @@ function LayoutEditorContent() {
   const [showEditModal, setShowEditModal] = useState(
     () => window.innerWidth > 767.98,
   );
+
+  const [showComponentCodeModal, setShowComponentCodeModal] = useState(false);
 
   const {
     components,
@@ -511,6 +514,7 @@ function LayoutEditorContent() {
           previewMode={previewMode}
           isMobile={isMobile}
           canvasViewport={canvasViewport}
+          setShowComponentCodeModal={setShowComponentCodeModal}
           onCanvasViewportChange={setCanvasViewport}
           snapEnabled={snapEnabled}
           gridSize={gridSize}
@@ -606,6 +610,15 @@ function LayoutEditorContent() {
         onChange={setProjectCssDraft}
         onClose={closeProjectCssModal}
         onSave={saveProjectCustomCss}
+      />
+      <ComponentCodeModal
+        show={showComponentCodeModal}
+        selectedComponentIds={selectedComponentIds}
+        components={components}
+        setSelectedComponentIds={setSelectedComponentIds}
+        scrollToCanvasComponent={scrollToCanvasComponent}
+        setComponents={setComponents}
+        onClose={() => setShowComponentCodeModal(false)}
       />
       <CreateComponentModal
         open={showCreateModal}
