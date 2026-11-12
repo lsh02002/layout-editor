@@ -2,6 +2,8 @@ import React, { memo, useMemo, useRef } from "react";
 import { isLayoutContainer, type LayoutComponent } from "../../../types/types";
 import { getComponentDisplayName } from "../utils/componentDisplayName";
 import { useEditorConfig } from "../../../context/usehooks";
+import { useComponentDrag } from "../../canvas/layoutNode/useComponentDrag";
+import { findComponentRecursive } from "../utils/componentTree";
 
 type DropTarget = {
   parentId: string | null;
@@ -87,6 +89,13 @@ const flattenComponents = (items: LayoutComponent[]): LayoutComponent[] => {
   });
 };
 
+const collectComponentIds = (component: LayoutComponent): string[] => [
+  component.id,
+  ...("children" in component ? (component.children ?? []) : []).flatMap(
+    collectComponentIds,
+  ),
+];
+
 function LayerPanel({
   previewMode,
   visible,
@@ -111,6 +120,11 @@ function LayerPanel({
   onActiveDropTargetChange,
 }: LayerPanelProps) {
   const { components: componentRegistry } = useEditorConfig();
+  const { handleNativeDragStart, handleNativeDragEnd } = useComponentDrag({
+    selectedComponentIds,
+    onDragStart,
+    onDragEnd,
+  });
   const primarySelectedId = selectedComponentIds.at(-1) ?? null;
 
   const flatComponents = useMemo(
@@ -124,6 +138,24 @@ function LayerPanel({
   );
 
   const lastSelectedIdRef = useRef<string | null>(null);
+
+  const draggingComponentIds = useMemo(() => {
+    const ids = new Set<string>();
+
+    draggingIds.forEach((draggingId) => {
+      const draggingComponent = findComponentRecursive(components, draggingId);
+
+      if (!draggingComponent) {
+        return;
+      }
+
+      collectComponentIds(draggingComponent).forEach((id) => {
+        ids.add(id);
+      });
+    });
+
+    return ids;
+  }, [components, draggingIds]);
 
   if (!visible) {
     return null;
@@ -226,7 +258,7 @@ function LayerPanel({
         {sorted.map((component, index) => {
           const isParent = isLayoutContainer(component);
           const isSelected = selectedComponentIds.includes(component.id);
-          const isDragging = draggingIds.includes(component.id);
+          const isDragging = draggingComponentIds.has(component.id);
           return (
             <React.Fragment key={component.id}>
               <div
@@ -328,9 +360,9 @@ function LayerPanel({
                       return;
                     }
 
-                    onDragStart(event, component.id);
+                    handleNativeDragStart(event, component.id);
                   }}
-                  onDragEnd={onDragEnd}
+                  onDragEnd={handleNativeDragEnd}
                   onPointerDown={(event) => {
                     event.stopPropagation();
 

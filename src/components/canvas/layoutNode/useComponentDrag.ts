@@ -1,4 +1,4 @@
-import { useCallback, type DragEvent } from "react";
+import { useCallback, useRef, type DragEvent } from "react";
 
 type Options = {
   selectedComponentIds: string[];
@@ -11,6 +11,8 @@ export const useComponentDrag = ({
   onDragStart,
   onDragEnd,
 }: Options) => {
+  const draggingIdsRef = useRef<string[]>([]);
+
   const handleNativeDragStart = useCallback(
     (event: DragEvent<HTMLElement>, componentId: string) => {
       const nextDraggingIds = selectedComponentIds.includes(componentId)
@@ -19,11 +21,28 @@ export const useComponentDrag = ({
 
       onDragStart(event, componentId);
 
+      draggingIdsRef.current = nextDraggingIds;
+
+      const draggingIdSet = new Set(nextDraggingIds);
       requestAnimationFrame(() => {
         nextDraggingIds.forEach((id) => {
           document
             .querySelectorAll<HTMLElement>(`[data-component-id="${id}"]`)
             .forEach((element) => {
+              let parent = element.parentElement?.closest<HTMLElement>(
+                "[data-component-id]",
+              );
+
+              while (parent) {
+                if (draggingIdSet.has(parent.dataset.componentId ?? "")) {
+                  return;
+                }
+
+                parent = parent.parentElement?.closest<HTMLElement>(
+                  "[data-component-id]",
+                );
+              }
+
               element.style.opacity = "0.4";
             });
         });
@@ -33,11 +52,15 @@ export const useComponentDrag = ({
   );
 
   const handleNativeDragEnd = useCallback(() => {
-    document
-      .querySelectorAll<HTMLElement>("[data-component-id]")
-      .forEach((element) => {
-        element.style.opacity = "";
-      });
+    draggingIdsRef.current.forEach((id) => {
+      document
+        .querySelectorAll<HTMLElement>(`[data-component-id="${id}"]`)
+        .forEach((element) => {
+          element.style.opacity = "";
+        });
+    });
+
+    draggingIdsRef.current = [];
 
     onDragEnd();
   }, [onDragEnd]);
