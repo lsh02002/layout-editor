@@ -5,6 +5,7 @@ import { useEditorConfig } from "../../../context/usehooks";
 
 type ProjectToolbarProps = {
   previewMode: boolean;
+  onCreateNewProject: () => void;
   setShowComponentCodeModal: React.Dispatch<React.SetStateAction<boolean>>;
 
   isMobile: boolean;
@@ -38,6 +39,7 @@ type ProjectToolbarProps = {
 
 function ProjectToolbar({
   previewMode,
+  onCreateNewProject,
   setShowComponentCodeModal,
   isMobile,
   canvasViewport,
@@ -158,7 +160,16 @@ function ProjectToolbar({
       </div>
 
       <div className="d-flex align-items-center gap-1 pe-2 border-end">
-        <div style={{ position: "relative" }}>
+        <button
+          type="button"
+          className="btn btn-success btn-sm"
+          onClick={onCreateNewProject}
+          title="Ctrl + N"
+        >
+          🆕 새프로젝트
+        </button>
+
+        <div className="position-relative">
           <button
             type="button"
             className="btn btn-success btn-sm"

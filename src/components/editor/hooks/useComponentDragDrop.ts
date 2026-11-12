@@ -528,6 +528,8 @@ export const useComponentDragDrop = ({
     draggingIds,
     droppedIds,
     activeDropTarget,
+    setDraggingIds,
+    setDroppedIds,
     setActiveDropTarget,
     moveComponent,
     handleDragStart,

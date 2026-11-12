@@ -33,6 +33,7 @@ import ComponentPanel from "./componentpanel/ComponentPanel";
 import { findComponentRecursive } from "./utils/componentTree";
 import { useEditorConfig } from "../../context/usehooks";
 import ComponentCodeModal from "./codeeditormodal/ComponentCodeModal";
+import { resetBuilderState } from "./utils/builderState";
 
 function LayoutEditorContent() {
   const { components: componentRegistry } = useEditorConfig();
@@ -271,6 +272,8 @@ function LayoutEditorContent() {
     draggingIds,
     droppedIds,
     activeDropTarget,
+    setDraggingIds,
+    setDroppedIds,
     setActiveDropTarget,
     handleDragStart,
     handleDragEnd,
@@ -311,6 +314,24 @@ function LayoutEditorContent() {
     () => collectComponentCustomCss(components),
     [components],
   );
+
+  const handleCreateNewProject = useCallback(() => {
+    if (
+      !confirm(
+        "현재 프로젝트의 편집 내용이 초기화됩니다. 새 프로젝트를 생성하시겠습니까?",
+      )
+    ) {
+      return;
+    }
+
+    setComponents([]);
+
+    setSelectedComponentIds([]);
+    setDraggingIds([]);
+    setDroppedIds([]);
+
+    resetBuilderState();
+  }, [setComponents, setDraggingIds, setDroppedIds]);
 
   const openProjectCssModal = useCallback(() => {
     setProjectCssDraft(projectCustomCss);
@@ -514,6 +535,7 @@ function LayoutEditorContent() {
           previewMode={previewMode}
           isMobile={isMobile}
           canvasViewport={canvasViewport}
+          onCreateNewProject={handleCreateNewProject}
           setShowComponentCodeModal={setShowComponentCodeModal}
           onCanvasViewportChange={setCanvasViewport}
           snapEnabled={snapEnabled}
