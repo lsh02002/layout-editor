@@ -1,10 +1,11 @@
-import type {
-  ComponentProps,
-  CSSProperties,
-  HTMLAttributes,
-  ReactNode,
-  RefCallback,
-  SyntheticEvent,
+import {
+  Fragment,
+  type ComponentProps,
+  type CSSProperties,
+  type HTMLAttributes,
+  type ReactNode,
+  type RefCallback,
+  type SyntheticEvent,
 } from "react";
 import DivBox from "../DivBox";
 import CanvasDropZone, { type CanvasDropTarget } from "../CanvasDropZone";
@@ -191,12 +192,11 @@ export default function ContentContainer({
                 };
 
         return (
-          <div key={child.id} style={childWrapperStyle}>
-            {renderChildNode(child)}
+          <Fragment key={child.id}>
+            <div style={childWrapperStyle}>{renderChildNode(child)}</div>
 
-            {!childIsAbsolute &&
-              child.type !== "scrollToTopButton" &&
-              !isRow && (
+            <div>
+              {!childIsAbsolute && child.type !== "scrollToTopButton" && (
                 <CanvasDropZone
                   previewMode={previewMode}
                   parentId={component.id}
@@ -209,11 +209,12 @@ export default function ContentContainer({
                   onCreate={onCreate}
                 />
               )}
-          </div>
+            </div>
+          </Fragment>
         );
       })}
 
-      {isRow && (
+      {isRow && children.length === 0 && (
         <CanvasDropZone
           previewMode={previewMode}
           parentId={component.id}
