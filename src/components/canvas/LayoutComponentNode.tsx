@@ -472,6 +472,7 @@ function LayoutComponentNode({
           snapLayout={snapLayout}
           style={{
             ...component.style,
+            ...component.contentStyle,
             transition: "opacity 120ms ease",
             outline:
               !previewMode && isSelected
