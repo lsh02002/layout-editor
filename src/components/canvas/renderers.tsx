@@ -21,7 +21,7 @@ export function ButtonRenderer({
   return (
     <button
       type="button"
-      className="btn btn-primary w-100 mt-4"
+      className="btn btn-primary w-100"
       disabled={component.props.disabled ?? false}
       style={component.contentStyle}
     >
