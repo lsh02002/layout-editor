@@ -130,17 +130,19 @@ export default function ContentContainer({
 
   const containerContent = (
     <>
-      <CanvasDropZone
-        previewMode={previewMode}
-        parentId={component.id}
-        index={0}
-        direction={direction}
-        draggingIds={draggingIds}
-        activeDropTarget={activeDropTarget}
-        setActiveDropTarget={setActiveDropTarget}
-        onDrop={onDrop}
-        onCreate={onCreate}
-      />
+      <div>
+        <CanvasDropZone
+          previewMode={previewMode}
+          parentId={component.id}
+          index={0}
+          direction={direction}
+          draggingIds={draggingIds}
+          activeDropTarget={activeDropTarget}
+          setActiveDropTarget={setActiveDropTarget}
+          onDrop={onDrop}
+          onCreate={onCreate}
+        />
+      </div>
 
       {children.map((child, index) => {
         const childIsAbsolute = child.layout?.position === "absolute";
