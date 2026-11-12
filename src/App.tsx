@@ -147,8 +147,7 @@ const config = {
         props,
         style: {
           width: "100%",
-          minHeight: 20,
-          padding: 12,
+          minHeight: 20,          
         },
         children: [],
       }),
@@ -201,8 +200,7 @@ const config = {
         props,
         style: {
           width: "100%",
-          minHeight: 20,
-          padding: 12,
+          minHeight: 20,          
         },
         children: [],
       }),
@@ -359,8 +357,7 @@ const config = {
         props,
         style: {
           width: "100%",
-          minHeight: 20,
-          padding: 12,
+          minHeight: 20,          
         },
         children: [],
       }),
@@ -537,8 +534,7 @@ const config = {
 
         style: {
           width: "100%",
-          minHeight: 40,
-          padding: 12,
+          minHeight: 40,          
         },
 
         children: [],
