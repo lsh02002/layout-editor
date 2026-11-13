@@ -50,9 +50,9 @@
       "order": 2,
       "props": {
         "urls": [
-          "https://picsum.photos/id/1060/1200/700",
-          "https://picsum.photos/id/1050/1200/700",
-          "https://picsum.photos/id/1040/1200/700"
+          "https://images.unsplash.com/photo-1500534623283-312aade485b7?w=1200&h=700&fit=crop",
+          "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=1200&h=700&fit=crop",
+          "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&h=700&fit=crop"
         ],
         "columns": 3,
         "gap": 10,
