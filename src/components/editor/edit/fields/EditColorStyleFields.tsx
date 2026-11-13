@@ -1,5 +1,3 @@
-import ApplyButton from "./ApplyButton";
-
 type Props = {
   label: string;
   value: string;
@@ -24,9 +22,8 @@ function EditColorStyleFields({
           className="form-control form-control-color"
           value={value}
           onChange={(event) => onChange(event.target.value)}
+          onBlur={onApply}
         />
-
-        <ApplyButton onClick={onApply} />
       </div>
     </div>
   );

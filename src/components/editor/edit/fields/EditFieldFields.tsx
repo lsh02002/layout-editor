@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import type { ComponentField } from "../../registry/componentRegistry";
 import CodeEditor from "../../utils/codeEditor";
 import type { CodeLanguage } from "../../utils/codeHighlight";
@@ -12,8 +13,10 @@ export default function EditFieldFields({
   name: string;
   field: ComponentField;
   value: unknown;
-  onChange: (value: unknown) => void;
+  onChange: (value: unknown, recordHistory?: boolean) => void;
 }) {
+  const colorEditingRef = useRef(false);
+
   if (field.type === "text") {
     const fieldValue = typeof value === "string" ? value : "";
     return (
@@ -179,6 +182,21 @@ export default function EditFieldFields({
   }
 
   if (field.type === "color") {
+    const changeColor = (color: string) => {
+      if (!colorEditingRef.current) {
+        colorEditingRef.current = true;
+
+        onChange(color, true);
+        return;
+      }
+
+      onChange(color, false);
+    };
+
+    const finishColor = () => {
+      colorEditingRef.current = false;
+    };
+
     return (
       <div className="mb-3">
         <label className="form-label">{field.label}</label>
@@ -192,7 +210,8 @@ export default function EditFieldFields({
                 ? value
                 : "#000000"
             }
-            onChange={(event) => onChange(event.target.value)}
+            onChange={(event) => changeColor(event.target.value)}
+            onBlur={finishColor}
           />
 
           <input
@@ -200,7 +219,8 @@ export default function EditFieldFields({
             className="form-control"
             value={typeof value === "string" ? value : ""}
             placeholder="#000000"
-            onChange={(event) => onChange(event.target.value)}
+            onChange={(event) => changeColor(event.target.value)}
+            onBlur={finishColor}
           />
         </div>
       </div>

@@ -23,6 +23,9 @@ type Props = {
   editContentStyle: CSSProperties;
   setEditContentStyle: Dispatch<SetStateAction<CSSProperties>>;
 
+  savedStyle: CSSProperties;
+  savedContentStyle: CSSProperties;
+
   editLayout: ComponentLayout;
   setEditLayout: Dispatch<SetStateAction<ComponentLayout>>;
 
@@ -52,6 +55,8 @@ function EditStyleTab({
   setEditStyle,
   editContentStyle,
   setEditContentStyle,
+  savedStyle,
+  savedContentStyle,
   editLayout,
   setEditLayout,
   onLayoutChange,
@@ -89,6 +94,11 @@ function EditStyleTab({
   };
 
   const backgroundStyle = isParentComponent ? editStyle : editContentStyle;
+
+  const savedBackgroundStyle = isParentComponent
+    ? savedStyle
+    : savedContentStyle;
+
   const backgroundTarget: StyleTarget = isParentComponent
     ? "style"
     : "contentStyle";
@@ -107,6 +117,13 @@ function EditStyleTab({
 
   const applyBackgroundStyle = (key: keyof CSSProperties) => {
     onApply(backgroundTarget, key, backgroundStyle[key]);
+  };
+
+  const getBackgroundImageUrl = (value: CSSProperties["backgroundImage"]) => {
+    if (typeof value !== "string") {
+      return "";
+    }
+    return value.replace(/^url\(["']?/, "").replace(/["']?\)$/, "");
   };
 
   return (
@@ -133,6 +150,7 @@ function EditStyleTab({
         label="Margin"
         placeholder="16px"
         value={String(editStyle.margin ?? "")}
+        savedValue={String(savedContentStyle.margin ?? "")}
         onChange={(value) => {
           hideResizeMessage();
           updateStyle("margin", value || undefined);
@@ -144,6 +162,7 @@ function EditStyleTab({
         label="Padding"
         placeholder="16px"
         value={String(editStyle.padding ?? "")}
+        savedValue={String(savedContentStyle.padding ?? "")}
         onChange={(value) => {
           hideResizeMessage();
           updateStyle("padding", value || undefined);
@@ -183,6 +202,7 @@ function EditStyleTab({
         label="Border"
         placeholder="1px solid #ddd"
         value={String(editStyle.border ?? "")}
+        savedValue={String(savedContentStyle.border ?? "")}
         onChange={(value) => {
           hideResizeMessage();
           updateStyle("border", value || undefined);
@@ -194,6 +214,7 @@ function EditStyleTab({
         label="Border Radius"
         placeholder="8px"
         value={String(editStyle.borderRadius ?? "")}
+        savedValue={String(savedContentStyle.borderRadius ?? "")}
         onChange={(value) => {
           hideResizeMessage();
           updateStyle("borderRadius", value || undefined);
@@ -205,6 +226,7 @@ function EditStyleTab({
         label="Font Size"
         placeholder="16px"
         value={String(editContentStyle.fontSize ?? "")}
+        savedValue={String(savedContentStyle.fontSize ?? "")}
         onChange={(value) => {
           hideResizeMessage();
           updateContentStyle("fontSize", value || undefined);
@@ -223,28 +245,23 @@ function EditStyleTab({
           { value: "center", label: "Center" },
           { value: "right", label: "Right" },
         ]}
-        onChange={(value) => {
+        onApply={(value) => {
           hideResizeMessage();
           const textAlign =
             value === "" ? undefined : (value as CSSProperties["textAlign"]);
           updateContentStyle("textAlign", textAlign);
+          onApply("contentStyle", "textAlign", textAlign);
         }}
-        onApply={() =>
-          onApply("contentStyle", "textAlign", editContentStyle.textAlign)
-        }
       />
 
       <EditTextStyleFields
         label={isParentComponent ? "컨테이너 배경 이미지" : "배경 이미지"}
         colClassName="col-md-12"
         placeholder="https://example.com/image.jpg"
-        value={
-          typeof backgroundStyle.backgroundImage === "string"
-            ? backgroundStyle.backgroundImage
-                .replace(/^url\(["']?/, "")
-                .replace(/["']?\)$/, "")
-            : ""
-        }
+        value={getBackgroundImageUrl(backgroundStyle.backgroundImage ?? "")}
+        savedValue={getBackgroundImageUrl(
+          savedBackgroundStyle.backgroundImage ?? "",
+        )}
         onChange={(value) => {
           hideResizeMessage();
           const nextValue = value.trim();
@@ -265,11 +282,15 @@ function EditStyleTab({
           { value: "auto", label: "Auto" },
           { value: "100% 100%", label: "Stretch" },
         ]}
-        onChange={(value) => {
+        onApply={(value) => {
           hideResizeMessage();
-          updateBackgroundStyle("backgroundSize", value);
+          const backgroundSize =
+            value === ""
+              ? undefined
+              : (value as CSSProperties["backgroundSize"]);
+          updateBackgroundStyle("backgroundSize", backgroundSize);
+          onApply(backgroundTarget, "backgroundSize", backgroundSize);
         }}
-        onApply={() => applyBackgroundStyle("backgroundSize")}
       />
 
       <EditSelectStyleFields
@@ -286,11 +307,15 @@ function EditStyleTab({
           { value: "bottom left", label: "Bottom Left" },
           { value: "bottom right", label: "Bottom Right" },
         ]}
-        onChange={(value) => {
+        onApply={(value) => {
           hideResizeMessage();
-          updateBackgroundStyle("backgroundPosition", value);
+          const backgroundPosition =
+            value === ""
+              ? undefined
+              : (value as CSSProperties["backgroundPosition"]);
+          updateBackgroundStyle("backgroundPosition", backgroundPosition);
+          onApply(backgroundTarget, "backgroundPosition", backgroundPosition);
         }}
-        onApply={() => applyBackgroundStyle("backgroundPosition")}
       />
 
       <EditSelectStyleFields
@@ -303,11 +328,15 @@ function EditStyleTab({
           { value: "repeat-x", label: "가로 반복" },
           { value: "repeat-y", label: "세로 반복" },
         ]}
-        onChange={(value) => {
+        onApply={(value) => {
           hideResizeMessage();
-          updateBackgroundStyle("backgroundRepeat", value);
+          const backgroundRepeat =
+            value === ""
+              ? undefined
+              : (value as CSSProperties["backgroundRepeat"]);
+          updateBackgroundStyle("backgroundRepeat", backgroundRepeat);
+          onApply(backgroundTarget, "backgroundRepeat", backgroundRepeat);
         }}
-        onApply={() => applyBackgroundStyle("backgroundRepeat")}
       />
 
       <EditPositionFields

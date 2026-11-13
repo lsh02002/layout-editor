@@ -1,5 +1,3 @@
-import ApplyButton from "./ApplyButton";
-
 type Option = {
   value: string;
   label: string;
@@ -9,8 +7,7 @@ type Props = {
   label: string;
   value: string;
   options: Option[];
-  onChange: (value: string) => void;
-  onApply: () => void;
+  onApply: (value: string) => void;
   colClassName?: string;
 };
 
@@ -18,7 +15,6 @@ function EditSelectStyleFields({
   label,
   value,
   options,
-  onChange,
   onApply,
   colClassName = "col-md-6",
 }: Props) {
@@ -29,7 +25,10 @@ function EditSelectStyleFields({
         <select
           className="form-select"
           value={value}
-          onChange={(event) => onChange(event.target.value)}
+          onChange={(event) => {
+            event.stopPropagation();
+            onApply(event.target.value);
+          }}
         >
           {options.map((option) => (
             <option key={option.value} value={option.value}>
@@ -37,8 +36,6 @@ function EditSelectStyleFields({
             </option>
           ))}
         </select>
-
-        <ApplyButton onClick={onApply} />
       </div>
     </div>
   );
