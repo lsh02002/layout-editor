@@ -69,7 +69,7 @@
         "heightMode": "auto",
         "positionParentId": null
       },
-      "style": {
+      "contentStyle":{
         "width": "100%"
       }
     },
@@ -87,7 +87,7 @@
         "widthMode": "fill",
         "positionParentId": null
       },
-      "style": {
+      "contentStyle": {
         "width": "100%",
         "cursor": "pointer"
       },
@@ -120,7 +120,7 @@
         "widthMode": "fill",
         "positionParentId": null
       },
-      "style": {
+      "contentStyle": {
         "width": "100%",
         "padding": 20,
         "border": "1px solid #dee2e6",
@@ -157,7 +157,7 @@
             "widthMode": "fill",
             "positionParentId": null
           },
-          "style": {
+          "contentStyle": {
             "width": "100%"
           }
         },
@@ -176,7 +176,7 @@
             "widthMode": "fill",
             "positionParentId": null
           },
-          "style": {
+          "contentStyle": {
             "width": "100%"
           }
         },
@@ -211,7 +211,7 @@
             "widthMode": "fill",
             "positionParentId": null
           },
-          "style": {
+          "contentStyle": {
             "width": "100%",
             "cursor": "pointer"
           },

@@ -36,7 +36,7 @@
         "widthMode": "fill",
         "positionParentId": null
       },
-      "style": {
+      "contentStyle": {
         "width": "100%"
       },
       "contentStyle": {
@@ -65,7 +65,7 @@
         "heightMode": "auto",
         "positionParentId": null
       },
-      "style": {
+      "contentStyle": {
         "width": "100%"
       }
     },
@@ -83,7 +83,7 @@
         "widthMode": "fill",
         "positionParentId": null
       },
-      "style": {
+      "contentStyle": {
         "width": "100%"
       }
     },
@@ -104,7 +104,7 @@
         "widthMode": "fill",
         "positionParentId": null
       },
-      "style": {
+      "contentStyle": {
         "width": "100%",
         "padding": 20,
         "border": "1px solid #ced4da",
@@ -141,7 +141,7 @@
             "widthMode": "fill",
             "positionParentId": null
           },
-          "style": {
+          "contentStyle": {
             "width": "100%"
           }
         },
@@ -161,7 +161,7 @@
             "widthMode": "fill",
             "positionParentId": null
           },
-          "style": {
+          "contentStyle": {
             "width": "100%"
           }
         },
@@ -180,7 +180,7 @@
             "widthMode": "fill",
             "positionParentId": null
           },
-          "style": {
+          "contentStyle": {
             "width": "100%"
           }
         },
@@ -249,7 +249,7 @@
             "widthMode": "fill",
             "positionParentId": null
           },
-          "style": {
+          "contentStyle": {
             "width": "100%",
             "cursor": "pointer"
           },

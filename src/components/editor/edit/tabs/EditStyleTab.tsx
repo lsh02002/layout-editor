@@ -149,25 +149,29 @@ function EditStyleTab({
       <EditTextStyleFields
         label="Margin"
         placeholder="16px"
-        value={String(editStyle.margin ?? "")}
+        value={String(editContentStyle.margin ?? "")}
         savedValue={String(savedContentStyle.margin ?? "")}
         onChange={(value) => {
           hideResizeMessage();
-          updateStyle("margin", value || undefined);
+          updateContentStyle("margin", value || undefined);
         }}
-        onApply={() => onApply("style", "margin", editStyle.margin)}
+        onApply={() =>
+          onApply("contentStyle", "margin", editContentStyle.margin)
+        }
       />
 
       <EditTextStyleFields
         label="Padding"
         placeholder="16px"
-        value={String(editStyle.padding ?? "")}
+        value={String(editContentStyle.padding ?? "")}
         savedValue={String(savedContentStyle.padding ?? "")}
         onChange={(value) => {
           hideResizeMessage();
-          updateStyle("padding", value || undefined);
+          updateContentStyle("padding", value || undefined);
         }}
-        onApply={() => onApply("style", "padding", editStyle.padding)}
+        onApply={() =>
+          onApply("contentStyle", "padding", editContentStyle.padding)
+        }
       />
 
       <EditColorStyleFields
@@ -201,25 +205,29 @@ function EditStyleTab({
       <EditTextStyleFields
         label="Border"
         placeholder="1px solid #ddd"
-        value={String(editStyle.border ?? "")}
+        value={String(editContentStyle.border ?? "")}
         savedValue={String(savedContentStyle.border ?? "")}
         onChange={(value) => {
           hideResizeMessage();
-          updateStyle("border", value || undefined);
+          updateContentStyle("border", value || undefined);
         }}
-        onApply={() => onApply("style", "border", editStyle.border)}
+        onApply={() =>
+          onApply("contentStyle", "border", editContentStyle.border)
+        }
       />
 
       <EditTextStyleFields
         label="Border Radius"
         placeholder="8px"
-        value={String(editStyle.borderRadius ?? "")}
+        value={String(editContentStyle.borderRadius ?? "")}
         savedValue={String(savedContentStyle.borderRadius ?? "")}
         onChange={(value) => {
           hideResizeMessage();
-          updateStyle("borderRadius", value || undefined);
+          updateContentStyle("borderRadius", value || undefined);
         }}
-        onApply={() => onApply("style", "borderRadius", editStyle.borderRadius)}
+        onApply={() =>
+          onApply("contentStyle", "borderRadius", editContentStyle.borderRadius)
+        }
       />
 
       <EditTextStyleFields

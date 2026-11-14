@@ -10,7 +10,7 @@
         "direction": "column",
         "gap": 0
       },
-      "style": {
+      "contentStyle":{
         "width": "100%",
         "minHeight": 20,
         "padding": 0
@@ -25,7 +25,7 @@
             "gap": 0,
             "justifyContent": "center"
           },
-          "style": {
+          "contentStyle":{
             "width": "100%",
             "minHeight": 20,
             "padding": 0
@@ -40,7 +40,7 @@
                 "text": "템플릿 생성 예제 페이지",
                 "level": 1
               },
-              "style": {
+              "contentStyle":{
                 "width": "100%"
               },
               "contentStyle": {
@@ -68,7 +68,7 @@
             "placeholder": "내용을 입력하세요.",
             "disabled": false
           },
-          "style": {
+          "contentStyle":{
             "width": "100%"
           },
           "contentStyle": {
@@ -95,7 +95,7 @@
             "widthMode": "fill",
             "heightMode": "auto"
           },
-          "style": {
+          "contentStyle":{
             "width": "100%"
           }
         },
@@ -109,7 +109,7 @@
             "placeholder": "본문을 입력하세요.",
             "disabled": false
           },
-          "style": {
+          "contentStyle":{
             "width": "100%"
           },
           "contentStyle": {
@@ -128,7 +128,7 @@
             "placeholder": "내용을 입력하세요.",
             "disabled": false
           },
-          "style": {
+          "contentStyle":{
             "width": "100%"
           },
           "contentStyle": {
@@ -147,7 +147,7 @@
             "justifyContent": "space-between",
             "alignItems": "center"
           },
-          "style": {
+          "contentStyle":{
             "width": "100%",
             "minHeight": 20,
             "padding": 0
@@ -165,7 +165,7 @@
                 "maxCount": 1,
                 "disabled": false
               },
-              "style": {
+              "contentStyle":{
                 "width": "100%"
               },
               "layout": {
@@ -183,7 +183,7 @@
                 "placeholder": "내용을 입력하세요.",
                 "disabled": false
               },
-              "style": {
+              "contentStyle":{
                 "width": "100%"
               },
               "layout": {

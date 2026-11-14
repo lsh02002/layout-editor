@@ -60,7 +60,7 @@
         "heightMode": "auto",
         "positionParentId": null
       },
-      "style": {
+      "contentStyle": {
         "width": "100%"
       }
     },
@@ -112,7 +112,7 @@
             "text": "Badge",
             "variant": "info"
           },
-          "style": {
+          "contentStyle": {
             "display": "inline-block"
           },
           "layout": {
@@ -134,7 +134,7 @@
         "variant": "info",
         "dismissible": true
       },
-      "style": {
+      "contentStyle": {
         "width": "100%",
         "margin": "0"
       },
