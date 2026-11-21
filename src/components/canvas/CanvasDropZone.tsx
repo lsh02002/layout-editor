@@ -89,7 +89,7 @@ function CanvasDropZone({
         visibility: previewMode ? "hidden" : "visible",
         pointerEvents: previewMode ? "none" : "auto",
 
-        zIndex: expanded ? 100 : isDragging ? 50 : 10,
+        zIndex: expanded ? 100 : isDragging ? 50 : 0,
       }}
     >
       <div
@@ -182,7 +182,7 @@ function CanvasDropZone({
           transition:
             "background 120ms ease, width 120ms ease, height 120ms ease",
 
-          zIndex: expanded ? 100 : isDragging ? 50 : 10,
+          zIndex: expanded ? 100 : isDragging ? 50 : 0,
           pointerEvents: "auto",
         }}
       >
