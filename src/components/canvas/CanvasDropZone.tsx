@@ -57,8 +57,12 @@ function CanvasDropZone({
     );
   };
 
+  const isDragging = draggingIds.length > 0;
   const expanded = !previewMode && isActive;
   const buttonExpanded = !previewMode && (hovered || isActive);
+
+  // 기본 3px, 드래그 중에는 감지 영역 확장
+  const hitSize = expanded ? 32 : isDragging ? 16 : 12;
 
   return (
     <div
@@ -85,9 +89,9 @@ function CanvasDropZone({
         visibility: previewMode ? "hidden" : "visible",
         pointerEvents: previewMode ? "none" : "auto",
 
-        zIndex: expanded ? 100 : 10,
+        zIndex: expanded ? 100 : isDragging ? 50 : 10,
       }}
-    >      
+    >
       <div
         onDragEnter={(event) => {
           if (!isValidDrag(event)) {
@@ -124,9 +128,11 @@ function CanvasDropZone({
         onDragLeave={(event) => {
           event.stopPropagation();
 
+          const nextTarget = event.relatedTarget;
+
           if (
-            event.relatedTarget instanceof Node &&
-            event.currentTarget.contains(event.relatedTarget)
+            nextTarget instanceof Node &&
+            event.currentTarget.contains(nextTarget)
           ) {
             return;
           }
@@ -141,16 +147,19 @@ function CanvasDropZone({
           ...(isRow
             ? {
                 top: 0,
+                bottom: 0,
                 left: "50%",
-                width: expanded ? 32 : 3,
+                width: hitSize,
                 height: "100%",
+                minHeight: 24,
                 transform: "translateX(-50%)",
               }
             : {
                 top: "50%",
                 left: 0,
+                right: 0,
                 width: "100%",
-                height: expanded ? 32 : 3,
+                height: hitSize,
                 transform: "translateY(-50%)",
               }),
 
@@ -173,7 +182,7 @@ function CanvasDropZone({
           transition:
             "background 120ms ease, width 120ms ease, height 120ms ease",
 
-          zIndex: expanded ? 100 : 10,
+          zIndex: expanded ? 100 : isDragging ? 50 : 10,
           pointerEvents: "auto",
         }}
       >
@@ -205,7 +214,7 @@ function CanvasDropZone({
             border: "1px solid #ccccff",
             borderRadius: 3,
             color: buttonExpanded ? "#356abe" : "#64748b",
-            pointerEvents: draggingIds.length > 0 ? "none" : "auto",
+            pointerEvents: previewMode ? "none" : "auto",
             transform: buttonExpanded ? "scale(1.08)" : "scale(1)",
             transition:
               "width 120ms ease, height 120ms ease, transform 120ms ease",
