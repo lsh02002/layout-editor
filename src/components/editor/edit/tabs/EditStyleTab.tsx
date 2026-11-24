@@ -1,9 +1,4 @@
-import {
-  useState,
-  type CSSProperties,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
+import { type CSSProperties, type Dispatch, type SetStateAction } from "react";
 
 import EditColorStyleFields from "../fields/EditColorStyleFields";
 import EditSelectStyleFields from "../fields/EditSelectStyleFields";
@@ -25,6 +20,8 @@ type Props = {
 
   savedStyle: CSSProperties;
   savedContentStyle: CSSProperties;
+
+  savedLayout: ComponentLayout;
 
   editLayout: ComponentLayout;
   setEditLayout: Dispatch<SetStateAction<ComponentLayout>>;
@@ -57,6 +54,7 @@ function EditStyleTab({
   setEditContentStyle,
   savedStyle,
   savedContentStyle,
+  savedLayout,
   editLayout,
   setEditLayout,
   onLayoutChange,
@@ -65,14 +63,6 @@ function EditStyleTab({
   positionParentOptions,
   onPositionParentChange,
 }: Props) {
-  const [widthApplied, setWidthApplied] = useState(false);
-  const [heightApplied, setHeightApplied] = useState(false);
-
-  const hideResizeMessage = () => {
-    setWidthApplied(false);
-    setHeightApplied(false);
-  };
-
   const updateStyle = (
     key: keyof CSSProperties,
     value: CSSProperties[keyof CSSProperties],
@@ -132,18 +122,14 @@ function EditStyleTab({
         editLayout={editLayout}
         setEditLayout={setEditLayout}
         onLayoutChange={onLayoutChange}
-        hideResizeMessage={hideResizeMessage}
-        widthApplied={widthApplied}
-        setWidthApplied={setWidthApplied}
+        savedLayout={savedLayout}
       />
 
       <EditHeightFields
         editLayout={editLayout}
         setEditLayout={setEditLayout}
         onLayoutChange={onLayoutChange}
-        hideResizeMessage={hideResizeMessage}
-        heightApplied={heightApplied}
-        setHeightApplied={setHeightApplied}
+        savedLayout={savedLayout}
       />
 
       <EditTextStyleFields
@@ -152,7 +138,6 @@ function EditStyleTab({
         value={String(editContentStyle.margin ?? "")}
         savedValue={String(savedContentStyle.margin ?? "")}
         onChange={(value) => {
-          hideResizeMessage();
           updateContentStyle("margin", value || undefined);
         }}
         onApply={() =>
@@ -166,7 +151,6 @@ function EditStyleTab({
         value={String(editContentStyle.padding ?? "")}
         savedValue={String(savedContentStyle.padding ?? "")}
         onChange={(value) => {
-          hideResizeMessage();
           updateContentStyle("padding", value || undefined);
         }}
         onApply={() =>
@@ -182,7 +166,6 @@ function EditStyleTab({
             : "#ffffff"
         }
         onChange={(value) => {
-          hideResizeMessage();
           updateBackgroundStyle("backgroundColor", value);
         }}
         onApply={() => applyBackgroundStyle("backgroundColor")}
@@ -196,7 +179,6 @@ function EditStyleTab({
             : "#000000"
         }
         onChange={(value) => {
-          hideResizeMessage();
           updateContentStyle("color", value);
         }}
         onApply={() => onApply("contentStyle", "color", editContentStyle.color)}
@@ -208,7 +190,6 @@ function EditStyleTab({
         value={String(editContentStyle.border ?? "")}
         savedValue={String(savedContentStyle.border ?? "")}
         onChange={(value) => {
-          hideResizeMessage();
           updateContentStyle("border", value || undefined);
         }}
         onApply={() =>
@@ -222,7 +203,6 @@ function EditStyleTab({
         value={String(editContentStyle.borderRadius ?? "")}
         savedValue={String(savedContentStyle.borderRadius ?? "")}
         onChange={(value) => {
-          hideResizeMessage();
           updateContentStyle("borderRadius", value || undefined);
         }}
         onApply={() =>
@@ -236,7 +216,6 @@ function EditStyleTab({
         value={String(editContentStyle.fontSize ?? "")}
         savedValue={String(savedContentStyle.fontSize ?? "")}
         onChange={(value) => {
-          hideResizeMessage();
           updateContentStyle("fontSize", value || undefined);
         }}
         onApply={() =>
@@ -254,7 +233,6 @@ function EditStyleTab({
           { value: "right", label: "Right" },
         ]}
         onApply={(value) => {
-          hideResizeMessage();
           const textAlign =
             value === "" ? undefined : (value as CSSProperties["textAlign"]);
           updateContentStyle("textAlign", textAlign);
@@ -271,7 +249,6 @@ function EditStyleTab({
           savedBackgroundStyle.backgroundImage ?? "",
         )}
         onChange={(value) => {
-          hideResizeMessage();
           const nextValue = value.trim();
           updateBackgroundStyle(
             "backgroundImage",
@@ -291,7 +268,6 @@ function EditStyleTab({
           { value: "100% 100%", label: "Stretch" },
         ]}
         onApply={(value) => {
-          hideResizeMessage();
           const backgroundSize =
             value === ""
               ? undefined
@@ -316,7 +292,6 @@ function EditStyleTab({
           { value: "bottom right", label: "Bottom Right" },
         ]}
         onApply={(value) => {
-          hideResizeMessage();
           const backgroundPosition =
             value === ""
               ? undefined
@@ -337,7 +312,6 @@ function EditStyleTab({
           { value: "repeat-y", label: "세로 반복" },
         ]}
         onApply={(value) => {
-          hideResizeMessage();
           const backgroundRepeat =
             value === ""
               ? undefined
@@ -351,7 +325,6 @@ function EditStyleTab({
         editLayout={editLayout}
         setEditLayout={setEditLayout}
         onLayoutChange={onLayoutChange}
-        hideResizeMessage={hideResizeMessage}
         positionParentOptions={positionParentOptions}
         onPositionParentChange={onPositionParentChange}
       />

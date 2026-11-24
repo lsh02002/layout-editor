@@ -12,7 +12,6 @@ type Props = {
   editLayout: ComponentLayout;
   setEditLayout: Dispatch<SetStateAction<ComponentLayout>>;
   onLayoutChange: (layout: Partial<ComponentLayout>) => void;
-  hideResizeMessage: () => void;
   positionParentOptions: PositionParentOption[];
   onPositionParentChange: (parentId: string | null) => void;
 };
@@ -21,7 +20,6 @@ function EditPositionFields({
   editLayout,
   setEditLayout,
   onLayoutChange,
-  hideResizeMessage,
   positionParentOptions,
   onPositionParentChange,
 }: Props) {
@@ -34,8 +32,6 @@ function EditPositionFields({
           className="form-select form-select-sm"
           value={editLayout.position ?? "relative"}
           onChange={(event) => {
-            hideResizeMessage();
-
             const position = event.target.value as "relative" | "absolute";
 
             const nextLayout: Partial<ComponentLayout> =
@@ -81,8 +77,6 @@ function EditPositionFields({
               textOverflow: "ellipsis",
             }}
             onChange={(event) => {
-              hideResizeMessage();
-
               const value = event.target.value || null;
 
               setEditLayout((prev) => ({
@@ -123,8 +117,6 @@ function EditPositionFields({
                 className="form-control"
                 value={editLayout.x ?? 0}
                 onChange={(event) => {
-                  hideResizeMessage();
-
                   const x = Number(event.target.value) || 0;
 
                   setEditLayout((prev) => ({
@@ -151,8 +143,6 @@ function EditPositionFields({
                 className="form-control"
                 value={editLayout.y ?? 0}
                 onChange={(event) => {
-                  hideResizeMessage();
-
                   const y = Number(event.target.value) || 0;
 
                   setEditLayout((prev) => ({

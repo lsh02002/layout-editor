@@ -11,7 +11,13 @@ export type ComponentType = LayoutComponent["type"];
 export type ContainerDirection = "row" | "column";
 export type LinkType = "url" | "tel" | "email";
 
-export type SizeMode = "auto" | "fill" | "fixed";
+export type SizeMode =
+  | "auto"
+  | "fill"
+  | "fixed"
+  | "min-content"
+  | "max-content"
+  | "fit-content";
 
 export type StateBindingTarget = "text" | "value" | "visible";
 
@@ -55,7 +61,9 @@ export type RuntimeUnitConfig = {
 export interface ComponentLayout {
   position?: "relative" | "absolute";
   widthMode?: SizeMode;
+  widthUnit?: CSSLengthUnit;
   heightMode?: SizeMode;
+  heightUnit?: CSSLengthUnit;
   width?: number | string;
   height?: number | string;
   x?: number;
@@ -548,3 +556,79 @@ export type BooleanSetter = Dispatch<SetStateAction<boolean>>;
 export type InsertTargetSetter = Dispatch<SetStateAction<InsertTarget>>;
 export type FavoriteSetter = Dispatch<SetStateAction<FavoriteComponent[]>>;
 
+export const CSS_LENGTH_UNITS = [
+  "px",
+  "%",
+
+  // Font relative
+  "em",
+  "rem",
+  "ex",
+  "rex",
+  "ch",
+  "rch",
+  "cap",
+  "rcap",
+  "ic",
+  "ric",
+  "lh",
+  "rlh",
+
+  // Viewport
+  "vw",
+  "vh",
+  "vmin",
+  "vmax",
+  "vi",
+  "vb",
+
+  // Small viewport
+  "svw",
+  "svh",
+  "svmin",
+  "svmax",
+  "svi",
+  "svb",
+
+  // Large viewport
+  "lvw",
+  "lvh",
+  "lvmin",
+  "lvmax",
+  "lvi",
+  "lvb",
+
+  // Dynamic viewport
+  "dvw",
+  "dvh",
+  "dvmin",
+  "dvmax",
+  "dvi",
+  "dvb",
+
+  // Container query
+  "cqw",
+  "cqh",
+  "cqi",
+  "cqb",
+  "cqmin",
+  "cqmax",
+
+  // Absolute
+  "cm",
+  "mm",
+  "Q",
+  "in",
+  "pt",
+  "pc",
+] as const;
+
+export type CSSLengthUnit = (typeof CSS_LENGTH_UNITS)[number];
+
+export type CSSSizeMode =
+  | "auto"
+  | "fill"
+  | "fixed"
+  | "min-content"
+  | "max-content"
+  | "fit-content";

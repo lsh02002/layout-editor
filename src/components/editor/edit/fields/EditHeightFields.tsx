@@ -2,87 +2,49 @@ import type { Dispatch, SetStateAction } from "react";
 
 import type { ComponentLayout } from "../../../../types/types";
 
+import CSSSizeInput from "./CSSSizeInput";
+
 type Props = {
   editLayout: ComponentLayout;
   setEditLayout: Dispatch<SetStateAction<ComponentLayout>>;
   onLayoutChange: (layout: Partial<ComponentLayout>) => void;
-  hideResizeMessage: () => void;
-  heightApplied: boolean;
-  setHeightApplied: Dispatch<SetStateAction<boolean>>;
+  savedLayout: ComponentLayout;
 };
 
 function EditHeightFields({
   editLayout,
   setEditLayout,
   onLayoutChange,
-  hideResizeMessage,
-  heightApplied,
-  setHeightApplied,
+  savedLayout,
 }: Props) {
   return (
-    <div className="col-md-6">
-      <label className="form-label">Height</label>
+    <div className="col-md-12">
+      <CSSSizeInput
+        label="Height"
+        mode={editLayout.heightMode ?? "auto"}
+        value={Number(editLayout.height)}
+        unit={editLayout.heightUnit ?? "px"}
+        savedValue={{
+          mode: savedLayout.heightMode ?? "auto",
+          value: Number(savedLayout.height),
+          unit: savedLayout.heightUnit ?? "px",
+        }}
+        defaultValue={100}
+        onChange={({ mode, value, unit }) => {
+          const nextLayout: Partial<ComponentLayout> = {
+            heightMode: mode,
+            height: value,
+            heightUnit: unit ?? "px",
+          };
 
-      <div className="input-group input-group-sm">
-        <select
-          className="form-select"
-          value={editLayout.heightMode ?? "auto"}
-          onChange={(event) => {
-            hideResizeMessage();
+          setEditLayout((prev) => ({
+            ...prev,
+            ...nextLayout,
+          }));
 
-            const heightMode = event.target.value as "auto" | "fill" | "fixed";
-
-            const height =
-              heightMode === "fixed"
-                ? (editLayout.height ?? 100)
-                : editLayout.height;
-
-            setEditLayout((prev) => ({
-              ...prev,
-              heightMode,
-              height,
-            }));
-
-            onLayoutChange({
-              heightMode,
-              height: heightMode === "fixed" ? height : undefined,
-            });
-
-            setHeightApplied(heightMode === "fixed");
-          }}
-        >
-          <option value="auto">Auto</option>
-          <option value="fill">Fill</option>
-          <option value="fixed">Fixed</option>
-        </select>
-
-        {editLayout.heightMode === "fixed" && (
-          <input
-            type="number"
-            className="form-control"
-            value={Number(editLayout.height ?? 100)}
-            onChange={(event) => {
-              const height = Number(event.target.value);
-
-              setEditLayout((prev) => ({
-                ...prev,
-                height,
-              }));
-
-              onLayoutChange({
-                heightMode: "fixed",
-                height,
-              });
-            }}
-          />
-        )}
-      </div>
-
-      {heightApplied && (
-        <div className="form-text">
-          지금 박스 위아래 부분 드래그해서 높이 변경할 수 있음!
-        </div>
-      )}
+          onLayoutChange(nextLayout);
+        }}
+      />
     </div>
   );
 }

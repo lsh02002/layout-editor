@@ -401,6 +401,7 @@ function EditComponentPanel({
                   setEditContentStyle={setEditContentStyle}
                   savedStyle={draftComponent?.style ?? {}}
                   savedContentStyle={draftComponent?.contentStyle ?? {}}
+                  savedLayout={draftComponent?.layout ?? {}}
                   editLayout={editLayout}
                   isParentComponent={isChildrenComponent(editType)}
                   setEditLayout={setEditLayout}

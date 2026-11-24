@@ -42,6 +42,7 @@ export const useEditComponentForm = ({
 
     setEditCustomCss(component.customCss ?? "");
     setEditLayout({
+      ...component.layout,
       position: component.layout?.position ?? "relative",
       widthMode:
         component.layout?.widthMode ??
@@ -49,10 +50,8 @@ export const useEditComponentForm = ({
       heightMode:
         component.layout?.heightMode ??
         (component.layout?.height != null ? "fixed" : "auto"),
-      width: component.layout?.width,
-      height: component.layout?.height,
-      x: component.layout?.x,
-      y: component.layout?.y,
+      widthUnit: component.layout?.widthUnit ?? "px",
+      heightUnit: component.layout?.heightUnit ?? "px",
       positionParentId: component.layout?.positionParentId ?? null,
     });
   }, []);
