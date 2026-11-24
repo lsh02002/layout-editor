@@ -15,6 +15,7 @@ import type {
   LayoutComponent,
 } from "../../../types/types";
 import { useRuntimeSelection } from "./useRuntimeSelection";
+import { resolveSize } from "../../editor/utils/layoutSize";
 
 type RuntimeContainerComponent = Extract<
   LayoutComponent,
@@ -151,7 +152,23 @@ export default function ContentContainer({
           (child.type === "image" || child.type === "imageSlider"
             ? "fill"
             : undefined);
-        const childWidth = child.layout?.width;
+        const heightMode =
+          child.layout?.heightMode ??
+          (child.type === "image" || child.type === "imageSlider"
+            ? "fill"
+            : undefined);
+
+        const childWidth = resolveSize(
+          widthMode,
+          child.layout?.width,
+          child.layout?.widthUnit ?? "px",
+        );
+
+        const childHeight = resolveSize(
+          heightMode,
+          child.layout?.height,
+          child.layout?.heightUnit ?? "px",
+        );
 
         const childWrapperStyle = childIsAbsolute
           ? {
@@ -166,31 +183,22 @@ export default function ContentContainer({
               }
             : isRow
               ? {
-                  width:
-                    widthMode === "fixed"
-                      ? childWidth
-                      : widthMode === "fill"
-                        ? 0
-                        : "auto",
+                  width: widthMode === "fill" ? 0 : childWidth,
+                  height: childHeight,
                   flex:
                     widthMode === "fixed"
                       ? "0 0 auto"
                       : widthMode === "fill"
                         ? "1 1 0"
                         : "0 1 auto",
-
                   minWidth: 0,
-                  maxWidth: "100%",
+                  maxWidth: widthMode === "fixed" ? "none" : "100%",
                 }
               : {
-                  width:
-                    widthMode === "fixed"
-                      ? childWidth
-                      : widthMode === "auto"
-                        ? "auto"
-                        : "100%",
+                  width: childWidth,
+                  height: childHeight,
                   minWidth: 0,
-                  maxWidth: "100%",
+                  maxWidth: widthMode === "fixed" ? "none" : "100%",
                 };
 
         return (

@@ -7,6 +7,7 @@ import type { HtmlExporter } from "./htmlExportTypes";
 import { compressImageUrl } from "../projectUtils";
 import { highlightCode, normalizeCodeLanguage } from "../codeHighlight";
 import { getLinkHref } from "../linkUtils";
+import { resolveHeight, resolveSize, resolveWidth } from "../layoutSize";
 
 const escapeHtml = (value: string) =>
   value
@@ -86,21 +87,8 @@ const layoutToCss = (component: LayoutComponent) => {
 
   if (!layout) return "";
 
-  const width =
-    layout.widthMode === "fixed"
-      ? layout.width
-      : layout.widthMode === "auto"
-        ? "auto"
-        : "100%";
-
-  const height =
-    layout.heightMode === "fixed"
-      ? layout.height
-      : layout.heightMode === "auto"
-        ? "auto"
-        : layout.heightMode === "fill"
-          ? "100%"
-          : undefined;
+  const width = resolveWidth(layout);
+  const height = resolveHeight(layout);
 
   return styleToCss({
     width,
@@ -202,7 +190,23 @@ const renderContainerChildren = async (
           ? "fill"
           : undefined);
 
-      const childWidth = child.layout?.width;
+      const heightMode =
+        child.layout?.heightMode ??
+        (child.type === "image" || child.type === "imageSlider"
+          ? "fill"
+          : undefined);
+
+      const childWidth = resolveSize(
+        widthMode,
+        child.layout?.width,
+        child.layout?.widthUnit ?? "px",
+      );
+
+      const childHeight = resolveSize(
+        heightMode,
+        child.layout?.height,
+        child.layout?.heightUnit ?? "px",
+      );
 
       const wrapperStyle = isRow
         ? {
@@ -213,13 +217,14 @@ const renderContainerChildren = async (
                   ? 0
                   : "auto",
 
+            height: childHeight,
+
             flex:
               widthMode === "fixed"
                 ? "0 0 auto"
                 : widthMode === "fill"
                   ? "1 1 0"
                   : "0 1 auto",
-
             minWidth: 0,
             maxWidth: "100%",
           }
@@ -230,7 +235,7 @@ const renderContainerChildren = async (
                 : widthMode === "auto"
                   ? "auto"
                   : "100%",
-
+            height: childHeight,
             minWidth: 0,
             maxWidth: "100%",
           };

@@ -93,8 +93,10 @@ function DivBox({
   const resizeDragRef = useRef<ResizeDragState | null>(null);
   const resizeElementRef = useRef<HTMLElement | null>(null);
 
-  const canResizeWidth = layout?.widthMode === "fixed";
-  const canResizeHeight = layout?.heightMode === "fixed";
+  const canResizeWidth =
+    layout?.widthMode === "fixed" && (layout?.widthUnit ?? "px") === "px";
+  const canResizeHeight =
+    layout?.heightMode === "fixed" && (layout?.heightUnit ?? "px") === "px";
 
   const isAbsolute = layout?.position === "absolute";
 
@@ -610,10 +612,17 @@ function DivBox({
       onMouseLeave={handleMouseLeave}
       style={{
         ...style,
+
         width: resolvedWidth ?? (isAbsolute ? "max-content" : undefined),
+
         height: resolvedHeight,
+
         boxSizing: "border-box",
-        maxWidth: isAbsolute ? "none" : "100%",
+
+        maxWidth:
+          style?.maxWidth ??
+          (isAbsolute || layout?.widthMode === "fixed" ? "none" : "100%"),
+
         position: "relative",
         outline:
           !previewMode && isSelected
