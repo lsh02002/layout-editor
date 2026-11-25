@@ -186,7 +186,7 @@ export default function ComponentCodeModal({
           <div
             className="modal-dialog modal-xl modal-dialog-scrollable"
             style={{
-              maxWidth: "960px",
+              minWidth: "960px",
             }}
           >
             <div
@@ -360,7 +360,7 @@ export default function ComponentCodeModal({
           <div
             className="modal-dialog modal-xl modal-dialog-scrollable"
             style={{
-              maxWidth: "960px",
+              minWidth: "960px",
             }}
           >
             <div className="modal-content" style={{ minHeight: "900px" }}>
