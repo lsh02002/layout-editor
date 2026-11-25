@@ -74,8 +74,7 @@ export default function ComponentCodeModal({
 
   const detailedComponent = useMemo(
     () =>
-      codeComponents.find((component) => component.id === primarySelectedId) ??
-      null,
+      codeComponents.find((component) => component.id === primarySelectedId),
     [codeComponents, primarySelectedId],
   );
 
@@ -223,7 +222,7 @@ export default function ComponentCodeModal({
                     gap: "24px",
                   }}
                 >
-                  {detailedComponent === null ? (
+                  {detailedComponent === undefined ? (
                     <div
                       className="w-100 text-muted"
                       style={{ minWidth: "940px" }}
