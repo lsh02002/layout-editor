@@ -28,10 +28,13 @@ export default function ComponentCodeModal({
   scrollToCanvasComponent,
   onClose,
 }: Props) {
+  const [isDetailedView, setIsDetailedView] = useState(false);
   const { components: componentRegistry } = useEditorConfig();
   const [hoveredComponentId, setHoveredComponentId] = useState<string | null>(
     null,
   );
+
+  const primarySelectedId = selectedComponentIds.at(-1) ?? null;
 
   const layeredComponentOptionNames = (
     layerComponents: LayoutComponent[],
@@ -67,6 +70,13 @@ export default function ComponentCodeModal({
         (component) => component.jsActions && component.jsActions.length > 0,
       ),
     [allComponents],
+  );
+
+  const detailedComponent = useMemo(
+    () =>
+      codeComponents.find((component) => component.id === primarySelectedId) ??
+      null,
+    [codeComponents, primarySelectedId],
   );
 
   const addJsAction = (componentId: string) => {
@@ -165,84 +175,47 @@ export default function ComponentCodeModal({
           alignItems: "center",
           justifyContent: "center",
         }}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) {
+            setIsDetailedView(false);
+          }
+        }}
         tabIndex={-1}
       >
-        <div
-          className="modal-dialog modal-xl modal-dialog-scrollable"
-          style={{
-            maxWidth: "960px",
-          }}
-        >
-          <div className="modal-content">
-            <div className="modal-header">
-              <div>
-                <h5 className="modal-title">Component Code</h5>
+        {isDetailedView ? (
+          <div
+            className="modal-dialog modal-xl modal-dialog-scrollable"
+            style={{
+              maxWidth: "960px",
+            }}
+          >
+            <div
+              className="modal-content"
+              style={{ minHeight: "900px", height: "100%" }}
+            >
+              <div className="modal-header">
+                <div className="w-100 d-flex justify-content-between align-items-center">
+                  <div>
+                    <h5 className="modal-title">Component Code</h5>
 
-                <small className="text-muted">
-                  {codeComponents.length} components
-                </small>
+                    <small className="text-muted">
+                      selected component: {detailedComponent?.name ?? "none"}
+                    </small>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary"
+                    onClick={() => {
+                      setIsDetailedView(false);
+                    }}
+                  >
+                    &larr;
+                  </button>
+                </div>
               </div>
 
-              <button type="button" className="btn-close" onClick={onClose} />
-            </div>
-
-            <div className="p-3">
-              <label
-                htmlFor="component-code-add-action"
-                className="form-label fw-semibold"
-              >
-                JS Action 추가
-              </label>
-
-              <select
-                id="component-code-add-action"
-                aria-label="JS Action을 추가할 컴포넌트"
-                className="form-select"                
-                onChange={(event) => addJsAction(event.target.value)}
-              >
-                <option value="">컴포넌트를 선택하세요</option>
-
-                {layeredComponentOptionNames(components, 0).map(
-                  (optionData) => {
-                    const hasJsAction = optionData.hasJSActions;
-                    const label =
-                      optionData.label.length > 50
-                        ? `${optionData.label.slice(0, 50)}...`
-                        : optionData.label;
-                    return (
-                      <option
-                        key={optionData.label + optionData.componentId}
-                        value={optionData.componentId}
-                        disabled={hasJsAction}
-                      >
-                        {label}
-                        {hasJsAction ? " (✓)" : ""}
-                      </option>
-                    );
-                  },
-                )}
-              </select>
-
-              <small className="text-muted">
-                컴포넌트를 선택하면 기본 Click JS Action이 추가됩니다.
-                <br />
-                click 외 다른 이벤트를 추가하려면 오른쪽 에디터 창을
-                이용해주세요.
-              </small>
-            </div>
-
-            <div className="modal-body">
-              {codeComponents.length === 0 ? (
-                <div
-                  className="text-muted"
-                  style={{
-                    padding: "64px 24px",
-                    textAlign: "center",
-                  }}
-                >
-                  등록된 코드가 없습니다.
-                </div>
-              ) : (
+              <div className="modal-body">
                 <div
                   style={{
                     display: "flex",
@@ -250,165 +223,402 @@ export default function ComponentCodeModal({
                     gap: "24px",
                   }}
                 >
-                  {codeComponentItems.map(
-                    ({ component, rootSlideDisplayName }) => {
-                      const isSelected = selectedComponentIds?.includes(
-                        component.id,
-                      );
-
-                      return (
+                  {detailedComponent === null ? (
+                    <div
+                      className="w-100 text-muted"
+                      style={{ minWidth: "940px" }}
+                    >
+                      선택된 컴포넌트가 없습니다.
+                    </div>
+                  ) : (
+                    <div key={detailedComponent?.id} className="card">
+                      <div
+                        className="card-header"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: "16px",
+                          border: "1px solid rgba(13, 110, 253, 0.35)",
+                          background: "rgba(13, 110, 253, 0.12)",
+                          borderRadius: "4px",
+                        }}
+                      >
                         <div
-                          key={component.id}
-                          className="card"
-                          onMouseEnter={() =>
-                            setHoveredComponentId(component.id)
-                          }
-                          onMouseLeave={() => setHoveredComponentId(null)}
-                          onClick={() => {
-                            setSelectedComponentIds([component.id]);
-                            scrollToCanvasComponent(component.id);
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
                           }}
                         >
+                          <strong>
+                            {detailedComponent &&
+                              getComponentDisplayName(
+                                componentRegistry,
+                                detailedComponent,
+                              )}
+                          </strong>
+
+                          <span className="badge text-bg-secondary">
+                            {detailedComponent?.type}
+                          </span>
+                        </div>
+
+                        <small className="text-muted">
+                          {detailedComponent?.id}
+                        </small>
+                      </div>
+
+                      <div className="card-body">
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "20px",
+                          }}
+                        >
+                          {detailedComponent?.jsActions?.map((action) => (
+                            <div key={action.id}>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  marginBottom: "8px",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                  }}
+                                >
+                                  <strong>{action.event}</strong>
+
+                                  <span
+                                    className={
+                                      action.enabled
+                                        ? "badge text-bg-success"
+                                        : "badge text-bg-secondary"
+                                    }
+                                  >
+                                    {action.enabled ? "enabled" : "disabled"}
+                                  </span>
+                                </div>
+
+                                <small className="text-muted">
+                                  {action.id}
+                                </small>
+
+                                <button
+                                  className="m-1 btn btn-sm btn-outline-danger"
+                                  onClick={() =>
+                                    removeJsAction(
+                                      detailedComponent?.id ?? "",
+                                      action.id,
+                                    )
+                                  }
+                                >
+                                  Delete
+                                </button>
+                              </div>
+
+                              <CodeEditor
+                                data={action.code}
+                                setData={(value) =>
+                                  updateCode(
+                                    detailedComponent?.id ?? "",
+                                    action.id,
+                                    value ?? "",
+                                  )
+                                }
+                                height="100%"
+                                language="javascript"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-outline-primary"
+                  onClick={() => setIsDetailedView(false)}
+                >
+                  &larr;
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div
+            className="modal-dialog modal-xl modal-dialog-scrollable"
+            style={{
+              maxWidth: "960px",
+            }}
+          >
+            <div className="modal-content" style={{ minHeight: "900px" }}>
+              <div className="modal-header">
+                <div>
+                  <h5 className="modal-title">Component Code</h5>
+
+                  <small className="text-muted">
+                    {codeComponents.length} components
+                  </small>
+                </div>
+
+                <button type="button" className="btn-close" onClick={onClose} />
+              </div>
+
+              <div className="p-3">
+                <label
+                  htmlFor="component-code-add-action"
+                  className="form-label fw-semibold"
+                >
+                  JS Action 추가
+                </label>
+
+                <select
+                  id="component-code-add-action"
+                  aria-label="JS Action을 추가할 컴포넌트"
+                  className="form-select"
+                  onChange={(event) => addJsAction(event.target.value)}
+                >
+                  <option value="">컴포넌트를 선택하세요</option>
+
+                  {layeredComponentOptionNames(components, 0).map(
+                    (optionData) => {
+                      const hasJsAction = optionData.hasJSActions;
+                      const label =
+                        optionData.label.length > 50
+                          ? `${optionData.label.slice(0, 50)}...`
+                          : optionData.label;
+                      return (
+                        <option
+                          key={optionData.label + optionData.componentId}
+                          value={optionData.componentId}
+                          disabled={hasJsAction}
+                        >
+                          {label}
+                          {hasJsAction ? " (✓)" : ""}
+                        </option>
+                      );
+                    },
+                  )}
+                </select>
+
+                <small className="text-muted">
+                  컴포넌트를 선택하면 기본 Click JS Action이 추가됩니다.
+                  <br />
+                  click 외 다른 이벤트를 추가하려면 오른쪽 에디터 창을
+                  이용해주세요.
+                </small>
+              </div>
+
+              <div className="modal-body">
+                {codeComponents.length === 0 ? (
+                  <div
+                    className="text-muted"
+                    style={{
+                      padding: "64px 24px",
+                      textAlign: "center",
+                    }}
+                  >
+                    등록된 코드가 없습니다.
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "24px",
+                    }}
+                  >
+                    {codeComponentItems.map(
+                      ({ component, rootSlideDisplayName }) => {
+                        const isSelected = selectedComponentIds?.includes(
+                          component.id,
+                        );
+
+                        return (
                           <div
-                            className="card-header"
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              gap: "16px",
-                              border:
-                                hoveredComponentId === component.id ||
-                                isSelected
-                                  ? "1px solid rgba(13, 110, 253, 0.35)"
-                                  : "1px solid transparent",
-                              background: isSelected
-                                ? "rgba(13, 110, 253, 0.12)"
-                                : "transparent",
-                              borderRadius:
-                                hoveredComponentId === component.id ||
-                                isSelected
-                                  ? "4px"
-                                  : "0px",
+                            key={component.id}
+                            className="card"
+                            onMouseEnter={() =>
+                              setHoveredComponentId(component.id)
+                            }
+                            onMouseLeave={() => setHoveredComponentId(null)}
+                            onClick={() => {
+                              setSelectedComponentIds([component.id]);
+                              scrollToCanvasComponent(component.id);
                             }}
                           >
                             <div
+                              className="card-header"
                               style={{
                                 display: "flex",
                                 alignItems: "center",
-                                gap: "8px",
+                                justifyContent: "space-between",
+                                gap: "16px",
+                                border:
+                                  hoveredComponentId === component.id ||
+                                  isSelected
+                                    ? "1px solid rgba(13, 110, 253, 0.35)"
+                                    : "1px solid transparent",
+                                background: isSelected
+                                  ? "rgba(13, 110, 253, 0.12)"
+                                  : "transparent",
+                                borderRadius:
+                                  hoveredComponentId === component.id ||
+                                  isSelected
+                                    ? "4px"
+                                    : "0px",
                               }}
                             >
-                              <strong>
-                                (
-                                {rootSlideDisplayName.length > 16
-                                  ? rootSlideDisplayName.slice(0, 16) + "..."
-                                  : rootSlideDisplayName}
-                                )
-                              </strong>
-                              <strong>
-                                {getComponentDisplayName(
-                                  componentRegistry,
-                                  component,
-                                )}
-                              </strong>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                }}
+                              >
+                                <strong>
+                                  (
+                                  {rootSlideDisplayName.length > 16
+                                    ? rootSlideDisplayName.slice(0, 16) + "..."
+                                    : rootSlideDisplayName}
+                                  )
+                                </strong>
+                                <strong>
+                                  {getComponentDisplayName(
+                                    componentRegistry,
+                                    component,
+                                  )}
+                                </strong>
 
-                              <span className="badge text-bg-secondary">
-                                {component.type}
-                              </span>
+                                <span className="badge text-bg-secondary">
+                                  {component.type}
+                                </span>
+                              </div>
+
+                              <small className="text-muted">
+                                {component.id}
+                              </small>
+
+                              {detailedComponent?.id === component.id && (
+                                <button
+                                  className="m-1 btn btn-sm btn-outline-secondary"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+
+                                    setIsDetailedView(true);
+                                  }}
+                                >
+                                  {!isDetailedView && "Detailed"}
+                                </button>
+                              )}
                             </div>
 
-                            <small className="text-muted">{component.id}</small>
-                          </div>
-
-                          <div className="card-body">
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: "20px",
-                              }}
-                            >
-                              {component.jsActions?.map((action) => (
-                                <div key={action.id}>
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "space-between",
-                                      marginBottom: "8px",
-                                    }}
-                                  >
+                            <div className="card-body">
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: "20px",
+                                }}
+                              >
+                                {component.jsActions?.map((action) => (
+                                  <div key={action.id}>
                                     <div
                                       style={{
                                         display: "flex",
                                         alignItems: "center",
-                                        gap: "8px",
+                                        justifyContent: "space-between",
+                                        marginBottom: "8px",
                                       }}
                                     >
-                                      <strong>{action.event}</strong>
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: "8px",
+                                        }}
+                                      >
+                                        <strong>{action.event}</strong>
 
-                                      <span
-                                        className={
-                                          action.enabled
-                                            ? "badge text-bg-success"
-                                            : "badge text-bg-secondary"
+                                        <span
+                                          className={
+                                            action.enabled
+                                              ? "badge text-bg-success"
+                                              : "badge text-bg-secondary"
+                                          }
+                                        >
+                                          {action.enabled
+                                            ? "enabled"
+                                            : "disabled"}
+                                        </span>
+                                      </div>
+
+                                      <small className="text-muted">
+                                        {action.id}
+                                      </small>
+
+                                      <button
+                                        className="m-1 btn btn-sm btn-outline-danger"
+                                        onClick={() =>
+                                          removeJsAction(
+                                            component.id,
+                                            action.id,
+                                          )
                                         }
                                       >
-                                        {action.enabled
-                                          ? "enabled"
-                                          : "disabled"}
-                                      </span>
+                                        Delete
+                                      </button>
                                     </div>
 
-                                    <small className="text-muted">
-                                      {action.id}
-                                    </small>
-
-                                    <button
-                                      className="m-1 btn btn-sm btn-outline-danger"
-                                      onClick={() =>
-                                        removeJsAction(component.id, action.id)
+                                    <CodeEditor
+                                      data={action.code}
+                                      setData={(value) =>
+                                        updateCode(
+                                          component.id,
+                                          action.id,
+                                          value ?? "",
+                                        )
                                       }
-                                    >
-                                      Delete
-                                    </button>
+                                      height="120px"
+                                      language="javascript"
+                                    />
                                   </div>
-
-                                  <CodeEditor
-                                    data={action.code}
-                                    setData={(value) =>
-                                      updateCode(
-                                        component.id,
-                                        action.id,
-                                        value ?? "",
-                                      )
-                                    }
-                                    height="120px"
-                                    language="javascript"
-                                  />
-                                </div>
-                              ))}
+                                ))}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    },
-                  )}
-                </div>
-              )}
-            </div>
+                        );
+                      },
+                    )}
+                  </div>
+                )}
+              </div>
 
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={onClose}
-              >
-                Close
-              </button>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={onClose}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="modal-backdrop fade show" onClick={onClose} />
