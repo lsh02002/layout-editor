@@ -131,7 +131,21 @@ export default function ContentContainer({
 
   const containerContent = (
     <>
-      <div>
+      <div
+        style={{
+          position: "relative",
+          alignSelf: "stretch",
+          flex: "0 0 auto",
+          width: isRow ? 0 : "100%",
+          height: isRow ? "auto" : 0,
+          minWidth: 0,
+          minHeight: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "visible",
+        }}
+      >
         <CanvasDropZone
           previewMode={previewMode}
           parentId={component.id}
@@ -170,7 +184,7 @@ export default function ContentContainer({
           child.layout?.heightUnit ?? "px",
         );
 
-        const childWrapperStyle = childIsAbsolute
+        const childWrapperStyle: CSSProperties = childIsAbsolute
           ? {
               display: "contents",
             }
@@ -184,14 +198,23 @@ export default function ContentContainer({
             : isRow
               ? {
                   width: widthMode === "fill" ? 0 : childWidth,
-                  height: childHeight,
+
+                  height:
+                    heightMode === "fixed" || heightMode === "fill"
+                      ? childHeight
+                      : "auto",
+
+                  alignSelf: "auto",
+
                   flex:
                     widthMode === "fixed"
                       ? "0 0 auto"
                       : widthMode === "fill"
                         ? "1 1 0"
                         : "0 1 auto",
+
                   minWidth: 0,
+                  minHeight: 0,
                   maxWidth: widthMode === "fixed" ? "none" : "100%",
                 }
               : {
@@ -205,8 +228,22 @@ export default function ContentContainer({
           <Fragment key={child.id}>
             <div style={childWrapperStyle}>{renderChildNode(child)}</div>
 
-            <div>
-              {!childIsAbsolute && child.type !== "scrollToTopButton" && (
+            {!childIsAbsolute && child.type !== "scrollToTopButton" && (
+              <div
+                style={{
+                  position: "relative",
+                  alignSelf: "stretch",
+                  flex: "0 0 auto",
+                  width: isRow ? 0 : "100%",
+                  height: isRow ? "auto" : 0,
+                  minWidth: 0,
+                  minHeight: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "visible",
+                }}
+              >
                 <CanvasDropZone
                   previewMode={previewMode}
                   parentId={component.id}
@@ -218,8 +255,8 @@ export default function ContentContainer({
                   onDrop={onDrop}
                   onCreate={onCreate}
                 />
-              )}
-            </div>
+              </div>
+            )}
           </Fragment>
         );
       })}
@@ -284,7 +321,14 @@ export default function ContentContainer({
           ...presentationEditStyle,
         }}
       >
-        <div style={{ position: "relative", width: "100%" }}>
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "100%",
+            minHeight: 0,
+          }}
+        >
           {dragHandleView}
 
           {previewMode && runtimeSelectionVisible && runtimeSelectionRect && (
@@ -316,6 +360,8 @@ export default function ContentContainer({
                 gap: component.props.gap ?? 8,
                 width: "100%",
                 minWidth: 0,
+                height: "100%",
+                minHeight: 0,
                 justifyContent,
                 alignItems,
               }}
@@ -330,6 +376,8 @@ export default function ContentContainer({
                 gap: component.props.gap ?? 8,
                 width: "100%",
                 minWidth: 0,
+                height: "100%",
+                minHeight: 0,
                 justifyContent,
                 alignItems,
               }}
