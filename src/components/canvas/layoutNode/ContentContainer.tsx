@@ -262,17 +262,33 @@ export default function ContentContainer({
       })}
 
       {isRow && children.length === 0 && (
-        <CanvasDropZone
-          previewMode={previewMode}
-          parentId={component.id}
-          index={children.length}
-          direction={direction}
-          draggingIds={draggingIds}
-          activeDropTarget={activeDropTarget}
-          setActiveDropTarget={setActiveDropTarget}
-          onDrop={onDrop}
-          onCreate={onCreate}
-        />
+        <div
+          style={{
+            position: "relative",
+            alignSelf: "stretch",
+            flex: "0 0 auto",
+            width: isRow ? 0 : "100%",
+            height: isRow ? "auto" : 0,
+            minWidth: 0,
+            minHeight: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "visible",
+          }}
+        >
+          <CanvasDropZone
+            previewMode={previewMode}
+            parentId={component.id}
+            index={children.length}
+            direction={direction}
+            draggingIds={draggingIds}
+            activeDropTarget={activeDropTarget}
+            setActiveDropTarget={setActiveDropTarget}
+            onDrop={onDrop}
+            onCreate={onCreate}
+          />
+        </div>
       )}
     </>
   );
