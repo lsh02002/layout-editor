@@ -228,7 +228,7 @@ export default function ComponentCodeModal({
                       className="w-100 text-muted"
                       style={{ minWidth: "940px" }}
                     >
-                      선택된 컴포넌트가 없습니다.
+                      JS모듈이 없는 컴포넌트입니다.
                     </div>
                   ) : (
                     <div key={detailedComponent?.id} className="card">
