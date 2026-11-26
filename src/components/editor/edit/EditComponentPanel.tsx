@@ -395,6 +395,7 @@ function EditComponentPanel({
 
               {editTab === "style" && (
                 <EditStyleTab
+                  key={primarySelectedId}
                   editStyle={editStyle}
                   setEditStyle={setEditStyle}
                   editContentStyle={editContentStyle}

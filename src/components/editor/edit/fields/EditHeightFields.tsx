@@ -25,7 +25,9 @@ function EditHeightFields({
         value={Number(editLayout.height)}
         unit={editLayout.heightUnit ?? "px"}
         savedValue={{
-          mode: savedLayout.heightMode ?? "auto",
+          mode:
+            savedLayout.heightMode ??
+            (savedLayout.height != null ? "fixed" : "auto"),
           value: Number(savedLayout.height),
           unit: savedLayout.heightUnit ?? "px",
         }}

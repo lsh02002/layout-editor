@@ -23,7 +23,9 @@ function EditWidthFields({
         value={Number(editLayout.width)}
         unit={editLayout.widthUnit ?? "px"}
         savedValue={{
-          mode: savedLayout.widthMode ?? "auto",
+          mode:
+            savedLayout.widthMode ??
+            (savedLayout.width != null ? "fixed" : "auto"),
           value: Number(savedLayout.width),
           unit: savedLayout.widthUnit ?? "px",
         }}
