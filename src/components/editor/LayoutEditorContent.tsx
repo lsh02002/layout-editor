@@ -34,6 +34,7 @@ import { findComponentRecursive } from "./utils/componentTree";
 import { useEditorConfig } from "../../context/usehooks";
 import ComponentCodeModal from "./codeeditormodal/ComponentCodeModal";
 import { resetBuilderState } from "./utils/builderState";
+import BuilderConsolePanel from "./builderconsolepanel/BuilderConsolePanel";
 
 function LayoutEditorContent() {
   const { components: componentRegistry } = useEditorConfig();
@@ -586,6 +587,8 @@ function LayoutEditorContent() {
           onPointerDragCancel={handlePointerDragCancel}
           snapLayout={snapLayout}
         />
+
+        {previewMode && <BuilderConsolePanel />}
       </div>
       <div className="editor-mobile-panel-buttons">
         <button
