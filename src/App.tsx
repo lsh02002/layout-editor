@@ -85,7 +85,14 @@ const config = {
         direction: z.enum(["row", "column"]).optional(),
         gap: z.number().finite().optional(),
         justifyContent: z
-          .enum(["flex-start", "center", "flex-end", "space-between"])
+          .enum([
+            "flex-start",
+            "center",
+            "flex-end",
+            "space-between",
+            "space-around",
+            "space-evenly",
+          ])
           .optional(),
         alignItems: z
           .enum(["stretch", "flex-start", "center", "flex-end"])
@@ -114,6 +121,8 @@ const config = {
             { label: "Center", value: "center" },
             { label: "End", value: "flex-end" },
             { label: "Space Between", value: "space-between" },
+            { label: "Space Around", value: "space-around" },
+            { label: "Space Evenly", value: "space-evenly" },
           ],
         },
         alignItems: {
