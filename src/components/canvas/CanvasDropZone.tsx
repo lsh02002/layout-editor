@@ -75,8 +75,8 @@ function CanvasDropZone({
 
         width: isRow ? 0 : "100%",
         height: isRow ? "100%" : 0,
-        minWidth: 0,
-        minHeight: 0,
+        minWidth: isRow ? 0 : "100%",
+        minHeight: isRow ? "100%" : 0,
 
         flex: "0 0 0px",
         margin: 0,
