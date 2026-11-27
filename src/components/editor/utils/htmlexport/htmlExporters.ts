@@ -2,12 +2,14 @@ import type { CSSProperties } from "react";
 import type {
   ContainerDirection,
   LayoutComponent,
+  ShapeType,
 } from "../../../../types/types";
 import type { HtmlExporter } from "./htmlExportTypes";
 import { compressImageUrl } from "../projectUtils";
 import { highlightCode, normalizeCodeLanguage } from "../codeHighlight";
 import { getLinkHref } from "../linkUtils";
 import { resolveHeight, resolveSize, resolveWidth } from "../layoutSize";
+import { getShapePoints } from "../shape";
 
 const escapeHtml = (value: string) =>
   value
@@ -2102,4 +2104,90 @@ export const exportFormHtml: HtmlExporter = async (component, context) => {
       ${children}
     </form>
   `;
+};
+
+export const exportShapeHtml: HtmlExporter = (component) => {
+  const {
+    wrapperStyle,
+    componentId,
+    componentName,
+    wrapperClass,
+    positionParentAttr,
+  } = getExportMeta(component);
+
+  const {
+    shapeType = "rectangle",
+    fill = "#6f42c1",
+    stroke = "#4c2889",
+    strokeWidth = 2,
+    content = "",
+    fontSize = 16,
+  } = component.props as {
+    shapeType?: ShapeType;
+    fill?: string;
+    stroke?: string;
+    strokeWidth?: number;
+    content?: string;
+    fontSize?: number;
+  };
+
+  const attributes = [
+    `fill="${fill}"`,
+    `stroke="${stroke}"`,
+    `stroke-width="${strokeWidth}"`,
+    `vector-effect="non-scaling-stroke"`,
+  ].join(" ");
+
+  const shapeHtml =
+    shapeType === "rectangle"
+      ? `<rect x="1" y="1" width="98" height="98" ${attributes} />`
+      : shapeType === "rounded"
+        ? `<rect x="1" y="1" width="98" height="98" rx="12" ry="12" ${attributes} />`
+        : shapeType === "ellipse"
+          ? `<ellipse cx="50" cy="50" rx="49" ry="49" ${attributes} />`
+          : `<polygon points="${getShapePoints(shapeType)}" ${attributes} />`;
+
+  return `
+  <div
+      class="${wrapperClass}"
+      data-component-id="${componentId}"
+      data-component-type="shape"
+      data-component-name="${componentName}"${positionParentAttr}
+      style="${escapeAttribute(wrapperStyle)}"
+    >
+      <div style="position:relative;width:100%;height:100%;">
+      <svg
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      style="
+        position:absolute;
+        inset:0;
+        display:block;
+        width:100%;
+        height:100%;
+        overflow:visible;
+      "
+    >
+      ${shapeHtml}
+    </svg>
+
+    <div
+      class="ql-editor"
+      style="
+        position:absolute;
+        inset:0;
+        z-index:1;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        padding:12px;
+        overflow:hidden;
+        background:transparent;
+        font-size: ${fontSize}px;
+        text-align: center;
+      "
+    >${content ?? ""}</div>
+    </div>
+  </div>
+`;
 };

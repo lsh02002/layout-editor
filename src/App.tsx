@@ -15,6 +15,7 @@ import {
   MousePointerClick,
   MoveVertical,
   PlaySquare,
+  ShapesIcon,
   TextQuote,
 } from "lucide-react";
 import { z } from "zod";
@@ -41,6 +42,7 @@ import {
   RadioRenderer,
   ScrollToTopRenderer,
   SelectRenderer,
+  ShapeRenderer,
   SpacerRenderer,
   TextareaRenderer,
   VideoRenderer,
@@ -67,6 +69,7 @@ import {
   exportRadioHtml,
   exportScrollToTopHtml,
   exportSelectHtml,
+  exportShapeHtml,
   exportSpacerHtml,
   exportTextareaHtml,
   exportVideoHtml,
@@ -2342,6 +2345,140 @@ const config = {
         return props.message?.trim() || component.name?.trim() || "Alert";
       },
       exportHtml: exportAlertHtml,
+    },
+    shape: {
+      label: "Shape",
+      description: "도형 모양",
+      icon: ShapesIcon,
+      supportsDisabled: true,
+      propsSchema: z.object({
+        shapeType: z.enum([
+          "rectangle",
+          "rounded",
+          "ellipse",
+          "triangle",
+          "diamond",
+          "pentagon",
+          "hexagon",
+          "star",
+          "arrow-right",
+          "chevron",
+          "parallelogram",
+        ]),
+        fill: z.string().optional(),
+        stroke: z.string().optional(),
+        strokeWidth: z.number().optional(),
+        content: z.string().optional(),
+        fontSize: z.number().optional(),
+      }),
+      fields: {
+        shapeType: {
+          type: "select",
+          label: "Shape",
+          options: [
+            {
+              label: "Rectangle",
+              value: "rectangle",
+            },
+            {
+              label: "Rounded",
+              value: "rounded",
+            },
+            {
+              label: "Ellipse",
+              value: "ellipse",
+            },
+            {
+              label: "Triangle",
+              value: "triangle",
+            },
+            {
+              label: "Diamond",
+              value: "diamond",
+            },
+            {
+              label: "Pentagon",
+              value: "pentagon",
+            },
+            {
+              label: "Hexagon",
+              value: "hexagon",
+            },
+            {
+              label: "Star",
+              value: "star",
+            },
+            {
+              label: "Arrow Right",
+              value: "arrow-right",
+            },
+            {
+              label: "Chevron",
+              value: "chevron",
+            },
+            {
+              label: "Parallelogram",
+              value: "parallelogram",
+            },
+          ],
+        },
+        content: {
+          type: "quill",
+          label: "Content",
+          placeholder: "텍스트를 입력하세요",
+        },
+        fontSize: {
+          type: "number",
+          label: "Font Size",
+          min: 6,
+          max: 100,
+        },
+        fill: {
+          type: "color",
+          label: "Fill",
+        },
+        stroke: {
+          type: "color",
+          label: "Stroke",
+        },
+        strokeWidth: {
+          type: "number",
+          label: "Stroke Width",
+          min: 0,
+          max: 20,
+        },
+      },
+      defaultProps: {
+        shapeType: "rectangle",
+        fill: "#6f42c1",
+        stroke: "#4c2889",
+        strokeWidth: 2,
+        content: "",
+        fontSize: 16,
+      },
+      createComponent: (id, props) => ({
+        id,
+        type: "shape",
+        name: "Shape",
+        order: 0,
+        props,
+        layout: {
+          widthMode: "fixed",
+          heightMode: "fixed",
+          width: 160,
+          height: 100,
+        },
+        style: {},
+      }),
+      editor: (context, fields) =>
+        createElement(RegistryFieldsEditor, { ...context, fields }),
+      canvas: (component) => {
+        if (component.type !== "shape") {
+          return null;
+        }
+        return createElement(ShapeRenderer, { component });
+      },
+      exportHtml: exportShapeHtml,
     },
   } satisfies EditorConfig["components"],
 } satisfies EditorConfig;

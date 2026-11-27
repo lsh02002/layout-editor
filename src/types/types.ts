@@ -438,6 +438,33 @@ export interface BadgeComponent extends BaseComponent {
   };
 }
 
+export type ShapeType =
+  | "rectangle"
+  | "rounded"
+  | "circle"
+  | "ellipse"
+  | "triangle"
+  | "diamond"
+  | "pentagon"
+  | "hexagon"
+  | "star"
+  | "arrow-right"
+  | "chevron"
+  | "parallelogram";
+
+export interface ShapeComponent extends BaseComponent {
+  type: "shape";
+
+  props: {
+    shapeType?: ShapeType;
+    fill?: string;
+    stroke?: string;
+    strokeWidth?: number;
+    content?: string;
+    fontSize?: number;
+  };
+}
+
 export type LayoutComponent =
   | ButtonComponent
   | ScrollToTopButtonComponent
@@ -462,6 +489,7 @@ export type LayoutComponent =
   | CardComponent
   | AlertComponent
   | BadgeComponent
+  | ShapeComponent
   | ContainerComponent;
 
 export type ChildrenComponent = Extract<

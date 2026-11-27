@@ -4,7 +4,8 @@ import ImageSlider from "../editor/utils/ImageSlider";
 import CodeEditor from "../editor/utils/codeEditor";
 import { getLinkHref } from "../editor/utils/linkUtils";
 import { FAKE_IMAGE_URL } from "../../data/data";
-import type { CanvasComponent } from "../../types/types";
+import type { CanvasComponent, ShapeType } from "../../types/types";
+import { getShapePoints } from "../editor/utils/shape";
 
 export type CanvasComponentType = CanvasComponent["type"];
 
@@ -488,5 +489,94 @@ export function RadioRenderer({
 
       <span>{component.props.label}</span>
     </label>
+  );
+}
+
+export function ShapeRenderer({
+  component,
+}: {
+  component: ComponentOf<"shape">;
+}) {
+  const { shapeType, fill, stroke, strokeWidth, content, fontSize } =
+    component.props;
+
+  const common = {
+    fill,
+    stroke,
+    strokeWidth,
+    vectorEffect: "non-scaling-stroke" as const,
+  };
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        ...component.contentStyle,
+      }}
+    >
+      <svg
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "block",
+          width: "100%",
+          height: "100%",
+          overflow: "visible",
+        }}
+      >
+        {shapeType === "rectangle" && (
+          <rect x="1" y="1" width="98" height="98" {...common} />
+        )}
+
+        {shapeType === "rounded" && (
+          <rect
+            x="1"
+            y="1"
+            width="98"
+            height="98"
+            rx="12"
+            ry="12"
+            {...common}
+          />
+        )}
+
+        {shapeType === "ellipse" && (
+          <ellipse cx="50" cy="50" rx="49" ry="49" {...common} />
+        )}
+
+        {!["rectangle", "rounded", "ellipse"].includes(
+          shapeType as ShapeType,
+        ) && (
+          <polygon
+            points={getShapePoints(shapeType as ShapeType)}
+            {...common}
+          />
+        )}
+      </svg>
+
+      <div
+        className="ql-editor"
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: 12,
+          overflow: "hidden",
+          background: "transparent",
+          fontSize: fontSize ?? 16,
+          textAlign: "center",
+        }}
+        dangerouslySetInnerHTML={{
+          __html: content ?? "",
+        }}
+      />
+    </div>
   );
 }
